@@ -1,7 +1,8 @@
 '''pyEQL - Python Library for Aquatic Chemistry Calculations
 Developed by: Ryan Kingsbury
+RyanSKingsbury@alumni.unc.edu
 
-LICENSE INFO
+WIP - LICENSE INFO
 '''
 
 import math
@@ -137,7 +138,7 @@ def adjust_diffusion_coefficient(diffusion_coefficient,temperature,ref_temperatu
     '''Adjust a diffusion coefficient for a different temperature
     The diffusion coefficients are corrected to temperature T (Kelvin) of the solution with:
         (Dw)T = (Dw)298 × (T / 298) × (η298 / ηT), where η is the viscosity of water. 
-    FIND A LEGIT REFERENCE FOR THAT EQUATION
+    WIP - FIND A LEGIT REFERENCE FOR THAT EQUATION
     
     .. [1] http://www.hydrochemistry.eu/exmpls/sc.html
     '''
@@ -162,7 +163,7 @@ def water_density(temperature=25,pressure=101325):
     Returns:
     -------
     float
-            The density of water in N/m3.
+            The density of water in kg/m3.
     
     '''
     return 997.0479
@@ -344,7 +345,7 @@ def water_conductivity(temperature):
 def water_activity():
     pass
     
-def water_debye_parameter(temperature):
+def water_debye_parameter_activity(temperature=25):
     '''(number) -> float
     return the constant A for use in the Debye-Huckel limiting law (base 10)
     
@@ -355,21 +356,37 @@ def water_debye_parameter(temperature):
     
     Notes:
     -----
-#     ###FIX THIS TO INCLUDE DENSITY in kg/m3
-#     The parameter A is equal to:[1]
-#         
-#     $$ A = {e^3 \over 8 \pi} sqrt{ 2 N_a \over (\epsilon_r \epsilon_o k_B T) ^3}
-#     
-#     #FIND MORE CREDIBLE REFERENCE
-#     .. [1] http://en.wikipedia.org/wiki/Debye%E2%80%93H%C3%BCckel_equation
+    ### WIP - FIX THIS TO INCLUDE DENSITY in kg/m3
+     The parameter A is equal to:[1]
+         
+     $$ A = {e^3 \over 8 \pi} sqrt{ 2 N_a \over (\epsilon_r \epsilon_o k_B T) ^3}
+
+      This should not be confused with the Debye-Huckel constant for osmotic coefficients.
+     
+     WIP - FIND MORE CREDIBLE REFERENCE
+     .. [1] http://en.wikipedia.org/wiki/Debye%E2%80%93H%C3%BCckel_equation
+     
+     
+     
      The parameter A is equal to:[1]
      
-     $$ A = 1.82e6 (\epsilon_r T) ^ -3/2
+     $$ A = 1.82e6 (\epsilon_r T) ^ -3/2 $$
     
+    Note that when used in conjunction with the Debye-Huckel limiting law or related equations,
+    this parameter is valid only when ionic strength is calculated from molar (mol/L) scale concentrations.
     
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
         pp 103. Wiley Interscience, 1996.
         
+    Examples:
+    --------
+    >>>water_debye_parameter_activity()
+    0.509...
+    
+    See Also:
+    --------
+    water_debye_parameter_osmotic
+    
     '''
 #       this works, but I can't figure out how to reconcile the units with density included
 #     return CONST_e ** 3 / (8 * math.pi) * math.sqrt(2 * CONST_Na / ( 
@@ -377,11 +394,45 @@ def water_debye_parameter(temperature):
 #     kelvin(temperature)) ** 3)) * math.sqrt(water_density(temperature)) * math.log10(math.e)
     
     # use this from Stumm and Morgan Instead
-    #return 1.82e6 * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
+    return 1.8246e6 * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
     
     # or this from MWH treatment book, page 302
     # WIP - document reference
-    return 1.29e6 * math.sqrt(2) * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
+    #return 1.29e6 * math.sqrt(2) * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
+
+def water_debye_parameter_osmotic(temperature=25):
+    '''(number) -> float
+    return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
+    
+    Parameters:
+    ----------
+    temperature : float or int, optional
+                  The temperature in Celsius. Defaults to 25 degrees if not specified.
+    
+    Notes:
+    -----
+    Not to be confused with the Debye-Huckel constant used for activity coefficients in the limiting law. Takes the value 0.392 at 25 C.
+    This constant is calculated according to:[1]
+
+     $$ A_{phi} = {1 \over 3} ({ 2 \pi N_A \rho_w \over 1000})^0.5 * ({e^2 \over \epsilon_o \epsilon_r k T})^1.5 $$
+    
+    
+    .. [1] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
+    //J. Chemical Engineering Data// 33, pp.177-184.
+    
+    Examples:
+    --------
+    >>>water_debye_parameter_osmotic()
+    0.392...
+    
+    See Also:
+    --------
+    water_debye_parameter
+    
+    '''
+    # WIP - the factor 0.710 is a mystery number needed to make this equation return the correct value at 25C. I don't know why
+    return 0.71049 * 1/3 * (2 * math.pi * CONST_Na * water_density(temperature) / 1000 ) ** 0.5 * ( CONST_e ** 2 / (water_dielectric_constant(temperature) * CONST_Eo * CONST_kb * kelvin(temperature) ) ) ** 1.5
+
 
 ## Acid - Base Functions
 
@@ -620,7 +671,7 @@ def mix(Solution1, Solution2):
     
 ###Other Stuff - WIP
 
-def get_activity_debye_huckel(ionic_strength,valence=1,temperature=25):
+def get_activity_coefficient_debyehuckel(ionic_strength,valence=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
     Parameters:
@@ -635,11 +686,11 @@ def get_activity_debye_huckel(ionic_strength,valence=1,temperature=25):
     Returns:
     -------
     float
-        The single-ion activity coefficient of solute
+         The mean molar (mol/L) scale ionic activity coefficient of solute
 
     See Also:
     --------
-    water_debye_parameter
+    water_debye_parameter_activity
     get_ionic_strength
     
     Notes:
@@ -650,12 +701,12 @@ def get_activity_debye_huckel(ionic_strength,valence=1,temperature=25):
     pp 103. Wiley Interscience, 1996.
     '''
     # check if this method is valid for the given ionic strength
-    if not ionic_strenth < 0.005:
+    if not ionic_strength < 0.005:
         print('WARNING: Ionic strength exceeds valid range of the Debye-Huckel limiting law')
     
-    return - water_debye_parameter(temperature) *valence ** 2 * math.sqrt(ionic_strength)
+    return - water_debye_parameter_activity(temperature) *valence ** 2 * math.sqrt(ionic_strength)
 
-def get_activity_guntelberg(ionic_strength,valence=1,temperature=25):
+def get_activity_coefficient_guntelberg(ionic_strength,valence=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
     
     Parameters:
@@ -670,11 +721,11 @@ def get_activity_guntelberg(ionic_strength,valence=1,temperature=25):
     Returns:
     -------
     float
-        The single-ion activity coefficient of solute
-
+         The mean molar (mol/L) scale ionic activity coefficient of solute
+         
     See Also:
     --------
-    water_debye_parameter
+    water_debye_parameter_activity
     get_ionic_strength
     
     Notes:
@@ -685,12 +736,12 @@ def get_activity_guntelberg(ionic_strength,valence=1,temperature=25):
     pp 103. Wiley Interscience, 1996.
     '''
     # check if this method is valid for the given ionic strength
-    if not ionic_strenth < 0.1:
+    if not ionic_strength < 0.1:
         print('WARNING: Ionic strength exceeds valid range of the Guntelberg approximation')
     
-        return - water_debye_parameter(temperature) * valence ** 2 * math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength))
+        return - water_debye_parameter_activity(temperature) * valence ** 2 * math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength))
 
-def get_activity_davies(ionic_strength,valence=1,temperature=25):
+def get_activity_coefficient_davies(ionic_strength,valence=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
     
     Parameters:
@@ -705,11 +756,11 @@ def get_activity_davies(ionic_strength,valence=1,temperature=25):
     Returns:
     -------
     float
-        The single-ion activity coefficient of solute
+         The mean molar (mol/L) scale ionic activity coefficient of solute
 
     See Also:
     --------
-    water_debye_parameter
+    water_debye_parameter_activity
     get_ionic_strength
     
     Notes:
@@ -720,12 +771,12 @@ def get_activity_davies(ionic_strength,valence=1,temperature=25):
     pp 103. Wiley Interscience, 1996.
     '''
     # check if this method is valid for the given ionic strength
-    if not ionic_strenth < 0.5 and ionic_strength > 0.1:
+    if not ionic_strength < 0.5 and ionic_strength > 0.1:
         print('WARNING: Ionic strength exceeds valid range of the Davies equation')
     
-        return - water_debye_parameter(temperature) * valence ** 2 * ( math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength)) - 0.2 * ionic_strength)
+        return - water_debye_parameter_activity(temperature) * valence ** 2 * ( math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength)) - 0.2 * ionic_strength)
     
-def get_activity_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
+def get_activity_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the modified TCPC model.
     
     Parameters:
@@ -755,11 +806,11 @@ def get_activity_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_c
     Returns:
     -------
     float
-        The mean ionic activity coefficient of solute
+        The mean molar (mol/L) scale ionic activity coefficient of solute
 
     See Also:
     --------
-    water_debye_parameter
+    water_debye_parameter_osmotic
     get_ionic_strength
     
     Notes:
@@ -769,28 +820,76 @@ def get_activity_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_c
     .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
     '''
     # compute the PDF parameter
-    # WIP - figure out how to invoke the water_debye_parameter function in way consistent with the other models. This one need the parameter in base e
-    PDH = - math.fabs(valence * counter_valence) * 0.392 * ( ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5) + 2/b * math.log(1 + b * ionic_strength ** 0.5))
+    PDH = - math.fabs(valence * counter_valence) * water_debye_parameter_osmotic(temperature) * ( ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5) + 2/b * math.log(1 + b * ionic_strength ** 0.5))
     # compute the SV parameter
     SV = S / kelvin(temperature) * ionic_strength  ** (2*n) / (stoich_coeff + counter_stoich_coeff)
     # add and exponentiate to eliminate the log
     return math.exp(PDH + SV)
     
-def get_activity_pitzer():
+def get_activity_coefficient_pitzer():
     '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
     Returns:
     -------
     float
-        The mean ionic activity coefficient of solute
+        The mean molar (mol/L) scale ionic activity coefficient of solute
     
     See also:
     --------
-    water_debye_parameter
+    water_debye_parameter_activity
     
     '''
     pass
 
+def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
+    '''Return the osmotic coefficient of solute in the parent solution according to the modified TCPC model.
+    
+    Parameters:
+    ----------
+    ionic_strength : number
+                        The ionic strength of the parent solution, dimensionless
+    S : float
+                        The solvation parameter for the parent salt. See Reference.
+    b : float
+                        The approaching parameter for the parent salt. See Reference.
+    n : float       
+                        The n parameter for the parent salt. See Reference.
+    valence : int, optional           
+                        The charge on the solute, including sign. Defaults to +1 if not specified.
+    counter_valence : int, optional           
+                        The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
+                        E.g. if the solute is Na+ and the salt is NaCl, counter_valence = -1
+    stoich_coeff : int, optional
+                        The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
+                        E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
+    counter_stoich_coeff : int, optional
+                        The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
+                        E.g. for Cl- in ZnCl2, stoich_coeff = 2
+    temperature : float or int, optional
+                        The solution temperature in degrees Celsius. 
+                        Defaults to 25 degrees if omitted.
+    Returns:
+    -------
+    float
+        The osmotic coefficient of the solute
+
+    See Also:
+    --------
+    water_debye_parameter_osmotic
+    get_ionic_strength
+    
+    Notes:
+    ------
+    Valid for concentrated solutions up to saturation. Accuracy compares well with the Pitzer approach. See Reference [1] for a compilation of the appropriate parameters for a variety of commonly-encountered electrolytes.
+    
+    .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
+    '''
+    # compute the 2nd term
+    term2 = - math.fabs(valence * counter_valence) * water_debye_parameter_osmotic(temperature) * ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5)
+    # compute the 3rd term
+    term3 = S / (kelvin(temperature) * ( stoich_coeff + counter_stoich_coeff)) * 2 * n / (2 * n + 1) * ionic_strength  ** (2 * n)
+    # add and return the osmotic coefficient
+    return 1 - term2 + term3
     
 def debye_length(dielectric_constant,ionic_strength,temp):
     '''(number,number,number) -> float
@@ -899,6 +998,7 @@ class Solute:
             self.act = molality
         self.D = diffusion_coefficient
         self.unit_cost = cost
+        self.parameters_TCPC={}
   
    #compute the ion's valence from the formula (only -3 to +3 supported right now)
         if self.formula.endswith('-'):
@@ -1166,6 +1266,13 @@ class Solution:
         '''
         return self.ion_species[solute].get_concentration() * self.get_water_mass()
         
+    def get_total_moles_solute(self):
+        '''Return the total moles of all solute in the solution'''
+        tot_mol = 0
+        for item in self.ion_species:
+            tot_mol += self.get_moles(item)
+        return tot_mol
+    
     def get_mole_fraction(self,solute):
         '''(Solute) -> float
         Return the mole fraction of 'solute' in the solution
@@ -1194,11 +1301,8 @@ class Solution:
         TBD
         
         '''
-        # calculate total moles of water
-        tot_mol = self.get_moles_water()
-        # add the moles of each solute
-        for item in self.ion_species:
-            tot_mol += self.get_moles(item)
+        # calculate total moles of solvent and solutes
+        tot_mol = self.get_moles_water() + self.get_total_moles_solute()
         # compute the fraction
         return self.get_moles(solute) / tot_mol
     
@@ -1254,8 +1358,8 @@ class Solution:
             self.act_list.update({i:self.ion_species[i].get_activity()})
         return self.act_list
     
-    def get_activity(self,solute,temperature=25):
-        '''Routine to determine the activity of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
+    def get_activity_coefficient(self,solute,temperature=25):
+        '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
         
         Parameters:
         ----------
@@ -1266,39 +1370,135 @@ class Solution:
         
         Returns:
         -------
-        The activity coefficient of the ion in question
+        The molar (mol/L) scale mean ion activity coefficient of the solute in question
         
         See Also:
         --------
-        get_activity_debye
-        get_activity_guntelberg
-        get_activity_davies
-        get_activity_pitzer
-        get_activity_TCPC
+        get_activity_coefficient_debyehuckel
+        get_activity_coefficient_guntelberg
+        get_activity_coefficient_davies
+        get_activity_coefficient_pitzer
+        get_activity_coefficient_TCPC
         '''
         ion = self.ion_species[solute]
         # for very low ionic strength, use the Debye-Huckel limiting law
         if self.get_ionic_strength() <= 0.005:
-            return get_activity_debye_huckel(self.get_ionic_strength(),temperature)
+            return get_activity_coefficient_debyehuckel(self.get_ionic_strength(),temperature)
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif self.get_ionic_strength() <= 0.1:
-            return get_activity_guntelberg(self.get_ionic_strength(),ion.get_valence(),temperature)
+            return get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_valence(),temperature)
         # use the Davies equation for 0.1 < I < 0.5
         elif self.get_ionic_strength() <= 0.5:
-            return get_activity_davies(self.get_ionic_strength(),ion.get_valence(),temperature)
-        else:
-            return get_activity_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+            return get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_valence(),temperature)
+        # use the TCPC model for higher ionic strengths, if the parameters have been set
+        elif self.ion_species[solute].parameters_TCPC:
+            return get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
             
-        
-            #print('WARNING: Ionic strength too high to estimate activity. Returning unit activity')
-            #return 1.0
+        else:
+            print('WARNING: Ionic strength too high to estimate activity. Specify parameters for Pitzer or TCPC methods. Returning unit activity coefficient')
+            return 1.0
         # WIP - NEED TO TEST THIS FUNCTION
+    
+    def get_activity(self,solute,temperature=25):
+        '''returns the thermodynamic activity of the solute in solution
+       
+        Parameters:
+        ----------
+        solute : str 
+                    String representing the name of the solute of interest
+        temperature : float or int, optional
+                    The temperature in Celsius. Defaults to 25 degrees if not specified.
         
+        Returns:
+        -------
+        The thermodynamic activity of the solute in question
+        
+        Notes:
+        -----
+        The thermodynamic activity is independent of the concentration scale used. However,
+        the concentration and the activity coefficient must use corresponding scales.[1][2]
+        In this module, ionic strenght, activity coefficients, and activities are all
+        based on the molar (mol/L) concentration scale.
+        
+        References:
+        ----------
+        ..[1] http://adsorption.org/awm/utils/Activity.htm
+        ..[2] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
+        
+        See Also:
+        --------
+        get_activity_coefficient
+        get_ionic_strength
+        
+        '''
+        return self.get_activity_coefficient(solute,temperature) * self.get_molar_concentration(solute)
+        
+    def get_osmotic_coefficient(self,solute,temperature=25):
+        '''calculate the osmotic coefficient for a given solute
+        
+        Parameters:
+        ----------
+        solute : str 
+                    String representing the name of the solute of interest
+        temperature : float or int, optional
+                    The temperature in Celsius. Defaults to 25 degrees if not specified.
+        
+        Returns:
+        -------
+        float : 
+            The practical osmotic coefficient, based on 'solute'
+        '''
+        
+        ion = self.ion_species[solute]
+        
+        if self.ion_species[solute].parameters_TCPC:
+            return get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+        else:
+            print('Cannot calculate water activity because TCPC parameters for solute are not specified. Returning unit osmotic coefficient')
+            return 1
+        
+    def get_water_activity(self,solute,temperature=25):
+        '''return the water activity based on a given solute
+        
+        Parameters:
+        ----------
+        solute : str 
+                    String representing the name of the solute of interest
+        temperature : float or int, optional
+                    The temperature in Celsius. Defaults to 25 degrees if not specified.
+        
+        Returns:
+        -------
+        float : 
+            The thermodynamic activity of water in the solution.
+        
+        Notes:
+        -----
+        Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]
+        
+        ## ln a_w = - \Phi M_w \sum_i m_i
+        
+        Where M_w is the molar mass of water (0.018015 kg/mol)
+        
+        References:
+        ----------
+        Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
+        //Chemical Society Review// 34, 440-458.
+        
+        '''
+        return math.exp(- self.get_osmotic_coefficient(solute,temperature) * 0.018015 * self.get_total_moles_solute())
         
     def get_ionic_strength(self):
         '''() -> float
         
-        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * valence ^2) over all the ions
+        Return the ionic strength of the solution, calculated as 1/2 * sum ( molarity * valence ^2) over all the ions.
+        Molar (mol/L) scale concentrations are used for compatibility with the activity correction formulas.
+        
+        
+        Returns:
+        -------
+        float : 
+            The molar scale ionic strength of the parent solution.
         
         >>> conc_soln.list_concentrations()
         {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
@@ -1306,8 +1506,8 @@ class Solution:
         5.999639608985288
         '''
         self.ionic_strength=0
-        for i in self.ion_species:
-            self.ionic_strength += 0.5 * self.ion_species[i].get_concentration() * self.ion_species[i].get_valence() ** 2
+        for solute in self.ion_species.keys():
+            self.ionic_strength += 0.5 * self.get_molar_concentration(solute) * self.ion_species[solute].get_valence() ** 2
         return self.ionic_strength
             
     
@@ -1332,7 +1532,7 @@ class Membrane:
         
         '''
         #warn if an invalid membrane type is given
-        types = ['aem','cem','bpem','mf','uf','ro']
+        types = ['aem','cem','bpem','mf','uf','ro','fo']
         if type in types:
             self.mem_type = type
         else:
