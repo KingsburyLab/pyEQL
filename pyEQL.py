@@ -147,7 +147,8 @@ def adjust_diffusion_coefficient(diffusion_coefficient,temperature,ref_temperatu
 ## Properties of Water
 
 def water_density(temperature=25,pressure=101325):
-    # add pressure??
+    # WIP add pressure??
+    # WIP more up to date equation??
     '''(number) -> float
     
     Return the density of water in kg/m3 at the specified temperature and pressure.
@@ -165,8 +166,24 @@ def water_density(temperature=25,pressure=101325):
     float
             The density of water in kg/m3.
     
+    Notes:
+    -----
+    Based on the following empirical equation reported in [1]
+    
+    $$ \rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ 1.5
+    
+    Where T is the temperature in Celsius.
+    
+    
+    ..[1] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
+    
+    Examples:
+    --------
+    >>>water_density(25)
+    997.04....
+    
     '''
-    return 997.0479
+    return 999.65 + 0.20438 * temperature - 6.1744e-2 * temperature ** 1.5
     
     
 def water_specific_weight(temperature):
