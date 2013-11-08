@@ -583,27 +583,22 @@ def gibbsmix(Solution1, Solution2,temperature=25):
     
     Notes:
     -----
+    
     The Gibbs energy of mixing is calculated as follows:[1]
         
     .. math::
-        \Delta_{mix} G = -(n_c + n_d)T \Delta_{mix}s_b - (-n_c T \Delta_{mix} s_c
-        - n_d T \Delta_{mix} s_d)
+        \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
     
     Where n is the number of moles of substance, T is the temperature in kelvin,
     and  subscripts b, c, and refer to the concentrated, dilute, and blended
-    Solutions, respectively. :math: \Delta_mix s is the mixing entropy, given by:
-        
-    .. math::
-        \Delta_{mix} s = - R \sum_i x_i \ln x_i
+    Solutions, respectively. 
     
-    Where R is the universal gas constant and x represents the mole fraction of
-    species i. Note that dissociated ions must be counted as separate components,
+    Note that dissociated ions must be counted as separate components,
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
     
-    .. [1] Post, Jan W. et al. "Energy Recovery from Controlled Mixing Salt and
-    Fresh Water with a Reverse Electrodialysis System." Environmental Science
-    and Technology 42(15), 2008, pp 5785-5790.
+    .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
+    A differential approach.// Elsevier, 2007, pp. 23-37.
     
     Examples:
     --------
@@ -612,21 +607,18 @@ def gibbsmix(Solution1, Solution2,temperature=25):
     concentrate = Solution1
     dilute = Solution2
     blend = mix(Solution1,Solution2)
-    entropy_list = {concentrate:0, dilute:0, blend:0}
-    moles_list = {concentrate:0, dilute:0, blend:0}
-    
+    term_list = {concentrate:0, dilute:0, blend:0}
+
     # calculte the entropy change and number of moles solute for each solution
-    for solution in entropy_list:
-        tot_mole_fraction=0
+    for solution in term_list:
         for solute in solution.ion_species:
+            print(solution.list_concentrations())
+            my_solute = solute
             if not solution.get_mole_fraction(solute) == 0:
-                entropy_list[solution] += - CONST_R * (solution.get_mole_fraction(solute) * math.log(solution.get_mole_fraction(solute)))
-                moles_list[solution] += solution.get_moles(solute)
-                tot_mole_fraction += solution.get_mole_fraction(solute)
-        entropy_list[solution] += - CONST_R * ((1-tot_mole_fraction) * math.log((1-tot_mole_fraction)))
-        moles_list[solution] += solution.get_moles_water()
-        
-    return - moles_list[blend] * kelvin(temperature) * entropy_list[blend] + moles_list[concentrate] * kelvin(temperature) * entropy_list[concentrate] + moles_list[dilute] * kelvin(temperature) * entropy_list[dilute]
+                term_list[solution] += solution.get_moles(solute) * math.log(solution.get_activity(solute))
+        term_list[solution] += solution.get_moles_water() * math.log(solution.get_water_activity(my_solute))
+
+    return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
 
 def mix(Solution1, Solution2):
@@ -660,11 +652,15 @@ def mix(Solution1, Solution2):
             Blend.ion_species[item].set_concentration((Solution1.get_moles(item) + Solution2.get_moles(item)) / mix_water_mass )
         else:
             Blend.ion_species[item].set_concentration(Solution1.get_moles(item) / mix_water_mass )
+        if Solution1.ion_species[item].parameters_TCPC:
+            Blend.ion_species[item].set_parameters_TCPC(Solution1.ion_species[item].get_parameters_TCPC('S'),Solution1.ion_species[item].get_parameters_TCPC('b'),Solution1.ion_species[item].get_parameters_TCPC('n'),Solution1.ion_species[item].get_parameters_TCPC('z_plus'),Solution1.ion_species[item].get_parameters_TCPC('z_minus'),Solution1.ion_species[item].get_parameters_TCPC('nu_plus'),Solution1.ion_species[item].get_parameters_TCPC('nu_minus'))
     
     for item in Solution2.ion_species:
         if not item in Solution1.ion_species:
             Blend.add_solute(Solution2.ion_species[item])
             Blend.ion_species[item].set_concentration(Solution2.get_moles(item) / mix_water_mass )
+        if Solution2.ion_species[item].parameters_TCPC:
+            Blend.ion_species[item].set_parameters_TCPC(Solution2.ion_species[item].get_parameters_TCPC('S'),Solution2.ion_species[item].get_parameters_TCPC('b'),Solution2.ion_species[item].get_parameters_TCPC('n'),Solution2.ion_species[item].get_parameters_TCPC('z_plus'),Solution2.ion_species[item].get_parameters_TCPC('z_minus'),Solution2.ion_species[item].get_parameters_TCPC('nu_plus'),Solution2.ion_species[item].get_parameters_TCPC('nu_minus'))
     
     return Blend
     
