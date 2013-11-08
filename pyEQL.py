@@ -1128,6 +1128,7 @@ class Solution:
         self.water_mass=0
         #parameter for the storage cost, $/L
         self.unit_storage_cost = 0
+        self.calc_water_mass()
     
     def add_solute(self,solute):
         '''(solute object) -> None
