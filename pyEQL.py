@@ -629,11 +629,67 @@ def gibbsmix(Solution1, Solution2,temperature=25):
     # calculte the entropy change and number of moles solute for each solution
     for solution in term_list:
         for solute in solution.ion_species:
-            print(solution.list_concentrations())
+            #print(solution.list_concentrations())
             my_solute = solute
             if not solution.get_mole_fraction(solute) == 0:
                 term_list[solution] += solution.get_moles(solute) * math.log(solution.get_activity(solute))
         term_list[solution] += solution.get_moles_water() * math.log(solution.get_water_activity(my_solute))
+
+    return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
+
+def entropy_mix(Solution1, Solution2,temperature=25):
+    '''(Solution, Solution) -> float
+    Return the ideal mixing entropy associated with mixing two solutions
+
+    Parameters:
+    ----------
+    Solution1, Solution2 : Solution objects
+        The two solutions to be mixed.
+    temperature : float or int, optional
+                  The temperature in Celsius. Defaults to 25 degrees if not specified.
+        
+    Returns:
+    -------
+    float
+        The ideal mixing entropy associated with complete mixing of the
+        Solutions, in Joules.
+    
+    Notes:
+    -----
+    
+    The ideal entropy of mixing is calculated as follows:[1]
+        
+    .. math::
+        \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
+    
+    Where n is the number of moles of substance, T is the temperature in kelvin,
+    and  subscripts b, c, and refer to the concentrated, dilute, and blended
+    Solutions, respectively. 
+    
+    Note that dissociated ions must be counted as separate components,
+    so a simple salt dissolved in water is a three component solution (cation,
+    anion, and water).
+    
+    .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
+    A differential approach.// Elsevier, 2007, pp. 23-37.
+    
+    Examples:
+    --------
+ 
+    '''
+    concentrate = Solution1
+    dilute = Solution2
+    blend = mix(Solution1,Solution2)
+    term_list = {concentrate:0, dilute:0, blend:0}
+
+    # calculte the entropy change and number of moles solute for each solution
+    for solution in term_list:
+        mole_fraction_water = solution.get_moles_water() / (solution.get_total_moles_solute() + solution.get_moles_water())
+        for solute in solution.ion_species:
+            #print(solution.list_concentrations())
+            if not solution.get_mole_fraction(solute) == 0:
+                term_list[solution] += solution.get_moles(solute) * math.log(solution.get_mole_fraction(solute))
+        term_list[solution] += solution.get_moles_water() * math.log(mole_fraction_water)
 
     return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
