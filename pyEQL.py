@@ -142,7 +142,8 @@ def adjust_diffusion_coefficient(diffusion_coefficient,temperature,ref_temperatu
     
     .. [1] http://www.hydrochemistry.eu/exmpls/sc.html
     '''
-    pass
+    ## WIP - check this function (does it need dynamic or kinematic viscosity or does it matter?)
+    return diffusion_coefficient * temperature / kelvin(ref_temperature) * water_viscosity_dynamic(ref_temperature)/water_viscosity_dynamic(temperature)
 
 ## Properties of Water
 
@@ -738,8 +739,7 @@ def mix(Solution1, Solution2):
     return Blend
     
     
-###Other Stuff - WIP
-
+### Activity Functions
 def get_activity_coefficient_debyehuckel(ionic_strength,valence=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
@@ -959,6 +959,8 @@ def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=
     term3 = S / (kelvin(temperature) * ( stoich_coeff + counter_stoich_coeff)) * 2 * n / (2 * n + 1) * ionic_strength  ** (2 * n)
     # add and return the osmotic coefficient
     return 1 - term2 + term3
+
+### Other Stuff - WIP
     
 def debye_length(dielectric_constant,ionic_strength,temp):
     '''(number,number,number) -> float
@@ -1198,7 +1200,7 @@ class Solution:
         #parameter for the storage cost, $/L
         self.unit_storage_cost = 0
         self.calc_water_mass()
-    
+        
     def add_solute(self,solute):
         '''(solute object) -> None
         Creates a new copy of the solute object and associates it with Solution
@@ -1236,6 +1238,7 @@ class Solution:
     def get_water_mass(self):
         return self.water_mass   
     
+    ## WIP - deprecate this
     def set_storage_cost(self,cost):
         '''set the unit storage cost, $/L'''
         self.unit_storage_cost = cost
@@ -1427,6 +1430,18 @@ class Solution:
         for i in self.ion_species.keys():
             self.act_list.update({i:self.ion_species[i].get_activity()})
         return self.act_list
+    
+    def list_mole_fractions(self):
+        '''() -> dict
+        
+        Return a dictionary containing a list of the species in solution paired with their mole fraction
+        '''
+        self.fraction_list={}
+        for i in self.ion_species.keys():
+            self.fraction_list.update({i:self.get_mole_fraction(i)})
+        # add mole fraction for water
+        self.fraction_list.update({H2O:self.get_moles_water/self.get_
+        return self.fraction_list
     
     def get_activity_coefficient(self,solute,temperature=25):
         '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
