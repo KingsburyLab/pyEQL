@@ -97,7 +97,7 @@ def kelvin(temp_celsius):
     298.15
     '''
     output = temp_celsius + 273.15
-    logger.info('Converted %s degrees Celsius to %s kelvin' % temp_celsius,output)
+    logger.info('Converted %s degrees Celsius to %s kelvin % temp_celsius, output')
     return output
     
     
@@ -121,11 +121,11 @@ def celsius(temp_kelvin):
     24.85
     '''
     output = temp_kelvin - 273.15
-    logger.info('Converted %s kelvin to %s degrees Celsius' % temp_kelvin,output)
+    logger.info('Converted %s kelvin to %s degrees Celsius % temp_kelvin,output')
     return output
     
     
-def adjust_equilibrium_constant(equilibrium_constant,enthalpy,temperature,ref_temperature = 25):
+def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25):
     '''(float,float,number, optional number) -> float
     
     Adjust a reaction equilibrium constant from one temperature to another.
@@ -139,7 +139,7 @@ def adjust_equilibrium_constant(equilibrium_constant,enthalpy,temperature,ref_te
                independent of temperature (see Notes).
     temperature : float or int
                   the desired reaction temperature in degrees Celsius
-    ref_temperature : float or int, optional
+    reference_temperature : float or int, optional
                       the temperature at which equilibrium_constant is valid
                       in degrees Celsius. (25 degrees C if omitted).
    
@@ -177,13 +177,63 @@ def adjust_equilibrium_constant(equilibrium_constant,enthalpy,temperature,ref_te
     0.0020356642823557407
     
     '''
-    output = equilibrium_constant * math.exp( enthalpy * 1000 / CONST_R * ( 1 / kelvin(ref_temperature) - 1 / kelvin(temperature)))
-    logging.info('Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s' % equilibrium_constant,ref_temperature,temperature,enthalpy,output)
-    logging.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
+    output = equilibrium_constant * math.exp( enthalpy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
+    
+    logger.info('Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output')
+    
+    logger.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
+    return output
+
+def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_temperature = 25):
+    '''(float,float,number, optional number) -> float
+    
+    Adjust a reaction equilibrium constant from one temperature to another.
+    
+    Parameters:
+    ----------
+    rate_constant : float
+                The parameter value (usually a rate constant) being adjusted
+    activation_energy : float
+               The activation energy of the process, in kJ/mol
+    temperature : float or int
+                  the desired reaction temperature in degrees Celsius
+    reference_temperature : float or int, optional
+                      the temperature at which equilibrium_constant is valid
+                      in degrees Celsius. (25 degrees C if omitted).
+   
+    Returns:
+    -------
+    float
+        adjusted reaction equilibrium constant
+
+    See Also:
+    --------
+    kelvin
+    
+    Notes:
+    -----
+    This function implements the Arrhenius equation to adjust measured rate
+    constants to other temperatures. [1]
+    
+    .. math::
+        ln(K2 / K1) = {E_a \over R} ( {1 \over T_1} - {1 \over T_2} )
+    
+    .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
+    WIP - add better reference
+    
+    Examples:
+    --------
+    >>>adjust_temp_arrhenius(7,900,37,97)
+    1.8867...e-24
+    
+    '''
+    output = rate_constant * math.exp( activation_energy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
+    
+    logger.info('Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output')
+    
     return output
     
-    
-def adjust_diffusion_coefficient(diffusion_coefficient,temperature,ref_temperature=25):
+def adjust_temp_diffusion(diffusion_coefficient,temperature,ref_temperature=25):
     '''Adjust a diffusion coefficient for a different temperature
     The diffusion coefficients are corrected to temperature T (Kelvin) of the solution with:
         (Dw)T = (Dw)298 × (T / 298) × (η298 / ηT), where η is the viscosity of water. 
@@ -234,8 +284,8 @@ def water_density(temperature=25,pressure=101325):
     
     '''
     density = 999.65 + 0.20438 * temperature - 6.1744e-2 * temperature ** 1.5
-    logging.info('Computed density of water as %s kg/m3 at T=%S degrees C and P = %s Pa' % density,temperature,pressure)
-    logging.debug('Computed density of water using empirical relation in Sohnel and Novotny, "Densities of Aqueous Solutions of Inorganic Substances," 1985' )
+    logger.info('Computed density of water as %s kg/m3 at T=%S degrees C and P = %s Pa % density,temperature,pressure')
+    logger.debug('Computed density of water using empirical relation in Sohnel and Novotny, "Densities of Aqueous Solutions of Inorganic Substances," 1985' )
     return density
     
     
@@ -263,7 +313,7 @@ def water_specific_weight(temperature,pressure=101325):
     
     '''
     spweight = water_density(temperature,pressure) * CONST_g
-    logging.info('Computed specific weight of water as %s N/m3 at T=%S degrees C and P = %s Pa' % spweight,temperature,pressure)
+    logger.info('Computed specific weight of water as %s N/m3 at T=%S degrees C and P = %s Pa % spweight,temperature,pressure')
     return spweight
 
 
@@ -308,11 +358,11 @@ def water_viscosity_dynamic(temperature=25,pressure=101325):
     '''
     # generate warnings if temp or pressure are outside valid range of equation
     if kelvin(temperature) < 273 or kelvin(temperature)>1073:
-        logging.error('Specified temperature (%s K) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % kelvin(temperature))
+        logger.error('Specified temperature (%s K) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate. % kelvin(temperature)')
         return None
         
     if pressure < 0 or pressure > 100000000:
-        logging.error('Specified pressure (%s Pa) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % pressure)
+        logger.error('Specified pressure (%s Pa) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate. % pressure')
         return None
     
     # calculate dimensionless temperature and pressure
@@ -346,9 +396,9 @@ def water_viscosity_dynamic(temperature=25,pressure=101325):
     # multiply the functions to return the viscosity
     viscosity = mu_o * mu_1
     
-    logging.info('Computed dynamic (absolute) viscosity of water as %s kg/m-s at T=%S degrees C and P = %s Pa' % viscosity,temperature,pressure) 
+    logger.info('Computed dynamic (absolute) viscosity of water as %s kg/m-s at T=%S degrees C and P = %s Pa % viscosity,temperature,pressure') 
     
-    logging.debug('Computed dynamic (absolute) viscosity of water using empirical NIST equation described in Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." J. Phys. Chem. Ref. Data 13(1), 1984.')
+    logger.debug('Computed dynamic (absolute) viscosity of water using empirical NIST equation described in Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." J. Phys. Chem. Ref. Data 13(1), 1984.')
     
     return viscosity
 
@@ -378,7 +428,7 @@ def water_viscosity_kinematic(temperature=25,pressure=101325):
     
     '''
     kviscosity = water_viscosity_dynamic(temperature,pressure) / water_density(temperature,pressure)
-    logging.info('Computed kinematic viscosity of water as %s m2/s at T=%S degrees C and P = %s Pa' % kviscosity,temperature,pressure) 
+    logger.info('Computed kinematic viscosity of water as %s m2/s at T=%S degrees C and P = %s Pa % kviscosity,temperature,pressure') 
     return kviscosity
     
 
@@ -425,7 +475,7 @@ def water_dielectric_constant(temperature=25):
     # do not return anything if 'temperature' is outside the range for which
     # this fit applies
     if kelvin(temperature) < 273 or kelvin(temperature) > 372:
-        logging.error('Specified temperature (%s K) exceeds valid range of data. Cannot extrapolate.' % kelvin(temperature))
+        logger.error('Specified temperature (%s K) exceeds valid range of data. Cannot extrapolate. % kelvin(temperature)')
         return None
     
     # otherwise, calculate the dielectric constant using the quadratic fit    
@@ -434,9 +484,9 @@ def water_dielectric_constant(temperature=25):
     c = 0.72997e-3
     dielectric = a + b * kelvin(temperature) + c * kelvin(temperature) ** 2
     
-    logging.info('Computed dielectric constant of water as %s at %s degrees Celsius' % dielectric,temperature)
+    logger.info('Computed dielectric constant of water as %s at %s degrees Celsius % dielectric,temperature')
     
-    logging.debug('Computed dielectric constant of water using empirical equation given in "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.')
+    logger.debug('Computed dielectric constant of water using empirical equation given in "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.')
     
     return dielectric
     
@@ -501,7 +551,7 @@ def water_debye_parameter_activity(temperature=25):
     
     # use this from Stumm and Morgan Instead
     debyeparam = 1.8246e6 * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
-    logging.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius' % debyeparam,temperature)
+    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius % debyeparam,temperature')
     return debyeparam
     
     # or this from MWH treatment book, page 302
@@ -634,12 +684,12 @@ def alpha(n,pH,pKa_list):
     '''
     #generate an error if no pKa values are specified
     if len(pKa_list) == 0:
-        logging.error('No pKa values given. Cannot calculate distribution coeffiicent.')
+        logger.error('No pKa values given. Cannot calculate distribution coeffiicent.')
         return None
     
     #generate an error if n > number of pKa values
     if len(pKa_list) < n:
-        logging.error('Insufficient number of pKa values given. Cannot calculate distribution coeffiicent.')
+        logger.error('Insufficient number of pKa values given. Cannot calculate distribution coeffiicent.')
         return None
         
     #convert pH to hydrogen ion concentration
@@ -669,7 +719,7 @@ def alpha(n,pH,pKa_list):
         
     #return the desired distribution factor
     alpha = numerator / denominator
-    logging.info('Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s' % n,alpha,pKa_list,pH)
+    logger.info('Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s % n,alpha,pKa_list,pH')
     return alpha
 
 ### Functions that operate on Solution Objects
@@ -1124,7 +1174,7 @@ class Parameter:
 
     
     '''
-    def __init__(self,name,value,units,reference,reference_temperature=25,description='',comment=''):
+    def __init__(self,name,value,units,reference,reference_temperature=25,notes='',description=''):
         '''
         Parameters:
         ----------
@@ -1161,14 +1211,21 @@ class Parameter:
         self.description = description
         self.reference = reference
         self.reference_temperature = reference_temperature
-        self.comment = comment
+        self.comment = notes
+        
+    def get_value(self,temperature):
+        '''return a temperature-adjusted paramter value and log any qualifying
+        assumptions
+        '''
     
     def __str__(self):
         '''
         Set the output of the print() statement for a parameter value
         '''
         return 'Parameter '+str(self.name)+' ('+str(self.description)+') = '+str(self.value)+' '+str(self.units)+' at '+str(self.reference_temperature)+' degrees C.'+'\n'+'Notes: '+str(self.comment)+'\n'+'Reference: '+str(self.reference)+'\n'
-        
+
+
+
 class Solution:
     '''represent each solution with its own set of ions and bulk properties like volume(L), density(kg/m3) conductivity(S/m), etc.
     
