@@ -17,9 +17,12 @@ import pyEQL
 # import libraries for scientific functions
 import math
 import numpy as np
+# used for fundamental constants
 from scipy import constants as spc
+# FUTURE - to be used for plotting
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+# FUTURE - to be used for automatic calculation of molecular weights
 from elements import ELEMENTS as pte
 
 ## Logging System
@@ -45,6 +48,7 @@ logger.addHandler(logging.NullHandler())
 
 ## Fundamental Constants
 # Values for fundamental constants are provided by the Scipy package
+# float values (commented out) are from Wikipedia
 
 # Avogadro's number, #/mole
 #CONST_Na = 6.02214129e23
@@ -1554,6 +1558,7 @@ class Solution:
         return self.volume
     
     def get_mass(self):
+        '''returns the total solution mass in kg'''
         return self.volume * self.density /1000
         
     def get_density(self):
@@ -1649,16 +1654,49 @@ class Solution:
         
         if unit == 'mol':
             return moles
-        elif unit == 'mol/L':
-            return moles / self.get_volume(temperature)
+        elif unit == 'mmol':
+            return moles * 1000
         elif unit == 'mol/kg':
             return moles / self.get_solvent_mass()
-        elif unit == 'g/L':
-            return moles * self.ion_species[solute].get_molecular_weight() / self.get_volume(temperature)
         elif unit == 'fraction':
             return moles / (self.get_total_moles_solute() + self.get_moles_water())
+        # mass per volume units
+        elif unit == 'mol/L':
+            return moles / self.get_volume(temperature)
+        elif unit == 'mmol/L':
+            return moles * 1000 / self.get_volume(temperature)
+        elif unit == 'ng/L':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e9 / self.get_volume(temperature)
+        elif unit == 'ug/L':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e6 / self.get_volume(temperature)
+        elif unit == 'mg/L':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e3 / self.get_volume(temperature)
+        elif unit == 'g/L':
+            return moles * self.ion_species[solute].get_molecular_weight() / self.get_volume(temperature)
+        elif unit == 'kg/L':
+            return moles * self.ion_species[solute].get_molecular_weight() / 1e3 / self.get_volume(temperature)
+        # mass units
+        elif unit == 'ng':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e9
+        elif unit == 'ug':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e6
+        elif unit == 'mg':
+            return moles * self.ion_species[solute].get_molecular_weight() * 1e3
+        elif unit == 'g':
+            return moles * self.ion_species[solute].get_molecular_weight()
         elif unit == 'kg':
-            return moles / self.ion_species[solute].get_molecular_weight() / 1000
+            return moles * self.ion_species[solute].get_molecular_weight() / 1e3
+        # mass fraction units
+        elif unit == 'ppt':
+            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e8
+        elif unit == 'ppb':
+            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e7
+        elif unit == 'ppm' or unit == 'mg/kg':
+            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e6
+        elif unit == '%':
+            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 100
+        elif unit == 'g/g' or unit == 'mg/mg' or unit == 'kg/kg':
+            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3)
         else:
             print('Invalid unit %s specified for amount' % unit)
             return None
