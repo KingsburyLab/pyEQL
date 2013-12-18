@@ -974,7 +974,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,valence=1,temperature=25)
     if not ionic_strength < 0.1:
         logger.warning('Ionic strength exceeds valid range of the Guntelberg approximation')
     
-        return - water_debye_parameter_activity(temperature) * valence ** 2 * math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength))
+    return - water_debye_parameter_activity(temperature) * valence ** 2 * math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength))
 
 def get_activity_coefficient_davies(ionic_strength,valence=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
@@ -1127,7 +1127,42 @@ def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=
     return 1 - term2 + term3
 
 ### Other Stuff - WIP
+
+def mobility(diffusion_coefficient,valence,temperature=25):
+    '''Return the ionic mobility of a species
     
+    Parameters:
+    ----------
+    diffusion_coefficient : float
+                The diffusion coefficient of the species in m2/s
+    valence : float or int
+                The charge on the species, including sign
+    temperature : float or int, optional
+                The solution temperature in degrees Celsius. 
+                Defaults to 25 degrees if omitted.
+    
+    Returns:
+    -------
+    float : the ionic mobility in m/s-V
+    
+    
+    Notes:
+    -----
+    This function uses the Einstein relation to convert a diffusion coefficient
+    into an ionic mobility[1]
+    
+    .. math::
+        \mu_i = {F |z_i| D_i \over RT}
+    
+    .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+    
+    '''
+    mobility = CONST_F * math.abs(valence) * diffusion_coefficient / (CONST_R * kelvin(temperature))
+    
+    logger.info('Computed ionic mobility as %s m/s-V from D = %s m2/s at T=%S degrees C % mobility,diffusion_coeffiicent,temperature')
+    
+    return mobility
+
 def debye_length(dielectric_constant,ionic_strength,temp):
     '''(number,number,number) -> float
     Return the Debye length of a solution in meters
@@ -1698,7 +1733,7 @@ class Solution:
         elif unit == 'g/g' or unit == 'mg/mg' or unit == 'kg/kg':
             return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3)
         else:
-            print('Invalid unit %s specified for amount' % unit)
+            print('Invalid unit %s specified for amount % unit')
             return None
     
     def set_amount(self,solute,amount,unit,temperature=25):
