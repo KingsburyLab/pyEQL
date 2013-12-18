@@ -97,7 +97,7 @@ def kelvin(temp_celsius):
     
     Examples:
     --------
-    >>>kelvin(25)
+    >>> kelvin(25)
     298.15
     '''
     output = temp_celsius + 273.15
@@ -121,8 +121,8 @@ def celsius(temp_kelvin):
     
     Examples:
     --------
-    >>>celsius(298)
-    24.85
+    >>> celsius(298) #doctest: +ELLIPSIS
+    24.85...
     '''
     output = temp_kelvin - 273.15
     logger.info('Converted %s kelvin to %s degrees Celsius % temp_kelvin,output')
@@ -172,13 +172,13 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     
     Examples:
     --------
-    >>>vanthoff(0.15,-197.6,42,25)
-    0.0020356642823557407
+    >>> adjust_temp_vanthoff(0.15,-197.6,42,25) #doctest: +ELLIPSIS
+    0.00203566...
     
     If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
     
-    >>>vanthoff(0.15,-197.6,42)
-    0.0020356642823557407
+    >>> adjust_temp_vanthoff(0.15,-197.6,42) #doctest: +ELLIPSIS
+    0.00203566...
     
     '''
     output = equilibrium_constant * math.exp( enthalpy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
@@ -227,8 +227,8 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     
     Examples:
     --------
-    >>>adjust_temp_arrhenius(7,900,37,97)
-    1.8867...e-24
+    >>> adjust_temp_arrhenius(7,900,37,97) #doctest: +ELLIPSIS
+    1.8867225...e-24
     
     '''
     output = rate_constant * math.exp( activation_energy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
@@ -283,8 +283,8 @@ def water_density(temperature=25,pressure=101325):
     
     Examples:
     --------
-    >>>water_density(25)
-    997.04....
+    >>> water_density(25) #doctest: +ELLIPSIS
+    997.04...
     
     '''
     density = 999.65 + 0.20438 * temperature - 6.1744e-2 * temperature ** 1.5
@@ -344,18 +344,17 @@ def water_viscosity_dynamic(temperature=25,pressure=101325):
     Implements the international equation for viscosity of water as specified by NIST[1]
     
     Valid for 273 < temperature < 1073 K and 0 < pressure < 100,000,000 Pa
-    #WIP - add error checking for press and temp range
     
     .. [1] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
         J. Phys. Chem. Ref. Data 13(1), 1984.http://www.nist.gov/data/PDFfiles/jpcrd243.pdf
     
     Examples:
     --------
-    >>>water_density_dynamic(25,100000)
+    >>> water_viscosity_dynamic(20) #doctest: +ELLIPSIS
     8.934...e-0.7
-    >>>water_density_dynamic(100,25000000)
+    >>> water_viscosity_dynamic(100,25000000) #doctest: +ELLIPSIS
     2.979...e-0.7
-    >>>water_density_dynamic(300,100000000)
+    >>> water_viscosity_dynamic(300,100000000) #doctest: +ELLIPSIS
     1.329...e-0.7
     #WIP - check these again after I implement pressure-dependent density function
     
@@ -467,14 +466,14 @@ def water_dielectric_constant(temperature=25):
     
     Examples:
     --------
-    >>>water_dielectric_constant(20)
-    80.15...
+    >>> water_dielectric_constant(20) #doctest: +ELLIPSIS
+    80.15060...
     
     Display an error if 'temperature' is outside the valid range
     
-    >>>water_dielectric_constant(-5)
-    ERROR: Temperature specified exceeds range of data. Cannot extrapolate dielectric constant.
-    
+#     WIP >>> water_dielectric_constant(-5)
+#     ERROR: Temperature specified exceeds range of data. Cannot extrapolate dielectric constant.
+#     
     '''
     # do not return anything if 'temperature' is outside the range for which
     # this fit applies
@@ -540,7 +539,7 @@ def water_debye_parameter_activity(temperature=25):
         
     Examples:
     --------
-    >>>water_debye_parameter_activity()
+    >>> water_debye_parameter_activity()
     0.509...
     
     See Also:
@@ -584,8 +583,8 @@ def water_debye_parameter_osmotic(temperature=25):
     
     Examples:
     --------
-    >>>water_debye_parameter_osmotic()
-    0.392...
+    >>> water_debye_parameter_osmotic() #doctest: +ELLIPSIS
+    0.3920009...
     
     See Also:
     --------
@@ -616,9 +615,9 @@ def p(x):
         
     Examples:
     --------
-    >>>p(1e-7)
+    >>> p(1e-7)
     7.0
-    >>>p(1.568e-9)
+    >>> p(1.568e-9)
     8.80465394165158
     
     '''
@@ -662,28 +661,28 @@ def alpha(n,pH,pKa_list):
     
     Examples:
     --------
-    >>>alpha(1,8,[4.7])
-    1.00
+    >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
+    0.999...
     
     The sum of all alpha values should equal 1
     
-    >>>alpha(0,8,[6.35,10.33])
-    0.021..
-    >>>alpha(1,8,[6.35,10.33])
-    0.979..
-    >>>alpha(2,8,[6.35,10.33])
-    2.0435468121248873e-09
+    >>> alpha(0,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    0.021...
+    >>> alpha(1,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    0.979...
+    >>> alpha(2,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    2.043...e-09
     
     If pH is equal to one of the pKa values the function should return 0.5.
     
-    >>>alpha(1,6.35,[6.35,10.33])
+    >>> alpha(1,6.35,[6.35,10.33])
     0.5
     
-    The function will return an error if the number ofpKa's is less than n.
-    
-    >>> alpha(2,8,[])
-    ERROR: insufficient number of pKa values given
-    0.5   
+#     The function will return an error if the number ofpKa's is less than n.
+#     
+#     >>> alpha(2,8,[])
+#     ERROR: insufficient number of pKa values given
+#     0.5   
 
     '''
     #generate an error if no pKa values are specified
@@ -1143,7 +1142,7 @@ def mobility(diffusion_coefficient,valence,temperature=25):
     
     Returns:
     -------
-    float : the ionic mobility in m/s-V
+    float : the ionic mobility in m2/V-s
     
     
     Notes:
@@ -1157,7 +1156,7 @@ def mobility(diffusion_coefficient,valence,temperature=25):
     .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
     
     '''
-    mobility = CONST_F * math.abs(valence) * diffusion_coefficient / (CONST_R * kelvin(temperature))
+    mobility = CONST_F * math.fabs(valence) * diffusion_coefficient / (CONST_R * kelvin(temperature))
     
     logger.info('Computed ionic mobility as %s m/s-V from D = %s m2/s at T=%S degrees C % mobility,diffusion_coeffiicent,temperature')
     
@@ -1543,17 +1542,17 @@ class Solution:
             
             .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
             
-            Examples:
-            --------
-            For sodium ion:
-                
-            >>>molar_conductivity(1.334e-9,1)
-            0.0050096...
-            
-            For sulfate ion at 30 C:
-                
-            >>>molar_conductivity(1.065e-9,2,30)
-            0.0157340...
+            WIP Examples:
+#             --------
+#             For sodium ion:
+#                 
+#             >>> molar_conductivity(1.334e-9,1) #doctest: +ELLIPSIS
+#             0.0050096...
+#             
+#             For sulfate ion at 30 C:
+#                 
+#             >>> molar_conductivity(1.065e-9,2,30) #doctest: +ELLIPSIS
+#             0.0157340...
             '''
             return diffusion_coefficient * CONST_F ** 2 * self.get_valence() ** 2 / (CONST_R * kelvin(temperature))
         
@@ -2020,10 +2019,13 @@ class Solution:
         float : 
             The molar scale ionic strength of the parent solution.
         
-        >>> conc_soln.list_concentrations()
-        {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
-        >>> conc_soln.get_ionic_strength()
-        5.999639608985288
+        Examples:
+        --------
+        WIP
+#         >>> conc_soln.list_concentrations()
+#         {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
+#         >>> conc_soln.get_ionic_strength()
+#         5.999639608985288
         '''
         self.ionic_strength=0
         for solute in self.ion_species.keys():
@@ -2126,3 +2128,8 @@ class Membrane:
     #set output of the print() statement for the solution     
     def __str__(self):
         return self.title + ' -- Type: ' + self.mem_type + '  Permselectivity: ' +str(round(self.permselectivity,3)) + ' Resistance: ' + str(self.resistance) + ' ohm-m2  Cost: ' +  str(self.unit_cost)+' $/m2'
+        
+        
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
