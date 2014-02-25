@@ -7,7 +7,7 @@ WIP - LICENSE INFO
 
 ##temporary stuff for now
 #set working directory
-work_dir="/home/ryan/Documents/RySK Labs/Design/Chemistry/pyEQL/"
+work_dir="/home/ryan/Documents/Bluecell Energy/Design/Chemistry/pyEQL/"
 
 #append working directory to search path
 import os
@@ -19,6 +19,9 @@ import math
 import numpy as np
 # used for fundamental constants
 from scipy import constants as spc
+# used for unit-aware calculations in some cases
+from pint import UnitRegistry
+unit=UnitRegistry()
 # FUTURE - to be used for plotting
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -45,6 +48,14 @@ CRITICAL    -   not really used
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+## Automated Tests
+''' This section will only run when the pyEQL module is executed on its own (i.e.
+not called from another program). It creates a couple of standard test solutions
+that are used for automated tests of the functions.
+'''
+
+
 
 ## Fundamental Constants
 # Values for fundamental constants are provided by the Scipy package
@@ -101,7 +112,7 @@ def kelvin(temp_celsius):
     298.15
     '''
     output = temp_celsius + 273.15
-    logger.info('Converted %s degrees Celsius to %s kelvin % temp_celsius, output')
+    logger.debug('Converted %s degrees Celsius to %s kelvin' % (temp_celsius, output))
     return output
     
     
@@ -125,7 +136,7 @@ def celsius(temp_kelvin):
     24.85...
     '''
     output = temp_kelvin - 273.15
-    logger.info('Converted %s kelvin to %s degrees Celsius % temp_kelvin,output')
+    logger.debug('Converted %s kelvin to %s degrees Celsius' % (temp_kelvin,output))
     return output
     
     
@@ -288,7 +299,7 @@ def water_density(temperature=25,pressure=101325):
     
     '''
     density = 999.65 + 0.20438 * temperature - 6.1744e-2 * temperature ** 1.5
-    logger.info('Computed density of water as %s kg/m3 at T=%S degrees C and P = %s Pa % density,temperature,pressure')
+    logger.info('Computed density of water as %s kg/m3 at T= %s degrees C and P = %s Pa' % (density,temperature,pressure))
     logger.debug('Computed density of water using empirical relation in Sohnel and Novotny, "Densities of Aqueous Solutions of Inorganic Substances," 1985' )
     return density
     
@@ -317,7 +328,7 @@ def water_specific_weight(temperature,pressure=101325):
     
     '''
     spweight = water_density(temperature,pressure) * CONST_g
-    logger.info('Computed specific weight of water as %s N/m3 at T=%S degrees C and P = %s Pa % spweight,temperature,pressure')
+    logger.info('Computed specific weight of water as %s N/m3 at T=%S degrees C and P = %s Pa' % (spweight,temperature,pressure))
     return spweight
 
 
@@ -431,7 +442,7 @@ def water_viscosity_kinematic(temperature=25,pressure=101325):
     
     '''
     kviscosity = water_viscosity_dynamic(temperature,pressure) / water_density(temperature,pressure)
-    logger.info('Computed kinematic viscosity of water as %s m2/s at T=%S degrees C and P = %s Pa % kviscosity,temperature,pressure') 
+    logger.info('Computed kinematic viscosity of water as %s m2/s at T=%S degrees C and P = %s Pa' % (kviscosity,temperature,pressure)) 
     return kviscosity
     
 
@@ -487,7 +498,7 @@ def water_dielectric_constant(temperature=25):
     c = 0.72997e-3
     dielectric = a + b * kelvin(temperature) + c * kelvin(temperature) ** 2
     
-    logger.info('Computed dielectric constant of water as %s at %s degrees Celsius % dielectric,temperature')
+    logger.info('Computed dielectric constant of water as %s at %s degrees Celsius' % (dielectric,temperature))
     
     logger.debug('Computed dielectric constant of water using empirical equation given in "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.')
     
@@ -554,7 +565,7 @@ def water_debye_parameter_activity(temperature=25):
     
     # use this from Stumm and Morgan Instead
     debyeparam = 1.8246e6 * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
-    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius % debyeparam,temperature')
+    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius' % (debyeparam,temperature))
     return debyeparam
     
     # or this from MWH treatment book, page 302
@@ -774,12 +785,10 @@ def gibbsmix(Solution1, Solution2,temperature=25):
 
     # calculte the entropy change and number of moles solute for each solution
     for solution in term_list:
-        for solute in solution.ion_species:
+        for solute in solution.components:
             #print(solution.list_concentrations())
-            my_solute = solute
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_activity(solute))
-        term_list[solution] += solution.get_moles_water() * math.log(solution.get_water_activity(my_solute))
 
     return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
@@ -830,12 +839,11 @@ def entropy_mix(Solution1, Solution2,temperature=25):
 
     # calculte the entropy change and number of moles solute for each solution
     for solution in term_list:
-        mole_fraction_water = solution.get_moles_water() / (solution.get_total_moles_solute() + solution.get_moles_water())
-        for solute in solution.ion_species:
+        #mole_fraction_water = solution.get_moles_water() / (solution.get_total_moles_solute() + solution.get_moles_water())
+        for solute in solution.components:
             #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_amount(solute,'fraction'))
-        term_list[solution] += solution.get_moles_water() * math.log(mole_fraction_water)
 
     return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
@@ -846,6 +854,17 @@ def mix(Solution1, Solution2):
     and Solution2
     
     '''
+    # check to see if the two solutions have the same solvent
+    if not Solution1.solvent_name == Solution2.solvent_name:
+        logger.error('mix() function does not support solutions with different solvents. Aborting.')
+    
+    if not Solution1.solvent_name == 'H2O' or Solution1.solvent_name == 'water':
+        logger.error('mix() function does not support non-water solvents. Aborting.')
+    
+    # set solvent as water and retrieve total mass from solutions
+    solvent_mass = Solution1.get_solvent_mass() + Solution2.get_solvent_mass()
+    solvent = [Solution1.solvent_name,18,solvent_mass]
+    
     # determine the volume for the new solution (assume additive)
     mix_vol = Solution1.get_volume() + Solution2.get_volume()
     
@@ -853,51 +872,50 @@ def mix(Solution1, Solution2):
     # Convert from kg/L to kg/m3
     mix_dense = (Solution1.get_mass() + Solution2.get_mass()) / mix_vol *1000
     
-    # determine the total mass of water in the blend
-    mix_water_mass = Solution1.get_solvent_mass() + Solution2.get_solvent_mass()
-    
     #conductivity will be initialized to zero in the new solution WIP
+    
+    #temperature and pressure will be left at defaults WIP
 
     # Loop through all the solutes in Solution1 and Solution2 and make a list
     mix_solute_list=[]
-    for item in Solution1.ion_species.keys():
+    for item in Solution1.components.keys():
             if not item in mix_solute_list:
                 mix_solute_list.append(item)
-    for item in Solution2.ion_species.keys():
+    for item in Solution2.components.keys():
         if not item in mix_solute_list:
             mix_solute_list.append(item)
             
     # add each solute to the new solution
     component_list=[]
     for item in mix_solute_list:
-        if item in Solution1.ion_species and item in Solution2.ion_species:
-            mix_moles = Solution1.ion_species[item].get_moles() + Solution2.ion_species[item].get_moles()
+        if item in Solution1.components and item in Solution2.components:
+            mix_moles = Solution1.components[item].get_moles() + Solution2.components[item].get_moles()
             
-            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles/mix_water_mass,'mol/kg',Solution1.get_solute(item).parameters])
-            
-#             if Solution1.ion_species[item].parameters_TCPC:
-#                 Blend.ion_species[item].set_parameters_TCPC(Solution1.ion_species[item].get_parameters_TCPC('S'),Solution1.ion_species[item].get_parameters_TCPC('b'),Solution1.ion_species[item].get_parameters_TCPC('n'),Solution1.ion_species[item].get_parameters_TCPC('z_plus'),Solution1.ion_species[item].get_parameters_TCPC('z_minus'),Solution1.ion_species[item].get_parameters_TCPC('nu_plus'),Solution1.ion_species[item].get_parameters_TCPC('nu_minus'))
-         
-        elif item in Solution1.ion_species:
-            mix_moles = Solution1.ion_species[item].get_moles()
+            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution1.get_solute(item).parameters])
         
-            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles/mix_water_mass,'mol/kg',Solution1.get_solute(item).parameters])
-            
-#             if Solution1.ion_species[item].parameters_TCPC:
-#                 Blend.ion_species[item].set_parameters_TCPC(Solution1.ion_species[item].get_parameters_TCPC('S'),Solution1.ion_species[item].get_parameters_TCPC('b'),Solution1.ion_species[item].get_parameters_TCPC('n'),Solution1.ion_species[item].get_parameters_TCPC('z_plus'),Solution1.ion_species[item].get_parameters_TCPC('z_minus'),Solution1.ion_species[item].get_parameters_TCPC('nu_plus'),Solution1.ion_species[item].get_parameters_TCPC('nu_minus'))
+        elif item in Solution1.components:
+            mix_moles = Solution1.components[item].get_moles()
+        
+            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution1.get_solute(item).parameters])
                         
-        elif item in Solution2.ion_species:
-            mix_moles = Solution2.ion_species[item].get_moles()
+        elif item in Solution2.components:
+            mix_moles = Solution2.components[item].get_moles()
             
-            component_list.append([Solution2.get_solute(item).get_name(),Solution2.get_solute(item).get_molecular_weight(),mix_moles/mix_water_mass,'mol/kg',Solution2.get_solute(item).parameters])
-            
-#             if Solution2.ion_species[item].parameters_TCPC:
-#                 Blend.ion_species[item].set_parameters_TCPC(Solution2.ion_species[item].get_parameters_TCPC('S'),Solution2.ion_species[item].get_parameters_TCPC('b'),Solution2.ion_species[item].get_parameters_TCPC('n'),Solution2.ion_species[item].get_parameters_TCPC('z_plus'),Solution2.ion_species[item].get_parameters_TCPC('z_minus'),Solution2.ion_species[item].get_parameters_TCPC('nu_plus'),Solution2.ion_species[item].get_parameters_TCPC('nu_minus'))
-            
+            component_list.append([Solution2.get_solute(item).get_name(),Solution2.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution2.get_solute(item).parameters])
     
     #create a new Solution object for the blend
-    Blend = Solution(component_list,mix_vol,mix_dense)
-            
+    Blend = Solution(component_list,solvent,mix_dense)
+        
+    #copy over any activity coefficient parameters and others WIP
+    for item in Blend.components:
+        if item in Solution1.components:
+            if Solution1.components[item].parameters_TCPC:
+                Blend.components[item].set_parameters_TCPC(Solution1.components[item].get_parameters_TCPC('S'),Solution1.components[item].get_parameters_TCPC('b'),Solution1.components[item].get_parameters_TCPC('n'),Solution1.components[item].get_parameters_TCPC('z_plus'),Solution1.components[item].get_parameters_TCPC('z_minus'),Solution1.components[item].get_parameters_TCPC('nu_plus'),Solution1.components[item].get_parameters_TCPC('nu_minus'))
+
+        elif item in Solution2.componenents:
+            if Solution2.components[item].parameters_TCPC:
+                Blend.components[item].set_parameters_TCPC(Solution2.components[item].get_parameters_TCPC('S'),Solution2.components[item].get_parameters_TCPC('b'),Solution2.components[item].get_parameters_TCPC('n'),Solution2.components[item].get_parameters_TCPC('z_plus'),Solution2.components[item].get_parameters_TCPC('z_minus'),Solution2.components[item].get_parameters_TCPC('nu_plus'),Solution2.components[item].get_parameters_TCPC('nu_minus'))
+
     return Blend
     
 ### Activity Functions
@@ -1008,7 +1026,7 @@ def get_activity_coefficient_davies(ionic_strength,valence=1,temperature=25):
     if not ionic_strength < 0.5 and ionic_strength > 0.1:
         logger.warning('Ionic strength exceeds valid range of the Davies equation')
     
-        return - water_debye_parameter_activity(temperature) * valence ** 2 * ( math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength)) - 0.2 * ionic_strength)
+    return - water_debye_parameter_activity(temperature) * valence ** 2 * ( math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength)) - 0.2 * ionic_strength)
     
 def get_activity_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
     '''Return the activity coefficient of solute in the parent solution according to the modified TCPC model.
@@ -1212,7 +1230,7 @@ class Parameter:
 
     
     '''
-    def __init__(self,name,value,units,reference,reference_temperature=25,notes='',description=''):
+    def __init__(self,name,value,units,reference='None',reference_temperature=25,notes='',description=''):
         '''
         Parameters:
         ----------
@@ -1255,6 +1273,7 @@ class Parameter:
         '''return a temperature-adjusted paramter value and log any qualifying
         assumptions
         '''
+        return self.value
     
     def __str__(self):
         '''
@@ -1265,30 +1284,40 @@ class Parameter:
 
 
 class Solution:
-    '''represent each solution with its own set of ions and bulk properties like volume(L), density(kg/m3) conductivity(S/m), etc.
+    '''Class representing the properties of a solution. Instances of this class contain information about the solutes, solvent, and bulk properties.
     
     Parameters:
     ----------
     solutes : list of lists
-                List of lists containing the properties for each solute or component in the solution. The properties for each component
-                are stored in their own list formatted as [formula,molecular_weight,amount,unit,parameters]. The 'solutes' argument consists
-                of a list of such component lists separated by commas. See add_solute() documentation for further description of the
-                respective list arguments.
-    volume : float or int
-                Total volume of the solution in Liters
+                See add_solute() documentation for formatting of this list
     density : float or int
-                Bulk density of the solution in kg/m3
-    pH : float or int
-                Activity of hydrogen ions in solution
-    conductivity: float or int
-                The electrical conductivity of the solution, Siemens/m
+                Bulk density of the solution in kg/m3.
+                Defaults to 1,000 kg/m3 if omitted.
+    solvent : string
+                String representing the chemical formula of the solvent. 
+                Defaults to H2O if omitted.
     temperature : float or int, optional
                 The solution temperature in degrees Celsius. 
                 Defaults to 25 degrees if omitted.
+    pressure : float or int, optional
+                The ambient pressure of the solution in Pascals (N/m2). 
+                Defaults to atmospheric pressure (101325 Pa) if not specified.
     
     Returns:
     -------
     A Solution object.
+    
+    Examples:
+    --------
+    # Defining a 0.5M NaCl solution
+    >>> solutes = [['Na+',23,0.0115],['Cl-',35,0.0175]]
+    >>> solvent = ['H2O',18,1]
+    >>> my_solution = Solution(solutes,solvent)
+    >>> print(my_solution)
+    Components: ['Na+', 'H2O', 'Cl-']
+    Volume: 1.0290000000000001L
+    Density: 1000 kg/m3
+    
     
     See Also:
     --------
@@ -1296,68 +1325,123 @@ class Solution:
     
     '''
     
-    def __init__(self,solutes,volume=1,density=1000,pH=7,solvent='H2O',conductivity=0,temperature=25):
-        self.volume = volume
+    '''THE PLAN FOR SOLUTION INIT
+    A) Solvent: specify mass and bulk density Solutes: amount per mass units
+    Calculate total solution volume
+    
+    OR 
+    
+    B) Solvent: total solution volume and density. Solutes: amount per volume units
+    Calculate solvent mass
+    
+    conductivity is calculated from solutes/database and can be directly set with a method
+    When solvent=H2O, pH is calculated through speciation / reaction and can be directly set with a method
+    
+    temperature is always set as a bulk property
+    
+    
+    
+    '''
+    
+    def __init__(self,solutes,solvent=['H2O',18,1],density=1000,temperature=25,pressure=101325):
         self.density = density
-        self.cond = conductivity
-        self.ion_species={}
+        self.temperature = temperature
+        self.pressure = pressure
+        self.components={}
+        self.solvent_name=solvent[0]
         
+        # warn if the solvent is anything besides water
+        if not solvent[0] == 'H2O' or solvent[0] == 'water' :
+            logger.error('Non-aqueous solvent detected. These are not yet supported!')
+        # define the solvent
+        self.add_solute(*solvent)
+        
+        # populate the solutes
+        for item in solutes:
+            self.add_solute(*item)
+            
+        # calculate volume based on density and total mass
+        self.volume = self.get_mass() / self.density * 1000
+        logger.info('Calculated solution volume of %s L with total mass = %s kg and density = %s kg/m3',self.volume,self.get_mass(),self.density)
+            
         #parameter for the storage cost, $/L - deprecate this WIP
         self.unit_storage_cost = 0
+        
+        # Define the solvent
+        # Solvent is added like any ordinary solute, but is kept in a separate list
+#         if solvent[3] == 'kg':
+#             # add the solvent directly, since we're given how much is present
+#             self.solvent = [solvent[0],self.add_solute(solvent[0],solvent[1],solvent[2],solvent[3])]
+#             valid_units = ['mol/kg','mol','g','ng','ug','mg','kg','g/g','g/kg','kg/kg']
+#         elif solvent[3] == 'L':
+#             # initialize the solvent with a 0 ammount, and calculate the mass below
+#             self.solvent = [solvent[0],self.add_solute(solvent[0],solvent[1],0,solvent[3])]
+#             valid_unts = ['mol/L','g/L','kg/L','mg/L','ug/L','ng/L']
+#         else:
+#             logger.error('Invalid unit for solvent amount. Aborting.')
+#             
+# 
+#         # ADD SOLUTES TO SOLUTION
+#         # solutes is a list of lists containing [formula,molecular weight,amount,unit,parameters]
+#         # typically you would build the solute list first, then pass it as a variable to the init function
+#         
+#         for item in solutes:
+#             if item[3] in valid_units:
+#                 self.add_solute(item[0],item[1],item[2],item[3],item[4])
+#             else:
+#                 logger.error('Solutes must be specified with mass/mass units. Aborting.')
+#                 return None
+#         
+        
+        
+#         solution_mass = self.density * self.volume / 1000
+#         self.solvent_mass=0
+#         solute_mass=0
+#         kg_solute_per_kg_solvent = 1
+#         
+#         for item in solutes:
+#             #special case if amounts are given in mol/kg or mole fractions - must compute the water mass based on total
+#             # moles of solute before the moles of individual solutes can be accurately determined
+#             # so, add these solutes with 0 concentration and recompute later
+#                 
+#             if item[3] == 'mol/kg':
+#                 # convert mol to kg solute per kg water
+#                 kg_solute_per_kg_solvent += item[2]*item[1]/1000
+#                 self.add_solute(item[0],item[1],item[2],item[3],item[4],temperature)
+#             else:
+#                 self.add_solute(item[0],item[1],item[2],item[3],item[4],temperature)
+#         
+#         # once all solutes are initialized
+#         # calculate the unaccounted for solution mass
+#         # solutes specified in mol/kg have an amount of 0 at this point so aren't counted
+#         for i in self.components:
+#             solute_mass += self.get_amount(i,'kg')
+#         un_mass = solution_mass - solute_mass
+#         
+#         #calculate water mass by dividing
+#         self.solvent_mass = un_mass / kg_solute_per_kg_solvent
+#         
+#         # now initialize the mol/kg solutes
+#         for item in solutes:
+#             if item[3] == 'mol/kg':
+#                 self.set_amount(item[0],item[2],'mol/kg')
 
-        # ADD SOLUTES TO SOLUTION
-        # solutes is a list of lists containing [formula,molecular weight,amount,unit,parameters]
-        # typically you would build the solute list first, then pass it as a variable to the init function
-        
-        solution_mass = self.density * self.volume / 1000
-        self.solvent_mass=0
-        solute_mass=0
-        kg_solute_per_kg_solvent = 1
-        
-        for item in solutes:
-            #special case if amounts are given in mol/kg or mole fractions - must compute the water mass based on total
-            # moles of solute before the moles of individual solutes can be accurately determined
-            # so, add these solutes with 0 concentration and recompute later
-                
-            if item[3] == 'mol/kg':
-                # convert mol to kg solute per kg water
-                kg_solute_per_kg_solvent += item[2]*item[1]/1000
-                self.add_solute(item[0],item[1],item[2],item[3],item[4],temperature)
-            else:
-                self.add_solute(item[0],item[1],item[2],item[3],item[4],temperature)
-        
-        # once all solutes are initialized
-        # calculate the unaccounted for solution mass
-        # solutes specified in mol/kg have an amount of 0 at this point so aren't counted
-        for i in self.ion_species:
-            solute_mass += self.get_amount(i,'kg')
-        un_mass = solution_mass - solute_mass
-        
-        #calculate water mass by dividing
-        self.solvent_mass = un_mass / kg_solute_per_kg_solvent
-        
-        # now initialize the mol/kg solutes
-        for item in solutes:
-            if item[3] == 'mol/kg':
-                self.set_amount(item[0],item[2],'mol/kg')
-
-    def add_solute(self,formula,molecular_weight,amount,unit,parameters={},temperature=25):
+    def add_solute(self,formula,molecular_weight,amount,unit='kg',parameters={}):
         '''Primary method for adding substances to a pyEQL solution
         
         Parameters:
         ----------
         formula : str
-                    Chemical formula for the solute. Must contain a + or - and (for polyvalent solutes) a number representing the valence.
+                    Chemical formula for the solute. 
+                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
         amount : float or int
-                    The amount of substance in the specified unit system
+                    The amount of substance in the specified unit system. Interpreted as 'kg' if no unit is specified.
         unit : str
-                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol',and 'g/L'
+                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol',and 'g/L'. Defaults to 'kg' if omitted.
         molecular_weight : float or int
                     Molecular weight of the solute, g/mol
         parameters : dictionary, optional
                     Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
                         
         '''
         # convert the given amount into moles
@@ -1376,7 +1460,7 @@ class Solution:
             return None
         
         new_solute = self.Solute(formula,molecular_weight,moles,parameters)
-        self.ion_species.update({new_solute.get_name():new_solute})
+        self.components.update({new_solute.get_name():new_solute})
            
 
     
@@ -1562,6 +1646,7 @@ class Solution:
             return 'Species ' + str(self.get_name()) + ' MW=' + str(self.get_molecular_weight()) +' Valence='+str(self.get_valence()) + ' Amount= ' + str(self.get_moles()) + 'moles  Activity= ' + str(self.get_activity())
     
     class Solvent:
+        '''subclass of Solute. Adds density'''
         pass 
     
     # WIP - deprecate this for get_amount()    
@@ -1570,12 +1655,13 @@ class Solution:
         
         Return the total mass (kg) of an ion present in the solution
         '''
-        solute_mass = self.ion_species[ion].get_moles() * self.ion_species[ion].get_molecular_weight() / 1000
+        solute_mass = self.components[ion].get_moles() * self.components[ion].get_molecular_weight() / 1000
         print('DEPRECATE!')
         return solute_mass
 
     def get_solvent_mass(self):
-        return self.solent_mass
+        # return the total mass (kg) of the solvent
+        return self.get_amount(self.solvent_name,'kg',self.temperature)
 
     # WIP - deprecate
     def get_water_mass(self):
@@ -1593,7 +1679,10 @@ class Solution:
     
     def get_mass(self):
         '''returns the total solution mass in kg'''
-        return self.volume * self.density /1000
+        total_mass = 0
+        for item in self.components:
+            total_mass+= self.get_amount(item,'kg')
+        return total_mass
         
     def get_density(self):
         return self.density
@@ -1657,7 +1746,7 @@ class Solution:
         return self.unit_storage_cost
         
     def get_solute(self,i):
-        return self.ion_species[i]
+        return self.components[i]
 
 ## Concentration  Methods        
     
@@ -1700,37 +1789,37 @@ class Solution:
         elif unit == 'mmol/L':
             return moles * 1000 / self.get_volume(temperature)
         elif unit == 'ng/L':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e9 / self.get_volume(temperature)
+            return moles * self.components[solute].get_molecular_weight() * 1e9 / self.get_volume(temperature)
         elif unit == 'ug/L':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e6 / self.get_volume(temperature)
+            return moles * self.components[solute].get_molecular_weight() * 1e6 / self.get_volume(temperature)
         elif unit == 'mg/L':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e3 / self.get_volume(temperature)
+            return moles * self.components[solute].get_molecular_weight() * 1e3 / self.get_volume(temperature)
         elif unit == 'g/L':
-            return moles * self.ion_species[solute].get_molecular_weight() / self.get_volume(temperature)
+            return moles * self.components[solute].get_molecular_weight() / self.get_volume(temperature)
         elif unit == 'kg/L':
-            return moles * self.ion_species[solute].get_molecular_weight() / 1e3 / self.get_volume(temperature)
+            return moles * self.components[solute].get_molecular_weight() / 1e3 / self.get_volume(temperature)
         # mass units
         elif unit == 'ng':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e9
+            return moles * self.components[solute].get_molecular_weight() * 1e9
         elif unit == 'ug':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e6
+            return moles * self.components[solute].get_molecular_weight() * 1e6
         elif unit == 'mg':
-            return moles * self.ion_species[solute].get_molecular_weight() * 1e3
+            return moles * self.components[solute].get_molecular_weight() * 1e3
         elif unit == 'g':
-            return moles * self.ion_species[solute].get_molecular_weight()
+            return moles * self.components[solute].get_molecular_weight()
         elif unit == 'kg':
-            return moles * self.ion_species[solute].get_molecular_weight() / 1e3
+            return moles * self.components[solute].get_molecular_weight() / 1e3
         # mass fraction units
         elif unit == 'ppt':
-            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e8
+            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e8
         elif unit == 'ppb':
-            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e7
+            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e7
         elif unit == 'ppm' or unit == 'mg/kg':
-            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e6
+            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e6
         elif unit == '%':
-            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3) * 100
+            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 100
         elif unit == 'g/g' or unit == 'mg/mg' or unit == 'kg/kg':
-            return moles * self.ion_species[solute].get_molecular_weight() / (self.get_mass * 1e3)
+            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3)
         else:
             print('Invalid unit %s specified for amount % unit')
             return None
@@ -1760,17 +1849,17 @@ class Solution:
         '''
         
         if unit == 'mol':
-            self.ion_species[solute].set_moles(amount)
+            self.components[solute].set_moles(amount)
         elif unit == 'mol/L':
-            self.ion_species[solute].set_moles(amount * self.get_volume(temperature))
+            self.components[solute].set_moles(amount * self.get_volume(temperature))
         elif unit == 'mol/kg':
-            self.ion_species[solute].set_moles(amount * self.get_solvent_mass())
+            self.components[solute].set_moles(amount * self.get_solvent_mass())
         elif unit == 'g/L':
-            self.ion_species[solute].set_moles(amount / molecular_weight * self.get_volume(temperature))
+            self.components[solute].set_moles(amount / molecular_weight * self.get_volume(temperature))
         elif unit == 'fraction':
-            self.ion_species[solute].set_moles(amount * (self.get_total_moles_solute() + self.get_moles_water()))
+            self.components[solute].set_moles(amount * (self.get_total_moles_solute() + self.get_moles_water()))
         elif unit == 'kg':
-            self.ion_species[solute].set_moles(amount / self.ion_species[solute].get_molecular_weight() * 1000)
+            self.components[solute].set_moles(amount / self.components[solute].get_molecular_weight() * 1000)
         else:
             print('Invalid unit %s specified for amount' % unit)
             return None
@@ -1805,8 +1894,9 @@ class Solution:
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
         tot_mol = 0
-        for item in self.ion_species:
-            tot_mol += self.ion_species[item].get_moles()
+        for item in self.components:
+            if item != self.solvent_name:
+                tot_mol += self.components[item].get_moles()
         return tot_mol
     
     #to be deprecated WIP
@@ -1842,7 +1932,7 @@ class Solution:
         return self.get_amount(solute,'fraction')
     
     def get_moles_water(self):
-        return self.get_solvent_mass() * 1000 / 18
+        return self.get_amount(self.solvent_name,'mol',self.temperature)
     
     # to be deprecated WIP
     def get_molar_concentration(self,solute):
@@ -1899,18 +1989,26 @@ class Solution:
         get_activity_coefficient_pitzer
         get_activity_coefficient_TCPC
         '''
-        ion = self.ion_species[solute]
+        ion = self.components[solute]
         # for very low ionic strength, use the Debye-Huckel limiting law
+        
         if self.get_ionic_strength() <= 0.005:
+            logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
             return get_activity_coefficient_debyehuckel(self.get_ionic_strength(),temperature)
+            
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif self.get_ionic_strength() <= 0.1:
+            logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
             return get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_valence(),temperature)
+            
         # use the Davies equation for 0.1 < I < 0.5
         elif self.get_ionic_strength() <= 0.5:
+            logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
             return get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_valence(),temperature)
+            
         # use the TCPC model for higher ionic strengths, if the parameters have been set
-        elif self.ion_species[solute].parameters_TCPC:
+        elif self.components[solute].parameters_TCPC:
+            logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
             return get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
             
         else:
@@ -1950,7 +2048,30 @@ class Solution:
         get_ionic_strength
         
         '''
-        return self.get_activity_coefficient(solute,temperature) * self.get_amount(solute,'mol/L')
+        # switch to the water activity function if the species is H2O
+        if solute == 'H2O' or solute == 'water':
+            # find the predominant non-solvent solute
+            most = 0
+            predominant_solute = ''
+            for item in self.components:
+                mass = self.get_amount(item,'mol') 
+                if item != self.solvent_name and mass > most:
+                    most = mass
+                    predominant_solute = item
+            if most > 0:       
+                activity = self.get_water_activity(predominant_solute,temperature)
+                logger.info('Calculated activity of solvent (water) as %s using osmotic coefficient based on solute %s.' % (activity,predominant_solute))
+                
+            # return 1.0 water activity if there are no solutes
+            else: 
+                activity = 1
+                logger.info('Calculated activity of solvent (water) as 1.0 because no solutes were found.')
+
+        else:
+            activity = self.get_activity_coefficient(solute,temperature) * self.get_amount(solute,'mol/L')
+            logger.info('Calculated activity of solute %s as %s' % (solute,activity))
+        
+        return activity
 
     def get_osmotic_coefficient(self,solute,temperature=25):
         '''calculate the osmotic coefficient for a given solute
@@ -1968,12 +2089,14 @@ class Solution:
             The practical osmotic coefficient, based on 'solute'
         '''
         
-        ion = self.ion_species[solute]
+        ion = self.components[solute]
         
-        if self.ion_species[solute].parameters_TCPC:
-            return get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+        if self.components[solute].parameters_TCPC:
+            osmotic_coefficient= get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+            logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
+            return osmotic_coefficient
         else:
-            print('Cannot calculate water activity because TCPC parameters for solute are not specified. Returning unit osmotic coefficient')
+            logger.error('Cannot calculate water activity because TCPC parameters for solute are not specified. Returning unit osmotic coefficient')
             return 1
         
     def get_water_activity(self,solute,temperature=25):
@@ -2028,13 +2151,13 @@ class Solution:
 #         5.999639608985288
         '''
         self.ionic_strength=0
-        for solute in self.ion_species.keys():
-            self.ionic_strength += 0.5 * self.get_amount(solute,'mol/L') * self.ion_species[solute].get_valence() ** 2
+        for solute in self.components.keys():
+            self.ionic_strength += 0.5 * self.get_amount(solute,'mol/L') * self.components[solute].get_valence() ** 2
         return self.ionic_strength
             
     ## informational methods
     def list_solutes(self):
-        return list(self.ion_species.keys())
+        return list(self.components.keys())
     
     # WIP - deprecate this
     def list_concentrations(self,unit):
@@ -2047,7 +2170,7 @@ class Solution:
         Return a dictionary containing a list of the species in solution paired with their amount in the specified units
         '''
         self.mol_list={}
-        for i in self.ion_species.keys():
+        for i in self.components.keys():
             self.mol_list.update({i:self.get_amount(i,unit)})
         print('Component amounts (%s):' % unit,self.mol_list )
         
@@ -2057,8 +2180,8 @@ class Solution:
         Return a dictionary containing a list of the species in solution paired with their molal activity
         '''
         self.act_list={}
-        for i in self.ion_species.keys():
-            self.act_list.update({i:self.ion_species[i].get_activity()})
+        for i in self.components.keys():
+            self.act_list.update({i:self.components[i].get_activity()})
         print('Component activities:',self.act_list )
     
     # WIP deprecate this
@@ -2068,7 +2191,7 @@ class Solution:
         Return a dictionary containing a list of the species in solution paired with their mole fraction
         '''
         self.fraction_list={}
-        for i in self.ion_species.keys():
+        for i in self.components.keys():
             self.fraction_list.update({i:self.get_mole_fraction(i)})
         # add mole fraction for water
         self.fraction_list.update({'H2O':self.get_moles_water()/(self.get_moles_water() + self.get_total_moles_solute())})
@@ -2078,7 +2201,7 @@ class Solution:
    
     def __str__(self):
         #set output of the print() statement for the solution     
-        return 'Ionic Species: '+str(self.list_solutes())+' Volume: '+str(self.get_volume())+'L  Density: '+str(self.get_density())+' kg/m3  Conductivity: '+str(self.get_conductivity())+'S/m'
+        return 'Components: '+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume())+'L' + '\n' + 'Density: '+str(self.get_density())+' kg/m3'
 
 class Membrane:
     '''Class representing the properties of various kinds of water treatment membranes'''
