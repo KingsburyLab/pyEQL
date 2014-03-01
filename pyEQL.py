@@ -931,14 +931,14 @@ def get_activity_coefficient_debyehuckel(ionic_strength,valence=1,temperature=25
     valence : int, optional      
                         The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : number
-                        The ionic strength of the parent solution, dimensionless
+                        The ionic strength of the parent solution, mol/kg
     temperature : float or int, optional
                         The solution temperature in degrees Celsius. 
                         Defaults to 25 degrees if omitted.
     Returns:
     -------
     float
-         The mean molar (mol/L) scale ionic activity coefficient of solute
+         The mean molal (mol/kg) scale ionic activity coefficient of solute
 
     See Also:
     --------
@@ -966,14 +966,14 @@ def get_activity_coefficient_guntelberg(ionic_strength,valence=1,temperature=25)
     valence : int, optional          
                         The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : number
-                        The ionic strength of the parent solution, dimensionless
+                        The ionic strength of the parent solution, mol/kg
     temperature : float or int, optional
                         The solution temperature in degrees Celsius. 
                         Defaults to 25 degrees if omitted.
     Returns:
     -------
     float
-         The mean molar (mol/L) scale ionic activity coefficient of solute
+         The mean molal (mol/kg) scale ionic activity coefficient of solute
          
     See Also:
     --------
@@ -1001,14 +1001,14 @@ def get_activity_coefficient_davies(ionic_strength,valence=1,temperature=25):
     valence : int, optional           
                         The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : number
-                        The ionic strength of the parent solution, dimensionless
+                        The ionic strength of the parent solution, mol/kg
     temperature : float or int, optional
                         The solution temperature in degrees Celsius. 
                         Defaults to 25 degrees if omitted.
     Returns:
     -------
     float
-         The mean molar (mol/L) scale ionic activity coefficient of solute
+         The mean molal (mol/kg) scale ionic activity coefficient of solute
 
     See Also:
     --------
@@ -1034,7 +1034,7 @@ def get_activity_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence
     Parameters:
     ----------
     ionic_strength : number
-                        The ionic strength of the parent solution, dimensionless
+                        The ionic strength of the parent solution, mol/kg
     S : float
                         The solvation parameter for the parent salt. See Reference.
     b : float
@@ -1058,7 +1058,7 @@ def get_activity_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence
     Returns:
     -------
     float
-        The mean molar (mol/L) scale ionic activity coefficient of solute
+        The mean molal (mol/kgL) scale ionic activity coefficient of solute
 
     See Also:
     --------
@@ -1084,7 +1084,7 @@ def get_activity_coefficient_pitzer():
     Returns:
     -------
     float
-        The mean molar (mol/L) scale ionic activity coefficient of solute
+        The mean molal (mol/kg) scale ionic activity coefficient of solute
     
     See also:
     --------
@@ -1099,7 +1099,7 @@ def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,valence=1,counter_valence=
     Parameters:
     ----------
     ionic_strength : number
-                        The ionic strength of the parent solution, dimensionless
+                        The ionic strength of the parent solution, mol/kg
     S : float
                         The solvation parameter for the parent salt. See Reference.
     b : float
@@ -2066,7 +2066,7 @@ class Solution:
             else: 
                 activity = 1
                 logger.info('Calculated activity of solvent (water) as 1.0 because no solutes were found.')
-
+# WIP fix this for multivalent salts e.g. MgCl2
         else:
             activity = self.get_activity_coefficient(solute,temperature) * self.get_amount(solute,'mol/L')
             logger.info('Calculated activity of solute %s as %s' % (solute,activity))
@@ -2133,14 +2133,14 @@ class Solution:
     def get_ionic_strength(self):
         '''() -> float
         
-        Return the ionic strength of the solution, calculated as 1/2 * sum ( molarity * valence ^2) over all the ions.
-        Molar (mol/L) scale concentrations are used for compatibility with the activity correction formulas.
+        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * valence ^2) over all the ions.
+        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
         
         
         Returns:
         -------
         float : 
-            The molar scale ionic strength of the parent solution.
+            The molal scale ionic strength of the parent solution.
         
         Examples:
         --------
@@ -2152,7 +2152,7 @@ class Solution:
         '''
         self.ionic_strength=0
         for solute in self.components.keys():
-            self.ionic_strength += 0.5 * self.get_amount(solute,'mol/L') * self.components[solute].get_valence() ** 2
+            self.ionic_strength += 0.5 * self.get_amount(solute,'mol/kg') * self.components[solute].get_valence() ** 2
         return self.ionic_strength
             
     ## informational methods
