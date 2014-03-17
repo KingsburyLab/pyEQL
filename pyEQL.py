@@ -56,7 +56,6 @@ that are used for automated tests of the functions.
 '''
 
 
-
 ## Fundamental Constants
 # Values for fundamental constants are provided by the Scipy package
 # float values (commented out) are from Wikipedia
@@ -1230,43 +1229,70 @@ class Parameter:
 
     
     '''
-    def __init__(self,name,value,units,reference='None',reference_temperature=25,notes='',description=''):
+    def __init__(self,name,value,units,reference='None',uncertainty=(),reference_temperature=25,reference_pressure=101325,reference_ionic_strength=0,description='',notes=''):
         '''
         Parameters:
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
-        value : float or int
-                    The numerical value of the parameter
+        value : tuple of floats or ints
+                    The numerical value of the parameter. In most cases this tuple will only contain a single value.
+                    However, in some cases it may be desirable to store a group of parameters (such as coefficients
+                    for an equation) together.
         units : str
                     A string representing the units of measure for the parameter value
                     given in 'value.' 
-        reference : str
+        reference : str, optional
                     A string containing reference information documenting the source of
                     'value'
+        uncertainty : tuple of floats or ints, optional
+                    The uncertainty of the parameter value as a percentage. If only one value is supplied in the tuple,
+                    the same uncertainty will be used for positive and negative. If two values are supplied, the first
+                    is the positive uncertainty and the second is the negative.
         reference_temperature : float or int, optional
                     The temperature at which 'value' was measured in degrees Celsius. 
                     Defaults to 25 degrees if omitted.
-        description : str
+        reference_pressure : float or int, optional
+                    The pressure at which 'value' was measured in Pascals
+                    Defaults to 101325 if omitted
+        reference_ionic_strength : float or int, optional
+                    The ionic strength of the solution in which 'value' was measured. 
+                    Defaults to 0 (infinite dilution) if omitted.
+        description : str, optional
                     A string contiaining a longer name describing the paramter. For example
                     'Diffusion Coefficient' or 'Hydrated Ionic Radius'
-        comments : str
+        comments : str, optional
                     A string containing additional notes pertaining to the context,
                     conditions, or assumptions that may restrict the use of 'value'
                     
         Notes:
         -----
-        Note that in general, parameter values are assumed to be entered in fundamental 
+        In general, parameter values are assumed to be entered in fundamental 
         SI units (m, kg, s, etc.). The 'units' field is required to call attention 
         to this fact and provide a levelof error-checking in calculations involving
-        the parameter
+        the parameter.
+        
+        Examples:
+        --------
+        >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
+        >>> print(sodium_diffusion)
+        Parameter diffusion coefficient
+        <BLANKLINE>
+        -------------------------------------------
+        Value: (1.334e-09,) m2/s at 25 degrees C.
+        Notes: 
+        Reference: CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79
+        <BLANKLINE>
         '''
         self.name = name
         self.value = value
         self.units = units
+        self.uncertainty = uncertainty
         self.description = description
         self.reference = reference
         self.reference_temperature = reference_temperature
+        self.reference_pressure = reference_pressure
+        self.reference_ionic_strength = reference_ionic_strength
         self.comment = notes
         
     def get_value(self,temperature):
@@ -1279,7 +1305,7 @@ class Parameter:
         '''
         Set the output of the print() statement for a parameter value
         '''
-        return 'Parameter '+str(self.name)+' ('+str(self.description)+') = '+str(self.value)+' '+str(self.units)+' at '+str(self.reference_temperature)+' degrees C.'+'\n'+'Notes: '+str(self.comment)+'\n'+'Reference: '+str(self.reference)+'\n'
+        return 'Parameter '+str(self.name)+'\n'+str(self.description)+'\n'+'-------------------------------------------'+'\n'+'Value: '+str(self.value)+' '+str(self.units)+' at '+str(self.reference_temperature)+' degrees C.'+'\n'+'Notes: '+str(self.comment)+'\n'+'Reference: '+str(self.reference)+'\n'
 
 
 
