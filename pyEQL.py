@@ -14,6 +14,7 @@ import os
 os.chdir(work_dir)
 import pyEQL
 
+## Dependencies
 # import libraries for scientific functions
 import math
 import numpy as np
@@ -55,6 +56,76 @@ not called from another program). It creates a couple of standard test solutions
 that are used for automated tests of the functions.
 '''
 
+## Database Management Functions
+# create a global dictionary to contain a dynamically-generated list of Parameters
+# for solute species
+parameters_database={}
+
+# set the directory containing database files
+database_dir = ''
+
+        
+def search_parameters(formula):
+    '''Each time a new solute species is created in a solution, this function:
+    
+    formula : str
+            String representing the chemical formula of the species.
+    
+    1) searches to see whether a list of parameters for the species has already been
+    compiled from the database
+    2) searches all files in the specified database directory(ies) for the species
+    3) creates a Parameter object for each value found 
+    4) compiles these objects into a list
+    5) adds the list to a dictionary indexed by species name (formula)
+    6) points the new solute object to the dictionary
+    
+    
+    pseudo code:
+    
+    if formula = 'H2O':
+            # call some special methods to calculate parameters
+    
+    if parameters_database[self.name]:
+        # point self to the database for parameters
+    else:
+        # Add  formula:[] entry to parameters_database dictionary
+        # Search all the files in the database
+        parameter_list = []
+        for file in database_dir:
+            current_file = open(file,r)
+            if formula is in the file:
+            #       create a parameter object
+                new_parameter = Parameter(FILL IN)
+            #      append object to list
+                parameter_list.append(new_parameter)
+                parameters_database.update({formula:parameter_list})
+
+    '''
+    pass
+
+def print_database(sort_type):
+    ''' Function to generate a human-friendly summary of all the database parameters
+    that are actually used in the simulation
+    
+    sort_type : str
+                String that specifies whether to group the output by parameter name
+                e.g. 'diffusion coefficient' or by species. Acceptable values are 
+                'name' and 'species'.
+    
+    1. Loop through the parameters_database dictionary
+    2. group parameters either by type or species
+    3. generate a list, one line each, with value, units, reference, conditions
+    
+    
+    '''
+    # WIP
+    if sort_type == 'name':
+        pass
+    elif sort_type == 'species':
+        pass
+    pass
+
+    
 
 ## Fundamental Constants
 # Values for fundamental constants are provided by the Scipy package
@@ -1294,6 +1365,8 @@ class Parameter:
         self.reference_pressure = reference_pressure
         self.reference_ionic_strength = reference_ionic_strength
         self.comment = notes
+    
+
         
     def get_value(self,temperature):
         '''return a temperature-adjusted paramter value and log any qualifying
@@ -1534,8 +1607,7 @@ class Solution:
                 print('Warning: valence of ion %s out of bounds' % self.formula)
             else:
                 self.charge=0
-        
-               
+
         def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
             '''Use this function to store parameters for the TCPC activity model
             
