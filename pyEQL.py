@@ -1255,7 +1255,7 @@ def debye_length(dielectric_constant,ionic_strength,temp):
     Return the Debye length of a solution in meters
     
     dielectric_constant is the dielectric constant of the solution
-    ionic_strenght is the ionic strength in moles per cubic meter
+    ionic_strength is the ionic strength in moles per cubic meter
     temp is the temperature in degrees celsius
     
     '''
@@ -1834,7 +1834,37 @@ class Solution:
         '''
         return self.get_viscosity_dynamic(temperature) / self.get_density(temperature)
         
+    def get_osmotic_pressure(self):
+        ''' 
+        Return the osmotic pressure of the solution relative to pure water
         
+        Parameters:
+        ----------
+        none
+        
+        Returns:
+        -------
+        float
+                The osmotic pressure of the solution relative to pure water in Pa
+                
+        References:
+        ----------
+        Sata, Toshikatsu. /Ion Exchange Membranes: Preparation, Characterization, and Modification./ Royal Society of Chemistry, 2004, p. 10.
+        
+        http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
+        
+        Examples:
+        --------
+        WIP - add examples for osmotic pressure
+        
+        '''
+        # WIP - tie this into parameter() and solvent() objects
+        partial_molar_volume_water = 18e-6
+        
+        osmotic_pressure = const.R * kelvin(self.temperature) / partial_molar_volume_water * math.log (self.get_water_activity())
+        logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.temperature))
+        return osmotic_pressure
+    
     def get_conductivity(self):
         return self.cond
         
