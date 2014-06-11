@@ -20,9 +20,7 @@ import math
 import numpy as np
 # used for fundamental constants
 from scipy import constants as spc
-# used for unit-aware calculations in some cases
-from pint import UnitRegistry
-unit=UnitRegistry()
+
 # FUTURE - to be used for plotting
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -43,7 +41,7 @@ DEBUG       -   detailed messages about function execution including methods use
 INFO        -   Messages indicating calculation steps, function calls, etc.
 WARNING     -   assumptions or limitations of module output
 ERROR       -   Module could not complete a task due to invalid input or other problem
-CRITICAL    -   not really used
+CRITICAL    -   not used
 
 '''
 import logging

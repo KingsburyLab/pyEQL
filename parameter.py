@@ -9,6 +9,26 @@ Created on Wed Jun 11 09:27:01 2014
 @author: ryan
 """
 
+## Logging System
+''' Create a logging system using Python's built-in module. 
+Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
+
+NOTE: make sure to set the disable_existing_loggers option in the log configuration
+options of the calling application in order to avoid disabling the pyEQL module's log
+ 
+The default logging levels are mapped to pyEQL events as follows:
+ 
+DEBUG       -   detailed messages about function execution including methods used, data sources,
+                temperature adjustments, etc.
+INFO        -   Messages indicating calculation steps, function calls, etc.
+WARNING     -   assumptions or limitations of module output
+ERROR       -   Module could not complete a task due to invalid input or other problem
+CRITICAL    -   not used
+
+'''
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 # per the pint documentation, it's important that pint and its associated Unit
 # Registry are only imported once.
@@ -32,10 +52,10 @@ class Parameter:
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
-        magnitude : tuple of floats or ints
-                    The numerical value of the parameter. In most cases this tuple will only contain a single value.
+        magnitude : float, int, or tuple of floats or ints
+                    The numerical value of the parameter. In most cases this will only be a single value.
                     However, in some cases it may be desirable to store a group of parameters (such as coefficients
-                    for an equation) together.
+                    for an equation) together in a tuple.
         units : str
                     A string representing the units of measure for the parameter value
                     given in 'magnitude.' See the pint documentation for proper syntax. In general
@@ -47,6 +67,7 @@ class Parameter:
                     
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
+                    
         Optional Keyword Arguments:
         --------------------------
         reference : str, optional
