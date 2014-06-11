@@ -1,0 +1,26 @@
+#    Units definition file for pint library
+    
+#    This file defines additional units and contexts to enable the pint
+#    library to process solution chemistry units such as mol/L and mol/kg.
+
+
+@context(mw=0) chemistry = chem
+    # mw is the molecular weight of the species
+    [substance] -> [mass]: value * mw
+    [mass] -> [substance]: value / mw
+@end
+
+
+
+#From the pint documentation:
+
+#@context(n=1) spectroscopy = sp
+#    # n index of refraction of the medium.
+#    [length] <-> [frequency]: speed_of_light / n / value
+#    [frequency] -> [energy]: planck_constant * value
+#    [energy] -> [frequency]: value / planck_constant
+#@end
+
+# The @context directive indicates the beginning of the transformations which are finished by the @end statement. You can optionally specify parameters for the context in parenthesis. All parameters are named and default values are mandatory. Multiple parameters are separated by commas (like in a python function definition). Finally, you provide the name of the context (e.g. spectroscopy) and, optionally, a short version of the name (e.g. sp) separated by an equal sign.
+# Conversions rules are specified by providing source and destination dimensions separated using a colon (:) from the equation. A special variable named value will be replaced by the source quantity. Other names will be looked first in the context arguments and then in registry.
+# A single forward arrow (->) indicates that the equations is used to transform from the first dimension to the second one. A double arrow (<->) is used to indicate that the transformation operates both ways.
