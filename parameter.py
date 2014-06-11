@@ -67,7 +67,7 @@ class Parameter:
                     must be followed. e.g. 'meters ** 2 / second' and 'm **2 /s' are valid but
                     'm2/s' is not.
                     
-                    If a parameter has no untis, leave the second element blank or enter 'dimensionless'
+                    If a parameter has no untis, leave blank or enter 'dimensionless'
                     
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
@@ -87,17 +87,17 @@ class Parameter:
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     The first element of the tuple is a float or int representing the
                     temperature. The second element is a string representing the unit.
-                    Valid temperature units are 'degC', 'degF', 'kelvin', and 'degR'
-                    Defaults to 25 degrees C if omitted.
+                    Valid temperature units are 'degC', 'degF', 'kelvin', and 'degR'                    
         pressure : tuple, optional
                     The pressure at which 'magnitude' was measured in Pascals
                     The first element of the tuple is a float or int representing the 
                     pressure. The second element is a string representing the unit.
-                    Typical valid units are 'Pa', 'atm', or 'torr'.
-                    Defaults to 1 atm (101325) Pa if omitted
-       ionic_strength : float or int, optional
-                    The ionic strength of the solution in which 'magnitude' was measured. 
-                    Defaults to 0 (infinite dilution) if omitted.
+                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+       ionic_strength : tuple, optional
+                    The ionic strength of the solution in which 'magnitude' was measured.
+                    The first element of the tuple is a float or int representing the 
+                    ionic strength. The second element is a string representing the unit.
+                    In this case the unit is almost always 'mol/L'.                    
         description : str, optional
                     A string contiaining a longer name describing the paramter. For example
                     'Diffusion Coefficient' or 'Hydrated Ionic Radius'
@@ -114,6 +114,7 @@ class Parameter:
         
         Examples:
         --------
+        # TODO fix this example
         >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
         >>> print(sodium_diffusion)
         Parameter diffusion coefficient
