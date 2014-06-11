@@ -30,6 +30,8 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+
+## Units handling
 # per the pint documentation, it's important that pint and its associated Unit
 # Registry are only imported once.
 from pint import UnitRegistry
@@ -37,6 +39,8 @@ from pint import UnitRegistry
 unit = UnitRegistry()
 # append custom unit definitions and contexts
 unit.load_definitions('pint_custom_units.txt') 
+# activate the "chemistry" context globally
+unit.enable_contexts('chem')
 
 
 class Parameter:
@@ -151,23 +155,68 @@ class Parameter:
             self.comment = kwargs['comment']
             
         # process optional keyword arguments - uncertanty
-            # TODO - uncertainty functions / parameters
+        # TODO - uncertainty functions / parameters
         
         # process optional keyword arguments  - temperature adjustment
-        # TODO - temperature adjustment functions / parameters
-     
+        # TODO - temperature adjustment functions / parameters     
        
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
-        # TODO- implement temperature correction and make conditions mandatory
         '''return a temperature-adjusted paramter value and log any qualifying
         assumptions
+        
+        temperature : tuple, optional
+                    The temperature at which 'magnitude' was measured in degrees Celsius.
+                    The first element of the tuple is a float or int representing the
+                    temperature. The second element is a string representing the unit.
+                    Valid temperature units are 'degC', 'degF', 'kelvin', and 'degR'
+                    
+        pressure : tuple, optional
+                    The pressure at which 'magnitude' was measured in Pascals
+                    The first element of the tuple is a float or int representing the 
+                    pressure. The second element is a string representing the unit.
+                    Typical valid units are 'Pa', 'atm', or 'torr'.
+                    
+       ionic_strength : float or int, optional
+                    The ionic strength of the solution in which 'magnitude' was measured. 
+        
         '''
-        # use the base values for temperature, pressure, ionic strength if none
-        # are specified
-        if temperature is None: temperature = self.base_temperature
-        if pressure is None: pressure = self.base_pressure
-        if ionic_strength is None: ionic_strength = self.base_ionic_strength
-    
+        # if the user does not specify conditions, return the value at base_temperature,
+        # base_pressure, and/or base_ionic_strength
+        if temperature is None: 
+            temperature = self.base_temperature
+            logger.info('Temperature not specified for '+str(self.name)+'. Returning value at '+str(temperature)+'.')
+        else:
+            temperature = temperature[0] * unit(temperature[1])
+        if pressure is None: 
+            pressure = self.base_pressure
+            logger.info('Pressure not specified for '+str(self.name)+'. Returning value at '+str(pressure)+'.')
+        else:
+            pressure = pressure[0] * unit(pressure[1])
+        if ionic_strength is None: 
+            ionic_strength = self.base_ionic_strength
+            logger.info('Ionic Strength not specified for '+str(self.name)+'. Returning value at '+str(ionic_strength)+'.')
+        else:
+            ionic_strength = ionic_strength[0] * unit(ionic_strength[1])
+        
+        # compare requested conditions with base conditions
+        if temperature != self.base_temperature:        
+            # TODO- implement temperature correction
+            logger.warning('Requested temperature for '+str(self.name)+ \
+            ' ('+str(temperature)+') differs from measurement conditions.' \
+            +'Returning value at '+str(self.base_temperature))
+            
+        if pressure != self.base_pressure:        
+            # TODO - implement pressure correction
+            logger.warning('Requested pressure for '+str(self.name)+ \
+            ' ('+str(pressure)+') differs from measurement conditions.' \
+            +'Returning value at '+str(self.base_pressure))
+        
+        
+        if ionic_strength != self.base_ionic_strength:        
+            logger.warning('Requested ionic strength for '+str(self.name)+ \
+            ' ('+str(ionic_strength)+') differs from measurement conditions.' \
+            +'Returning value at '+str(self.base_ionic_strength))
+        
         return self.value
         
     def get_magnitude(self,temperature):
@@ -196,3 +245,9 @@ class Parameter:
         str(self.base_ionic_strength)+'\n'+ \
         'Notes: '+str(self.comment)+'\n'+ \
         'Reference: '+str(self.reference)+'\n'
+
+# TODO - turn doctest back on when the nosigint error is gone
+## Tests
+#if __name__ == "__main__":
+ #   import doctest
+  #  doctest.testmod()

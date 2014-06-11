@@ -5,15 +5,6 @@ RyanSKingsbury@alumni.unc.edu
 WIP - LICENSE INFO
 '''
 
-##temporary stuff for now
-#set working directory
-work_dir="/home/ryan/Documents/Bluecell Energy/Design/Chemistry/pyEQL/"
-
-#append working directory to search path
-import os
-os.chdir(work_dir)
-import pyEQL
-
 ## Dependencies
 # import libraries for scientific functions
 import math
@@ -22,10 +13,16 @@ import numpy as np
 from scipy import constants as spc
 
 # FUTURE - to be used for plotting
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
 # FUTURE - to be used for automatic calculation of molecular weights
-from elements import ELEMENTS as pte
+#from elements import ELEMENTS as pte
+
+# internal pyEQL imports
+# the parameter handling module
+import parameter as pm
+# the pint unit registry
+from parameter import unit
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
@@ -2290,7 +2287,7 @@ class Membrane:
     def __str__(self):
         return self.title + ' -- Type: ' + self.mem_type + '  Permselectivity: ' +str(round(self.permselectivity,3)) + ' Resistance: ' + str(self.resistance) + ' ohm-m2  Cost: ' +  str(self.unit_cost)+' $/m2'
         
-        
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+# TODO - turn doctest back on when the nosigint error is gone        
+#if __name__ == "__main__":
+ #   import doctest
+  #  doctest.testmod()
