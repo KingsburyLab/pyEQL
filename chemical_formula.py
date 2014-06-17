@@ -31,9 +31,6 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-## import elements.py - used to retreive various molecular data
-from elements import ELEMENTS
-
 ## Formula validation and processing functions. These internal routines
 ## parse chemical formulas into a format that can be easily processed
 ## by user-facing functions.
@@ -61,8 +58,7 @@ def _check_formula(formula):
                '-' (e.g. 'Na+-' is invalid) and the formula must end with either
                a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
             4. Formula must contain matching numbers of '(' and ')'
-            5. Open parentheses must precede closed parentheses
-            6. All parentheses must be follwed by a number (e.g. 'Fe(OH)3')    
+            5. Open parentheses must precede closed parentheses  
     
     Examples:
     >>> _check_formula('Fe2(SO4)3')
@@ -338,16 +334,14 @@ def is_valid_formula(formula):
     :formula: str
             String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
             Valid molecular formulas must meet the following criteria:
-            1. Start with a capital letter or '('
-            2. Are composed of valid atomic symbols
-            3. Contain no non-alphanumeric characters other than '(', ')',
+            1. Are composed of valid atomic symbols that start with capital letters
+            2. Contain no non-alphanumeric characters other than '(', ')',
                '+', or '-'
-            4. If a '+' or '-' is present, the formula must contain ONLY '+' or
+            3. If a '+' or '-' is present, the formula must contain ONLY '+' or
                '-' (e.g. 'Na+-' is invalid) and the formula must end with either
                a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
-            5. Formula must contain matching numbers of '(' and ')'
-            6. Open parentheses must precede closed parentheses
-            7. All parentheses must be follwed by a number (e.g. 'Fe(OH)3')
+            4. Formula must contain matching numbers of '(' and ')'
+            5. Open parentheses must precede closed parentheses  
     
     Returns:
     -------
@@ -494,6 +488,45 @@ def get_formal_charge(formula):
         
     return formal_charge
 
+def get_molecular_weight(formula):
+    '''
+    compute the molecular weight of a formula
+    
+    >>> get_molecular_weight('Na+')
+    22.98977
+    >>> get_molecular_weight('H2O')
+    18.01528
+    >>> get_molecular_weight('CH3CH2CH3')
+    44.09562
+    
+    See Also:
+    ---------
+    _consolidate_formula()
+    elements
+    
+    '''
+    # import elements.py - used to retreive various molecular data
+    from elements import ELEMENTS    
+    
+    # perform validity check and return a parsed list of the chemical formula
+    input_list = _consolidate_formula(formula)
+    mw = 0
+    
+    for item in input_list:
+        try:
+            if item.isalpha():
+                index = input_list.index(item)
+                quantity = input_list[index+1]              
+                # look up the molecular weight for the element
+                mass = ELEMENTS[item].mass
+                mw += mass * quantity
+                
+        # if the list item is a number or a charge, move on
+        except AttributeError:
+            pass
+    
+    return mw
+         
 ## Output functions
 
 def print_latex(formula):
