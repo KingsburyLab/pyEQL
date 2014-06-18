@@ -93,7 +93,7 @@ class Parameter:
                     The first element of the tuple is a float or int representing the 
                     pressure. The second element is a string representing the unit.
                     Typical valid units are 'Pa', 'atm', or 'torr'.                   
-       ionic_strength : tuple, optional
+        ionic_strength : tuple, optional
                     The ionic strength of the solution in which 'magnitude' was measured.
                     The first element of the tuple is a float or int representing the 
                     ionic strength. The second element is a string representing the unit.

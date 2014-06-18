@@ -1373,6 +1373,31 @@ class Solution:
         #parameter for the storage cost, $/L - deprecate this WIP
         self.unit_storage_cost = 0
         
+        # calculate the conductivity based on the molar conductivity of the solutes
+        '''
+        Conductivity is calculated by summing the molar conductivities of the respective
+        solutes, but they are activity-corrected and adjusted using an empricial exponent.
+        This approach is used in PHREEQC and Aqion as described at these URLs:        
+        <http://www.aqion.de/site/77>        
+        <http://www.hydrochemistry.eu/exmpls/sc.html>
+          
+        
+        '''
+        EC = 0
+        
+        for item in solutes:
+            z = math.abs(self.get_valence)
+            # determine the value of the exponent alpha 
+            if self.get_ionic_strength < 0.36 * z:
+                alpha = 0.6 / z ** 0.5
+            else:
+                alpha = self.get_ionic_strength ** 0.5 / z
+                
+            EC += item.get_molar_conductivity * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
+             
+             
+        self.conductivity = EC
+        
         # Define the solvent
         # Solvent is added like any ordinary solute, but is kept in a separate list
 #         if solvent[3] == 'kg':
@@ -1582,8 +1607,8 @@ class Solution:
         def get_activity(self):
             return self.activity
         
-        def set_activity(self,act):
-            self.act = activity
+        def set_activity(self,activity):
+            self.activity = activity
         
         def get_parameter(self,id):
             # retrieve a custom solute parameter by name
@@ -1592,17 +1617,8 @@ class Solution:
         def add_parameter(self,id,value):
             # define a new custom parameter
             self.parameters.update({id:value})
-            
-        def molar_conductivity(self):
-            '''
-            Return the molar conductivity (S/m /mol/m3) of the species
-            Precondition: diffusion coefficient of species > 0
-            '''
-            #Calculate the molar conductivity at infinite dilution
-            delta_o = self.charge ** 2 * self.D * const_F ** 2 / (const_R * temp_kelvin)
-            return delta_o
-        
-        def molar_conductivity(self,temperature=25):
+
+        def get_molar_conductivity(self,temperature=25):
             # WIP - requires diffusion coefficient which may not be present
             '''(float,int,number) -> float
             Calculate the molar (equivalent) conductivity for a species in 
@@ -1773,7 +1789,7 @@ class Solution:
         return osmotic_pressure
     
     def get_conductivity(self):
-        return self.cond
+        return self.conductivity
         
     # to be deprecated WIP
     def get_unit_cost(self):
