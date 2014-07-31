@@ -1301,34 +1301,7 @@ class Solution:
         
         # populate the solutes
         for item in solutes:
-            self.add_solute(*item)
-        
-        # TODO - move the code below to a separate method to calculate conductivity
-#        # calculate the conductivity based on the molar conductivity of the solutes
-#        '''
-#        Conductivity is calculated by summing the molar conductivities of the respective
-#        solutes, but they are activity-corrected and adjusted using an empricial exponent.
-#        This approach is used in PHREEQC and Aqion as described at these URLs:        
-#        <http://www.aqion.de/site/77>        
-#        <http://www.hydrochemistry.eu/exmpls/sc.html>
-#          
-#        
-#        '''
-#        EC = 0
-#        
-#        for item in solutes:
-#            z = math.abs(self.get_formal_charge)
-#            # determine the value of the exponent alpha 
-#            if self.get_ionic_strength < 0.36 * z:
-#                alpha = 0.6 / z ** 0.5
-#            else:
-#                alpha = self.get_ionic_strength ** 0.5 / z
-#                
-#            EC += item.get_molar_conductivity * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
-#             
-#             
-#        self.conductivity = EC
-        
+            self.add_solute(*item)        
 
     def add_solute(self,formula,amount,parameters={}):
         '''Primary method for adding substances to a pyEQL solution
@@ -1505,23 +1478,24 @@ class Solution:
         def set_activity(self,activity):
             self.activity = activity
 
-        def get_molar_conductivity(self,temperature=25):
+        def get_molar_conductivity(self,temperature='25 degC',pressure='1 atm',ionic_strength=0):
             # TODO - requires diffusion coefficient which may not be present
             '''(float,int,number) -> float
-            Calculate the molar (equivalent) conductivity for a species in 
-            Siemens-meters^2/mole
+            Calculate the molar (equivalent) conductivity at infinte dilution for a species
             
             Parameters:
             ----------
-            temperature : float or int, optional
-                                    The solution temperature in degrees Celsius. 
-                                    Defaults to 25 degrees if omitted.
+            temperature : str, optional
+                                    The solution temperature. Defaults to 25 degrees if omitted.
+            pressure : str, optional
+                                    The solution pressure. Defaults to 1 atm if omitted.
+            ionic_strength : float or int, optional
+                                    The solution ionic strength. Defaults to 0 if omitted.
                 
             Returns:
             -------
             float
-                    The molar or equivalent conductivity of the species, 
-                    in Siemens-meters^2/mole
+                    The molar or equivalent conductivity of the species at infinte dilution.
             
             Notes:
             -----
@@ -1546,7 +1520,11 @@ class Solution:
 #             >>> molar_conductivity(1.065e-9,2,30) #doctest: +ELLIPSIS
 #             0.0157340...
             '''
-            return diffusion_coefficient * CONST_F ** 2 * self.get_formal_charge() ** 2 / (CONST_R * kelvin(temperature))
+            diffusion_coefficient = self.get_parameter('diffusion_coefficient')
+            
+            molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * unit(temperature))
+            
+            return molar_cond.to('mS / cm / (mol/L)')
         
             
         #set output of the print() statement
@@ -1626,6 +1604,31 @@ class Solution:
         '''
         return self.get_viscosity_dynamic(temperature) / self.get_density(temperature)
         
+    
+    def get_conductivity(self):
+        '''
+        Conductivity is calculated by summing the molar conductivities of the respective
+        solutes, but they are activity-corrected and adjusted using an empricial exponent.
+        This approach is used in PHREEQC and Aqion as described at these URLs:        
+        <http://www.aqion.de/site/77>        
+        <http://www.hydrochemistry.eu/exmpls/sc.html>        
+        '''
+        EC = 0
+        
+        for item in self.components:
+            z = abs(self.get_solute(item).get_formal_charge())
+            # ignore uncharged species            
+            if not z == 0:
+                # determine the value of the exponent alpha 
+                if self.get_ionic_strength() < 0.36 * z:
+                    alpha = 0.6 / z ** 0.5
+                else:
+                    alpha = self.get_ionic_strength() ** 0.5 / z
+                
+                EC += self.get_solute(item).get_molar_conductivity() * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
+             
+        return EC.to('S/m')
+    
     def get_osmotic_pressure(self):
         ''' 
         Return the osmotic pressure of the solution relative to pure water
@@ -1656,9 +1659,6 @@ class Solution:
         osmotic_pressure = const.R * kelvin(self.temperature) / partial_molar_volume_water * math.log (self.get_water_activity())
         logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.temperature))
         return osmotic_pressure
-    
-    def get_conductivity(self):
-        return self.conductivity
         
     # to be deprecated TODO
     def get_unit_cost(self):

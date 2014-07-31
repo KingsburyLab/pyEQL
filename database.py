@@ -105,56 +105,66 @@ def search_parameters(formula):
                 if 'Name' in line:
                     # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the name
-                    param_name = line[start_slice:]
+                    param_name = line[start_slice:stop_slice]
+                    
                 elif 'Description' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the Description
-                    param_desc = line[start_slice:]
+                    param_desc = line[start_slice:stop_slice]
                     
                 elif 'Unit' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the unit
-                    param_unit = line[start_slice:]
+                    param_unit = line[start_slice:stop_slice]
                     
                 elif 'Reference' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the reference, 
-                    param_ref = line[start_slice:]
+                    param_ref = line[start_slice:stop_slice]
 
                 elif 'Temperature' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the temperature,
-                    param_temp = line[start_slice:]
+                    param_temp = line[start_slice:stop_slice]
                     
                 elif 'Pressure' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the pressure, 
-                    param_press = line[start_slice:]
+                    param_press = line[start_slice:stop_slice]
                     
                 elif 'Ionic Strength' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the reference, 
-                    param_ionic = line[start_slice:]
+                    param_ionic = line[start_slice:stop_slice]
                     
                 elif 'Comment' in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the reference, 
-                    param_comment = line[start_slice:]
+                    param_comment = line[start_slice:stop_slice]
                     
                 elif formula in line:
                      # identify the index of the tab separator
                     start_slice = line.index('\t')+1
+                    stop_slice = line.index('\n')
                     # get the string for the value, 
                     try:
-                        param_value = float(line[start_slice:])
+                        param_value = float(line[start_slice:stop_slice])
                     
                         # Create a new parameter object
                         parameter = pm.Parameter(param_name,param_value,param_unit,
