@@ -47,6 +47,10 @@ class Parameter:
     '''
     Class for storing and retrieving measured parameter values together with their
     units, context, and reference information.
+    
+    Some pyEQL functions search for specific parameter names, such as:
+    diffusion_coefficient
+    
 
     
     '''
@@ -83,21 +87,17 @@ class Parameter:
                     is the positive uncertainty and the second is the negative.
         uncertainty_type: str, optional
                     A string specifying different ways of measuring uncertainty.
-        temperature : tuple, optional
+        temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
-                    The first element of the tuple is a float or int representing the
-                    temperature. The second element is a string representing the unit.
-                    Valid temperature units are 'degC', 'degF', 'kelvin', and 'degR'                    
+                    Specify the temperature as a string containing the magnitude and
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
         pressure : tuple, optional
                     The pressure at which 'magnitude' was measured in Pascals
-                    The first element of the tuple is a float or int representing the 
-                    pressure. The second element is a string representing the unit.
+                    Specify the temperature as a string containing the magnitude and a
+                    unit. e.g. '101 kPa'.
                     Typical valid units are 'Pa', 'atm', or 'torr'.                   
         ionic_strength : tuple, optional
                     The ionic strength of the solution in which 'magnitude' was measured.
-                    The first element of the tuple is a float or int representing the 
-                    ionic strength. The second element is a string representing the unit.
-                    In this case the unit is almost always 'mol/L'.                    
         description : str, optional
                     A string contiaining a longer name describing the paramter. For example
                     'Diffusion Coefficient' or 'Hydrated Ionic Radius'
@@ -135,13 +135,13 @@ class Parameter:
         
         if 'temperature' in kwargs:
             self.temperature_set=True
-            self.base_temperature = kwargs["temperature"][0]*unit(kwargs["temperature"][1])
+            self.base_temperature = unit(kwargs["temperature"])
         if 'pressure' in kwargs:
             self.pressure_set=True
-            self.base_pressure = kwargs["pressure"][0]*unit(kwargs["pressure"][1])
+            self.base_pressure = unit(kwargs["pressure"])
         if 'ionic_strength' in kwargs:
             self.ionic_strength_set=True
-            self.base_ionic_strength = kwargs["ionic_strength"][0]*unit(kwargs["ionic_strength"][1])
+            self.base_ionic_strength = unit(kwargs["ionic_strength"])
             
         # process optional keyword arguments - descriptive and reference
         self.reference = 'Not specified'
@@ -161,6 +161,9 @@ class Parameter:
         # process optional keyword arguments  - temperature adjustment
         # TODO - temperature adjustment functions / parameters     
        
+    def get_name(self):
+        return self.name
+            
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
         '''return a temperature-adjusted paramter value and log any qualifying
         assumptions
