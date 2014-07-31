@@ -1395,12 +1395,15 @@ class Solution:
             
                 # TODO - handle the case where multiple parameters with same name exist. Need function
                 # to compare specified conditions and choose the most appropriate parameter
-            
+                found = False
+                
                 for item in db[self.formula]:
                     if item.get_name() == parameter:
+                        found = True
                         return item.get_value(temperature,pressure,ionic_strength)
-                # TODO - fix this bug - throws a log message at every entry
-                    else:
+                
+                    # Log an error if the parameter was not found
+                    if found == False:
                         logger.error('Required parameter %s not found for species %s.' % (parameter,self.formula))
             else:
                 logger.error('No entry for species %s in parameters database' % self.formula)
