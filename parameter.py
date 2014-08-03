@@ -41,6 +41,8 @@ unit = UnitRegistry()
 unit.load_definitions('pint_custom_units.txt') 
 # activate the "chemistry" context globally
 unit.enable_contexts('chem')
+# set the default string formatting for pint quantities
+unit.default_format = 'P~'
 
 
 class Parameter:
@@ -175,15 +177,15 @@ class Parameter:
         self.base_pressure = 'Not specified'
         self.base_ionic_strength = 'Not specified'
         
-        if 'temperature' in kwargs:
+        if 'temperature' in kwargs and kwargs['temperature'] != '':
             self.temperature_set=True
-            self.base_temperature = unit(kwargs["temperature"])
-        if 'pressure' in kwargs:
+            self.base_temperature = unit(kwargs['temperature'])
+        if 'pressure' in kwargs and kwargs['pressure'] != '':
             self.pressure_set=True
-            self.base_pressure = unit(kwargs["pressure"])
-        if 'ionic_strength' in kwargs:
+            self.base_pressure = unit(kwargs['pressure'])
+        if 'ionic_strength' in kwargs and kwargs['ionic_strength'] != '':
             self.ionic_strength_set=True
-            self.base_ionic_strength = unit(kwargs["ionic_strength"])
+            self.base_ionic_strength = unit(kwargs['ionic_strength'])
             
         # process optional keyword arguments - descriptive and reference
         self.reference = 'Not specified'
@@ -231,17 +233,17 @@ class Parameter:
         # base_pressure, and/or base_ionic_strength
         if temperature is None: 
             temperature = self.base_temperature
-            logger.info('Temperature not specified for '+str(self.name)+'. Returning value at '+str(temperature+'.'))
+            logger.info('Temperature not specified for '+str(self.name)+'. Returning value at '+str(temperature)+'.')
         else:
             temperature = unit(temperature)
         if pressure is None: 
             pressure = self.base_pressure
-            logger.info('Pressure not specified for '+str(self.name)+'. Returning value at '+str(pressure+'.'))
+            logger.info('Pressure not specified for '+str(self.name)+'. Returning value at '+str(pressure)+'.')
         else:
             pressure = unit(pressure)
         if ionic_strength is None: 
             ionic_strength = self.base_ionic_strength
-            logger.info('Ionic Strength not specified for '+str(self.name)+'. Returning value at '+str(ionic_strength+'.'))
+            logger.info('Ionic Strength not specified for '+str(self.name)+'. Returning value at '+str(ionic_strength)+'.')
         else:
             ionic_strength = unit(ionic_strength)
         
@@ -288,7 +290,7 @@ class Parameter:
         return 'Parameter '+str(self.name)+'\n'+str(self.description)+'\n' \
         +'-------------------------------------------'+'\n'+ \
         'Value: '+str(self.get_value())+'\n'+ \
-        'Conditions (Temperature, Pressure, Ionic Strength): '+str(self.base_temperature)+', '+str(self.base_pressure)+', ' \
+        'Conditions (T,P,Ionic Strength): '+str(self.base_temperature)+', '+str(self.base_pressure)+', ' \
         +str(self.base_ionic_strength)+'\n'+ \
         'Notes: '+str(self.comment)+'\n'+ \
         'Reference: '+str(self.reference)+'\n'

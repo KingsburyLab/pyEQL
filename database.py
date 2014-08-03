@@ -3,7 +3,25 @@
 This module contains classes, functions, and methods for reading input files
 and assembling database entries for use by pyEQL.
 
-@author: ryan
+By default, pyEQL searches all files in the /database subdirectory for parameters.
+
+File Format:
+-----------
+
+Database files are tab-separated text files. The first column must contain a key (usually a chemical formula), 
+while the actual parameter values are in the 2nd and following columns. Each database
+file is intended to contain a single parameter type from a single source for multiple chemical species.
+I.e., we have one database file that contains diffusion coefficients for a bunch ofions as found
+in the CRC Handbook of Chemistry and Physics.
+
+The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'. Preferably,
+other information such as conditions, notes and a reference are also supplied. See 'template.csv' in the
+/database directory for an example.
+
+Multi-member parameters (e.g. coefficients for an equation) can be defined by using mutiple
+columns. Multiple columns are only searched for the actual parameter, not for the header
+rows for Name, Units, etc.
+
 """
 
 ## Logging System
@@ -34,10 +52,12 @@ import os
 
 
 ## Database Management Functions
-# create a global dictionary to contain a dynamically-generated list of Parameters
-# for solute species. The dictionary keys are the individual chemical species
-# formulas. The dictionary's values are a python set object containing all parameters
-# that apply to the species.
+''''
+create a global dictionary to contain a dynamically-generated list of Parameters
+for solute species. The dictionary keys are the individual chemical species
+formulas. The dictionary's values are a python set object containing all parameters
+that apply to the species.
+'''
 parameters_database={}
 
 # set the directory containing database files
@@ -47,39 +67,19 @@ database_dir = os.getcwd()+'/database'
 def search_parameters(formula):
     '''Each time a new solute species is created in a solution, this function:
     
-    formula : str
-            String representing the chemical formula of the species.
-    
     1) searches to see whether a list of parameters for the species has already been
     compiled from the database
     2) searches all files in the specified database directory(ies) for the species
     3) creates a Parameter object for each value found 
-    4) compiles these objects into a list
-    5) adds the list to a dictionary indexed by species name (formula)
+    4) compiles these objects into a set
+    5) adds the set to a dictionary indexed by species name (formula)
     6) points the new solute object to the dictionary
     
-    
-    pseudo code:
-    
-    if formula = 'H2O':
-            # call some special methods to calculate parameters
-    
-    if parameters_database[self.name]:
-        # point self to the database for parameters
-    else:
-        # Add  formula:[] entry to parameters_database dictionary
-        # Search all the files in the database
-        parameter_list = []
-        for file in database_dir:
-            current_file = open(file,r)
-            if formula is in the file:
-            #       create a parameter object
-                new_parameter = Parameter(FILL IN)
-            #      append object to list
-                parameter_list.append(new_parameter)
-                parameters_database.update({formula:parameter_list})
-
+    formula : str
+            String representing the chemical formula of the species.
     '''
+    # if the formula is already in the database, then we've already searched
+    # and compiled parameters, so there is no need to do it again.    
     if formula in parameters_database:
         pass
     else:
@@ -104,6 +104,8 @@ def search_parameters(formula):
                 line_num += 1
                 
                 try:
+                    # look for keywords in the first column of each file. If found,
+                    # store the entry from the 2nd column
                     if 'Name' in line:
                         param_name = _parse_line(line)[1]
                         
@@ -132,13 +134,16 @@ def search_parameters(formula):
                     # stop. Otherwise a search for 'NaCl' will also read parameters for
                     # 'NaClO4', for example.
                     elif formula+'\t' in line:                                                
-                        # convert values into a tuple (Excluding the formula) and pass
-                        # to the Parameter class
-                        param_value = tuple(_parse_line(line)[1:])
+                        # if there are multiple columns, pass the values as a list. 
+                        # If a single column, then just pass the value
+                        if len(_parse_line(line)) >2:
+                            param_value = _parse_line(line)[1:]
+                        else:
+                            param_value = _parse_line(line)[1]
                                                                     
                         # Create a new parameter object
                         parameter = pm.Parameter(param_name,param_value,param_unit, \
-                        reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comments=param_comment)
+                        reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comment=param_comment)
                         
                         # Add the parameter to the set for this species
                         parameters_database[formula].add(parameter)
@@ -150,7 +155,12 @@ def search_parameters(formula):
 
 def _parse_line(line):
     '''
-    Function to parse lines in a tab-seprated value file format
+    Function to parse lines in a tab-seprated value file format.
+    
+    This function accepts a string (a line read from a tab-separated
+    input file). It removes the newline character and splits the string
+    at each tab stop, returning a list of the remaining substrings in which each
+    list entry corresponds to the contents of one cell in the file.
     
     '''
     # remove the newline character
@@ -163,26 +173,18 @@ def _parse_line(line):
     return str_list
     
 
-def print_database(sort_type):
+def print_database():
     ''' Function to generate a human-friendly summary of all the database parameters
     that are actually used in the simulation
-    
-    sort_type : str
-                String that specifies whether to group the output by parameter name
-                e.g. 'diffusion coefficient' or by species. Acceptable values are 
-                'name' and 'species'.
-    
-    1. Loop through the parameters_database dictionary
-    2. group parameters either by type or species
-    3. generate a list, one line each, with value, units, reference, conditions
-    
-    
+  
     '''
-    # TODO
-    if sort_type == 'name':
-        pass
-    elif sort_type == 'species':
-        pass
-    pass
+    for key in parameters_database.keys():
+        print('Parameters for species %s:' % key)
+        print('--------------------------')
+        for item in parameters_database[key]:
+            print(item)
+    
+    return None
+    
 
     
