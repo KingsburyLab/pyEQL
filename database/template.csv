@@ -1,0 +1,14 @@
+Name:	pitzer_beta0					
+Description:	Beta0 parameters for the Pitzer model					
+Unit:	None					
+Reference:	Beyer and Steiger, 2010 - “Vapor Pressure Measurements of NaHCOO + H2O and KHCOO + H2O from 278 to 308 K and Representation with an Ion Interaction (Pitzer) Model” - J. Chem. Reference Data 2010 (55), 830-838.					
+Temperature:						
+Pressure:	1 atm					
+Ionic Strength:	0					
+Uncertainty:						
+Uncertainty Type:						
+Comment:	(q1,q2,q3,q4,q5,q6)					
+						
+Key:	q1	q2	q3	q4	q5	q6
+KHCO2	1.25149E+000	-1.82903E+003	-1.26523E+001	2.35071E-002	0.00000E+000	-2.54012E-001
+NaHCO2	3.69993E-002	3.89855E+001	0.00000E+000	0.00000E+000	0.00000E+000	0.00000E+000
