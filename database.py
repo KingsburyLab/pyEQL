@@ -88,13 +88,11 @@ def search_parameters(formula):
         
         # search all the files in the database directory
         for file in os.listdir(database_dir):
+            # reset the line number count
+            line_num = 0
+            
             # ignore the template file
             if file == 'template.csv':
-                continue
-            
-            # TODO - ignore the SMILES file b/c it is not numeric
-            # Figure out how to handle non-numeric parameter values
-            if file == 'SMILES.csv':
                 continue
             
             # open each file
@@ -102,80 +100,68 @@ def search_parameters(formula):
             
             # read each line of the file, looking for the formula
             for line in current_file:
-                if 'Name' in line:
-                    # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the name
-                    param_name = line[start_slice:stop_slice]
-                    
-                elif 'Description' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the Description
-                    param_desc = line[start_slice:stop_slice]
-                    
-                elif 'Unit' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the unit
-                    param_unit = line[start_slice:stop_slice]
-                    
-                elif 'Reference' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the reference, 
-                    param_ref = line[start_slice:stop_slice]
-
-                elif 'Temperature' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the temperature,
-                    param_temp = line[start_slice:stop_slice]
-                    
-                elif 'Pressure' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the pressure, 
-                    param_press = line[start_slice:stop_slice]
-                    
-                elif 'Ionic Strength' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the reference, 
-                    param_ionic = line[start_slice:stop_slice]
-                    
-                elif 'Comment' in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the reference, 
-                    param_comment = line[start_slice:stop_slice]
-                    
-                elif formula in line:
-                     # identify the index of the tab separator
-                    start_slice = line.index('\t')+1
-                    stop_slice = line.index('\n')
-                    # get the string for the value, 
-                    try:
-                        param_value = float(line[start_slice:stop_slice])
-                    
+                
+                line_num += 1
+                
+                try:
+                    if 'Name' in line:
+                        param_name = _parse_line(line)[1]
+                        
+                    elif 'Description' in line:
+                        param_desc = _parse_line(line)[1]
+                        
+                    elif 'Unit' in line:
+                        param_unit = _parse_line(line)[1]
+                        
+                    elif 'Reference' in line:
+                        param_ref = _parse_line(line)[1]
+    
+                    elif 'Temperature' in line:
+                        param_temp = _parse_line(line)[1]
+                        
+                    elif 'Pressure' in line:
+                        param_press = _parse_line(line)[1]
+                        
+                    elif 'Ionic Strength' in line:
+                        param_ionic = _parse_line(line)[1]
+                        
+                    elif 'Comment' in line:
+                        param_comment = _parse_line(line)[1]
+                        
+                    # make sure to only read values when the formula is followed by a tab
+                    # stop. Otherwise a search for 'NaCl' will also read parameters for
+                    # 'NaClO4', for example.
+                    elif formula+'\t' in line:                                                
+                        # convert values into a tuple (Excluding the formula) and pass
+                        # to the Parameter class
+                        param_value = tuple(_parse_line(line)[1:])
+                                                                    
                         # Create a new parameter object
-                        parameter = pm.Parameter(param_name,param_value,param_unit,
-                                                 reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comments=param_comment)
+                        parameter = pm.Parameter(param_name,param_value,param_unit, \
+                        reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comments=param_comment)
                         
                         # Add the parameter to the set for this species
                         parameters_database[formula].add(parameter)
-                    except ValueError:                   
-                        pass
-                
+                        
+                except ValueError:                   
+                    logger.warning('Error encountered when reading line %s in %s' %(line_num,file))
+            
             current_file.close()
+
+def _parse_line(line):
+    '''
+    Function to parse lines in a tab-seprated value file format
+    
+    '''
+    # remove the newline character
+    line = line.replace('\n','')                        
+    
+    # separate the string at every tab stop
+    str_list = line.split('\t')
+    
+    # return the list of string entries
+    return str_list
+    
 
 def print_database(sort_type):
     ''' Function to generate a human-friendly summary of all the database parameters

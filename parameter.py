@@ -54,24 +54,33 @@ class Parameter:
 
     
     '''
-    def __init__(self,name,magnitude,units,**kwargs):
+    def __init__(self,name,magnitude,units='',**kwargs):
         '''
         Parameters:
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
-        magnitude : float, int, or tuple of floats or ints
-                    The numerical value of the parameter. In most cases this will only be a single value.
+        magnitude : float, int, str, tuple or list of floats, ints, or strs
+                    The value of the parameter. In most cases this will only be a single numerical value.
                     However, in some cases it may be desirable to store a group of parameters (such as coefficients
                     for an equation) together in a tuple.
-        units : str
+                    
+                    Numeric values can be input as strings (or lists of strings) and they will be converted to 
+                    floats. 
+                    
+                    Non-numeric values are permissible as well. When specifying non-numeric values, the units
+                    argument must either be 'dimensionless' or left blank.
+                    
+                    Lists of non-numeric strings are not permitted.
+                    
+        units : str, optional
                     A string representing the units of measure for the parameter value
                     given in 'magnitude.' See the pint documentation for proper syntax. In general
                     common abbreviations or unit names can be used, but pythonic math syntax
                     must be followed. e.g. 'meters ** 2 / second' and 'm **2 /s' are valid but
                     'm2/s' is not.
                     
-                    If a parameter has no untis, leave blank or enter 'dimensionless'
+                    If a parameter has no units, leave blank or enter 'dimensionless' or 'None'
                     
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
@@ -91,13 +100,14 @@ class Parameter:
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
                     a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
-        pressure : tuple, optional
+        pressure : str, optional
                     The pressure at which 'magnitude' was measured in Pascals
-                    Specify the temperature as a string containing the magnitude and a
+                    Specify the pressure as a string containing the magnitude and a
                     unit. e.g. '101 kPa'.
                     Typical valid units are 'Pa', 'atm', or 'torr'.                   
-        ionic_strength : tuple, optional
-                    The ionic strength of the solution in which 'magnitude' was measured.
+        ionic_strength : str, optional
+                    The ionic strength of the solution in which 'magnitude' was measured. Specify
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg'
         description : str, optional
                     A string contiaining a longer name describing the paramter. For example
                     'Diffusion Coefficient' or 'Hydrated Ionic Radius'
@@ -126,8 +136,40 @@ class Parameter:
         <BLANKLINE>
         '''
         self.name = name
-        self.value = magnitude * unit(units)
         
+        # turn numeric parameters into quantities with associated units
+        # if units were specified as 'None', convert into something pint will understand
+        
+        # see if the input value is a list or tuple. If so, create a list of
+        # quantities (including units), and convert the list to a tuple
+        if isinstance(magnitude,(tuple,list)):
+            # check whether each element is a number
+            temp_list=[]
+            for item in magnitude:    
+                try:
+                    temp_list.append(float(item) * unit(units))
+                except ValueError:
+                    # Throw an error if units are assigned to a non-numeric parameter
+                    if not (units == 'dimensionless' or units == '' or units == 'None' or units == 'none'):
+                        logger.error('A non-numeric parameter cannot have units, but units of %s were specified' % units)
+                    
+                    temp_list.append(item)
+                    
+            # convert the resulting list into a tuple
+            self.value = tuple(temp_list)
+            
+        # if the input is a single item, try to convert it to a number. If that
+        # doesn't work, it must be a str and will be passed on as-is
+        else:
+            try:
+                self.value=float(magnitude) * unit(units)
+            except ValueError:
+                # Throw an error if units are assigned to a non-numeric parameter
+                if not (units == 'dimensionless' or units == '' or units == 'None' or units == 'none'):
+                    logger.error('A non-numeric parameter cannot have units, but units of %s were specified' % units)
+                
+                self.value = magnitude
+            
         # process optional keyword arguments - reference conditions
         self.base_temperature = 'Not specified'
         self.base_pressure = 'Not specified'
@@ -163,44 +205,45 @@ class Parameter:
        
     def get_name(self):
         return self.name
+        
+    def test_print(self):
+        return 'This is a test of the parameter with value',self.value
             
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
         '''return a temperature-adjusted paramter value and log any qualifying
         assumptions
         
-        temperature : tuple, optional
+        temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
-                    The first element of the tuple is a float or int representing the
-                    temperature. The second element is a string representing the unit.
-                    Valid temperature units are 'degC', 'degF', 'kelvin', and 'degR'
-                    
-        pressure : tuple, optional
+                    Specify the temperature as a string containing the magnitude and
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+        pressure : str, optional
                     The pressure at which 'magnitude' was measured in Pascals
-                    The first element of the tuple is a float or int representing the 
-                    pressure. The second element is a string representing the unit.
-                    Typical valid units are 'Pa', 'atm', or 'torr'.
-                    
-       ionic_strength : float or int, optional
-                    The ionic strength of the solution in which 'magnitude' was measured. 
+                    Specify the pressure as a string containing the magnitude and a
+                    unit. e.g. '101 kPa'.
+                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+        ionic_strength : str, optional
+                    The ionic strength of the solution in which 'magnitude' was measured. Specify
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
         
         '''
         # if the user does not specify conditions, return the value at base_temperature,
         # base_pressure, and/or base_ionic_strength
         if temperature is None: 
             temperature = self.base_temperature
-            logger.info('Temperature not specified for '+str(self.name)+'. Returning value at '+str(temperature)+'.')
+            logger.info('Temperature not specified for '+str(self.name)+'. Returning value at '+str(temperature+'.'))
         else:
-            temperature = temperature[0] * unit(temperature[1])
+            temperature = unit(temperature)
         if pressure is None: 
             pressure = self.base_pressure
-            logger.info('Pressure not specified for '+str(self.name)+'. Returning value at '+str(pressure)+'.')
+            logger.info('Pressure not specified for '+str(self.name)+'. Returning value at '+str(pressure+'.'))
         else:
-            pressure = pressure[0] * unit(pressure[1])
+            pressure = unit(pressure)
         if ionic_strength is None: 
             ionic_strength = self.base_ionic_strength
-            logger.info('Ionic Strength not specified for '+str(self.name)+'. Returning value at '+str(ionic_strength)+'.')
+            logger.info('Ionic Strength not specified for '+str(self.name)+'. Returning value at '+str(ionic_strength+'.'))
         else:
-            ionic_strength = ionic_strength[0] * unit(ionic_strength[1])
+            ionic_strength = unit(ionic_strength)
         
         # compare requested conditions with base conditions
         if temperature != self.base_temperature:        
@@ -223,20 +266,20 @@ class Parameter:
         
         return self.value
         
-    def get_magnitude(self,temperature):
+    def get_magnitude(self,temperature=None,pressure=None,ionic_strength=None):
         '''return the temperature-adjusted magnitude of the parameter
         '''
-        return self.get_value(temperature).magnitude
+        return self.get_value(temperature,pressure,ionic_strength).magnitude
         
-    def get_units(self,temperature):
+    def get_units(self):
         '''return the temperature-adjusted magnitude of the parameter
         '''
-        return self.get_value(temperature).units
+        return self.get_value().units
     
-    def get_dimensions(self,temperature):
+    def get_dimensions(self):
         '''return the temperature-adjusted magnitude of the parameter
         '''
-        return self.get_value(temperature).dimensionality
+        return self.get_value().dimensionality
     
     def __str__(self):
         '''
@@ -245,8 +288,8 @@ class Parameter:
         return 'Parameter '+str(self.name)+'\n'+str(self.description)+'\n' \
         +'-------------------------------------------'+'\n'+ \
         'Value: '+str(self.get_value())+'\n'+ \
-        'Conditions (Temperature, Pressure, Ionic Strength): '+str(self.base_temperature)+', '+str(self.base_pressure)+', '+ \
-        str(self.base_ionic_strength)+'\n'+ \
+        'Conditions (Temperature, Pressure, Ionic Strength): '+str(self.base_temperature)+', '+str(self.base_pressure)+', ' \
+        +str(self.base_ionic_strength)+'\n'+ \
         'Notes: '+str(self.comment)+'\n'+ \
         'Reference: '+str(self.reference)+'\n'
 
