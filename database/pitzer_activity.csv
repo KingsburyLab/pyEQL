@@ -1,0 +1,33 @@
+Name:	pitzer_parameters_activity			
+Description:	Beta0, Beta1, Beta2, and Cphi parameters for calculating activity and osmotic coefficients according to the Pitzer ion interaction model			
+Unit:	None			
+Reference:	May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329			
+Temperature:	25 degC			
+Pressure:	1 atm			
+Ionic Strength:	0			
+Uncertainty:				
+Uncertainty Type:				
+Comment:	Beta0,Beta1,Beta2,Cphi			
+				
+Key:	Beta0	Beta1	Beta2	Cphi
+NaCl	0.07831	0.2677	0	0.000864
+NaHCO2	0.07486	0.3067	0	-0.00327
+NaI	0.1261	0.317	0	0.00026
+NaBr	0.1083	0.239	0	-0.00104
+Na2SO4	0.01959	1.049	0	0.005416
+NH4NO3	-0.01709	0.09198	0	0.000419
+KCl	0.04874	0.2215	0	-0.00098
+KBr	0.05517	0.2361	0	-0.00148
+KI	0.06468	0.3112	0	-0.00213
+K3(Fe(CN)6)	0.3531	3.903	0	-0.05288
+K4(Fe(CN)6)	0.6452	8.844	0	-0.1768
+LiCl	0.1516	0.2975	0	0.003227
+LiBr	0.1842	0.2363	0	0.003333
+LiI	0.1903	0.478	0	0.00554
+CsCl	0.03745	0.02709	0	-0.00103
+CsBr	0.02187	0.07237	0	0.001244
+CsI	0.02164	0.04627	0	-0.00287
+MgSO4	0.2153	3.29	-40.15	0.02794
+MgCl2	0.3553	1.644	0	0.005098
+FeCl2	0.3516	1.432	0	-0.0156
+FeCl3	0.5516	5.488	0	-0.06453
