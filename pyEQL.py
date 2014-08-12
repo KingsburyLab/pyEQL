@@ -14,8 +14,6 @@ import activity_correction as ac
 import water_properties as h2o
 import salt_ion_match as salt
 
-# the parameter handling module
-import parameter as pm
 # the pint unit registry
 from parameter import unit
 # functions to manage importing paramters from database files and making them accessible to pyEQL
@@ -131,7 +129,7 @@ def celsius(temp_kelvin):
     return output
     
     
-def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25):
+def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25*unit('degC')):
     '''(float,float,number, optional number) -> float
     
     Adjust a reaction equilibrium constant from one temperature to another.
@@ -140,23 +138,18 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     ----------
     equilibrium_constant : float
                            The reaction equilibrium constant for the reaction
-    enthalpy : float
+    enthalpy : Quantity
                The enthalpy change (delta H) for the reaction in kJ/mol. Assumed
                independent of temperature (see Notes).
-    temperature : float or int
+    temperature : Quantity
                   the desired reaction temperature in degrees Celsius
-    reference_temperature : float or int, optional
-                      the temperature at which equilibrium_constant is valid
-                      in degrees Celsius. (25 degrees C if omitted).
+    reference_temperature : Quantity, optional
+                      the temperature at which equilibrium_constant is valid. (25 degrees C if omitted).
    
     Returns:
     -------
     float
         adjusted reaction equilibrium constant
-
-    See Also:
-    --------
-    kelvin
     
     Notes:
     -----
@@ -174,16 +167,16 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     
     Examples:
     --------
-    >>> adjust_temp_vanthoff(0.15,-197.6,42,25) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC'),25*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
     
     If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
     
-    >>> adjust_temp_vanthoff(0.15,-197.6,42) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
     
     '''
-    output = equilibrium_constant * math.exp( enthalpy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
+    output = equilibrium_constant * math.exp( enthalpy / unit.R * ( 1 / reference_temperature.to('K') - 1 / temperature.to('K')))
     
     logger.info('Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output')
     
