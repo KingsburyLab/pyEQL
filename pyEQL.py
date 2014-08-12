@@ -183,27 +183,27 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     logger.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
     return output
 
-def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_temperature = 25):
+def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_temperature = 25*unit('degC')):
     '''(float,float,number, optional number) -> float
     
     Adjust a reaction equilibrium constant from one temperature to another.
     
     Parameters:
     ----------
-    rate_constant : float
+    rate_constant : Quantity
                 The parameter value (usually a rate constant) being adjusted
-    activation_energy : float
+    activation_energy : Quantity
                The activation energy of the process, in kJ/mol
-    temperature : float or int
-                  the desired reaction temperature in degrees Celsius
-    reference_temperature : float or int, optional
+    temperature : Quantity
+                  the desired reaction temperature.
+    reference_temperature : Quantity, optional
                       the temperature at which equilibrium_constant is valid
-                      in degrees Celsius. (25 degrees C if omitted).
+                      Defaults to 25 degrees C if omitted.
    
     Returns:
     -------
-    float
-        adjusted reaction equilibrium constant
+    Quantity
+        The adjusted reaction equilibrium constant
 
     See Also:
     --------
@@ -222,11 +222,11 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     
     Examples:
     --------
-    >>> adjust_temp_arrhenius(7,900,37,97) #doctest: +ELLIPSIS
+    >>> adjust_temp_arrhenius(7,900*unit('kJ/mol'),37*unit('degC'),97*unit('degC')) #doctest: +ELLIPSIS
     1.8867225...e-24
     
     '''
-    output = rate_constant * math.exp( activation_energy * 1000 / CONST_R * ( 1 / kelvin(reference_temperature) - 1 / kelvin(temperature)))
+    output = rate_constant * math.exp( activation_energy / unit.R * ( 1 / reference_temperature.to('K') - 1 / temperature.to('K')))
     
     logger.info('Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output')
     
