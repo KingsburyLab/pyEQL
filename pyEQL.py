@@ -48,87 +48,6 @@ not called from another program). It creates a couple of standard test solutions
 that are used for automated tests of the functions.
 '''
 
-## Fundamental Constants
-# Values for fundamental constants are provided by the pint package.
-
-# Avogadro's number, #/mole
-CONST_Na = unit.N_A
-
-# Universal gas constant, Joule/mole-Kelvin
-#CONST_R = 8.3144621 
-CONST_R = unit.R
-
-# Fundamental charge, coulombs
-#CONST_e = 1.602176565e-19
-CONST_e = unit.e
-
-# Permittivity of free space, Farad/meter
-#CONST_Eo = 8.854187817e-12
-CONST_Eo = unit.epsilon_0
-
-# Faraday constant, coulombs/mole (derived)
-#9.64853399e4 
-CONST_F = CONST_e * CONST_Na
-
-# Boltzmann constant, joule/Kelvin (derived)
-#1.3806488e-23
-#CONST_kb = CONST_R / CONST_Na
-CONST_kb = unit.k
-
-# Acceleration due to gravity, meters/second^2
-#CONST_g = 9.80665
-CONST_g = unit.g_n
-
-## Temperature Functions
-
-def kelvin(temp_celsius):
-    '''(number) -> float
-    Convert a temperature from degrees Celsius to Kelvin
-    
-    Parameters:
-    ----------
-    temp_celsius : float or int
-                   temperature in degrees Celsius
-    
-    Returns:
-    -------
-    float
-        temperature in Kelvin
-    
-    Examples:
-    --------
-    >>> kelvin(25)
-    298.15
-    '''
-    output = temp_celsius + 273.15
-    logger.debug('Converted %s degrees Celsius to %s kelvin' % (temp_celsius, output))
-    return output
-    
-    
-def celsius(temp_kelvin):
-    '''(number) -> float
-    Convert a temperature in Kelvin to degrees Celsius
-    
-    Parameters:
-    ----------
-    temp_kelvin : float or int
-                  temperature in Kelvin
-    
-    Returns:
-    -------
-    float
-        temperature in degrees Celsius
-    
-    Examples:
-    --------
-    >>> celsius(298) #doctest: +ELLIPSIS
-    24.85...
-    '''
-    output = temp_kelvin - 273.15
-    logger.debug('Converted %s kelvin to %s degrees Celsius' % (temp_kelvin,output))
-    return output
-    
-    
 def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25*unit('degC')):
     '''(float,float,number, optional number) -> float
     
@@ -241,7 +160,7 @@ def adjust_temp_diffusion(diffusion_coefficient,temperature,ref_temperature=25):
     .. [1] http://www.hydrochemistry.eu/exmpls/sc.html
     '''
     ## TODO - check this function (does it need dynamic or kinematic viscosity or does it matter?)
-    return diffusion_coefficient * temperature / kelvin(ref_temperature) * water_viscosity_dynamic(ref_temperature)/water_viscosity_dynamic(temperature)
+    return diffusion_coefficient * temperature / ref_temperature * water_viscosity_dynamic(ref_temperature)/water_viscosity_dynamic(temperature)
 
 ## Properties of Water
 
@@ -432,7 +351,7 @@ def gibbsmix(Solution1, Solution2,temperature=25*unit('degC')):
 
     return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
-def entropy_mix(Solution1, Solution2,temperature=25):
+def entropy_mix(Solution1, Solution2,temperature=25*unit('degC')):
     '''(Solution, Solution) -> float
     Return the ideal mixing entropy associated with mixing two solutions
 
@@ -440,7 +359,7 @@ def entropy_mix(Solution1, Solution2,temperature=25):
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-    temperature : float or int, optional
+    temperature : Quantity, optional
                   The temperature in Celsius. Defaults to 25 degrees if not specified.
         
     Returns:
@@ -485,7 +404,7 @@ def entropy_mix(Solution1, Solution2,temperature=25):
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_amount(solute,'fraction'))
 
-    return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
+    return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
 
 def mix(Solution1, Solution2):
@@ -561,14 +480,14 @@ def mix(Solution1, Solution2):
 
 ### Other Stuff - TODO
 
-def mobility(diffusion_coefficient,valence,temperature=25):
+def mobility(diffusion_coefficient,formal_charge,temperature=25*unit('degC')):
     '''Return the ionic mobility of a species
     
     Parameters:
     ----------
-    diffusion_coefficient : float
-                The diffusion coefficient of the species in m2/s
-    valence : float or int
+    diffusion_coefficient : Quantity
+                The diffusion coefficient of the species
+    formal_charge : float or int
                 The charge on the species, including sign
     temperature : float or int, optional
                 The solution temperature in degrees Celsius. 
@@ -590,13 +509,13 @@ def mobility(diffusion_coefficient,valence,temperature=25):
     .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
     
     '''
-    mobility = CONST_F * math.fabs(valence) * diffusion_coefficient / (CONST_R * kelvin(temperature))
+    mobility = unit.N_A * unit.e * abs(formal_charge) * diffusion_coefficient / (unit.R * temperature)
     
     logger.info('Computed ionic mobility as %s m/s-V from D = %s m2/s at T=%S degrees C % mobility,diffusion_coeffiicent,temperature')
     
     return mobility
 
-def debye_length(dielectric_constant,ionic_strength,temp):
+def debye_length(dielectric_constant,ionic_strength,temperature):
     '''(number,number,number) -> float
     Return the Debye length of a solution in meters
     
@@ -605,7 +524,7 @@ def debye_length(dielectric_constant,ionic_strength,temp):
     temp is the temperature in degrees celsius
     
     '''
-    return math.sqrt( dielectric_constant * CONST_Eo * CONST_R * kelvin(temp) / (2 * CONST_F ** 2 * ionic_strength) )
+    return math.sqrt( dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
 
 #####CLASS DEFINITIONS
 '''
@@ -1064,8 +983,8 @@ class Solution:
         # TODO - tie this into parameter() and solvent() objects
         partial_molar_volume_water = 18e-6
         
-        osmotic_pressure = CONST_R * kelvin(self.temperature) / partial_molar_volume_water * math.log (self.get_water_activity())
-        logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.temperature))
+        osmotic_pressure = unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
+        logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
         return osmotic_pressure
         
     # to be deprecated TODO
