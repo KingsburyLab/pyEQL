@@ -9,18 +9,9 @@ TODO - LICENSE INFO
 # import libraries for scientific functions
 import math
 
-# FUTURE - to be used for plotting
-#import matplotlib as mpl
-#import matplotlib.pyplot as plt
-# FUTURE - to be used for automatic calculation of molecular weights
-#from elements import ELEMENTS as pte
-
 # internal pyEQL imports
-
 import activity_correction as ac
-
 import water_properties as h2o
-
 import salt_ion_match as salt
 
 # the parameter handling module
@@ -669,7 +660,7 @@ class Solution:
     solvent : list of lists, optional
                 String representing the chemical formula of the solvent. 
                 Defaults to 1 kg water if omitted.
-    temperature : pint quantity, optional
+    temperature : Quantity, optional
                 The solution temperature. Defaults to 25 degrees C if omitted.
     pressure : pint quantity
                 The ambient pressure of the solution. 
@@ -715,10 +706,10 @@ class Solution:
     
     '''
     
-    def __init__(self,solutes=[],solvent=['H2O','0.998 kg'],volume='1 L',temperature='25 degC',pressure='1 atm'):
+    def __init__(self,solutes=[],solvent=['H2O','0.998 kg'],volume='1 L',temperature=25*unit('degC'),pressure=1*unit('atm')):
         self.volume = unit(volume)
-        self.temperature = unit(temperature)
-        self.pressure = unit(pressure)
+        self.temperature = temperature
+        self.pressure = pressure
         self.components={}
         self.solvent_name=solvent[0]
         
@@ -761,6 +752,9 @@ class Solution:
     
     def get_solvent(self):
         return self.components[self.solvent_name]
+    
+    def get_temperature(self):
+        return self.temperature.to('degC')
     
     class Solute:
         '''represent each chemical species as an object containing its formal charge, transport numbers, concentration, activity, etc. 
@@ -910,19 +904,15 @@ class Solution:
         def set_activity(self,activity):
             self.activity = activity
 
-        def get_molar_conductivity(self,temperature='25 degC',pressure='1 atm',ionic_strength=0):
+        def get_molar_conductivity(self,temperature=25*unit('degC')):
             # TODO - requires diffusion coefficient which may not be present
             '''(float,int,number) -> float
             Calculate the molar (equivalent) conductivity at infinte dilution for a species
             
             Parameters:
             ----------
-            temperature : str, optional
-                                    The solution temperature. Defaults to 25 degrees if omitted.
-            pressure : str, optional
-                                    The solution pressure. Defaults to 1 atm if omitted.
-            ionic_strength : float or int, optional
-                                    The solution ionic strength. Defaults to 0 if omitted.
+            temperature : Quantity, optional
+                        The temperature of the parent solution. Defaults to 25 degC if omitted.
                 
             Returns:
             -------
@@ -942,19 +932,11 @@ class Solution:
             
             TODO Examples:
 #             --------
-#             For sodium ion:
-#                 
-#             >>> molar_conductivity(1.334e-9,1) #doctest: +ELLIPSIS
-#             0.0050096...
 #             
-#             For sulfate ion at 30 C:
-#                 
-#             >>> molar_conductivity(1.065e-9,2,30) #doctest: +ELLIPSIS
-#             0.0157340...
             '''
             diffusion_coefficient = self.get_parameter('diffusion_coefficient')
             
-            molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * unit(temperature))
+            molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * temperature)
             
             return molar_cond.to('mS / cm / (mol/L)')
         
@@ -1011,7 +993,7 @@ class Solution:
         .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 13-14. Plenum Press, 1980.
         
         '''
-        return water_viscosity_dynamic(temperature)
+        return h2o.water_viscosity_dynamic(temperature)
         #TODO
         
     
@@ -1046,18 +1028,19 @@ class Solution:
         <http://www.hydrochemistry.eu/exmpls/sc.html>        
         '''
         EC = 0
+        temperature = self.get_temperature()
         
         for item in self.components:
             z = abs(self.get_solute(item).get_formal_charge())
             # ignore uncharged species            
             if not z == 0:
                 # determine the value of the exponent alpha 
-                if self.get_ionic_strength() < 0.36 * z:
+                if self.get_ionic_strength().magnitude < 0.36 * z:
                     alpha = 0.6 / z ** 0.5
                 else:
-                    alpha = self.get_ionic_strength() ** 0.5 / z
+                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z
                 
-                EC += self.get_solute(item).get_molar_conductivity() * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
+                EC += self.get_solute(item).get_molar_conductivity(temperature) * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
              
         return EC.to('S/m')
     
@@ -1321,15 +1304,13 @@ class Solution:
     
     
 ## Activity-related methods
-    def get_activity_coefficient(self,solute,temperature=25):
+    def get_activity_coefficient(self,solute):
         '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
         
         Parameters:
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
         
         Returns:
         -------
@@ -1344,19 +1325,20 @@ class Solution:
         get_activity_coefficient_TCPC
         '''
         ion = self.components[solute]
+        temperature = self.get_temperature()
         # for very low ionic strength, use the Debye-Huckel limiting law
         
-        if self.get_ionic_strength() <= 0.005:
+        if self.get_ionic_strength().magnitude <= 0.005:
             logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),temperature)
             
         # use the Guntelberg approximation for 0.005 < I < 0.1
-        elif self.get_ionic_strength() <= 0.1:
+        elif self.get_ionic_strength().magnitude <= 0.1:
             logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
             
         # use the Davies equation for 0.1 < I < 0.5
-        elif self.get_ionic_strength() <= 0.5:
+        elif self.get_ionic_strength().magnitude <= 0.5:
             logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
             
@@ -1370,15 +1352,15 @@ class Solution:
             return 1.0
         # TODO - NEED TO TEST THIS FUNCTION
     
-    def get_activity(self,solute,temperature=25):
+    def get_activity(self,solute):
         '''returns the thermodynamic activity of the solute in solution
        
         Parameters:
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
+        temperature :    Quantity, optional
+                     The temperature of the solution. Defaults to 25 degrees C if omitted
         
         Returns:
         -------
@@ -1402,6 +1384,7 @@ class Solution:
         get_ionic_strength
         
         '''
+        temperature = self.get_temperature()
         # switch to the water activity function if the species is H2O
         if solute == 'H2O' or solute == 'water':
             # find the predominant non-solvent solute
@@ -1427,23 +1410,26 @@ class Solution:
         
         return activity
 
-    def get_osmotic_coefficient(self,solute,temperature=25):
-        '''calculate the osmotic coefficient for a given solute
-        
-        Parameters:
-        ----------
-        solute : str 
-                    String representing the name of the solute of interest
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
-        
+    def get_osmotic_coefficient(self):
+        '''calculate the osmotic coefficient
+
         Returns:
         -------
         float : 
-            The practical osmotic coefficient, based on 'solute'
+            The practical osmotic coefficient
+            
+        Notes:
+        -----
+        For ionic strengths below 0.5 mol/kg, the osmotic coefficient is assumed to equal 1.0.
+        1.0 will also be returned at higher ionic strengths if appropriate Pitzer
+        parameters are not supplied.
         '''
         
         ion = self.components[solute]
+        temperature = self.get_temperature()
+        
+        if self.get_ionic_strength().magnitude < 0.5:
+            return self.get_mole_fraction('H2O')
         
         if self.components[solute].parameters_TCPC:
             osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
@@ -1453,15 +1439,8 @@ class Solution:
             logger.error('Cannot calculate water activity because TCPC parameters for solute are not specified. Returning unit osmotic coefficient')
             return 1
         
-    def get_water_activity(self,solute,temperature=25):
-        '''return the water activity based on a given solute
-        
-        Parameters:
-        ----------
-        solute : str 
-                    String representing the name of the solute of interest
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
+    def get_water_activity(self):
+        '''return the water activity
         
         Returns:
         -------
@@ -1476,13 +1455,18 @@ class Solution:
         
         Where M_w is the molar mass of water (0.018015 kg/mol)
         
+        The water activity is assumed equal to the mole fraction of water for 
+        ionic strengths below 0.5 mol/kg, or if appropriate Pitzer parameters
+        are not available.
+        
         References:
         ----------
         Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
         //Chemical Society Review// 34, 440-458.
         
         '''
-        return math.exp(- self.get_osmotic_coefficient(solute,temperature) * 0.018015 * self.get_total_moles_solute())
+        
+        return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * self.get_total_moles_solute())
         
     def get_ionic_strength(self):
         '''() -> float
@@ -1495,7 +1479,7 @@ class Solution:
         Returns:
         -------
         float : 
-            The molal scale ionic strength of the parent solution.
+            The ionic strength of the parent solution, mol/kg.
         
         Examples:
         --------
@@ -1509,7 +1493,7 @@ class Solution:
         for solute in self.components.keys():
             self.ionic_strength += 0.5 * self.get_amount(solute,'mol/kg') * self.components[solute].get_formal_charge() ** 2
        
-        return self.ionic_strength.magnitude
+        return self.ionic_strength
             
     ## informational methods
     def list_solutes(self):
