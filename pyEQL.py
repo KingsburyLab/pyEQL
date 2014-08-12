@@ -1499,12 +1499,7 @@ class Solution:
     def list_solutes(self):
         return list(self.components.keys())
     
-    # TODO - deprecate this
-    def list_concentrations(self,unit):
-        print('DEPRECATE!')
-        self.list_components(self,unit)
-    
-    def list_components(self,unit):
+    def list_components(self,unit='mol/kg'):
         '''() -> dict
         
         Return a dictionary containing a list of the species in solution paired with their amount in the specified units
@@ -1522,22 +1517,7 @@ class Solution:
         self.act_list={}
         for i in self.components.keys():
             self.act_list.update({i:self.components[i].get_activity()})
-        print('Component activities:',self.act_list )
-    
-    # TODO deprecate this
-    def list_mole_fractions(self):
-        '''() -> dict
-        
-        Return a dictionary containing a list of the species in solution paired with their mole fraction
-        '''
-        self.fraction_list={}
-        for i in self.components.keys():
-            self.fraction_list.update({i:self.get_mole_fraction(i)})
-        # add mole fraction for water
-        self.fraction_list.update({'H2O':self.get_moles_water()/(self.get_moles_water() + self.get_total_moles_solute())})
-        print('DEPRECATE!')
-        return self.fraction_list
-        
+        print('Component activities:',self.act_list )   
    
     def __str__(self):
         #set output of the print() statement for the solution     
