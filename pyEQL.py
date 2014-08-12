@@ -378,7 +378,7 @@ def alpha(n,pH,pKa_list):
 
 ### Functions that operate on Solution Objects
 
-def gibbsmix(Solution1, Solution2,temperature=25):
+def gibbsmix(Solution1, Solution2,temperature=25*unit('degC')):
     '''(Solution, Solution) -> float
     Return the Gibbs energychange associated with mixing two solutions
 
@@ -386,7 +386,7 @@ def gibbsmix(Solution1, Solution2,temperature=25):
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-    temperature : float or int, optional
+    temperature : Quantity, optional
                   The temperature in Celsius. Defaults to 25 degrees if not specified.
         
     Returns:
@@ -430,7 +430,7 @@ def gibbsmix(Solution1, Solution2,temperature=25):
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_activity(solute))
 
-    return CONST_R * kelvin(temperature) * (term_list[blend] - term_list[concentrate] - term_list[dilute])
+    return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
 def entropy_mix(Solution1, Solution2,temperature=25):
     '''(Solution, Solution) -> float
