@@ -476,55 +476,6 @@ def mix(Solution1, Solution2):
                 Blend.components[item].set_parameters_TCPC(Solution2.components[item].get_parameters_TCPC('S'),Solution2.components[item].get_parameters_TCPC('b'),Solution2.components[item].get_parameters_TCPC('n'),Solution2.components[item].get_parameters_TCPC('z_plus'),Solution2.components[item].get_parameters_TCPC('z_minus'),Solution2.components[item].get_parameters_TCPC('nu_plus'),Solution2.components[item].get_parameters_TCPC('nu_minus'))
 
     return Blend
-    
-
-### Other Stuff - TODO
-
-def mobility(diffusion_coefficient,formal_charge,temperature=25*unit('degC')):
-    '''Return the ionic mobility of a species
-    
-    Parameters:
-    ----------
-    diffusion_coefficient : Quantity
-                The diffusion coefficient of the species
-    formal_charge : float or int
-                The charge on the species, including sign
-    temperature : float or int, optional
-                The solution temperature in degrees Celsius. 
-                Defaults to 25 degrees if omitted.
-    
-    Returns:
-    -------
-    float : the ionic mobility in m2/V-s
-    
-    
-    Notes:
-    -----
-    This function uses the Einstein relation to convert a diffusion coefficient
-    into an ionic mobility[1]
-    
-    .. math::
-        \mu_i = {F |z_i| D_i \over RT}
-    
-    .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
-    
-    '''
-    mobility = unit.N_A * unit.e * abs(formal_charge) * diffusion_coefficient / (unit.R * temperature)
-    
-    logger.info('Computed ionic mobility as %s m/s-V from D = %s m2/s at T=%S degrees C % mobility,diffusion_coeffiicent,temperature')
-    
-    return mobility
-
-def debye_length(dielectric_constant,ionic_strength,temperature):
-    '''(number,number,number) -> float
-    Return the Debye length of a solution in meters
-    
-    dielectric_constant is the dielectric constant of the solution
-    ionic_strength is the ionic strength in moles per cubic meter
-    temp is the temperature in degrees celsius
-    
-    '''
-    return math.sqrt( dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
 
 #####CLASS DEFINITIONS
 '''
@@ -852,6 +803,35 @@ class Solution:
             
             return molar_cond.to('mS / cm / (mol/L)')
         
+        def mobility(self,temperature=25*unit('degC')):
+            '''Return the ionic mobility of a species
+            
+            Parameters:
+            ----------
+            temperature : Quantity, optional
+                        The temperature of the parent solution. Defaults to 25 degC if omitted.
+            
+            Returns:
+            -------
+            float : the ionic mobility
+            
+            
+            Notes:
+            -----
+            This function uses the Einstein relation to convert a diffusion coefficient
+            into an ionic mobility[1]
+            
+            .. math::
+                \mu_i = {F |z_i| D_i \over RT}
+            
+            .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+            
+            '''
+            mobility = unit.N_A * unit.e * abs(self.get_formal_charge()) * self.get_parameter('diffusion_coefficient') / (unit.R * temperature)
+            
+            logger.info('Computed ionic mobility as %s from D = %s at T=%S' % mobility,self.get_diffusion_coefficient(),temperature)
+            
+            return mobility
             
         #set output of the print() statement
         def __str__(self):
@@ -1340,15 +1320,26 @@ class Solution:
         ion = self.components[solute]
         temperature = self.get_temperature()
         
-        if self.get_ionic_strength().magnitude < 0.5:
-            return self.get_mole_fraction('H2O')
+        # check to see if we have Pitzer parameters available
+        salt = salt.identify_salt(self)
+        database.search_parameters(salt)
         
-        if self.components[solute].parameters_TCPC:
+        for item in db[salt]:
+            if item.get_name() == 'pitzer_parameters_activity':
+                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer
+            
+            elif self.components[solute].parameters_TCPC:
             osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
             logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
             return osmotic_coefficient
+            
+            else:
+                return self.get_mole_fraction('H2O')
+
+        
+        
         else:
-            logger.error('Cannot calculate water activity because TCPC parameters for solute are not specified. Returning unit osmotic coefficient')
+            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Setting osmotic coefficient equal to mole fraction of water')
             return 1
         
     def get_water_activity(self):
@@ -1367,9 +1358,8 @@ class Solution:
         
         Where M_w is the molar mass of water (0.018015 kg/mol)
         
-        The water activity is assumed equal to the mole fraction of water for 
-        ionic strengths below 0.5 mol/kg, or if appropriate Pitzer parameters
-        are not available.
+        If appropriate Pitzer or TCPC model parameters are not available, the
+        water activity is assumed equal to the mole fraction of water.
         
         References:
         ----------
@@ -1430,59 +1420,58 @@ class Solution:
         for i in self.components.keys():
             self.act_list.update({i:self.components[i].get_activity()})
         print('Component activities:',self.act_list )   
-   
+
+    def get_debye_length(self):
+        '''(number,number,number) -> float
+        Return the Debye length of a solution in meters
+        
+        dielectric_constant is the dielectric constant of the solution
+        ionic_strength is the ionic strength in moles per cubic meter
+        temp is the temperature in degrees celsius
+        
+        '''
+        # TODO - make dielectric constant dependent on ionic strength
+        temperature = self.get_temperature()
+        ionic_strength= self.get_ionic_strength()
+        dielectric_constant = h2o.water_dielectric_constant()
+        
+        logger.warning('Debye length is being calculated using the dielectric constant for pure water. The influence \
+        of ionic strength is not yet accounted for')
+        
+        return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
+    
+    def get_lattice_distance(self,solute):
+        '''Calculate the average distance between molecules of the given solute,
+        assuming that the molecules are uniformly distributed throughout the
+        solution.
+        
+        Parameters:
+        ----------
+        solute : str 
+                    String representing the name of the solute of interest
+        
+        Returns:
+        -------
+        Quantity : The average distance between solute molecules
+        
+        Examples:
+        --------
+        >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
+        >>> soln.get_lattice_distance('Na+')
+        1.492964.... nanometer
+        
+        '''
+        # calculate the volume per particle as the reciprocal of the molar concentration
+        # (times avogadro's number). Take the cube root of the volume to get 
+        # the average distance between molecules
+        distance = (self.get_amount(solute,'mol/L') * unit.N_A) ** (-1/3)     
+        
+        return distance.to('nm')
+     
     def __str__(self):
         #set output of the print() statement for the solution     
         return 'Components: '+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
-
-class Membrane:
-    '''Class representing the properties of various kinds of water treatment membranes'''
-    
-    
-    def __init__(self,name,type,permselectivity,area_resistance,cost,thickness,fixed_charge_density):
-        '''(str,str,float,float,float,number,number) -> Membrane
-        
-        name is a str describing the membrane
-        type indicates the kind of membrane. Valid types are 'aem' 'cem' 'bpem' 'mf' 'uf' and 'ro'
-        perm is a number representing the membrane permselectivity (0 < perm < 1)
-        resist is the areal resistance of the membrane, in ohm-m2
-        cost is the unit cost of the membrane, in $/m2
-        thickness is the thickness of the membrane in m
-        fixed_charge_density is the concentration of fixed charges (for IX membranes), eq/m3
-        
-        '''
-        #warn if an invalid membrane type is given
-        types = ['aem','cem','bpem','mf','uf','ro','fo']
-        if type in types:
-            self.mem_type = type
-        else:
-            self.mem_type = 'Invalid'
-            print("ERROR: Invalid membrane type specified.")
-       
-        self.title = name
-        self.permselectivity = permselectivity
-        self.resistance = area_resistance
-        self.unit_cost = cost
-        self.thickness = thickness
-        self.fixed_charge_density = fixed_charge_density
-    
-    #simple methods to access the main properties
-    def get_mem_type(self):
-        return self.mem_type
-    def get_permselectivity(self):
-        return self.permselectivity
-    def get_resistance(self):
-        return self.resistance
-    def get_unit_cost(self):
-        return self.unit_cost
-    def get_thickness(self):
-        return self.thickness
-    def get_fixed_charge_density(self):
-        return self.fixed_charge_density
-        
-    #set output of the print() statement for the solution     
-    def __str__(self):
-        return self.title + ' -- Type: ' + self.mem_type + '  Permselectivity: ' +str(round(self.permselectivity,3)) + ' Resistance: ' + str(self.resistance) + ' ohm-m2  Cost: ' +  str(self.unit_cost)+' $/m2'
+      
         
 # TODO - turn doctest back on when the nosigint error is gone        
 #if __name__ == "__main__":

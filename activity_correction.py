@@ -96,10 +96,6 @@ def _debye_parameter_activity(temperature=25*unit('degC')):
     
     logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius' % (debyeparam,temperature))
     return debyeparam.to('kg ** 0.5 / mol ** 0.5')
-    
-    # or this from MWH treatment book, page 302
-    # TODO - document reference
-    #return 1.29e6 * math.sqrt(2) * (water_dielectric_constant(temperature) * kelvin(temperature)) ** -1.5
 
 def _debye_parameter_osmotic(temperature=25*unit('degC')):
     '''(number) -> float
