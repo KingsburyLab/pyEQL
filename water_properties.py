@@ -47,8 +47,8 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     Examples:
     --------
-    >>> water_density(25) #doctest: +ELLIPSIS
-    997.0415 kilogram/meter3 
+    >>> water_density(25*unit('degC')) #doctest: +ELLIPSIS
+    <Quantity(997.0415, 'kilogram / meter ** 3')>
     
     '''
     # calculate the magnitude
@@ -79,8 +79,8 @@ def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     Examples:
     --------
-     >>> water_specific_weight() #doctest: +ELLIPSIS
-    9777.6.... newton/meter3
+    >>> water_specific_weight() #doctest: +ELLIPSIS
+    <Quantity(9777.637025975, 'newton / meter ** 3')>
             
     See Also:
     --------
@@ -121,12 +121,13 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     Examples:
     --------
-    >>> water_viscosity_dynamic(20) #doctest: +ELLIPSIS
-    .000998... kilogram/(meter second)
-    >>> water_viscosity_dynamic(100,25000000) #doctest: +ELLIPSIS
-    0.0002816.... kilogram/(meter second)
+    >>> water_viscosity_dynamic(20*unit('degC')) #doctest: +ELLIPSIS
+    <Quantity(0.000998588610804179, 'kilogram / meter / second')>
+    >>> water_viscosity_dynamic(unit('100 degC'),unit('25 MPa')) #doctest: +ELLIPSIS
+    <Quantity(0.00028165034364318573, 'kilogram / meter / second')>
     >>> water_viscosity_dynamic(25*unit('degC'),0.1*unit('MPa')) #doctest: +ELLIPSIS
-    0.0008872.... kilogram(meter second)
+    <Quantity(0.0008872817880143659, 'kilogram / meter / second')>
+    
     #TODO - check these again after I implement pressure-dependent density function
     
     '''
@@ -198,7 +199,7 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
     Examples:
     --------
     >>> water_viscosity_kinematic()  #doctest: +ELLIPSIS
-    8.89914.... meter2/second  
+    <Quantity(8.899146003595295e-07, 'meter ** 2 / second')>
             
     See Also:
     --------
@@ -218,9 +219,8 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     
     Parameters:
     ----------
-    temperature : float or int, optional
-                  The temperature in Celsius. Must be between 0 and 74 C. See 
-                  notes. Defaults to 25 degrees if not specified.
+    temperature : Quantity, optional
+                  The temperature. Defaults to 25 degC if omitted.
                   
     Returns:
     -------
@@ -242,14 +242,14 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     
     Examples:
     --------
-    >>> water_dielectric_constant(20) #doctest: +ELLIPSIS
+    >>> water_dielectric_constant(unit('20 degC')) #doctest: +ELLIPSIS
     80.15060...
     
     Display an error if 'temperature' is outside the valid range
     
-#     TODO >>> water_dielectric_constant(-5)
-#     ERROR: Temperature specified exceeds range of data. Cannot extrapolate dielectric constant.
-#     
+    >>> water_dielectric_constant(-5*unit('degC'))
+    
+     
     '''
     # do not return anything if 'temperature' is outside the range for which
     # this fit applies
@@ -272,3 +272,7 @@ def water_dielectric_constant(temperature=25*unit('degC')):
 def water_conductivity(temperature):
     pass
 
+# TODO - turn doctest back on when the nosigint error is gone        
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
