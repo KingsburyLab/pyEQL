@@ -12,7 +12,6 @@ import math
 # internal pyEQL imports
 import activity_correction as ac
 import water_properties as h2o
-import salt_ion_match as salt
 
 # the pint unit registry
 from parameter import unit
@@ -1316,31 +1315,32 @@ class Solution:
         1.0 will also be returned at higher ionic strengths if appropriate Pitzer
         parameters are not supplied.
         '''
-        
-        ion = self.components[solute]
         temperature = self.get_temperature()
         
-        # check to see if we have Pitzer parameters available
+        import salt_ion_match as salt
+        
+        # identify the predominant salt in the solution
         salt = salt.identify_salt(self)
+        
+        # search the database for pitzer parameters for 'salt'
         database.search_parameters(salt)
         
         for item in db[salt]:
             if item.get_name() == 'pitzer_parameters_activity':
-                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer
+                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer()
+                logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
+                return osmotic_coefficient
             
-            elif self.components[solute].parameters_TCPC:
-            osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
-            logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
-            return osmotic_coefficient
-            
+            # TODO - either deprecate or update to parameter framework
+#            elif self.components[solute].parameters_TCPC:
+#                ion = self.components[solute]
+#                osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+#                logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
+#                return osmotic_coefficient
+                
             else:
-                return self.get_mole_fraction('H2O')
-
-        
-        
-        else:
-            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Setting osmotic coefficient equal to mole fraction of water')
-            return 1
+                logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
+                return 1
         
     def get_water_activity(self):
         '''return the water activity
@@ -1356,7 +1356,8 @@ class Solution:
         
         ## ln a_w = - \Phi M_w \sum_i m_i
         
-        Where M_w is the molar mass of water (0.018015 kg/mol)
+        Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
+        of each species.
         
         If appropriate Pitzer or TCPC model parameters are not available, the
         water activity is assumed equal to the mole fraction of water.
@@ -1367,9 +1368,25 @@ class Solution:
         //Chemical Society Review// 34, 440-458.
         
         '''
+        '''
+        pseudo code
         
-        return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * self.get_total_moles_solute())
+        identify predominant salt for coefficients
+        check if coefficients exist for that salt
+        if so => calc osmotic coefficient and log an info message
         
+        if not = > return mole fraction and log a warning message
+        
+        '''
+        osmotic_coefficient = self.get_osmotic_coefficient()
+        
+        if osmotic_coefficient == 1:
+            logger.warning('Pitzer parameters not found. Water activity set equal to mole fraction')
+            return self.get_mole_fraction('H2O')
+        else:
+            logger.info('Calculated water activity using osmotic coefficient')
+            return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * self.get_total_moles_solute())
+    
     def get_ionic_strength(self):
         '''() -> float
         

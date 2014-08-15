@@ -99,58 +99,65 @@ def search_parameters(formula):
             current_file = open(database_dir+'/'+file,'r')
             
             # read each line of the file, looking for the formula
-            for line in current_file:
-                
-                line_num += 1
-                
-                try:
-                    # look for keywords in the first column of each file. If found,
-                    # store the entry from the 2nd column
-                    if 'Name' in line:
-                        param_name = _parse_line(line)[1]
-                        
-                    elif 'Description' in line:
-                        param_desc = _parse_line(line)[1]
-                        
-                    elif 'Unit' in line:
-                        param_unit = _parse_line(line)[1]
-                        
-                    elif 'Reference' in line:
-                        param_ref = _parse_line(line)[1]
-    
-                    elif 'Temperature' in line:
-                        param_temp = _parse_line(line)[1]
-                        
-                    elif 'Pressure' in line:
-                        param_press = _parse_line(line)[1]
-                        
-                    elif 'Ionic Strength' in line:
-                        param_ionic = _parse_line(line)[1]
-                        
-                    elif 'Comment' in line:
-                        param_comment = _parse_line(line)[1]
-                        
-                    # make sure to only read values when the formula is followed by a tab
-                    # stop. Otherwise a search for 'NaCl' will also read parameters for
-                    # 'NaClO4', for example.
-                    elif formula+'\t' in line:                                                
-                        # if there are multiple columns, pass the values as a list. 
-                        # If a single column, then just pass the value
-                        if len(_parse_line(line)) >2:
-                            param_value = _parse_line(line)[1:]
-                        else:
-                            param_value = _parse_line(line)[1]
-                                                                    
-                        # Create a new parameter object
-                        parameter = pm.Parameter(param_name,param_value,param_unit, \
-                        reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comment=param_comment)
-                        
-                        # Add the parameter to the set for this species
-                        parameters_database[formula].add(parameter)
-                        
-                except ValueError:                   
-                    logger.warning('Error encountered when reading line %s in %s' %(line_num,file))
+            try:            
+                for line in current_file:
+                    
+                    line_num += 1
+                    
+                    try:
+                        # look for keywords in the first column of each file. If found,
+                        # store the entry from the 2nd column
+                        if 'Name' in line:
+                            param_name = _parse_line(line)[1]
+                            
+                        elif 'Description' in line:
+                            param_desc = _parse_line(line)[1]
+                            
+                        elif 'Unit' in line:
+                            param_unit = _parse_line(line)[1]
+                            
+                        elif 'Reference' in line:
+                            param_ref = _parse_line(line)[1]
+        
+                        elif 'Temperature' in line:
+                            param_temp = _parse_line(line)[1]
+                            
+                        elif 'Pressure' in line:
+                            param_press = _parse_line(line)[1]
+                            
+                        elif 'Ionic Strength' in line:
+                            param_ionic = _parse_line(line)[1]
+                            
+                        elif 'Comment' in line:
+                            param_comment = _parse_line(line)[1]
+                            
+                        # make sure to only read values when the formula is followed by a tab
+                        # stop. Otherwise a search for 'NaCl' will also read parameters for
+                        # 'NaClO4', for example.
+                        elif formula+'\t' in line:                                                
+                            # if there are multiple columns, pass the values as a list. 
+                            # If a single column, then just pass the value
+                            if len(_parse_line(line)) >2:
+                                param_value = _parse_line(line)[1:]
+                            else:
+                                param_value = _parse_line(line)[1]
+                                                                        
+                            # Create a new parameter object
+                            parameter = pm.Parameter(param_name,param_value,param_unit, \
+                            reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comment=param_comment)
+                            
+                            # Add the parameter to the set for this species
+                            parameters_database[formula].add(parameter)
+                    
+                    except ValueError:                   
+                        logger.warning('Error encountered when reading line %s in %s' % (line_num,file))
+                        continue
             
+            # log a warning if an invalid character prevents reading a line
+            except UnicodeDecodeError:
+                    logger.warning('Invalid character found when reading line %s in %s' % (line_num,file))
+                    continue                        
+                
             current_file.close()
 
 def _parse_line(line):
