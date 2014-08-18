@@ -956,7 +956,13 @@ class Solution:
         
         Examples:
         --------
-        TODO - add examples for osmotic pressure
+        If 'soln' is pure water, return 0
+        >>> soln.get_osmotic_pressure()
+        0.0
+        
+        If 'soln' is 0.5 mol/kg NaCl
+        >>> soln.get_osmotic_pressure()
+        2262808... pascal
         
         '''
         # TODO - tie this into parameter() and solvent() objects
@@ -965,12 +971,6 @@ class Solution:
         osmotic_pressure = - unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
         logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
         return osmotic_pressure.to('Pa')
-        
-    # to be deprecated TODO
-    def get_unit_cost(self):
-        print('DEPRECATE!')
-        return self.unit_storage_cost
-
 
 ## Concentration  Methods        
     
