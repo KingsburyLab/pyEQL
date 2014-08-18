@@ -1087,33 +1087,6 @@ class Solution:
         else:
             print('Invalid unit %s specified for amount' % unit)
             return None
-        # to be deprecated TODO
-    
-    def get_moles(self,solute):
-        '''(str) -> float
-        Return the total moles of 'solute' in the parent Solution
-        
-        Parameters:
-        ----------
-        solute : str 
-                 String representing the name of the solute of interest
-    
-        Returns:
-        -------
-        float
-            The total moles of 'solute' in the parent Solution
-    
-        See Also:
-        --------
-        get_solvent_mass()
-        
-        Examples:
-        --------
-        TBD
-        
-        '''
-        print('DEPRECATE!')
-        return self.get_amount(solute,'mol')
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
