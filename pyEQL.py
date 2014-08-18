@@ -1214,23 +1214,8 @@ class Solution:
         temperature = self.get_temperature()
         # switch to the water activity function if the species is H2O
         if solute == 'H2O' or solute == 'water':
-            # find the predominant non-solvent solute
-            most = 0
-            predominant_solute = ''
-            for item in self.components:
-                mass = self.get_amount(item,'mol') 
-                if item != self.solvent_name and mass > most:
-                    most = mass
-                    predominant_solute = item
-            if most > 0:       
-                activity = self.get_water_activity(predominant_solute,temperature)
-                logger.info('Calculated activity of solvent (water) as %s using osmotic coefficient based on solute %s.' % (activity,predominant_solute))
-                
-            # return 1.0 water activity if there are no solutes
-            else: 
-                activity = 1
-                logger.info('Calculated activity of solvent (water) as 1.0 because no solutes were found.')
-# TODO fix this for multivalent salts e.g. MgCl2
+            activity = self.get_water_activity()
+        # TODO fix this for multivalent salts e.g. MgCl2
         else:
             activity = self.get_activity_coefficient(solute,temperature) * self.get_amount(solute,'mol/kg').magnitude
             logger.info('Calculated activity of solute %s as %s' % (solute,activity))
