@@ -982,7 +982,7 @@ class Solution:
         solute : str 
                     String representing the name of the solute of interest
         unit : str
-                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol','fraction', 'kg', and 'g/L'
+                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol', 'kg', and 'g/L'
         temperature : float or int, optional
                     The temperature in Celsius. Defaults to 25 degrees if not specified.
         
@@ -1000,7 +1000,7 @@ class Solution:
         moles = self.get_solute(solute).get_moles()
         mw = self.get_solute(solute).get_molecular_weight()
         
-        # with pint unit conversions enable, we just pass the unit to pint
+        # with pint unit conversions enabled, we just pass the unit to pint
         return moles.to(unit,'chem',mw=mw,volume=self.get_volume(temperature),solvent_mass=self.get_solvent_mass())
         
 #        if unit == 'mol':
@@ -1127,7 +1127,7 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
     
-    #to be deprecated TODO
+    #TODO - figure out how best to integrate with pint / units
     def get_mole_fraction(self,solute):
         '''(Solute) -> float
         Return the mole fraction of 'solute' in the solution
@@ -1156,8 +1156,7 @@ class Solution:
         TBD
         
         '''
-        print('DEPRECATE!')
-        return self.get_amount(solute,'fraction')
+        return self.get_amount(solute,'moles') / (self.get_moles_water() + self.get_total_moles_solute())
     
     def get_moles_water(self):
         return self.get_amount(self.solvent_name,'mol',self.temperature)
@@ -1306,8 +1305,8 @@ class Solution:
 
         Returns:
         -------
-        float : 
-            The practical osmotic coefficient
+        Quantity : 
+            The osmotic coefficient
             
         Notes:
         -----
@@ -1316,18 +1315,26 @@ class Solution:
         parameters are not supplied.
         '''
         temperature = self.get_temperature()
+        ionic_strength = self.get_ionic_strength()
         
         import salt_ion_match as salt
         
         # identify the predominant salt in the solution
-        salt = salt.identify_salt(self)
+        Salt = salt.identify_salt(self)
         
         # search the database for pitzer parameters for 'salt'
-        database.search_parameters(salt)
+        database.search_parameters(Salt.formula)
         
-        for item in db[salt]:
+        found = False        
+        
+        for item in db[Salt.formula]:
             if item.get_name() == 'pitzer_parameters_activity':
-                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer()
+                found == True
+                # TODO - fix inputs for molality and alpha1 and alpha2
+                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
+                0.5*unit('mol/kg'),2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+                
                 logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
                 return osmotic_coefficient
             
@@ -1339,8 +1346,11 @@ class Solution:
 #                return osmotic_coefficient
                 
             else:
+                continue
+            
+            if found == False:
                 logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
-                return 1
+                return unit('1 dimensionless')
         
     def get_water_activity(self):
         '''return the water activity
@@ -1349,6 +1359,17 @@ class Solution:
         -------
         float : 
             The thermodynamic activity of water in the solution.
+            
+        Examples:
+        --------
+        If 'soln' is a 0.5 mol/kg NaCl solution at 25 degC:
+        >>> soln.get_water_activity()
+        0.9835...
+        
+        If 'soln' is a 5.11 mol/kg NaHCO2 (sodium formate) solution at 25 degC:
+        (literature value from Cabot specialty fluids is 0.82)
+        >>> soln.get_water_activity()
+        0.8631...
         
         Notes:
         -----
@@ -1384,8 +1405,15 @@ class Solution:
             logger.warning('Pitzer parameters not found. Water activity set equal to mole fraction')
             return self.get_mole_fraction('H2O')
         else:
-            logger.info('Calculated water activity using osmotic coefficient')
-            return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * self.get_total_moles_solute())
+            concentration_sum = unit('0 mol/kg')
+            for item in self.components:                
+                if item == 'H2O':
+                    pass
+                else:
+                    concentration_sum += self.get_amount(item,'mol/kg')
+                    
+            logger.info('Calculated water activity using osmotic coefficient')        
+            return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * concentration_sum)
     
     def get_ionic_strength(self):
         '''() -> float
