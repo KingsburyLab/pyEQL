@@ -836,10 +836,6 @@ class Solution:
         def __str__(self):
             return 'Species ' + str(self.get_name()) + ' MW=' + str(self.get_molecular_weight()) +' Valence='+str(self.get_formal_charge()) + ' Amount= ' + str(self.get_moles()) + 'moles  Activity= ' + str(self.get_activity())
     
-    class Solvent:
-        '''subclass of Solute. Adds density'''
-        pass 
-    
     def get_solvent_mass(self):
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
