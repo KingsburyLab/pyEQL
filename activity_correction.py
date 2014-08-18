@@ -722,7 +722,7 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     
     Returns:
     -------
-    float
+    Quantity
         The osmotic coefficient of water, dimensionless
     
     Examples:

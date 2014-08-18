@@ -44,6 +44,15 @@ unit.enable_contexts('chem')
 # set the default string formatting for pint quantities
 unit.default_format = 'P~'
 
+def testfunc(val):
+    list = []
+    try:
+        list.append(float(val) * unit(''))
+        return list
+    except ValueError:
+        print('Value Error')
+        return None
+
 
 class Parameter:
     '''
@@ -62,10 +71,11 @@ class Parameter:
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
+                    
         magnitude : float, int, str, tuple or list of floats, ints, or strs
                     The value of the parameter. In most cases this will only be a single numerical value.
                     However, in some cases it may be desirable to store a group of parameters (such as coefficients
-                    for an equation) together in a tuple.
+                    for an equation) together in a tuple or list.
                     
                     Numeric values can be input as strings (or lists of strings) and they will be converted to 
                     floats. 
@@ -82,7 +92,7 @@ class Parameter:
                     must be followed. e.g. 'meters ** 2 / second' and 'm **2 /s' are valid but
                     'm2/s' is not.
                     
-                    If a parameter has no units, leave blank or enter 'dimensionless' or 'None'
+                    If a parameter has no units, leave blank or enter 'dimensionless'
                     
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
@@ -138,23 +148,27 @@ class Parameter:
         <BLANKLINE>
         '''
         self.name = name
-        
+        use_units = ''
         # turn numeric parameters into quantities with associated units
         # if units were specified as 'None', convert into something pint will understand
+        if units == 'None' or units == 'none' or units == '' or units == 'dimensionless':
+            use_units = 'dimensionless'
+        else:
+            use_units = units
         
         # see if the input value is a list or tuple. If so, create a list of
         # quantities (including units), and convert the list to a tuple
         if isinstance(magnitude,(tuple,list)):
             # check whether each element is a number
             temp_list=[]
-            for item in magnitude:    
+            for item in magnitude:
                 try:
-                    temp_list.append(float(item) * unit(units))
+                    temp_list.append(float(item) * unit(use_units))
                 except ValueError:
+                    print('Value Error on %s' % item)
                     # Throw an error if units are assigned to a non-numeric parameter
-                    if not (units == 'dimensionless' or units == '' or units == 'None' or units == 'none'):
+                    if not (use_units == 'dimensionless'):
                         logger.error('A non-numeric parameter cannot have units, but units of %s were specified' % units)
-                    
                     temp_list.append(item)
                     
             # convert the resulting list into a tuple
@@ -164,10 +178,10 @@ class Parameter:
         # doesn't work, it must be a str and will be passed on as-is
         else:
             try:
-                self.value=float(magnitude) * unit(units)
+                self.value=float(magnitude) * unit(use_units)
             except ValueError:
                 # Throw an error if units are assigned to a non-numeric parameter
-                if not (units == 'dimensionless' or units == '' or units == 'None' or units == 'none'):
+                if not (use_units == 'dimensionless'):
                     logger.error('A non-numeric parameter cannot have units, but units of %s were specified' % units)
                 
                 self.value = magnitude

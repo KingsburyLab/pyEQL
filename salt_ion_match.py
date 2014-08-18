@@ -14,6 +14,60 @@ logger.addHandler(logging.NullHandler())
 
 import chemical_formula as chem
 
+class Salt:
+    '''
+    Class to represent a salt.
+    '''
+    def __init__(self,cation,anion):
+        self.cation=cation
+        self.anion=anion
+        
+        '''
+        Create a salt object based on its component ions
+        
+        Parameters:
+        ----------
+        cation, anion : str
+                Chemical formula of the cation and anion, respectively
+        
+        Returns:
+        -------
+        Salt : An object representing the properties of the salt
+        '''
+    
+        # get the charges on cation and anion
+        self.z_cation = chem.get_formal_charge(cation)
+        self.z_anion = chem.get_formal_charge(anion)
+        
+        # assign stoichiometric coefficients by finding a common multiple
+        self.nu_cation = abs(self.z_anion)
+        self.nu_anion = abs(self.z_cation)
+        
+        # if both coefficients are the same, set each to one
+        if self.nu_cation == self.nu_anion:
+            self.nu_cation = 1
+            self.nu_anion = 1
+            
+        # start building the formula, cation first
+        salt_formula=''
+        if self.nu_cation > 1:
+            salt_formula+='('
+            salt_formula+= _trim_formal_charge(cation)
+            salt_formula+=')'
+            salt_formula+=str(self.nu_cation)
+        else:
+            salt_formula+= _trim_formal_charge(cation)
+        
+        if self.nu_anion > 1:
+            salt_formula+='('
+            salt_formula+= _trim_formal_charge(anion)
+            salt_formula+=')'
+            salt_formula+=str(self.nu_anion)
+        else:
+            salt_formula+= _trim_formal_charge(anion)
+        
+        self.formula = salt_formula
+
 def _sort_components(Solution):
     '''
     Sort the components of a solution in descending order (by mole fraction).
@@ -49,9 +103,11 @@ def identify_salt(Solution):
     (e.g., if a solution contains 0.5 mol/kg of Na+ and Cl-, plus traces of H+
     and OH-, the matched salt is 0.5 mol/kg NaCl)
     
+    Create a Salt object for this salt.
+    
     Returns:
     -------
-    A string representing the chemical formula of the salt
+    A Salt object.
     '''
     # sort the components by moles
     sort_list = _sort_components(Solution)
@@ -74,66 +130,7 @@ def identify_salt(Solution):
                 pass
             
     # assemble the salt
-    salt_formula = build_salt(cation,anion)
-    return salt_formula
-
-def build_salt(cation,anion):
-    '''
-    Generate a chemical formula for a salt based on its component ions
-    
-    Parameters:
-    ----------
-    cation, anion : str
-            Chemical formula of the cation and anion, respectively
-    
-    Returns:
-    -------
-    str : A string representing the chemical formula of the salt
-    
-    Examples:
-    --------
-    >>> build_salt('Na+','Cl-')
-    'NaCl'
-    >>> build_salt('Mg+2','Cl-')
-    'NaCl'
-    >>> build_salt('Fe+3','SO4-2')
-    'Fe(SO4)2'
-    >>> build_salt('Fe+2','SO4-2')
-    'FeSO4'    
-    
-    '''
-    # get the charges on cation and anion
-    z_cation = chem.get_formal_charge(cation)
-    z_anion = chem.get_formal_charge(anion)
-    
-    # assign stoichiometric coefficients by finding a common multiple
-    nu_cation = abs(z_anion)
-    nu_anion = abs(z_cation)
-    
-    # if both coefficients are the same, set each to one
-    if nu_cation == nu_anion:
-        nu_cation = 1
-        nu_anion = 1
-        
-    # start building the formula, cation first
-    salt_formula=''
-    if nu_cation > 1:
-        salt_formula+='('
-        salt_formula+= _trim_formal_charge(cation)
-        salt_formula+=')'
-        salt_formula+=str(nu_cation)
-    else:
-        salt_formula+= _trim_formal_charge(cation)
-    
-    if nu_anion > 1:
-        salt_formula+='('
-        salt_formula+= _trim_formal_charge(anion)
-        salt_formula+=')'
-        salt_formula+=str(nu_anion)
-    else:
-        salt_formula+= _trim_formal_charge(anion)
-    
-    return salt_formula
+    return Salt(cation,anion)
     
 def _trim_formal_charge(formula):
     '''

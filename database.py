@@ -155,8 +155,7 @@ def search_parameters(formula):
             
             # log a warning if an invalid character prevents reading a line
             except UnicodeDecodeError:
-                    logger.warning('Invalid character found when reading line %s in %s' % (line_num,file))
-                    continue                        
+                    logger.warning('Invalid character found when reading %s. File skipped.' % file)
                 
             current_file.close()
 
