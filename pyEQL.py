@@ -1160,39 +1160,7 @@ class Solution:
     
     def get_moles_water(self):
         return self.get_amount(self.solvent_name,'mol',self.temperature)
-    
-    # to be deprecated TODO
-    def get_molar_concentration(self,solute):
-        '''(Solute) -> float
-        Return the molar concentration of 'solute' in the solution
-        
-        
-        Parameters:
-        ----------
-        solute : str 
-                 String representing the name of the solute of interest
-    
-        Returns:
-        -------
-        float
-            The mole fraction of 'solute' in the parent Solution object
-    
-        See Also:
-        --------
-        get_solvent_mass()
-        
-        Notes:
-        -----
-        This function assumes water is the solvent with MW = 18
- 
-        Examples:
-        --------
-        TBD
-        '''
-        print('DEPRECATE!')
-        return self.get_amount(solute,'mol/L')
-    
-    
+      
 ## Activity-related methods
     def get_activity_coefficient(self,solute):
         '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
