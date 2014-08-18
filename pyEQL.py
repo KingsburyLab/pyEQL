@@ -945,7 +945,7 @@ class Solution:
         
         Returns:
         -------
-        float
+        Quantity
                 The osmotic pressure of the solution relative to pure water in Pa
                 
         References:
@@ -960,11 +960,11 @@ class Solution:
         
         '''
         # TODO - tie this into parameter() and solvent() objects
-        partial_molar_volume_water = 18e-6
+        partial_molar_volume_water = 1.82e-5 *unit('m ** 3/mol')
         
-        osmotic_pressure = unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
+        osmotic_pressure = - unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
         logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
-        return osmotic_pressure
+        return osmotic_pressure.to('Pa')
         
     # to be deprecated TODO
     def get_unit_cost(self):
@@ -1348,10 +1348,10 @@ class Solution:
             else:
                 continue
             
-            if found == False:
-                logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
-                return unit('1 dimensionless')
-        
+        if found == False:
+            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
+            return unit('1 dimensionless')
+    
     def get_water_activity(self):
         '''return the water activity
         
@@ -1375,7 +1375,7 @@ class Solution:
         -----
         Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]
         
-        ## ln a_w = - \Phi M_w \sum_i m_i
+        $$ ln a_w = - \Phi M_w \sum_i m_i    $$
         
         Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
         of each species.
