@@ -1409,30 +1409,7 @@ class Solution:
             self.ionic_strength += 0.5 * self.get_amount(solute,'mol/kg') * self.components[solute].get_formal_charge() ** 2
        
         return self.ionic_strength
-            
-    ## informational methods
-    def list_solutes(self):
-        return list(self.components.keys())
     
-    def list_components(self,unit='mol/kg'):
-        '''() -> dict
-        
-        Return a dictionary containing a list of the species in solution paired with their amount in the specified units
-        '''
-        self.mol_list={}
-        for i in self.components.keys():
-            self.mol_list.update({i:self.get_amount(i,unit)})
-        print('Component amounts (%s):' % unit,self.mol_list )
-        
-    def list_activities(self):
-        '''() -> dict
-        
-        Return a dictionary containing a list of the species in solution paired with their molal activity
-        '''
-        self.act_list={}
-        for i in self.components.keys():
-            self.act_list.update({i:self.components[i].get_activity()})
-        print('Component activities:',self.act_list )   
 
     def get_debye_length(self):
         '''(number,number,number) -> float
@@ -1480,6 +1457,32 @@ class Solution:
         distance = (self.get_amount(solute,'mol/L') * unit.N_A) ** (-1/3)     
         
         return distance.to('nm')
+        
+    ## informational methods
+        
+    def list_solutes(self):
+        return list(self.components.keys())
+    
+    def list_concentrations(self,unit='mol/kg'):
+        '''() -> dict
+        
+        Return a dictionary containing a list of the species in solution paired with their amount in the specified units
+        '''
+        self.mol_list={}
+        for i in self.components.keys():
+            self.mol_list.update({i:self.get_amount(i,unit)})
+        print('Component amounts (%s):' % unit,self.mol_list )
+        
+    def list_activities(self):
+        '''() -> dict
+        
+        Return a dictionary containing a list of the species in solution paired with their molal activity
+        '''
+        self.act_list={}
+        for i in self.components.keys():
+            self.act_list.update({i:self.components[i].get_activity()})
+        print('Component activities:',self.act_list )   
+
      
     def __str__(self):
         #set output of the print() statement for the solution     
