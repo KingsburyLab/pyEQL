@@ -692,8 +692,8 @@ class Solution:
                     logger.error('Required parameter %s not found for species %s.' % (parameter,self.formula))
             else:
                 logger.error('No entry for species %s in parameters database' % self.formula)
+                return None
                     
-        
         # TODO - deprecate in favor of the parameter module
         def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
             '''Use this function to store parameters for the TCPC activity model
@@ -1157,7 +1157,7 @@ class Solution:
         
         if self.get_ionic_strength().magnitude <= 0.005:
             logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
-            return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),temperature)
+            return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
             
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif self.get_ionic_strength().magnitude <= 0.1:
@@ -1168,15 +1168,34 @@ class Solution:
         elif self.get_ionic_strength().magnitude <= 0.5:
             logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-            
-        # use the TCPC model for higher ionic strengths, if the parameters have been set
-        elif self.components[solute].parameters_TCPC:
-            logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
-            return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
-            
+              
         else:
-            print('WARNING: Ionic strength too high to estimate activity. Specify parameters for Pitzer or TCPC methods. Returning unit activity coefficient')
-            return 1.0
+            # identify the predominant salt in the solution
+            import salt_ion_match as salt
+            Salt = salt.identify_salt(self)
+            
+            found = False
+            # use the Pitzer model for higher ionic strenght, if the parameters are available
+            for item in db[Salt.formula]:
+                if item.get_name() == 'pitzer_parameters_activity':
+                    found == True
+                    # TODO - fix inputs for alpha1 and alpha2
+                    activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
+                    self.get_amount(solute,'mol/kg'),2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                    Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+                    
+                    logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,salt))
+                    return activity_coefficient            
+                    
+            # TODO - fix TCPC implementation
+            # use the TCPC model for higher ionic strengths, if the parameters have been set
+            if self.components[solute].parameters_TCPC:
+                logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
+                return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+            
+            if found == False:
+                print('WARNING: Ionic strength too high to estimate activity. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient')
+                return unit('1 dimensionless')
         # TODO - NEED TO TEST THIS FUNCTION
     
     def get_activity(self,solute):
