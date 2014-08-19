@@ -33,6 +33,15 @@ class Salt:
         Returns:
         -------
         Salt : An object representing the properties of the salt
+        
+        Examples:
+        --------
+        >>> Salt('Na+','Cl-').formula
+        'NaCl'
+        
+        >>> Salt('Mg++','Cl-').formula
+        'MgCl2'
+        
         '''
     
         # get the charges on cation and anion
@@ -51,17 +60,25 @@ class Salt:
         # start building the formula, cation first
         salt_formula=''
         if self.nu_cation > 1:
-            salt_formula+='('
-            salt_formula+= _trim_formal_charge(cation)
-            salt_formula+=')'
+            # add parentheses if the cation is a polyatomic ion
+            if len(chem.get_elements(cation)) > 1:
+                salt_formula+='('
+                salt_formula+= _trim_formal_charge(cation)
+                salt_formula+=')'
+            else:
+                salt_formula+= _trim_formal_charge(cation)
             salt_formula+=str(self.nu_cation)
         else:
             salt_formula+= _trim_formal_charge(cation)
         
         if self.nu_anion > 1:
-            salt_formula+='('
-            salt_formula+= _trim_formal_charge(anion)
-            salt_formula+=')'
+            # add parentheses if the anion is a polyatomic ion
+            if len(chem.get_elements(anion)) > 1:
+                salt_formula+='('
+                salt_formula+= _trim_formal_charge(anion)
+                salt_formula+=')'
+            else:
+                salt_formula+= _trim_formal_charge(anion)
             salt_formula+=str(self.nu_anion)
         else:
             salt_formula+= _trim_formal_charge(anion)
