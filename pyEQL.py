@@ -1174,6 +1174,9 @@ class Solution:
             import salt_ion_match as salt
             Salt = salt.identify_salt(self)
             
+            # search the database for pitzer parameters for 'salt'
+            database.search_parameters(Salt.formula)
+        
             found = False
             # use the Pitzer model for higher ionic strenght, if the parameters are available
             for item in db[Salt.formula]:
