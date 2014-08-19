@@ -1211,13 +1211,12 @@ class Solution:
         get_ionic_strength
         
         '''
-        temperature = self.get_temperature()
         # switch to the water activity function if the species is H2O
         if solute == 'H2O' or solute == 'water':
             activity = self.get_water_activity()
         # TODO fix this for multivalent salts e.g. MgCl2
         else:
-            activity = self.get_activity_coefficient(solute,temperature) * self.get_amount(solute,'mol/kg').magnitude
+            activity = self.get_activity_coefficient(solute) * self.get_amount(solute,'mol/kg').magnitude
             logger.info('Calculated activity of solute %s as %s' % (solute,activity))
         
         return activity
@@ -1244,6 +1243,11 @@ class Solution:
         # identify the predominant salt in the solution
         Salt = salt.identify_salt(self)
         
+        # set the concentration as the average concentration of the cation and
+        # anion in the salt, accounting for stoichiometry
+        concentration = self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
+        self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion
+        
         # search the database for pitzer parameters for 'salt'
         database.search_parameters(Salt.formula)
         
@@ -1252,9 +1256,9 @@ class Solution:
         for item in db[Salt.formula]:
             if item.get_name() == 'pitzer_parameters_activity':
                 found == True
-                # TODO - fix inputs for molality and alpha1 and alpha2
+                # TODO - fix inputs for alpha1 and alpha2
                 osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
-                0.5*unit('mol/kg'),2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                concentration,2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
                 Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
                 logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
