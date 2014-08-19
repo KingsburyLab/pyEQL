@@ -171,7 +171,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     if not ionic_strength.magnitude <= 0.005:
         logger.warning('Ionic strength exceeds valid range of the Debye-Huckel limiting law')
     
-    log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * math.sqrt(ionic_strength)
+    log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * ionic_strength ** 0.5
     
     return math.exp(log_f)
 
@@ -207,7 +207,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     if not ionic_strength.magnitude <= 0.1:
         logger.warning('Ionic strength exceeds valid range of the Guntelberg approximation')
     
-    log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * math.sqrt(ionic_strength) / (1+math.sqrt(ionic_strength))
+    log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * ionic_strength ** 0.5 / (1+ionic_strength.magnitude ** 0.5)
 
     return math.exp(log_f)
     
@@ -244,7 +244,7 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature=2
         logger.warning('Ionic strength exceeds valid range of the Davies equation')
     
     # the units in this empirical equation don't work out, so we must use magnitudes
-    log_f = - _debye_parameter_activity(temperature).magnitude * formal_charge ** 2 * ( math.sqrt(ionic_strength.magnitude) / (1+math.sqrt(ionic_strength.magnitude)) - 0.2 * ionic_strength.magnitude)
+    log_f = - _debye_parameter_activity(temperature).magnitude * formal_charge ** 2 * (ionic_strength.magnitude ** 0.5 / (1+ionic_strength.magnitude ** 0.5) - 0.2 * ionic_strength.magnitude)
     
     return math.exp(log_f)
     
