@@ -420,6 +420,72 @@ def get_element_names(formula):
     
     return output_list
     
+def hill_order(formula):
+    '''
+    Return a string representing the simplest form of 'formula'
+    in the Hill order (Carbon, Hydrgen, then other elements
+    in alphabetical order). If no Carbon is present, then
+    all elements are listed in alphabetical order.
+    
+    NOTE: this function does NOT (yet) honor exceptions to the Hill Order
+    for acids, hydroxides, oxides, and ionic compounds. It follows the
+    rule above no matter what.
+    
+    Examples:
+    --------
+    >>> hill_order('CH2(CH3)4COOH')
+    'C6H15O2'
+
+    >>> hill_order('NaCl')
+    'ClNa'
+    
+    >>> hill_order('NaHCO2') == hill_order('HCOONa')
+    True
+
+    '''
+    ### TODO - add exceptions for oxides (end in O2), acids (start with H),  
+    ## ions (cation first), and hydroxides (ends in OH)
+    temp_list = _consolidate_formula(formula)
+    hill = ''
+    
+    # start the formula with C and H if Carbon is present
+    if 'C' in temp_list:
+        for item in ['C','H']:
+            if item in temp_list:
+                index=temp_list.index(item)
+                hill += item
+                # copy the number only if greater than 1        
+                if temp_list[index+1] > 1:
+                    hill += str(temp_list.pop(index+1))
+                elif temp_list[index+1] == 1:
+                    temp_list.pop(index+1)
+                temp_list.remove(item)
+        
+    # convert any remaining list entries into tuples of (element,number)
+    # so they can be sorted
+    tuple_list=[]
+    for item in temp_list:
+        index=temp_list.index(item)
+        try:
+            if item.isalpha():
+                tuple_list.append((item,temp_list[index+1]))
+        except AttributeError:
+            continue
+    
+    # put the remaining elements in alphabetical order
+    tuple_list.sort()
+    
+    # add them to the formula
+    for item in tuple_list:
+        if item[1] ==1:
+            hill += str(item[0])
+        else:
+            hill += str(item[0]) + str(item[1])
+    
+    return hill
+    
+    
+        
 def get_elements(formula):
     '''
     Return a list of strings representing the elements in a 

@@ -78,6 +78,9 @@ def search_parameters(formula):
     formula : str
             String representing the chemical formula of the species.
     '''
+    # get the hill_order() and is_valid_formula() methods from the chemistry module
+    import chemical_formula as chem
+    
     # if the formula is already in the database, then we've already searched
     # and compiled parameters, so there is no need to do it again.    
     if formula in parameters_database:
@@ -131,24 +134,28 @@ def search_parameters(formula):
                         elif 'Comment' in line:
                             param_comment = _parse_line(line)[1]
                             
-                        # make sure to only read values when the formula is followed by a tab
-                        # stop. Otherwise a search for 'NaCl' will also read parameters for
-                        # 'NaClO4', for example.
-                        elif formula+'\t' in line:                                                
-                            # if there are multiple columns, pass the values as a list. 
-                            # If a single column, then just pass the value
-                            if len(_parse_line(line)) >2:
-                                param_value = _parse_line(line)[1:]
-                            else:
-                                param_value = _parse_line(line)[1]
-                                                                        
-                            # Create a new parameter object
-                            parameter = pm.Parameter(param_name,param_value,param_unit, \
-                            reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comment=param_comment)
-                            
-                            # Add the parameter to the set for this species
-                            parameters_database[formula].add(parameter)
-                    
+                        
+                        # use the hill_order() function to standardize the 
+                        # supplied formula. Then standardize teh formulas in the
+                        # database and see if they match.
+                        # this allows a database entry for 'MgCl2' to be matched
+                        # even if the user enters 'Mg(Cl)2', for example
+                        elif chem.is_valid_formula(_parse_line(line)[0]):
+                            if chem.hill_order(formula) == chem.hill_order(_parse_line(line)[0]):                                                
+                                # if there are multiple columns, pass the values as a list. 
+                                # If a single column, then just pass the value
+                                if len(_parse_line(line)) >2:
+                                    param_value = _parse_line(line)[1:]
+                                else:
+                                    param_value = _parse_line(line)[1]
+                                                                            
+                                # Create a new parameter object
+                                parameter = pm.Parameter(param_name,param_value,param_unit, \
+                                reference=param_ref,pressure=param_press,temperature=param_temp,ionic_strength=param_ionic,description=param_desc,comment=param_comment)
+                                
+                                # Add the parameter to the set for this species
+                                parameters_database[formula].add(parameter)
+                        
                     except ValueError:                   
                         logger.warning('Error encountered when reading line %s in %s' % (line_num,file))
                         continue
