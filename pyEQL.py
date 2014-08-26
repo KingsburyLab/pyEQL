@@ -47,6 +47,31 @@ not called from another program). It creates a couple of standard test solutions
 that are used for automated tests of the functions.
 '''
 
+def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
+    '''
+    Calculate a parameter for th e Pitzer model based on temperature-dependent
+    coefficients c1,c2,c3,c4,and c5.
+    
+    Parameters:
+    ----------
+    c1, c2, c3, c4, c5: float
+                Temperature-dependent coefficients for the pitzer parameter of 
+                interest.
+    temp: Quantity
+                The temperature at which the Pitzer parameter is to be calculated
+    temp_ref: Quantity, optional
+                The reference temperature on which the parameters are based.
+                298.15 K if omitted.
+    
+    As described in the PHREEQC documentation
+    
+    
+    '''
+    pitzer_param = c1 + c2 * (1/temp + 1/temp_ref) + c2 * math.log(temp/temp_ref) \
+    + c3 * (temp - temp_ref) + c4 * (temp ** 2 - temp_ref ** 2) + c5 * (temp ** -2 - temp_ref ** -2)
+    
+    return pitzer_param
+
 def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25*unit('degC')):
     '''(float,float,number, optional number) -> float
     
