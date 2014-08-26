@@ -441,6 +441,9 @@ def hill_order(formula):
     
     >>> hill_order('NaHCO2') == hill_order('HCOONa')
     True
+    
+    >>> hill_order('Fe+2') == hill_order('Fe+3')
+    False
 
     '''
     ### TODO - add exceptions for oxides (end in O2), acids (start with H),  
@@ -482,9 +485,12 @@ def hill_order(formula):
         else:
             hill += str(item[0]) + str(item[1])
     
-    return hill
+    # append the formal charge to the end of the formula, if not zero
+    charge = get_formal_charge(formula)
+    if charge != 0:
+        hill += str(charge)
     
-    
+    return hill  
         
 def get_elements(formula):
     '''
