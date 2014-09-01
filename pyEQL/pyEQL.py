@@ -939,7 +939,7 @@ class Solution:
         <http://www.aqion.de/site/77>        
         <http://www.hydrochemistry.eu/exmpls/sc.html>        
         '''
-        EC = 0
+        EC = 0 * unit('S/m')
         temperature = self.get_temperature()
         
         for item in self.components:
