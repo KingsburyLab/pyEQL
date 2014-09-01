@@ -10,14 +10,14 @@ TODO - LICENSE INFO
 import math
 
 # internal pyEQL imports
-import activity_correction as ac
-import water_properties as h2o
+import pyEQL.activity_correction as ac
+import pyEQL.water_properties as h2o
 
 # the pint unit registry
-from parameter import unit
+from pyEQL.parameter import unit
 # functions to manage importing paramters from database files and making them accessible to pyEQL
-import database
-from database import parameters_database as db
+import pyEQL.database as database
+from pyEQL.database import parameters_database as db
 
 
 ## Logging System
@@ -666,7 +666,7 @@ class Solution:
                         Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
             '''             
             # import the chemical formula interpreter module
-            import chemical_formula as chem
+            import pyEQL.chemical_formula as chem
             
             # check that 'formula' is a valid chemical formula
             if not chem.is_valid_formula:
@@ -1196,7 +1196,7 @@ class Solution:
               
         else:
             # identify the predominant salt in the solution
-            import salt_ion_match as salt
+            import pyEQL.salt_ion_match as salt
             Salt = salt.identify_salt(self)
             
             # search the database for pitzer parameters for 'salt'
@@ -1285,7 +1285,7 @@ class Solution:
         temperature = self.get_temperature()
         ionic_strength = self.get_ionic_strength()
         
-        import salt_ion_match as salt
+        import pyEQL.salt_ion_match as salt
         
         # identify the predominant salt in the solution
         Salt = salt.identify_salt(self)

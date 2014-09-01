@@ -12,10 +12,10 @@ are called from within the get_activity_coefficient method of the Solution class
 import math
 
 # functions for properties of water
-import water_properties as h2o
+import pyEQL.water_properties as h2o
 
 # the pint unit registry
-from parameter import unit
+from pyEQL.parameter import unit
 
 # logging system
 import logging

@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # for parameter creation functions
-import parameter as pm
+import pyEQL.parameter as pm
 # for file input/output functions
 import os
 
@@ -61,7 +61,7 @@ that apply to the species.
 parameters_database={}
 
 # set the directory containing database files
-database_dir = os.getcwd()+'/database'
+database_dir = os.path.dirname(__file__)+'/database'
 
         
 def search_parameters(formula):
@@ -79,7 +79,7 @@ def search_parameters(formula):
             String representing the chemical formula of the species.
     '''
     # get the hill_order() and is_valid_formula() methods from the chemistry module
-    import chemical_formula as chem
+    import pyEQL.chemical_formula as chem
     
     # if the formula is already in the database, then we've already searched
     # and compiled parameters, so there is no need to do it again.    

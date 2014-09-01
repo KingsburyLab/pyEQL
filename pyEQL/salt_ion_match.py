@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-import chemical_formula as chem
+import pyEQL.chemical_formula as chem
 
 class Salt:
     '''
