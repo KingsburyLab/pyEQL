@@ -627,6 +627,12 @@ class Solution:
         '''        
         new_solute = self.Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
         self.components.update({new_solute.get_name():new_solute})
+        
+        # add the volume occupied by the solute. Warn if there is no partial molar volume
+        if new_solute.get_parameter('partial_molar_volume') is not None:
+            self.volume += new_solute.get_parameter('partial_molar_volume') * new_solute.get_moles()
+        else:
+            logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % formula)
     
     def add_solvent(self,formula,amount,parameters={}):
         '''Same as add_solute but omits the need to pass solvent mass to pint
