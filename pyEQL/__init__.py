@@ -8,3 +8,4 @@
     :license: TBD
 '''
 from pyEQL.pyEQL import Solution
+from pyEQL.parameter import unit
