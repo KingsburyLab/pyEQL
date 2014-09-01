@@ -1154,6 +1154,11 @@ class Solution:
     
     def get_moles_water(self):
         return self.get_amount(self.solvent_name,'mol',self.temperature)
+    
+    def get_salt(self):
+        # identify the predominant salt in the solution
+        import pyEQL.salt_ion_match as salt
+        return salt.identify_salt(self)
       
 ## Activity-related methods
     def get_activity_coefficient(self,solute):
@@ -1196,8 +1201,7 @@ class Solution:
               
         else:
             # identify the predominant salt in the solution
-            import pyEQL.salt_ion_match as salt
-            Salt = salt.identify_salt(self)
+            Salt = self.get_salt()
             
             # search the database for pitzer parameters for 'salt'
             database.search_parameters(Salt.formula)
@@ -1212,7 +1216,7 @@ class Solution:
                     self.get_amount(solute,'mol/kg'),2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
                     Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                     
-                    logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,salt))
+                    logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
                     return activity_coefficient            
                     
             # TODO - fix TCPC implementation
@@ -1288,7 +1292,7 @@ class Solution:
         import pyEQL.salt_ion_match as salt
         
         # identify the predominant salt in the solution
-        Salt = salt.identify_salt(self)
+        Salt = self.get_salt()
         
         # set the concentration as the average concentration of the cation and
         # anion in the salt, accounting for stoichiometry
