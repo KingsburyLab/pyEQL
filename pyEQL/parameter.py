@@ -38,7 +38,9 @@ from pint import UnitRegistry
 # here we assign the identifier 'unit' to the UnitRegistry
 unit = UnitRegistry()
 # append custom unit definitions and contexts
-unit.load_definitions('pint_custom_units.txt') 
+import os
+directory = os.path.dirname(__file__)
+unit.load_definitions(directory+'/pint_custom_units.txt') 
 # activate the "chemistry" context globally
 unit.enable_contexts('chem')
 # set the default string formatting for pint quantities

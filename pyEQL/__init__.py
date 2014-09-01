@@ -7,6 +7,4 @@
     :copyright: 2013-2014 by Ryan S. Kingsbury
     :license: TBD
 '''
-
-
-
+from pyEQL.pyEQL import Solution

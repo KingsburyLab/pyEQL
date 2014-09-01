@@ -7,7 +7,7 @@ of water substance
 '''
 import math
 
-from parameter import unit
+from pyEQL.parameter import unit
 
 import logging
 logger = logging.getLogger(__name__)

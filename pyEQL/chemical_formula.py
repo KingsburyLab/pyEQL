@@ -578,7 +578,7 @@ def get_molecular_weight(formula):
     
     '''
     # import elements.py - used to retreive various molecular data
-    from elements import ELEMENTS    
+    from pyEQL.elements import ELEMENTS    
     
     # perform validity check and return a parsed list of the chemical formula
     input_list = _consolidate_formula(formula)
