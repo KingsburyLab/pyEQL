@@ -874,7 +874,7 @@ class Solution:
     
         return solvent.get_moles().to('kg','chem',mw=mw)
             
-    def get_volume(self,temperature=25):
+    def get_volume(self):
         return self.volume
     
     def get_mass(self):
@@ -887,7 +887,7 @@ class Solution:
     def get_density(self):
         return self.get_mass() / self.get_volume()
         
-    def get_viscosity_dynamic(self,temperature=25):
+    def get_viscosity_dynamic(self):
         '''
         Return the dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
         at the specified temperature.
@@ -911,11 +911,11 @@ class Solution:
         .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 13-14. Plenum Press, 1980.
         
         '''
-        return h2o.water_viscosity_dynamic(temperature)
+        return h2o.water_viscosity_dynamic(self.get_temperature())
         #TODO
         
     
-    def get_viscosity_kinematic(self,temperature=25):
+    def get_viscosity_kinematic(self):
         '''
         Return the kinematic viscosity of water in m2/s = Stokes
         at the specified temperature.
@@ -934,7 +934,7 @@ class Solution:
         --------
         get_density_dynamic
         '''
-        return self.get_viscosity_dynamic(temperature) / self.get_density(temperature)
+        return self.get_viscosity_dynamic(self.get_temperature()) / self.get_density(self.get_temperature())
         
     
     def get_conductivity(self):
@@ -1028,7 +1028,7 @@ class Solution:
         mw = self.get_solute(solute).get_molecular_weight()
         
         # with pint unit conversions enabled, we just pass the unit to pint
-        return moles.to(unit,'chem',mw=mw,volume=self.get_volume(temperature),solvent_mass=self.get_solvent_mass())
+        return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
         
 #        if unit == 'mol':
 #            return moles
@@ -1040,19 +1040,19 @@ class Solution:
 #            return moles / (self.get_total_moles_solute() + self.get_moles_water())
 #        # mass per volume units
 #        elif unit == 'mol/L':
-#            return moles / self.get_volume(temperature)
+#            return moles / self.get_volume()
 #        elif unit == 'mmol/L':
-#            return moles * 1000 / self.get_volume(temperature)
+#            return moles * 1000 / self.get_volume()
 #        elif unit == 'ng/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e9 / self.get_volume(temperature)
+#            return moles * self.components[solute].get_molecular_weight() * 1e9 / self.get_volume()
 #        elif unit == 'ug/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e6 / self.get_volume(temperature)
+#            return moles * self.components[solute].get_molecular_weight() * 1e6 / self.get_volume()
 #        elif unit == 'mg/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e3 / self.get_volume(temperature)
+#            return moles * self.components[solute].get_molecular_weight() * 1e3 / self.get_volume()
 #        elif unit == 'g/L':
-#            return moles * self.components[solute].get_molecular_weight() / self.get_volume(temperature)
+#            return moles * self.components[solute].get_molecular_weight() / self.get_volume()
 #        elif unit == 'kg/L':
-#            return moles * self.components[solute].get_molecular_weight() / 1e3 / self.get_volume(temperature)
+#            return moles * self.components[solute].get_molecular_weight() / 1e3 / self.get_volume()
 #        # mass units
 #        elif unit == 'ng':
 #            return moles * self.components[solute].get_molecular_weight() * 1e9
@@ -1106,11 +1106,11 @@ class Solution:
         if unit == 'mol':
             self.components[solute].set_moles(amount)
         elif unit == 'mol/L':
-            self.components[solute].set_moles(amount * self.get_volume(temperature))
+            self.components[solute].set_moles(amount * self.get_volume())
         elif unit == 'mol/kg':
             self.components[solute].set_moles(amount * self.get_solvent_mass())
         elif unit == 'g/L':
-            self.components[solute].set_moles(amount / self.get_molecular_weight() * self.get_volume(temperature))
+            self.components[solute].set_moles(amount / self.get_molecular_weight() * self.get_volume())
         elif unit == 'fraction':
             self.components[solute].set_moles(amount * (self.get_total_moles_solute() + self.get_moles_water()))
         elif unit == 'kg':
