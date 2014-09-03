@@ -1302,8 +1302,8 @@ class Solution:
         
         # set the concentration as the average concentration of the cation and
         # anion in the salt, accounting for stoichiometry
-        concentration = self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
-        self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion
+        concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
+        self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
         
         # search the database for pitzer parameters for 'salt'
         database.search_parameters(Salt.formula)
@@ -1395,7 +1395,8 @@ class Solution:
                 else:
                     concentration_sum += self.get_amount(item,'mol/kg')
                     
-            logger.info('Calculated water activity using osmotic coefficient')        
+            logger.info('Calculated water activity using osmotic coefficient')  
+            
             return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * concentration_sum)
     
     def get_ionic_strength(self):
