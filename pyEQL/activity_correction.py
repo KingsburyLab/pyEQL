@@ -297,7 +297,7 @@ def get_activity_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_f
     # add and exponentiate to eliminate the log
     return math.exp(PDH + SV)
     
-def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_MX,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
     '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
     Parameters:
@@ -309,7 +309,7 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     alpha1, alpha2: number
                     Coefficients for the Pitzer model. This function assigns the coefficients
                     proper units of kg ** 0.5 / mol ** 0.5 after they are entered.
-    beta1, beta2: number
+    beta0, beta1, beta2, C_phi: number
                     Coefficients for the Pitzer model. These ion-interaction parameters are
                     specific to each salt system.
     z_cation, z_anion: int
@@ -330,16 +330,12 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless
     
     Examples:
-    --------
-    NOTE: example below doesn't quite agree with spreadsheet result for potassium formate (0.619) 
-    
+    --------  
     >>> get_activity_coefficient_pitzer(0.5*unit('mol/kg'),0.5*unit('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
-    ￼0.620509...   
-    
-    NOTE: example below doesn't agree with spreadsheet result for sodium formate (0.764) 
-    
+    ￼0.61915...   
+        
     >>> get_activity_coefficient_pitzer(5.6153*unit('mol/kg'),5.6153*unit('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
-    ￼0.74128...
+    ￼0.76331...
     
     NOTE: the examples below are for comparison with experimental and modeling data presented in
     the May et al reference below. 
@@ -350,11 +346,11 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.3011
     >>> get_activity_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-    0.30447 ...
+    0.30249 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.1653
     >>> get_activity_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-    0.1767 ...
+    0.16241 ...
     
     
     References:
@@ -380,7 +376,6 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     _pitzer_B_MX
     _pitzer_B_gamma
     _pitzer_B_phi
-    _pitzer_C_phi
     _pitzer_log_gamma
 
     
@@ -389,12 +384,12 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     alpha1 = alpha1* unit('kg ** 0.5 / mol ** 0.5')
     alpha2 = alpha2* unit('kg ** 0.5 / mol ** 0.5')
     b = b * unit('kg ** 0.5 / mol ** 0.5')
+    C_phi = C_phi * unit('kg ** 2 /mol ** 2')
     
     BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
     Bphi = _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
-    Cphi = _pitzer_C_phi(C_MX,z_cation,z_anion)
     
-    loggamma = _pitzer_log_gamma(ionic_strength,molality,BMX,Bphi,Cphi,z_cation,z_anion,nu_cation,nu_anion,temperature,b)
+    loggamma = _pitzer_log_gamma(ionic_strength,molality,BMX,Bphi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature,b)
     
     return math.exp(loggamma) 
     
@@ -561,37 +556,37 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     coeff = beta0 + beta1 * math.exp(-alpha1 * ionic_strength ** 0.5) + beta2 * math.exp(-alpha2* ionic_strength ** 0.5)
     return coeff * unit('kg/mol')
 
-def _pitzer_C_phi(C_MX,z_cation,z_anion):
-    '''
-    Return the C^\Phi coefficient for the Pitzer ion interaction model.
-    
-    $$ C^\Phi = C_MX * \sqrt(2 \abs(z_+ z_-)) $$
-    
-    Parameters:
-    ----------
-    C_MX: number
-                    The C_MX paramter for the Pitzer ion interaction model.
-    z_cation, z_anion: int
-                    The formal charge on the cation and anion, respectively
-                    
-    Returns:
-    -------
-    float
-            The C^Phi parameter for the Pitzer ion interaction model.
-    
-    References:
-    ----------       
-    Kim, H., & Jr, W. F. (1988). 
-    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
-    Journal of Chemical and Engineering Data, (2), 177–184.
-    
-    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
-    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
-    '''
-    
-    coeff = C_MX * ( 2 * abs(z_cation * z_anion) ) ** 0.5
-    return coeff * unit('kg ** 2 /mol ** 2')
+#def _pitzer_C_MX(C_phi,z_cation,z_anion):
+#    '''
+#    Return the C^\Phi coefficient for the Pitzer ion interaction model.
+#    
+#    $$ C_MX = C^\Phi / 2 \sqrt( \abs(z_+ z_-)) $$
+#    
+#    Parameters:
+#    ----------
+#    C_phi: number
+#                    The C_phi paramter for the Pitzer ion interaction model.
+#    z_cation, z_anion: int
+#                    The formal charge on the cation and anion, respectively
+#                    
+#    Returns:
+#    -------
+#    float
+#            The C_MX parameter for the Pitzer ion interaction model.
+#    
+#    References:
+#    ----------       
+#    Kim, H., & Jr, W. F. (1988). 
+#    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
+#    Journal of Chemical and Engineering Data, (2), 177–184.
+#    
+#    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+#    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+#    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+#    '''
+#    
+#    coeff = C_phi / ( 2 * abs(z_cation * z_anion) ** 0.5 ) 
+#    return coeff * unit('kg ** 2 /mol ** 2')
 
 def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
     '''
@@ -693,7 +688,7 @@ def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_fo
     # add and return the osmotic coefficient
     return 1 - term2 + term3
     
-def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_MX,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
     '''Return the osmotic coefficient of water in an electrolyte solution according to the Pitzer model.
     
     Parameters:
@@ -705,7 +700,7 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     alpha1, alpha2: number
                     Coefficients for the Pitzer model. This function assigns the coefficients
                     proper units of kg ** 0.5 / mol ** 0.5 after they are entered.
-    beta1, beta2: number
+    beta0, beta1, beta2, C_phi
                     Coefficients for the Pitzer model. These ion-interaction parameters are
                     specific to each salt system.
     z_cation, z_anion: int
@@ -727,32 +722,30 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     
     Examples:
     --------
-    NOTE: example below doesn't quite agree with spreadsheet result for potassium formate (1.3526)
     Experimental value according to Beyer and Stieger reference is 1.3550
     
     >>> get_osmotic_coefficient_pitzer(10.175*unit('mol/kg'),10.175*unit('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
-    1.3657 ...
+    1.3552 ...
     
-    NOTE: example below doesn't quite agree with spreadsheet result for sodium formate (1.0851)
     Experimental value according to Beyer and Stieger reference is 1.084
     
     >>> get_osmotic_coefficient_pitzer(5.6153*unit('mol/kg'),5.6153*unit('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
-    1.0625 ...  
+    1.0850 ...  
     
     NOTE: the examples below are for comparison with experimental and modeling data presented in
     the May et al reference below. 
     
     10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.62    
     >>> get_osmotic_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-    0.63168 ...
+    0.6143 ...
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.7
     >>> get_osmotic_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-    0.69684 ...
+    0.6925 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.555
     >>> get_osmotic_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-    0.61190 ...
+    0.5556 ...
     
     References:
     ----------
@@ -777,7 +770,6 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     _pitzer_B_MX
     _pitzer_B_gamma
     _pitzer_B_phi
-    _pitzer_C_phi
     _pitzer_log_gamma
        
     
@@ -786,10 +778,11 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     alpha1 = alpha1* unit('kg ** 0.5 / mol ** 0.5')
     alpha2 = alpha2* unit('kg ** 0.5 / mol ** 0.5')
     b = b * unit('kg ** 0.5 / mol ** 0.5')
+    C_phi = C_phi * unit('kg ** 2 /mol ** 2')
     
     first_term = 1 - _debye_parameter_osmotic(temperature) * abs(z_cation * z_anion) * ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5)
     second_term = molality * 2 * nu_cation * nu_anion / (nu_cation + nu_anion) * _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
-    third_term = molality ** 2 * ( 2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion)) * _pitzer_C_phi(C_MX,z_cation,z_anion)
+    third_term = molality ** 2 * ( 2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion)) * C_phi
     
     osmotic_coefficient = first_term + second_term + third_term
     
