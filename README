@@ -1,6 +1,8 @@
 pyEQL: A Python library for solution chemistry
 ==============================================
 
+## test change for master branch
+
 pyEQL is a python library that provides tools for chemical equilibrium modeling 
 in aqueous solutions. It allows the user to manipulate solutions as Python
 objects, providing methods to populate them with solutes, calculate 
