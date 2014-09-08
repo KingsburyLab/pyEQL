@@ -138,6 +138,47 @@ def _debye_parameter_osmotic(temperature=25*unit('degC')):
     output = 1/3 * _debye_parameter_activity()
     return output.to('kg ** 0.5 /mol ** 0.5')
 
+def _debye_parameter_volume(temperature=25*unit('degC')):
+    '''
+    return the constant A_V, the Debye-Huckel limiting slope for apparent
+    molar volume.
+    
+    Parameters:
+    ----------
+    temperature : Quantity, optional
+                  The temperature of the solution. Defaults to 25 degrees C if omitted
+    
+    Notes:
+    -----
+    Takes the value 1.898 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
+    This constant is calculated according to:[1]
+
+     .. math::
+     A_V = -2 A_{\phi} R T [ 3 {{\partial \epsilon \over \partial p} \over \epsilon} - {{\partial rho \over \parial p} \over \rho}]
+    
+    .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+    and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
+        
+    
+    Examples:
+    --------
+    TODO
+  
+    
+    See Also:
+    --------
+    _debye_parameter_osmotic
+    '''
+    
+    # TODO - add partial derivatives to calculation
+    #result = -2 * _debye_parameter_osmotic(temperature) * unit.R * temperature * (unit('1 * Pa ** -1'))
+    result = unit('1.898 cm **3 * kg ** 0.5 /  mol ** 1.5')
+    
+    if temperature != unit('25 degC'):
+        logger.warning('Debye-Huckel limiting slope for volume is valid only at 25 degC')
+        
+    return result.to('cm **3 * kg ** 0.5 /  mol ** 1.5')
+
 
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature=25*unit('degC')):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
@@ -386,13 +427,103 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     b = b * unit('kg ** 0.5 / mol ** 0.5')
     C_phi = C_phi * unit('kg ** 2 /mol ** 2')
     
-    BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
-    Bphi = _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
+    # assign units appropriate for the activity parameters
+    BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg/mol')
+    Bphi = _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg/mol')
     
     loggamma = _pitzer_log_gamma(ionic_strength,molality,BMX,Bphi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature,b)
     
     return math.exp(loggamma) 
     
+def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+    '''Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
+    
+    Parameters:
+    ----------
+    ionic_strength: Quantity
+                    The ionic strength of the parent solution, mol/kg
+    molality:       Quantity
+                    The molal concentration of the parent salt, mol/kg
+    alpha1, alpha2: number
+                    Coefficients for the Pitzer model. This function assigns the coefficients
+                    proper units of kg ** 0.5 / mol ** 0.5 after they are entered.
+    beta0, beta1, beta2, C_phi: number
+                    Pitzer coefficients for the apparent molar volume. 
+                    These ion-interaction parameters are specific to each salt system.
+    V_o:  number
+                    The V^o Pitzer coefficient for the apparent molar volume.
+    z_cation, z_anion: int
+                    The formal charge on the cation and anion, respectively
+    nu_cation, nu_anion: int
+                    The stoichiometric coefficient of the cation and anion in the salt
+    temperature:    Quantity
+                    The temperature of the solution. Defaults to 25 degC if not specified.
+    b:              number, optional
+                    Coefficient. Usually set equal to 1.2 and 
+                    considered independent of temperature and pressure. If provided, this
+                    coefficient is assigned proper units of kg ** 0.5 / mol ** 0.5  after
+                    entry.
+    
+    Returns:
+    -------
+    float
+        The apparent molar volume of the solute, cm **3 / mol
+    
+    Examples:
+    --------  
+    NOTE: the example below is for comparison with experimental and modeling data presented in
+    the Krumgalz et al reference below. 
+    
+    1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol 
+    >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),4.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    129
+    
+    10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol 
+    >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
+    58.45
+    
+    
+    
+    NOTE: the examples below are for comparison with experimental and modeling data presented in
+    the Krumgalz et al reference below. 
+    
+    0.8 mol/kg NaF. Expected result = 0.03  
+    >>> get_apparent_volume_pitzer(0.8*unit('mol/kg'),0.8*unit('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
+    0.22595 ...
+    
+    
+    References:
+    ----------  
+    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+
+    Krumgalz, Boris S., Pogorelsky, Rita (1996).
+    Volumetric Properties of Single Aqueous Electrolytes from Zero to Saturation Concentration at 298.15 K 
+    Represented by Pitzer's Ion-Interaction Equations.
+    Journal of Physical Chemical Reference Data, 25(2), 663-689.
+    
+    See also:
+    --------
+    _debye_parameter_volume
+    _pitzer_B_MX
+
+    
+    '''
+    alpha1 = alpha1* unit('kg ** 0.5 / mol ** 0.5')
+    alpha2 = alpha2* unit('kg ** 0.5 / mol ** 0.5')
+    b = b * unit('kg ** 0.5 / mol ** 0.5')
+    C_phi = C_phi * unit('kg ** 2 /mol ** 2 / bar')
+    V_o = V_o * unit('cm ** 3 / mol')
+    
+    # assign units appropriate for the volume parameter
+    BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg /mol/bar')
+    
+    volume = V_o + (nu_cation + nu_anion) * abs(z_cation * z_anion) * (_debye_parameter_volume(temperature) / 2 / b) \
+    * math.log((1+b*ionic_strength ** 0.5)) + nu_cation * nu_anion * unit.R * temperature * \
+    (2 * molality * BMX + molality ** 2 * C_phi * (nu_cation * nu_anion) ** 0.5)
+
+    return volume.to('cm ** 3 / mol')
     
 def _pitzer_f1(x):
     '''
@@ -474,7 +605,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     
     '''
     coeff = beta0 + beta1 * _pitzer_f1(alpha1 * ionic_strength ** 0.5) + beta2 * _pitzer_f1(alpha2 * ionic_strength ** 0.5)
-    return coeff * unit('kg/mol')
+    return coeff.magnitude
 
 #def _pitzer_B_gamma(ionic_strength,alpha1,alpha2,beta1,beta2):
 #    '''
@@ -554,7 +685,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     
     '''
     coeff = beta0 + beta1 * math.exp(-alpha1 * ionic_strength ** 0.5) + beta2 * math.exp(-alpha2* ionic_strength ** 0.5)
-    return coeff * unit('kg/mol')
+    return coeff.magnitude
 
 #def _pitzer_C_MX(C_phi,z_cation,z_anion):
 #    '''
@@ -779,11 +910,12 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     alpha2 = alpha2* unit('kg ** 0.5 / mol ** 0.5')
     b = b * unit('kg ** 0.5 / mol ** 0.5')
     C_phi = C_phi * unit('kg ** 2 /mol ** 2')
+    B_phi = _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg/mol')
     
     first_term = 1 - _debye_parameter_osmotic(temperature) * abs(z_cation * z_anion) * ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5)
-    second_term = molality * 2 * nu_cation * nu_anion / (nu_cation + nu_anion) * _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2)
+    second_term = molality * 2 * nu_cation * nu_anion / (nu_cation + nu_anion) * B_phi
     third_term = molality ** 2 * ( 2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion)) * C_phi
-    
+ 
     osmotic_coefficient = first_term + second_term + third_term
     
     return osmotic_coefficient

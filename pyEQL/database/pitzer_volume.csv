@@ -1,0 +1,33 @@
+Name:	pitzer_parameters_volume				
+Description:	Beta0, Beta1, Beta2, Cphi, and V_o parameters for calculating apparent molar volume according to the Pitzer ion interaction model				
+Unit:	None				
+Reference:	May, P. M., Rowland, D., Hefter, G., & Kanigsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329				
+Temperature:	25 degC				
+Pressure:	1 atm				
+Ionic Strength:					
+Uncertainty:					
+Uncertainty Type:					
+Comment:	Beta0,Beta1,Beta2,Cphi,V_o				
+					
+Key:	Beta0	Beta1	Beta2	Cphi	V_o
+NaCl	0.0001116	0.00007507	0	-0.0000102	16.6
+NaHCO2	-0.001729	0.001149	0	0.00009071	24.9
+NaI	0.000053	-0.00001695	0	-0.000003742	35
+NaBr	0.00004333	0.0002528	0	-0.0000014	23.5
+Na2SO4	0.0004129	0.001954	0	-0.000037	11.6
+NH4NO3	0.000001742	0.0002926	0	0.000000424	46.9
+KCl	-0.00005462	0.0007677	0	0.00003875	26.8
+KBr	0.00002655	0.000352	0	0.00001061	33.7
+KI	0.00005655	-0.0000666	0	-0.0000025	45.2
+K3(Fe(CN)6)	0	0	0	0	0
+K4(Fe(CN)6)	0	0	0	0	0
+LiCl	0.000112	-0.0002186	0	-0.00001729	16.9
+LiBr	0.00005254	-0.00008455	0	-0.00001038	23.8
+LiI	-0.0006691	0.001811	0	0.000192	35.3
+CsCl	0.00008174	0.0004061	0	-0.0000076	39.1
+CsBr	0.00007096	0.0002329	0	-0.0000052	46
+CsI	0.0001948	-0.0002476	0	-0.00007298	57.5
+MgSO4	0.0012858	-0.003115	0.2054	-0.00035	-7.2
+MgCl2	0.0001747	-0.0007983	0	-0.0000176	14.4
+FeCl2	-0.001938	0.008436	0	0.001231	12.2
+FeCl3	-0.0001865	-0.001726	0	0.00009595	25

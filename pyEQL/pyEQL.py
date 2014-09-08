@@ -430,6 +430,22 @@ def entropy_mix(Solution1, Solution2,temperature=25*unit('degC')):
 
     return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
 
+def has_parameter(formula,name):
+    '''
+    Boolean test to determine whether a parameter exists in the database for a given species
+    '''
+    found = False
+    try:
+        for item in db[formula]:
+            if item.get_name() == name:
+                found = True
+            else:
+                continue
+        
+        return found
+    except KeyError:
+        logger.error('Species %s not found in database' % formula)
+        return None    
 
 def mix(Solution1, Solution2):
     '''(Solution, Solution) -> Solution
@@ -628,12 +644,9 @@ class Solution:
         new_solute = self.Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
         self.components.update({new_solute.get_name():new_solute})
         
-        # add the volume occupied by the solute. Warn if there is no partial molar volume
-        if new_solute.get_parameter('partial_molar_volume') is not None:
-            self.volume += new_solute.get_parameter('partial_molar_volume') * new_solute.get_moles()
-        else:
-            logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % formula)
-    
+        # add the volume occupied by the solute.
+        self._update_volume()
+        
     def add_solvent(self,formula,amount,parameters={}):
         '''Same as add_solute but omits the need to pass solvent mass to pint
         '''
@@ -875,14 +888,14 @@ class Solution:
         return solvent.get_moles().to('kg','chem',mw=mw)
             
     def get_volume(self):
-        return self.volume
+        return self.volume.to('L')
     
     def get_mass(self):
         '''returns the total solution mass in kg'''
         total_mass = 0
         for item in self.components:
             total_mass+= self.get_amount(item,'kg')
-        return total_mass
+        return total_mass.to('kg')
         
     def get_density(self):
         return self.get_mass() / self.get_volume()
@@ -959,7 +972,7 @@ class Solution:
                     alpha = self.get_ionic_strength().magnitude ** 0.5 / z
                 
                 EC += self.get_solute(item).get_molar_conductivity(temperature) * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
-             
+                             
         return EC.to('S/m')
     
     def get_osmotic_pressure(self):
@@ -1473,6 +1486,55 @@ class Solution:
         distance = (self.get_amount(solute,'mol/L') * unit.N_A) ** (-1/3)     
         
         return distance.to('nm')
+    
+    def _update_volume(self):
+        '''
+        Recalculate the solution volume based on composition
+        
+        '''    
+        
+        temperature = self.get_temperature()
+        
+        # identify the predominant salt in the solution
+        Salt = self.get_salt()
+        
+        # search the database for pitzer parameters for 'salt'
+        database.search_parameters(Salt.formula)
+        
+        # calculate the volume of the pure solvent
+        self.volume = self.get_solvent_mass() / h2o.water_density(temperature)
+        
+        for item in self.components:
+            
+            solute = self.get_solute(item)            
+            
+            if item in ['H2O','H+','OH-','HOH']:
+                continue
+            
+            # use the pitzer approach if parameters are available
+            elif has_parameter(Salt.formula,'pitzer_parameters_volume'):
+                
+                for params in db[Salt.formula]:
+                    if params.get_name() == 'pitzer_parameters_volume':
+                
+                        apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
+                        self.get_amount(item,'mol/kg'),2,0,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
+                        params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+                
+                # TODO - fix so that this works for multivalent salts
+                self.volume += apparent_vol * solute.get_moles()
+                
+                # since the salt accounts for all solutes, stop                
+                print('Pitzer volume = %s ' % self.volume.to('L'))
+                break
+            
+            elif has_parameter(item,'partial_molar_volume'):
+                
+                self.volume += solute.get_parameter('partial_molar_volume') * solute.get_moles()
+                print('Other volume %s' % item)
+                
+            else:
+                logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
         
     ## informational methods
         
