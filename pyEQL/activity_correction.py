@@ -172,12 +172,12 @@ def _debye_parameter_volume(temperature=25*unit('degC')):
     
     # TODO - add partial derivatives to calculation
     #result = -2 * _debye_parameter_osmotic(temperature) * unit.R * temperature * (unit('1 * Pa ** -1'))
-    result = unit('1.898 cm **3 * kg ** 0.5 /  mol ** 1.5')
+    result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
     
     if temperature != unit('25 degC'):
         logger.warning('Debye-Huckel limiting slope for volume is valid only at 25 degC')
         
-    return result.to('cm **3 * kg ** 0.5 /  mol ** 1.5')
+    return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
 
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature=25*unit('degC')):
