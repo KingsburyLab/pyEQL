@@ -474,23 +474,21 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     NOTE: the example below is for comparison with experimental and modeling data presented in
     the Krumgalz et al reference below. 
     
-    0.25 mol/kg CuSO4. Expected result (from graph) = 0.1 cm ** 3 / mol 
-    >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
-    9.65    
+    0.25 mol/kg CuSO4. Expected result (from graph) = 0.5 cm ** 3 / mol 
+    >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    0.404...    
     
     1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol 
     >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),1.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
-    28.56
+    4.424...
     
     10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol 
     >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
-    58.45
+    50.286...
     
     20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol 
     >>> get_apparent_volume_pitzer(20.0*unit('mol/kg'),20.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
-    63.00
-    
-    
+    51.145...
     
     NOTE: the examples below are for comparison with experimental and modeling data presented in
     the Krumgalz et al reference below. 
@@ -518,19 +516,24 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
 
     
     '''
+    # TODO - find a cleaner way to make sure coefficients are assigned the proper units
+    # if they aren't, the calculation gives very wrong results
     alpha1 = alpha1* unit('kg ** 0.5 / mol ** 0.5')
     alpha2 = alpha2* unit('kg ** 0.5 / mol ** 0.5')
     b = b * unit('kg ** 0.5 / mol ** 0.5')
-    C_phi = C_phi * unit('kg ** 2 /mol ** 2 / bar')
+    C_phi = C_phi * unit('kg ** 2 /mol ** 2 / dabar')
     V_o = V_o * unit('cm ** 3 / mol')
     
     # assign units appropriate for the volume parameter
-    BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg /mol/bar')
+    BMX = _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2) * unit('kg /mol/dabar')
     
-    volume = V_o + (nu_cation + nu_anion) * abs(z_cation * z_anion) * (_debye_parameter_volume(temperature) / 2 / b) \
-    * math.log((1+b*ionic_strength ** 0.5)) + nu_cation * nu_anion * unit.R * temperature * \
+    second_term = (nu_cation + nu_anion) * abs(z_cation * z_anion) * (_debye_parameter_volume(temperature) / 2 / b) * math.log((1+b*ionic_strength ** 0.5))
+    
+    third_term = nu_cation * nu_anion * unit.R * temperature * \
     (2 * molality * BMX + molality ** 2 * C_phi * (nu_cation * nu_anion) ** 0.5)
-
+    
+    volume = V_o + second_term + third_term
+    
     return volume.to('cm ** 3 / mol')
     
 def _pitzer_f1(x):
