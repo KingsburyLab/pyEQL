@@ -1637,17 +1637,16 @@ class Solution:
                         self.get_amount(item,'mol/kg'),2,0,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
                         params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
-                # TODO - fix so that this works for multivalent salts
+                # TODO - fix so that this works for multivalent salts                
                 self.volume += apparent_vol * solute.get_moles()
+                logger.info('Updated solution volume using Pitzer model for solute %s' % item)
                 
                 # since the salt accounts for all solutes, stop                
-                print('Pitzer volume = %s ' % self.volume.to('L'))
                 break
             
             elif has_parameter(item,'partial_molar_volume'):
-                
                 self.volume += solute.get_parameter('partial_molar_volume') * solute.get_moles()
-                print('Other volume %s' % item)
+                logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
                 
             else:
                 logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
