@@ -447,6 +447,140 @@ def has_parameter(formula,name):
         logger.error('Species %s not found in database' % formula)
         return None    
 
+def donnan_eql(solution,fixed_charge):
+    ''' Return a solution object in equilibrium with fixed_charge
+    
+    Parameters:
+    ----------
+    Solution : Solution object
+        The external solution to be brought into equilibrium with the fixed
+        charges
+    fixed_charge : str
+        String representing the concentration of fixed charges, including sign. 
+        May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
+        
+    Returns:
+    -------
+    Solution
+        A solution that has established Donnan equilibrium with the external
+        (input) Solution
+    
+    Notes:
+    -----
+    
+    The general equation representing the equilibrium between an external 
+    electrolyte solution and an ion-exchange medium containing fixed charges
+    is:[1]
+    
+    $$ {a_-^s \over a_-^m}^{1 \over z_-} {a_+^s \over a_+^m}^{1 \over z_+} = exp({\DELTA \pi V \over {RT z_+ \nu_+}}) $$
+    
+    Where subscripts + and - indicate the cation and anion, respectively, 
+    superscripts s and m indicate the membrane phase and the solution phase,
+    a represents activity, z represents charge, nu represents the stoichiometric
+    coefficient, V represents the partial molar volume of the salt, and 
+    delta pi is the difference in osmotic pressure between the membrane and the
+    solution phase.
+    
+    In addition, electroneutrality must prevail within the membrane phase:
+    
+    $$ C_+^m + X = C_-^m
+    
+    Where C represents concentration and X is the fixed charge concentration
+    in the membrane or ion exchange phase.
+    
+    This function solves these two equations simultaneously to arrive at the 
+    concentrations of the cation and anion in the membrane phase. It returns
+    a solution equal to the input solution except that the concentrations of
+    the predominant cation and anion have been adjusted according to this 
+    equilibrium.
+    
+    NOTE that this treatment is only capable of equilibrating a single salt.
+    This salt is identified by the get_salt() method.
+    
+    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. 
+    Chapter 2, p. 51. 
+    http://dx.doi.org/10.1016/S0927-5193(04)80033-0
+
+    
+    Examples:
+    --------
+    TODO
+    
+    See Also:
+    --------
+    get_salt()
+    
+    '''
+    # identify the salt
+    salt = solution.get_salt()
+    
+    # convert fixed_charge in to a quantity
+    fixed_charge = unit(fixed_charge)
+    
+    # identify variables from the external solution
+    conc_cation_soln = solution.get_amount(salt.cation,str(fixed_charge.units))
+    conc_anion_soln = solution.get_amount(salt.anion,str(fixed_charge.units))
+    act_cation_soln = solution.get_activity(salt.cation)
+    act_anion_soln = solution.get_activity(salt.anion)
+    z_cation= salt.z_cation
+    z_anion = salt.z_anion
+    nu_cation = salt.nu_cation
+    
+    # get the partial molar volume for the salt
+    # TODO
+    molar_volume = unit('1 cm **3 / mol')
+    
+    # initialize the equilibrated solution - start with a direct copy of the 
+    # input / external solution
+    donnan_soln = solution.copy()
+    
+    # define a function representing the donnan equilibrium as a function
+    # of the two unknown actvities to feed to the nonlinear solver
+    def donnan_solve(x):
+        '''Where x is a numpy array of [co-ion concentration]
+        '''
+        # solve for the counter-ion concentration by enforcing electroneutrality
+        # match the units given for fixed_charge
+        if fixed_charge.magnitude >= 0:
+            conc_cation_mem = unit(str(x[0]) + str(fixed_charge.units))
+            conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge) / z_anion
+        else:
+            conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units))
+            conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
+          
+        # set the cation and anion concentrations in the membrane phase equal
+        # to the current guess
+        donnan_soln.set_amount(salt.cation,str(conc_cation_mem))
+        donnan_soln.set_amount(salt.anion,str(conc_anion_mem))
+        
+        # get the new concentrations and activities
+        act_cation_mem = donnan_soln.get_activity(salt.cation)
+        act_anion_mem = donnan_soln.get_activity(salt.anion)
+        
+        # compute the difference in osmotic pressure
+        delta_pi = donnan_soln.get_osmotic_pressure() - solution.get_osmotic_pressure()
+        
+        return (act_cation_mem/act_cation_soln) ** (1/z_cation) * (act_anion_soln/act_anion_mem)**(1/z_anion) - math.exp(delta_pi * molar_volume / (unit.R * solution.get_temperature() * z_cation * nu_cation))
+
+    # solve the function above using one of scipy's nonlinear solvers
+    # the initial guess is to set the cation concentration in the membrane
+    # equal to that in the solution
+    from scipy.optimize import broyden1
+    
+    # determine which ion concentration represents the co-ion
+    if fixed_charge.magnitude >0:
+        x = [conc_cation_soln.magnitude]
+    elif fixed_charge.magnitude <0:
+        x = [conc_anion_soln.magnitude]
+    else:
+        x = [0]
+    
+    # call a nonlinear solver to adjust the concentrations
+    broyden1(donnan_solve,x)
+    
+    # return the equilibrated solution
+    return donnan_soln
+
 def mix(Solution1, Solution2):
     '''(Solution, Solution) -> Solution
     Returns a new Solution object that results from the mixing of Solution1
@@ -558,16 +692,16 @@ class Solution:
     solutes : list of lists, optional
                 See add_solute() documentation for formatting of this list
                 Defaults to empty (pure solvent) if omitted
-    volume : pint quantity, optional
-                Volume of the solution. Defaults to 1L if omitted.
+    volume : str, optional
+                Volume of the solution, including the unit. Defaults to '1 L' if omitted.
     solvent : list of lists, optional
                 String representing the chemical formula of the solvent. 
                 Defaults to 1 kg water if omitted.
-    temperature : Quantity, optional
-                The solution temperature. Defaults to 25 degrees C if omitted.
-    pressure : pint quantity
-                The ambient pressure of the solution. 
-                Defaults to 1 atm if omitted.
+    temperature : str, optional
+                The solution temperature, including the unit. Defaults to '25 degC' if omitted.
+    pressure : Quantity, optional
+                The ambient pressure of the solution, including the unit. 
+                Defaults to '1 atm' if omitted.
     
     Returns:
     -------
@@ -609,10 +743,10 @@ class Solution:
     
     '''
     
-    def __init__(self,solutes=[],solvent=['H2O','0.998 kg'],volume='1 L',temperature=25*unit('degC'),pressure=1*unit('atm')):
+    def __init__(self,solutes=[],solvent=['H2O','0.998 kg'],volume='1 L',temperature='25 degC',pressure='1 atm'):
         self.volume = unit(volume)
-        self.temperature = temperature
-        self.pressure = pressure
+        self.temperature = unit(temperature)
+        self.pressure = (pressure)
         self.components={}
         self.solvent_name=solvent[0]
         
@@ -801,9 +935,10 @@ class Solution:
         def get_moles(self):
             return self.moles
         
-        def set_moles(self,moles):
-            self.moles = moles
-            
+        def set_moles(self,amount,volume,solvent_mass):
+            quantity = unit(amount)
+            self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
+  
         def get_activity(self):
             return self.activity
         
@@ -1092,45 +1227,26 @@ class Solution:
 #            print('Invalid unit %s specified for amount % unit')
 #            return None
     
-    def set_amount(self,solute,amount,unit,temperature=25):
-        '''returns the amount of 'solute' in the parent solution
+    def set_amount(self,solute,amount):
+        '''Sets the amount of 'solute' in the parent solution.
        
         Parameters:
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        unit : str
-                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol','fraction', 'kg', and 'g/L'
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
-        
+        amount : str
+                    String representing the concentration desired, e.g. '1 mol/kg'
+
         Returns:
         -------
-        The amount of the solute in question, in the specified units
+        Nothing. The concentration of solute is modified.
         
-        Notes:
-        -----
-        Amount-per-volume units such as mol/L and g/L are dependent on temperature. Others are not.
-        
+
         See Also:
         --------
+        Solute.set_moles()
         '''
-        
-        if unit == 'mol':
-            self.components[solute].set_moles(amount)
-        elif unit == 'mol/L':
-            self.components[solute].set_moles(amount * self.get_volume())
-        elif unit == 'mol/kg':
-            self.components[solute].set_moles(amount * self.get_solvent_mass())
-        elif unit == 'g/L':
-            self.components[solute].set_moles(amount / self.get_molecular_weight() * self.get_volume())
-        elif unit == 'fraction':
-            self.components[solute].set_moles(amount * (self.get_total_moles_solute() + self.get_moles_water()))
-        elif unit == 'kg':
-            self.components[solute].set_moles(amount / self.components[solute].get_molecular_weight() * 1000)
-        else:
-            print('Invalid unit %s specified for amount' % unit)
-            return None
+        self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
@@ -1536,6 +1652,30 @@ class Solution:
             else:
                 logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
         
+    def copy(self):
+        '''Return a copy of the solution
+        
+        TODO - clarify whether this is a deep or shallow copy
+        '''
+        # prepare to copy the bulk properties        
+        new_volume = str(self.get_volume())
+        new_temperature = str(self.get_temperature())
+        new_pressure = str(self.pressure)
+        new_solvent = self.solvent_name
+        new_solvent_mass = str(self.get_solvent_mass())
+        
+        # create a list of solutes
+        new_solutes = []        
+        for item in self.components:
+            # ignore the solvent
+            if item == self.solvent_name:
+                pass
+            else:
+                new_solutes.append([item,str(self.get_amount(item,'mol'))])
+        
+        # create the new solution
+        return Solution(new_solutes,[new_solvent,new_solvent_mass],new_volume,new_temperature,new_pressure)
+
     ## informational methods
         
     def list_solutes(self):
@@ -1548,7 +1688,7 @@ class Solution:
         '''
         self.mol_list={}
         for i in self.components.keys():
-            self.mol_list.update({i:self.get_amount(i,unit)})
+            self.mol_list.update({i:str(self.get_amount(i,unit))})
         print('Component amounts (%s):' % unit,self.mol_list )
         
     def list_activities(self):
