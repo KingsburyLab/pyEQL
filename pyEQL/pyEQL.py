@@ -483,7 +483,7 @@ def donnan_eql(solution,fixed_charge):
     
     In addition, electroneutrality must prevail within the membrane phase:
     
-    $$ C_+^m + X = C_-^m
+    $$ C_+^m z_+ + X + C_-^m z_- = 0 $$
     
     Where C represents concentration and X is the fixed charge concentration
     in the membrane or ion exchange phase.
@@ -528,7 +528,7 @@ def donnan_eql(solution,fixed_charge):
     
     # get the partial molar volume for the salt
     # TODO
-    molar_volume = unit('1 cm **3 / mol')
+    molar_volume = unit('16 cm **3 / mol')
     
     # initialize the equilibrated solution - start with a direct copy of the 
     # input / external solution
@@ -1092,6 +1092,13 @@ class Solution:
         This approach is used in PHREEQC and Aqion as described at these URLs:        
         <http://www.aqion.de/site/77>        
         <http://www.hydrochemistry.eu/exmpls/sc.html>        
+        
+        See Also:
+        --------
+        get_ionic_strength()
+        get_molar_conductivity()
+        get_activity_coefficient()
+        
         '''
         EC = 0 * unit('S/m')
         temperature = self.get_temperature()
@@ -1138,6 +1145,7 @@ class Solution:
         If 'soln' is 0.5 mol/kg NaCl
         >>> soln.get_osmotic_pressure()
         2262808... pascal
+        
         
         '''
         # TODO - tie this into parameter() and solvent() objects
