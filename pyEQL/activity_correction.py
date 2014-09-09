@@ -474,13 +474,21 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     NOTE: the example below is for comparison with experimental and modeling data presented in
     the Krumgalz et al reference below. 
     
+    0.25 mol/kg CuSO4. Expected result (from graph) = 0.1 cm ** 3 / mol 
+    >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    9.65    
+    
     1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol 
-    >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),4.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
-    129
+    >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),1.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    28.56
     
     10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol 
     >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     58.45
+    
+    20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol 
+    >>> get_apparent_volume_pitzer(20.0*unit('mol/kg'),20.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
+    63.00
     
     
     
