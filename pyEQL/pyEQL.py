@@ -527,8 +527,10 @@ def donnan_eql(solution,fixed_charge):
     nu_cation = salt.nu_cation
     
     # get the partial molar volume for the salt
-    # TODO
-    molar_volume = unit('16 cm **3 / mol')
+    # TODO - consider how to incorporate pitzer parameters
+    cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
+    anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
+    molar_volume = cation_vol + anion_vol
     
     # initialize the equilibrated solution - start with a direct copy of the 
     # input / external solution
