@@ -982,7 +982,7 @@ class Solution:
             molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * temperature)
             
             return molar_cond.to('mS / cm / (mol/L)')
-        
+                
         def mobility(self,temperature=25*unit('degC')):
             '''Return the ionic mobility of a species
             
@@ -1584,6 +1584,34 @@ class Solution:
         of ionic strength is not yet accounted for')
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
+
+    def get_transport_number(self,solute):
+        '''Calculate the transport number of the solute in the solution
+        
+        $$ t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i} $$
+        
+        Where C is the concentration in mol/L
+        TODO - add more references / explanation here        
+
+        '''
+        denominator= 0
+        numerator = 0
+        
+        for item in self.components:
+            
+            if item == 'H2O':
+                continue
+            
+            term = self.get_solute(item).get_parameter('diffusion_coefficient') * \
+            self.get_solute(item).get_formal_charge() ** 2 * \
+            self.get_amount(item,'mol/L')
+            
+            if item == solute:
+                numerator = term
+            
+            denominator += term
+        
+        return numerator / denominator
     
     def get_lattice_distance(self,solute):
         '''Calculate the average distance between molecules of the given solute,
