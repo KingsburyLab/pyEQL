@@ -696,7 +696,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     
     '''
     coeff = beta0 + beta1 * math.exp(-alpha1 * ionic_strength ** 0.5) + beta2 * math.exp(-alpha2* ionic_strength ** 0.5)
-    return coeff.magnitude
+    return coeff
 
 #def _pitzer_C_MX(C_phi,z_cation,z_anion):
 #    '''
