@@ -546,7 +546,7 @@ def donnan_eql(solution,fixed_charge):
         if fixed_charge.magnitude >= 0:
             conc_cation_mem = unit(str(x[0]) + str(fixed_charge.units))
             conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge) / z_anion
-        else:
+        elif fixed_charge.magnitude < 0:
             conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units))
             conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
           
@@ -570,16 +570,17 @@ def donnan_eql(solution,fixed_charge):
     from scipy.optimize import broyden1
     
     # determine which ion concentration represents the co-ion
+    # call a nonlinear solver to adjust the concentrations per the donnan
+    # equilibrium, unless the membrane is uncharged
     if fixed_charge.magnitude >0:
         x = [conc_cation_soln.magnitude]
+        broyden1(donnan_solve,x, f_tol=1e-9)
     elif fixed_charge.magnitude <0:
         x = [conc_anion_soln.magnitude]
+        broyden1(donnan_solve,x, f_tol=1e-9)
     else:
-        x = [0]
-    
-    # call a nonlinear solver to adjust the concentrations
-    broyden1(donnan_solve,x)
-    
+        pass
+
     # return the equilibrated solution
     return donnan_soln
 
@@ -1726,7 +1727,7 @@ class Solution:
         self.mol_list={}
         for i in self.components.keys():
             self.mol_list.update({i:str(self.get_amount(i,unit))})
-        print('Component amounts (%s):' % unit,self.mol_list )
+        print('Component amounts (%s):\n' % unit,self.mol_list )
         
     def list_activities(self):
         '''() -> dict
@@ -1736,12 +1737,12 @@ class Solution:
         self.act_list={}
         for i in self.components.keys():
             self.act_list.update({i:self.components[i].get_activity()})
-        print('Component activities:',self.act_list )   
+        print('Component activities:\n',self.act_list )   
 
      
     def __str__(self):
         #set output of the print() statement for the solution     
-        return 'Components: '+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
+        return 'Components: \n'+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
       
         
 # TODO - turn doctest back on when the nosigint error is gone        
