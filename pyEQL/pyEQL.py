@@ -766,24 +766,30 @@ class Solution:
             self.pressure = unit(kwargs['pressure'])
         else:
             self.pressure = unit('1 atm')
-        
-#        # set the solvent
-#        if 'solvent' in kwargs:
-#            self.solvent_name=kwargs['solvent'][0]
-#            # warn if the solvent is anything besides water
-#            if not solvent[0] == 'H2O' or solvent[0] == 'water' :
-#                logger.error('Non-aqueous solvent detected. These are not yet supported!')
-#        else:
-#            self.solvent_name = 'H2O'
-        
+                        
         # create an empty dictionary of components
-        self.components={}
+        self.components={}        
         
         # define the solvent
-        self.solvent_name = 'H2O'
-        # calculate the solvent (water) mass based on the density and the solution volume
-        self.add_solvent(self.solvent_name,str(self.volume * h2o.water_density(self.temperature)))
+        if 'solvent' in kwargs:
+            self.solvent_name=kwargs['solvent'][0]
+            # warn if the solvent is anything besides water
+            if not kwargs['solvent'][0] == 'H2O' or kwargs['solvent'][0] == 'water' :
+                logger.error('Non-aqueous solvent detected. These are not yet supported!')
+            
+            # raise an error if the solvent volume has also been given
+            if volume_set is True:
+                logger.error('Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass.')
+            
+            # add the solvent and the mass
+            self.add_solvent(self.solvent_name,kwargs['solvent'][1])
+        else:
+            self.solvent_name = 'H2O'
+            
+            # calculate the solvent (water) mass based on the density and the solution volume
+            self.add_solvent(self.solvent_name,str(self.volume * h2o.water_density(self.temperature)))
 
+        
         # populate the solutes
         for item in solutes:
             self.add_solute(*item)        
@@ -1721,11 +1727,9 @@ class Solution:
         TODO - clarify whether this is a deep or shallow copy
         '''
         # prepare to copy the bulk properties        
-        new_volume = str(self.get_volume())
         new_temperature = str(self.get_temperature())
         new_pressure = str(self.pressure)
         new_solvent = self.solvent_name
-        #TODO - add support for copying solvent mass if not set by volume
         new_solvent_mass = str(self.get_solvent_mass())
         
         # create a list of solutes
@@ -1738,7 +1742,7 @@ class Solution:
                 new_solutes.append([item,str(self.get_amount(item,'mol'))])
         
         # create the new solution
-        return Solution(new_solutes,solvent=new_solvent,volume=new_volume,temperature=new_temperature,pressure=new_pressure)
+        return Solution(new_solutes,solvent=[new_solvent,new_solvent_mass],temperature=new_temperature,pressure=new_pressure)
 
     ## informational methods
         
