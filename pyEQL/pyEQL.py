@@ -696,10 +696,9 @@ class Solution:
                 See add_solute() documentation for formatting of this list
                 Defaults to empty (pure solvent) if omitted
     volume : str, optional
-                Volume of the solution, including the unit. Defaults to '1 L' if omitted.
-    solvent : list of lists, optional
-                String representing the chemical formula of the solvent. 
-                Defaults to 1 kg water if omitted.
+                Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
+                Note that the total solution volume will be computed using partial molar
+                volumes of the respective solutes as they are added to the solution.
     temperature : str, optional
                 The solution temperature, including the unit. Defaults to '25 degC' if omitted.
     pressure : Quantity, optional
@@ -746,19 +745,45 @@ class Solution:
     
     '''
     
-    def __init__(self,solutes=[],solvent=['H2O','0.998 kg'],volume='1 L',temperature='25 degC',pressure='1 atm'):
-        self.volume = unit(volume)
-        self.temperature = unit(temperature)
-        self.pressure = (pressure)
+    def __init__(self,solutes=[],**kwargs):
+        
+        # initialize the voluem
+        if 'volume' in kwargs:
+            volume_set = True
+            self.volume = unit(kwargs['volume'])
+        else:
+            volume_set = False
+            self.volume = unit('1 L')
+            
+        # set the temperature
+        if 'temperature' in kwargs:
+            self.temperature = unit(kwargs['temperature'])
+        else:
+            self.temperature = unit('25 degC')
+            
+        # set the pressure
+        if 'pressure' in kwargs:
+            self.pressure = unit(kwargs['pressure'])
+        else:
+            self.pressure = unit('1 atm')
+        
+#        # set the solvent
+#        if 'solvent' in kwargs:
+#            self.solvent_name=kwargs['solvent'][0]
+#            # warn if the solvent is anything besides water
+#            if not solvent[0] == 'H2O' or solvent[0] == 'water' :
+#                logger.error('Non-aqueous solvent detected. These are not yet supported!')
+#        else:
+#            self.solvent_name = 'H2O'
+        
+        # create an empty dictionary of components
         self.components={}
-        self.solvent_name=solvent[0]
         
-        # warn if the solvent is anything besides water
-        if not solvent[0] == 'H2O' or solvent[0] == 'water' :
-            logger.error('Non-aqueous solvent detected. These are not yet supported!')
         # define the solvent
-        self.add_solvent(*solvent)
-        
+        self.solvent_name = 'H2O'
+        # calculate the solvent (water) mass based on the density and the solution volume
+        self.add_solvent(self.solvent_name,str(self.volume * h2o.water_density(self.temperature)))
+
         # populate the solutes
         for item in solutes:
             self.add_solute(*item)        
@@ -784,10 +809,10 @@ class Solution:
         # add the volume occupied by the solute.
         self._update_volume()
         
-    def add_solvent(self,formula,amount,parameters={}):
+    def add_solvent(self,formula,amount):
         '''Same as add_solute but omits the need to pass solvent mass to pint
         '''
-        new_solvent = self.Solute(formula,amount,self.get_volume(),amount,parameters)
+        new_solvent = self.Solute(formula,amount,self.get_volume(),amount)
         self.components.update({new_solvent.get_name():new_solvent})
                         
     def get_solute(self,i):
@@ -1700,6 +1725,7 @@ class Solution:
         new_temperature = str(self.get_temperature())
         new_pressure = str(self.pressure)
         new_solvent = self.solvent_name
+        #TODO - add support for copying solvent mass if not set by volume
         new_solvent_mass = str(self.get_solvent_mass())
         
         # create a list of solutes
@@ -1712,7 +1738,7 @@ class Solution:
                 new_solutes.append([item,str(self.get_amount(item,'mol'))])
         
         # create the new solution
-        return Solution(new_solutes,[new_solvent,new_solvent_mass],new_volume,new_temperature,new_pressure)
+        return Solution(new_solutes,solvent=new_solvent,volume=new_volume,temperature=new_temperature,pressure=new_pressure)
 
     ## informational methods
         
