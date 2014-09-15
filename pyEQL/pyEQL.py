@@ -536,6 +536,10 @@ def donnan_eql(solution,fixed_charge):
     # input / external solution
     donnan_soln = solution.copy()
     
+    # do nothing if either of the ion concentrations is zero
+    if conc_cation_soln.magnitude == 0 or conc_anion_soln.magnitude == 0:
+        return donnan_soln
+    
     # define a function representing the donnan equilibrium as a function
     # of the two unknown actvities to feed to the nonlinear solver
     def donnan_solve(x):
