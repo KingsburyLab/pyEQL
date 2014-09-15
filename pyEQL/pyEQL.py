@@ -548,10 +548,12 @@ def donnan_eql(solution,fixed_charge):
         # solve for the counter-ion concentration by enforcing electroneutrality
         # match the units given for fixed_charge
         if fixed_charge.magnitude >= 0:
-            conc_cation_mem = unit(str(x[0]) + str(fixed_charge.units))
+            # counter-ion is the anion
+            conc_cation_mem = unit(str(x[0]) + str(fixed_charge.units)) / abs(z_cation)
             conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge) / z_anion
         elif fixed_charge.magnitude < 0:
-            conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units))
+            # counter-ion is the cation
+            conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units)) / abs(z_anion)
             conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
           
         # set the cation and anion concentrations in the membrane phase equal
@@ -578,10 +580,10 @@ def donnan_eql(solution,fixed_charge):
     # equilibrium, unless the membrane is uncharged
     if fixed_charge.magnitude >0:
         x = [conc_cation_soln.magnitude]
-        broyden1(donnan_solve,x, f_tol=1e-9)
+        broyden1(donnan_solve,x)
     elif fixed_charge.magnitude <0:
         x = [conc_anion_soln.magnitude]
-        broyden1(donnan_solve,x, f_tol=1e-9)
+        broyden1(donnan_solve,x)
     else:
         pass
 
@@ -1062,7 +1064,40 @@ class Solution:
             
     def get_volume(self):
         return self.volume.to('L')
-    
+        
+    def set_volume(self,volume):
+        '''Change the total solution volume to volume, while preserving
+        all component concentrations
+        
+        Parameters:
+        ----------
+        volume : str quantity
+                Total volume of the solution, including the unit, e.g. '1 L' 
+        
+        Examples:
+        ---------
+        >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
+        >>> print(mysol.get_volume())
+        0.5000883925072983 l
+        >>> mysol.list_concentrations()
+        {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
+        >>> mysol.set_volume('200 mL')
+        >>> print(mysol.get_volume())
+        0.2 l
+        >>> mysol.list_concentrations()
+        {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
+
+        '''
+        # figure out the factor to multiply the old concentrations by 
+        scale_factor = unit(volume)/self.get_volume()
+        
+        # scale down the amount of all the solutes according to the factor        
+        for item in self.components:
+            self.set_amount(item,str(self.get_solute(item).get_moles()*scale_factor))
+        
+        # update the solution volume
+        self.volume = unit(volume)
+        
     def get_mass(self):
         '''returns the total solution mass in kg'''
         total_mass = 0
@@ -1292,7 +1327,11 @@ class Solution:
         --------
         Solute.set_moles()
         '''
+        # change the amount of the solute present
         self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
+        
+        # update the solution volume
+        self._update_volume()
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
