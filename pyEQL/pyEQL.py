@@ -975,6 +975,19 @@ class Solution:
         def get_moles(self):
             return self.moles
         
+        def add_moles(self,amount,volume,solvent_mass):
+            '''Increase or decrease the amount of a substance present in the solution
+            
+            Parameters:
+            ----------
+            amount: str quantity
+                    Amount of substance to add. Must be in mass or substance units.
+                    Negative values indicate subtraction of material.
+            
+            '''
+            quantity = unit(amount)
+            self.moles += quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)
+        
         def set_moles(self,amount,volume,solvent_mass):
             quantity = unit(amount)
             self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
@@ -1307,6 +1320,32 @@ class Solution:
 #        else:
 #            print('Invalid unit %s specified for amount % unit')
 #            return None
+    
+    def add_amount(self,solute,amount):
+        '''Adds the amount of 'solute' to the parent solution.
+       
+        Parameters:
+        ----------
+        solute : str 
+                    String representing the name of the solute of interest
+        amount : str quantity
+                    String representing the concentration desired, e.g. '1 mol/kg'
+                    Typically this will be given in moles or grams
+
+        Returns:
+        -------
+        Nothing. The concentration of solute is modified.
+        
+
+        See Also:
+        --------
+        Solute.add_moles()
+        '''
+        # change the amount of the solute present
+        self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
+        
+        # update the solution volume
+        self._update_volume()
     
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
