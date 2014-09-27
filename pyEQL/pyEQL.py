@@ -1330,7 +1330,11 @@ class Solution:
                     String representing the name of the solute of interest
         amount : str quantity
                     String representing the concentration desired, e.g. '1 mol/kg'
-                    Typically this will be given in moles or grams
+                    If the units are given on a per-volume basis, the solution 
+                    volume is not recalculated
+                    If the units are given on a mass, substance, per-mass, or 
+                    per-substance basis, then the solution volume is recalculated
+                    based on the new composition
 
         Returns:
         -------
@@ -1344,8 +1348,12 @@ class Solution:
         # change the amount of the solute present
         self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
         
-        # update the solution volume
-        self._update_volume()
+        # skip the volume update if units are given on a per-volume basis        
+        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+            pass
+        # otherwise, recalculate the solution volume
+        else:
+            self._update_volume()
     
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
@@ -1356,6 +1364,11 @@ class Solution:
                     String representing the name of the solute of interest
         amount : str
                     String representing the concentration desired, e.g. '1 mol/kg'
+                    If the units are given on a per-volume basis, the solution 
+                    volume is not recalculated
+                    If the units are given on a mass, substance, per-mass, or 
+                    per-substance basis, then the solution volume is recalculated
+                    based on the new composition
 
         Returns:
         -------
@@ -1369,8 +1382,12 @@ class Solution:
         # change the amount of the solute present
         self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
         
-        # update the solution volume
-        self._update_volume()
+        # skip the volume update if units are given on a per-volume basis        
+        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+            pass
+        # otherwise, recalculate the solution volume
+        else:
+            self._update_volume()
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
@@ -1485,7 +1502,7 @@ class Solution:
                 return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
             
             if found == False:
-                print('WARNING: Ionic strength too high to estimate activity. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient')
+                print('WARNING: Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
                 return unit('1 dimensionless')
         # TODO - NEED TO TEST THIS FUNCTION
     
