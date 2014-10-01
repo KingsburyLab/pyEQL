@@ -560,7 +560,7 @@ def donnan_eql(solution,fixed_charge):
         # to the current guess
         donnan_soln.set_amount(salt.cation,str(conc_cation_mem))
         donnan_soln.set_amount(salt.anion,str(conc_anion_mem))
-        
+        print('Cation: %s Anion: %s' % (str(conc_cation_mem),str(conc_anion_mem)))
         # get the new concentrations and activities
         act_cation_mem = donnan_soln.get_activity(salt.cation)
         act_anion_mem = donnan_soln.get_activity(salt.anion)
@@ -1388,13 +1388,13 @@ class Solution:
         '''
         # raise an error if a negative amount is specified
         if unit(amount).magnitude < 0:
-            logger.error('Negative amount specified for solute %s. Concentration set to zero.' % solute)
+            logger.error('Negative amount specified for solute %s. Concentration not changed.' % solute)
         
         # if positive or zero, go ahead and update the amount
         elif unit(amount).magnitude >= 0:
             # change the amount of the solute present
             self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
-            print(self.get_amount(solute,'mol'))
+
             # skip the volume update if units are given on a per-volume basis        
             if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
                 pass
