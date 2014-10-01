@@ -560,7 +560,7 @@ def donnan_eql(solution,fixed_charge):
         # to the current guess
         donnan_soln.set_amount(salt.cation,str(conc_cation_mem))
         donnan_soln.set_amount(salt.anion,str(conc_anion_mem))
-        print('Cation: %s Anion: %s' % (str(conc_cation_mem),str(conc_anion_mem)))
+
         # get the new concentrations and activities
         act_cation_mem = donnan_soln.get_activity(salt.cation)
         act_anion_mem = donnan_soln.get_activity(salt.anion)
@@ -1814,9 +1814,15 @@ class Solution:
                 
                 for params in db[Salt.formula]:
                     if params.get_name() == 'pitzer_parameters_volume':
+                        
+                        # determine the average molality of the salt
+                        # this is necessary for solutions inside e.g. an ion exchange
+                        # membrane, where the cation and anion concentrations may be
+                        # unequal
+                        molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
                 
                         apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
-                        self.get_amount(item,'mol/kg'),2,0,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
+                        molality,2,0,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
                         params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
                 # TODO - fix so that this works for multivalent salts                
