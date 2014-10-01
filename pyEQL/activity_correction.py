@@ -23,14 +23,14 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
-def _debye_parameter_B(temperature=25*unit('degC')):
+def _debye_parameter_B(temperature='25 degC'):
     '''
     return the constant B used in the extended Debye-Huckel equation
     
     Parameters:
     ----------
-    temperature : Quantity, optional
-                  The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature : str Quantity, optional
+                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
     Notes:
     -----
@@ -48,17 +48,17 @@ def _debye_parameter_B(temperature=25*unit('degC')):
     '''
     # TODO - fix this and resolve units
     param_B = ( 8 * math.pi * unit.avogadro_number * unit.elementary_charge ** 2 
-    / (h2o.water_density(temperature) * unit.epsilon_0 * h2o.water_dielectric_constant(temperature) * unit.boltzmann_constant * temperature) )** 0.5
+    / (h2o.water_density(unit(temperature)) * unit.epsilon_0 * h2o.water_dielectric_constant(unit(temperature)) * unit.boltzmann_constant * unit(temperature)) )** 0.5
     return param_B.to_base_units()
     
-def _debye_parameter_activity(temperature=25*unit('degC')):
+def _debye_parameter_activity(temperature='25 degC'):
     '''(number) -> float
     return the constant A for use in the Debye-Huckel limiting law (base 10)
     
     Parameters:
     ----------
-    temperature : Quantity, optional
-                  The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature : str Quantity, optional
+                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
     Returns:
     -------
@@ -70,7 +70,7 @@ def _debye_parameter_activity(temperature=25*unit('degC')):
     The parameter A is equal to:[1]
      
     ..  math::    
-        A^'\gamma' = e^3 ( 2 '\pi' N_A {\rho})^{0.5} / (4 \pi \epsilon_o \epsilon_r k T)^{0.5}
+        A^'\gamma' = e^3 ( 2 '\pi' N_A {\rho})^{0.5} / (4 \pi \epsilon_o \epsilon_r k T)^{1.5}
     
     Note that this equation returns the parameter value that can be used to calculate
     the natural logarithm of the activity coefficient. For base 10, divide the
@@ -91,20 +91,20 @@ def _debye_parameter_activity(temperature=25*unit('degC')):
     
     '''
     
-    debyeparam = unit.elementary_charge ** 3 * ( 2 * math.pi * unit.avogadro_number * h2o.water_density(temperature)) ** 0.5 \
-    / ( 4 * math.pi * unit.epsilon_0 * h2o.water_dielectric_constant(temperature) * unit.boltzmann_constant * temperature) ** 1.5
+    debyeparam = unit.elementary_charge ** 3 * ( 2 * math.pi * unit.avogadro_number * h2o.water_density(unit(temperature))) ** 0.5 \
+    / ( 4 * math.pi * unit.epsilon_0 * h2o.water_dielectric_constant(unit(temperature)) * unit.boltzmann_constant * unit(temperature)) ** 1.5
     
-    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s degrees Celsius' % (debyeparam,temperature))
+    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s' % (debyeparam,temperature))
     return debyeparam.to('kg ** 0.5 / mol ** 0.5')
 
-def _debye_parameter_osmotic(temperature=25*unit('degC')):
+def _debye_parameter_osmotic(temperature='25 degC'):
     '''(number) -> float
     return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
     
     Parameters:
     ----------
-    temperature : Quantity, optional
-                  The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature : str Quantity, optional
+                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
     Notes:
     -----
@@ -135,18 +135,18 @@ def _debye_parameter_osmotic(temperature=25*unit('degC')):
     
     '''
     
-    output = 1/3 * _debye_parameter_activity()
+    output = 1/3 * _debye_parameter_activity(temperature)
     return output.to('kg ** 0.5 /mol ** 0.5')
 
-def _debye_parameter_volume(temperature=25*unit('degC')):
+def _debye_parameter_volume(temperature='25 degC'):
     '''
     return the constant A_V, the Debye-Huckel limiting slope for apparent
     molar volume.
     
     Parameters:
     ----------
-    temperature : Quantity, optional
-                  The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature : str Quantity, optional
+                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
     Notes:
     -----
@@ -174,13 +174,13 @@ def _debye_parameter_volume(temperature=25*unit('degC')):
     #result = -2 * _debye_parameter_osmotic(temperature) * unit.R * temperature * (unit('1 * Pa ** -1'))
     result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
     
-    if temperature != unit('25 degC'):
+    if unit(temperature) != unit('25 degC'):
         logger.warning('Debye-Huckel limiting slope for volume is valid only at 25 degC')
         
     return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
 
-def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature=25*unit('degC')):
+def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
     Parameters:
@@ -189,8 +189,8 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature :    str Quantity, optional
+                     String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns:
     -------
@@ -213,10 +213,10 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
         logger.warning('Ionic strength exceeds valid range of the Debye-Huckel limiting law')
     
     log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * ionic_strength ** 0.5
-    
+
     return math.exp(log_f)
 
-def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature=25):
+def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
     
     Parameters:
@@ -225,8 +225,8 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature :    str Quantity, optional
+                     String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns:
     -------
@@ -252,7 +252,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
 
     return math.exp(log_f)
     
-def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature=25):
+def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
     
     Parameters:
@@ -261,8 +261,8 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature=2
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
+    temperature :    str Quantity, optional
+                     String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns:
     -------
@@ -338,7 +338,7 @@ def get_activity_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_f
     # add and exponentiate to eliminate the log
     return math.exp(PDH + SV)
     
-def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
     Parameters:
@@ -357,8 +357,8 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
                     The formal charge on the cation and anion, respectively
     nu_cation, nu_anion: int
                     The stoichiometric coefficient of the cation and anion in the salt
-    temperature:    Quantity
-                    The temperature of the solution. Defaults to 25 degC if not specified.
+    temperature:    str Quantity
+                    String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 and 
                     considered independent of temperature and pressure. If provided, this
@@ -435,7 +435,7 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     
     return math.exp(loggamma) 
     
-def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
     
     Parameters:
@@ -456,8 +456,8 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
                     The formal charge on the cation and anion, respectively
     nu_cation, nu_anion: int
                     The stoichiometric coefficient of the cation and anion in the salt
-    temperature:    Quantity
-                    The temperature of the solution. Defaults to 25 degC if not specified.
+    temperature:    str Quantity
+                    String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 and 
                     considered independent of temperature and pressure. If provided, this
@@ -529,7 +529,7 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     
     second_term = (nu_cation + nu_anion) * abs(z_cation * z_anion) * (_debye_parameter_volume(temperature) / 2 / b) * math.log((1+b*ionic_strength ** 0.5))
     
-    third_term = nu_cation * nu_anion * unit.R * temperature * \
+    third_term = nu_cation * nu_anion * unit.R * unit(temperature) * \
     (2 * molality * BMX + molality ** 2 * C_phi * (nu_cation * nu_anion) ** 0.5)
     
     volume = V_o + second_term + third_term
@@ -730,7 +730,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    coeff = C_phi / ( 2 * abs(z_cation * z_anion) ** 0.5 ) 
 #    return coeff * unit('kg ** 2 /mol ** 2')
 
-def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
     ion interaction model.
@@ -752,8 +752,8 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
                     The formal charge on the cation and anion, respectively
     nu_cation, nu_anion: int
                     The stoichiometric coefficient of the cation and anion in the salt
-    temperature:    pint Quantity
-                    The temperature of the solution. Defaults to 25 degC if not specified.
+    temperature:    str Quantity
+                    String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 kg ** 0.5 / mol ** 0.5 and considered independent of temperature and pressure
                     
@@ -830,7 +830,7 @@ def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_fo
     # add and return the osmotic coefficient
     return 1 - term2 + term3
     
-def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature=25*unit('degC'),b=1.2):
+def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the osmotic coefficient of water in an electrolyte solution according to the Pitzer model.
     
     Parameters:
@@ -849,8 +849,8 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
                     The formal charge on the cation and anion, respectively
     nu_cation, nu_anion: int
                     The stoichiometric coefficient of the cation and anion in the salt
-    temperature:    Quantity
-                    The temperature of the solution. Defaults to 25 degC if not specified.
+    temperature:    str Quantity
+                    String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 and 
                     considered independent of temperature and pressure. If provided, this

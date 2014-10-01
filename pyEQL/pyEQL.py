@@ -1369,7 +1369,7 @@ class Solution:
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        amount : str
+        amount : str Quantity
                     String representing the concentration desired, e.g. '1 mol/kg'
                     If the units are given on a per-volume basis, the solution 
                     volume is not recalculated
@@ -1388,12 +1388,13 @@ class Solution:
         '''
         # raise an error if a negative amount is specified
         if unit(amount).magnitude < 0:
-            logger.error('Negative amount specified for solute %s. Concentration was not updated.' % solute)
+            logger.error('Negative amount specified for solute %s. Concentration set to zero.' % solute)
         
-        else:
+        # if positive or zero, go ahead and update the amount
+        elif unit(amount).magnitude >= 0:
             # change the amount of the solute present
             self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
-            
+            print(self.get_amount(solute,'mol'))
             # skip the volume update if units are given on a per-volume basis        
             if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
                 pass
@@ -1470,7 +1471,7 @@ class Solution:
         get_activity_coefficient_TCPC
         '''
         ion = self.components[solute]
-        temperature = self.get_temperature()
+        temperature = str(self.get_temperature())
         # for very low ionic strength, use the Debye-Huckel limiting law
         
         if self.get_ionic_strength().magnitude <= 0.005:
@@ -1574,7 +1575,7 @@ class Solution:
         1.0 will also be returned at higher ionic strengths if appropriate Pitzer
         parameters are not supplied.
         '''
-        temperature = self.get_temperature()
+        temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
         
         import pyEQL.salt_ion_match as salt
@@ -1790,7 +1791,7 @@ class Solution:
         
         '''    
         
-        temperature = self.get_temperature()
+        temperature = str(self.get_temperature())
         
         # identify the predominant salt in the solution
         Salt = self.get_salt()
@@ -1799,7 +1800,7 @@ class Solution:
         database.search_parameters(Salt.formula)
         
         # calculate the volume of the pure solvent
-        self.volume = self.get_solvent_mass() / h2o.water_density(temperature)
+        self.volume = self.get_solvent_mass() / h2o.water_density(unit(temperature))
         
         for item in self.components:
             
