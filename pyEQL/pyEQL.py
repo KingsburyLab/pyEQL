@@ -1345,8 +1345,15 @@ class Solution:
         --------
         Solute.add_moles()
         '''
+        
         # change the amount of the solute present
         self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
+        
+        # set the amount to zero and log a warning if the desired amount
+        # change would result in a negative concentration
+        if self.get_amount(solute,'mol').magnitude < 0:
+            logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
+            self.set_amount(solute,'0 mol')
         
         # skip the volume update if units are given on a per-volume basis        
         if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
@@ -1379,15 +1386,20 @@ class Solution:
         --------
         Solute.set_moles()
         '''
-        # change the amount of the solute present
-        self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
+        # raise an error if a negative amount is specified
+        if unit(amount).magnitude < 0:
+            logger.error('Negative amount specified for solute %s. Concentration was not updated.' % solute)
         
-        # skip the volume update if units are given on a per-volume basis        
-        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-            pass
-        # otherwise, recalculate the solution volume
         else:
-            self._update_volume()
+            # change the amount of the solute present
+            self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
+            
+            # skip the volume update if units are given on a per-volume basis        
+            if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+                pass
+            # otherwise, recalculate the solution volume
+            else:
+                self._update_volume()
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
