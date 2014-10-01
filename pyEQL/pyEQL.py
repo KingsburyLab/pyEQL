@@ -753,7 +753,7 @@ class Solution:
     
     def __init__(self,solutes=[],**kwargs):
         
-        # initialize the voluem
+        # initialize the volume
         if 'volume' in kwargs:
             volume_set = True
             self.volume = unit(kwargs['volume'])
@@ -814,12 +814,51 @@ class Solution:
         parameters : dictionary, optional
                     Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
                         
-        '''        
+        '''   
+        # store the original volume for later
+        orig_volume = self.get_volume()
+        
+        # store the current quantity of all other solutes
+        orig_conc = {}
+        for item in self.components:
+            # ignore the solvent, because we want its quantity to change
+            if item == self.get_solvent().get_name():
+                pass
+            else:
+                orig_conc.update({item:self.get_solute(item).get_moles()})
+        
+        # add the new solute
         new_solute = self.Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
         self.components.update({new_solute.get_name():new_solute})
-        
-        # add the volume occupied by the solute.
+
+        # update the volume to account for the space occupied by all the solutes
         self._update_volume()
+        
+        # if units are given on a per-volume basis, 
+        # iteratively solve for the amount of solute that will preserve the
+        # original volume and result in the desired concentration  
+        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+
+            from scipy.optimize import broyden1
+            
+            def volume_solve(x):
+                # scale the solution down so as to preserve the original volume            
+                self.set_volume(str(orig_volume))                
+                
+                # directly set the amount of solute
+                self.get_solute(formula).moles= x * unit('mol')
+                # compare the resulting molar concentration with the target value
+                return self.get_amount(formula,'mol/L') - unit(amount).to('mol/L')
+            
+            x = self.get_solute(formula).get_moles().magnitude
+            # the alpha=1 is necessary to prevent a divide by zero error
+            # prior to scipy 0.14
+            # see https://github.com/scipy/scipy/pull/3390
+            broyden1(volume_solve,x,alpha=1)
+        
+            # restore all the other (non-solvent) solutes to their original quantities
+            for item in orig_conc:
+                self.get_solute(item).moles = orig_conc[item]
         
     def add_solvent(self,formula,amount):
         '''Same as add_solute but omits the need to pass solvent mass to pint
@@ -1346,6 +1385,25 @@ class Solution:
         Solute.add_moles()
         '''
         
+        # store the original volume for later
+        orig_volume = self.get_volume()
+        
+        # store the current quantity of all other solutes
+        orig_conc = {}
+        for item in self.components:
+            # ignore the solvent, because we want its quantity to change
+            if item == self.get_solvent().get_name():
+                pass
+            # ignore the solute we are modifying
+            elif item == solute:
+                pass
+            else:
+                orig_conc.update({item:self.get_solute(item).get_moles()})
+        
+                    
+        # determine the target (total) concentration
+        target = self.get_amount(solute,unit(amount).units) + unit(amount)
+            
         # change the amount of the solute present
         self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
         
@@ -1354,13 +1412,35 @@ class Solution:
         if self.get_amount(solute,'mol').magnitude < 0:
             logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
             self.set_amount(solute,'0 mol')
+
+        # update the volume to account for the space occupied by all the solutes
+        self._update_volume()
         
-        # skip the volume update if units are given on a per-volume basis        
+        # if units are given on a per-volume basis, 
+        # iteratively solve for the amount of solute that will preserve the
+        # original volume and result in the desired concentration  
         if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-            pass
-        # otherwise, recalculate the solution volume
-        else:
-            self._update_volume()
+
+            from scipy.optimize import broyden1
+
+            def volume_solve(x):
+                # scale the solution down so as to preserve the original volume            
+                self.set_volume(str(orig_volume))                
+                
+                # directly set the amount of solute
+                self.get_solute(solute).moles= x * unit('mol')
+                # compare the resulting molar concentration with the target value
+                return self.get_amount(solute,'mol/L') - target.to('mol/L')
+            
+            x = self.get_solute(solute).get_moles().magnitude
+            # the alpha=1 is necessary to prevent a divide by zero error
+            # prior to scipy 0.14
+            # see https://github.com/scipy/scipy/pull/3390
+            broyden1(volume_solve,x,alpha=1)
+        
+            # restore all the other (non-solvent) solutes to their original quantities
+            for item in orig_conc:
+                self.get_solute(item).moles = orig_conc[item]
     
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
@@ -1392,15 +1472,53 @@ class Solution:
         
         # if positive or zero, go ahead and update the amount
         elif unit(amount).magnitude >= 0:
+            
+            # store the original volume for later
+            orig_volume = self.get_volume()
+            
+            # store the current quantity of all other solutes
+            orig_conc = {}
+            for item in self.components:
+                # ignore the solvent, because we want its quantity to change
+                if item == self.get_solvent().get_name():
+                    pass
+                # ignore the solute we are modifying
+                elif item == solute:
+                    pass
+                else:
+                    orig_conc.update({item:self.get_solute(item).get_moles()})
+            
             # change the amount of the solute present
             self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
 
-            # skip the volume update if units are given on a per-volume basis        
+            # update the volume to account for the space occupied by all the solutes
+            self._update_volume()
+            
+            # if units are given on a per-volume basis, 
+            # iteratively solve for the amount of solute that will preserve the
+            # original volume and result in the desired concentration  
             if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-                pass
-            # otherwise, recalculate the solution volume
-            else:
-                self._update_volume()
+    
+                from scipy.optimize import broyden1
+                
+                def volume_solve(x):
+                    # scale the solution down so as to preserve the original volume            
+                    self.set_volume(str(orig_volume))                
+                    
+                    # directly set the amount of solute
+                    self.get_solute(solute).moles= x * unit('mol')
+                    # compare the resulting molar concentration with the target value
+                    return self.get_amount(solute,'mol/L') - unit(amount).to('mol/L')
+                
+                x = self.get_solute(solute).get_moles().magnitude
+                # the alpha=1 is necessary to prevent a divide by zero error
+                # prior to scipy 0.14
+                # see https://github.com/scipy/scipy/pull/3390
+                broyden1(volume_solve,x,alpha=1)
+            
+                # restore all the other (non-solvent) solutes to their original quantities
+                for item in orig_conc:
+                    self.get_solute(item).moles = orig_conc[item]
         
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
