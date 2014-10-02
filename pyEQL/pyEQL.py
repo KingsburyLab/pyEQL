@@ -710,6 +710,10 @@ class Solution:
     pressure : Quantity, optional
                 The ambient pressure of the solution, including the unit. 
                 Defaults to '1 atm' if omitted.
+    pH : number, optional
+                Negative log of H+ activity. If omitted, the solution will be 
+                initialized to pH 7 (neutral) with appropriate quantities of 
+                H+ and OH- ions
     
     Returns:
     -------
@@ -795,8 +799,16 @@ class Solution:
             # calculate the solvent (water) mass based on the density and the solution volume
             self.add_solvent(self.solvent_name,str(self.volume * h2o.water_density(self.temperature)))
 
+        # set the pH with H+ and OH-
+        if 'pH' in kwargs:
+            pH = kwargs('pH')
+        else:
+            pH = 7
+        conc = 10 ** -1 * pH
+        self.add_solute('H+',str(conc)+'mol/L')
+        self.add_solute('OH-',str(conc)+'mol/L')        
         
-        # populate the solutes
+        # populate the other solutes
         for item in solutes:
             self.add_solute(*item)        
 
