@@ -1808,8 +1808,8 @@ class Solution:
                         molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
                         params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
-                # TODO - fix so that this works for multivalent salts                
-                self.volume += apparent_vol * (self.get_amount(Salt.cation,'mol')+self.get_amount(Salt.anion,'mol'))/2
+                self.volume += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
+                +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
                 logger.info('Updated solution volume using Pitzer model for solute %s' % item)
                 
                 # since the salt accounts for all solutes, stop                
