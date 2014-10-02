@@ -927,57 +927,59 @@ class Solution:
         
     def get_density(self):
         return self.get_mass() / self.get_volume()
+    
+    def get_viscosity_relative(self):
+        '''
+        Return the viscosity of the solution relative to that of water
+        
+        This is calculated using a simplified form of the Jones-Dole equation:
+        $$ \eta_rel = 1 + \sum_i B_i m_i $$
+        
+        Where m is the molal concentration and B is an empirical parameter.
+        
+        See 
+        <http://downloads.olisystems.com/ResourceCD/TransportProperties/Viscosity-Aqueous.pdf>
+        <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
+        <http://apple.csgi.unifi.it/~fratini/chen/pdf/14.pdf>
+        '''
+        if self.get_ionic_strength().magnitude > 0.2:
+            logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+        
+        viscosity_rel = 1
+        for item in self.components:
+            # if the parameter is missing
+            try:
+                conc = self.get_amount(item,'mol/kg').magnitude
+                coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+                viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+                coefficients[2] * conc ** 2
+            except TypeError:
+                continue
+        
+        return viscosity_rel
         
     def get_viscosity_dynamic(self):
         '''
-        Return the dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
-        at the specified temperature.
+        Return the dynamic (absolute) viscosity of the solution.
     
-        Parameters:
-        ----------
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
-        
-        Notes:
-        ------
-        Calculated using the Einstein relation, strictly valid only for dilute solutions[1]:
-        
-        .. math::
-        \eta = \eta_o (1 + 2.5 \sum_i^j \theta_i
-        
-        \theta_i = {4 \pi r_i ^3 \over 3} {Na C_i \over 1000}
-        
-        Where $\C_i$ is the molar concentration and $r_i$ is the hydrodynamic radius in meters.
-    
-        .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 13-14. Plenum Press, 1980.
-        
+        See Also:
+        --------
+        get_viscosity_kinematic
+        get_viscosity_relative
         '''
-        return h2o.water_viscosity_dynamic(self.get_temperature())
-        #TODO
-        
+        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature())        
     
     def get_viscosity_kinematic(self):
         '''
-        Return the kinematic viscosity of water in m2/s = Stokes
-        at the specified temperature.
-        
-        Parameters:
-        ----------
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
-        
-        Returns:
-        -------
-        float
-                The kinematic viscosity of water in Stokes (m2/s)
+        Return the kinematic viscosity of the solution.
                 
         See Also:
         --------
         get_density_dynamic
+        get_viscosity_relative
         '''
         return self.get_viscosity_dynamic(self.get_temperature()) / self.get_density(self.get_temperature())
         
-    
     def get_conductivity(self):
         '''
         Conductivity is calculated by summing the molar conductivities of the respective
@@ -1008,7 +1010,11 @@ class Solution:
                 else:
                     alpha = self.get_ionic_strength().magnitude ** 0.5 / z
                 
-                EC += self.get_solute(item).get_molar_conductivity(temperature) * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
+                diffusion_coefficient = self.get_property(item,'diffusion_coefficient')
+        
+                molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_solute(item).get_formal_charge() ** 2 / (unit.R * temperature)
+                           
+                EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
                              
         return EC.to('S/m')
     
