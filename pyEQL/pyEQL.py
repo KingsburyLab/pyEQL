@@ -947,14 +947,16 @@ class Solution:
         
         viscosity_rel = 1
         for item in self.components:
-            # if the parameter is missing
-            try:
-                conc = self.get_amount(item,'mol/kg').magnitude
-                coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
-                viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-                coefficients[2] * conc ** 2
-            except TypeError:
-                continue
+            # ignore water
+            if item != 'H2O':
+                # skip over solutes that don't have parameters
+                try:
+                    conc = self.get_amount(item,'mol/kg').magnitude
+                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+                    coefficients[2] * conc ** 2
+                except TypeError:
+                    continue
         
         return viscosity_rel
         
