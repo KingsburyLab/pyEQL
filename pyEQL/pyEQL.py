@@ -174,23 +174,6 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     logger.info('Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output')
     
     return output
-    
-def adjust_temp_diffusion(diffusion_coefficient,temperature,ref_temperature=25):
-    '''Adjust a diffusion coefficient for a different temperature
-    The diffusion coefficients are corrected to temperature T (Kelvin) of the solution with:
-        (Dw)T = (Dw)298 × (T / 298) × (η298 / ηT), where η is the viscosity of water. 
-    TODO - FIND A LEGIT REFERENCE FOR THAT EQUATION
-    
-    .. [1] http://www.hydrochemistry.eu/exmpls/sc.html
-    '''
-    ## TODO - check this function (does it need dynamic or kinematic viscosity or does it matter?)
-    return diffusion_coefficient * temperature / ref_temperature * water_viscosity_dynamic(ref_temperature)/water_viscosity_dynamic(temperature)
-
-## Properties of Water
-
-
-## Acid - Base Functions
-
 
 def p(x):
     ''' (number) -> float
