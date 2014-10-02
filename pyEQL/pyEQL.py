@@ -175,32 +175,6 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     
     return output
 
-def p(x):
-    ''' (number) -> float
-    Negative log of x. Generally used for expressing concentration of hydrogen
-    ions (pH)
-    
-    Parameters:
-    ----------
-    x : float or int
-        Any number (usually a species concentration)
-    
-    Returns:
-    -------
-    float
-        The negative log10 of the input value.
-        
-    Examples:
-    --------
-    >>> p(1e-7)
-    7.0
-    >>> p(1.568e-9)
-    8.80465394165158
-    
-    '''
-    return -1 * math.log10(x)
-    
-
 def alpha(n,pH,pKa_list):
     '''(int,number,list of numbers)
     Returns the acid-base distribution coefficient (alpha) of an acid in the 
@@ -1070,6 +1044,35 @@ class Solution:
         return osmotic_pressure.to('Pa')
 
 ## Concentration  Methods        
+    
+    def p(self,solute,activity=True):
+        ''' (number) -> float
+        Return the negative log of the activity of solute.
+        Generally used for expressing concentration of hydrogen ions (pH)
+        
+        Parameters:
+        ----------
+        solute : str
+            String representing the formula of the solute
+        activity: bool, optional
+            If False, the function will use the molar concentration rather 
+            than the activity to calculate p. Defaults to True.
+        
+        Returns:
+        -------
+        Quantity
+            The negative log10 of the activity (or molar concentration if
+            activity = False) of the solute.
+            
+        Examples:
+        --------
+
+        
+        '''
+        if activity is True:
+            return -1 * math.log10(self.get_activity(solute))
+        elif activity is False:
+            return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
     
     def get_amount(self,solute,unit,temperature=25):
         '''returns the amount of 'solute' in the parent solution
