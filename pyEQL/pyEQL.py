@@ -1424,9 +1424,22 @@ class Solution:
             for item in db[Salt.formula]:
                 if item.get_name() == 'pitzer_parameters_activity':
                     found == True
-                    # TODO - fix inputs for alpha1 and alpha2
+                    # determine alpha1 and alpha2 based on the type of salt
+                    # see the May reference for the rules used to determine
+                    # alpha1 and alpha2 based on charge
+                    if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                        if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                            alpha1 = 2
+                            alpha2 = 50
+                        else:
+                            alpha1 = 1.4
+                            alpha2 = 12
+                    else:
+                        alpha1 = 2
+                        alpha2 = 0
+                        
                     activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                    self.get_amount(solute,'mol/kg'),2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                    self.get_amount(solute,'mol/kg'),alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
                     Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                     
                     logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
@@ -1776,9 +1789,23 @@ class Solution:
                         # membrane, where the cation and anion concentrations may be
                         # unequal
                         molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-                
+                        
+                        # determine alpha1 and alpha2 based on the type of salt
+                        # see the May reference for the rules used to determine
+                        # alpha1 and alpha2 based on charge
+                        if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                            if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                                alpha1 = 2
+                                alpha2 = 50
+                            else:
+                                alpha1 = 1.4
+                                alpha2 = 12
+                        else:
+                            alpha1 = 2
+                            alpha2 = 0
+                            
                         apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
-                        molality,2,0,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
+                        molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
                         params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
                 # TODO - fix so that this works for multivalent salts                
