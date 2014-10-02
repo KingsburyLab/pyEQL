@@ -1642,7 +1642,7 @@ class Solution:
             if item == 'H2O':
                 continue
             
-            term = self.get_solute(item).get_parameter('diffusion_coefficient') * \
+            term = self.get_property(item,'diffusion_coefficient') * \
             self.get_solute(item).get_formal_charge() ** 2 * \
             self.get_amount(item,'mol/L')
             
