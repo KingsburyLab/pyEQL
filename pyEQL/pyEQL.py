@@ -1356,7 +1356,7 @@ class Solution:
         
         Returns:
         -------
-        The molar (mol/L) scale mean ion activity coefficient of the solute in question
+        The molal (mol/kg) scale mean ion activity coefficient of the solute in question
         
         See Also:
         --------
