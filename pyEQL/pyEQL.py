@@ -540,6 +540,22 @@ def donnan_eql(solution,fixed_charge):
     if conc_cation_soln.magnitude == 0 or conc_anion_soln.magnitude == 0:
         return donnan_soln
     
+    # add fixed charge groups to the solution as if they were solutes
+    # this is necessary to keep the solution volume from becoming distorted
+    # since some single ions have negative partial molar volumes
+    # see Durchschlag and Zipper "Calculation of the Molar Volumes of Organic
+    # Compounds and Polymers" Progr Colloid Polymer Science 94:20-39
+    # for approximate molar volumes
+#    if fixed_charge.magnitude < 0:
+#        # assume sulfonic acid group
+#        donnan_soln.add_solute('SO3-',str(-1*fixed_charge))
+#        # assign a partial molar volume
+#        donnan_soln.get_solute('SO3-').add_parameter('partial_molar_volume',25,'cm**3/mol')
+#    elif fixed_charge.magnitude > 0:
+#        # assume quaternary ammonium functional group
+#        donnan_soln.add_solute('N+',str(fixed_charge))
+#        donnan_soln.get_solute('N+').add_parameter('partial_molar_volume',50,'cm**3/mol')
+    
     # define a function representing the donnan equilibrium as a function
     # of the two unknown actvities to feed to the nonlinear solver
     def donnan_solve(x):
@@ -555,7 +571,7 @@ def donnan_eql(solution,fixed_charge):
             # counter-ion is the cation
             conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units)) / abs(z_anion)
             conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
-          
+        #print('DEBUG: '+str(donnan_soln.get_solvent_mass()))  
         # set the cation and anion concentrations in the membrane phase equal
         # to the current guess
         donnan_soln.set_amount(salt.cation,str(conc_cation_mem))
@@ -804,7 +820,7 @@ class Solution:
             pH = kwargs('pH')
         else:
             pH = 7
-        conc = 10 ** -1 * pH
+        conc = 10 ** (-1 * pH)
         self.add_solute('H+',str(conc)+'mol/L')
         self.add_solute('OH-',str(conc)+'mol/L')        
         
@@ -1908,6 +1924,16 @@ class Solute:
             logger.error('No entry for species %s in parameters database' % self.formula)
             return None
                 
+    def add_parameter(self,name,magnitude,units='',**kwargs):
+        '''manually insert a parameter into the parameters database for a solute
+        
+        See pyEQL.parameters documentation for a description of the arguments
+        
+        '''
+        import pyEQL.parameter as pm
+        newparam = pm.Parameter(name,magnitude,units,**kwargs)
+        db[self.get_name()].add(newparam)
+        
     # TODO - deprecate in favor of the parameter module
     def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
         '''Use this function to store parameters for the TCPC activity model
