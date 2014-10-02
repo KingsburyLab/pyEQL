@@ -875,7 +875,6 @@ class Solution:
     def get_temperature(self):
         return self.temperature.to('degC')
     
-    
     def get_solvent_mass(self):
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
@@ -1645,6 +1644,38 @@ class Solution:
             denominator += term
         
         return numerator / denominator
+    
+    def get_property(self,solute,name):
+        '''Retrieve a thermodynamic property (such as diffusion coefficient)
+        for solute, and adjust it from the reference conditions to the conditions
+        of the solution
+        
+        Parameters:
+        ----------
+        solute: str
+            String representing the chemical formula of the solute species
+        name: str
+            The name of the property needed, e.g.
+            'diffusion coefficient'
+        
+        Returns:
+        -------
+        Quantity: The desired parameter
+        
+        '''
+        # retrieve the base value and the conditions of measurement from the
+        # database
+        base_value = self.get_solute(solute).get_parameter(name)
+        base_temperature = unit('25 degC')
+        
+        # perform temperature-corrections or other adjustments for certain
+        # parameter types        
+        if name == 'diffusion_coefficient':
+            # correct for temperature and viscosity
+            # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
+            # where $\mu$ is the dynamic viscosity
+            # assume that the base viscosity is that of pure water
+            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature) / self.get_viscosity_dynamic()
     
     def get_lattice_distance(self,solute):
         '''Calculate the average distance between molecules of the given solute,
