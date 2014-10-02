@@ -455,7 +455,7 @@ def donnan_eql(solution,fixed_charge):
     Solution : Solution object
         The external solution to be brought into equilibrium with the fixed
         charges
-    fixed_charge : str
+    fixed_charge : str quantity
         String representing the concentration of fixed charges, including sign. 
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
         
@@ -1031,12 +1031,6 @@ class Solution:
             quantity = unit(amount)
             self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
   
-        def get_activity(self):
-            return self.activity
-        
-        def set_activity(self,activity):
-            self.activity = activity
-
         def get_molar_conductivity(self,temperature=25*unit('degC')):
             # TODO - requires diffusion coefficient which may not be present
             '''(float,int,number) -> float
@@ -1105,7 +1099,7 @@ class Solution:
             
         #set output of the print() statement
         def __str__(self):
-            return 'Species ' + str(self.get_name()) + ' MW=' + str(self.get_molecular_weight()) +' Valence='+str(self.get_formal_charge()) + ' Amount= ' + str(self.get_moles()) + 'moles  Activity= ' + str(self.get_activity())
+            return 'Species ' + str(self.get_name()) + ' MW=' + str(self.get_molecular_weight()) +' Formal Charge='+str(self.get_formal_charge()) + ' Amount= ' + str(self.get_moles())
     
     def get_solvent_mass(self):
         # return the total mass (kg) of the solvent
@@ -1216,7 +1210,9 @@ class Solution:
         solutes, but they are activity-corrected and adjusted using an empricial exponent.
         This approach is used in PHREEQC and Aqion as described at these URLs:        
         <http://www.aqion.de/site/77>        
-        <http://www.hydrochemistry.eu/exmpls/sc.html>        
+        <http://www.hydrochemistry.eu/exmpls/sc.html>
+        Note: PHREEQC uses the molal rather than molar concentration according to
+        <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm>        
         
         See Also:
         --------
@@ -2002,7 +1998,7 @@ class Solution:
         '''
         self.act_list={}
         for i in self.components.keys():
-            self.act_list.update({i:self.components[i].get_activity()})
+            self.act_list.update({i:self.components[i].self.get_activity(i)})
         print('Component activities:\n',self.act_list )   
 
      
