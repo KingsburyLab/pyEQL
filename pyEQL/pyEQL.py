@@ -429,7 +429,7 @@ def donnan_eql(solution,fixed_charge):
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[1]
     
-    $$ {a_-^s \over a_-^m}^{1 \over z_-} {a_+^s \over a_+^m}^{1 \over z_+} = exp({\DELTA \pi V \over {RT z_+ \nu_+}}) $$
+    $$ {a_-^s \over a_-^m}^{1 \over z_-} {a_+^m \over a_+^s}^{1 \over z_+} = exp({\DELTA \pi V \over {RT z_+ \nu_+}}) $$
     
     Where subscripts + and - indicate the cation and anion, respectively, 
     superscripts s and m indicate the membrane phase and the solution phase,
@@ -516,17 +516,17 @@ def donnan_eql(solution,fixed_charge):
     # define a function representing the donnan equilibrium as a function
     # of the two unknown actvities to feed to the nonlinear solver
     def donnan_solve(x):
-        '''Where x is a numpy array of [co-ion concentration]
+        '''Where x is the magnitude of co-ion concentration
         '''
         # solve for the counter-ion concentration by enforcing electroneutrality
         # match the units given for fixed_charge
         if fixed_charge.magnitude >= 0:
             # counter-ion is the anion
-            conc_cation_mem = unit(str(x[0]) + str(fixed_charge.units)) / abs(z_cation)
+            conc_cation_mem = unit(str(x) + str(fixed_charge.units)) / abs(z_cation)
             conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge) / z_anion
         elif fixed_charge.magnitude < 0:
             # counter-ion is the cation
-            conc_anion_mem = unit(str(x[0]) + str(fixed_charge.units)) / abs(z_anion)
+            conc_anion_mem = unit(str(x) + str(fixed_charge.units)) / abs(z_anion)
             conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
         #print('DEBUG: '+str(donnan_soln.get_solvent_mass()))  
         # set the cation and anion concentrations in the membrane phase equal
@@ -546,17 +546,17 @@ def donnan_eql(solution,fixed_charge):
     # solve the function above using one of scipy's nonlinear solvers
     # the initial guess is to set the cation concentration in the membrane
     # equal to that in the solution
-    from scipy.optimize import broyden1
+    from scipy.optimize import brentq
     
     # determine which ion concentration represents the co-ion
     # call a nonlinear solver to adjust the concentrations per the donnan
     # equilibrium, unless the membrane is uncharged
     if fixed_charge.magnitude >0:
-        x = [conc_cation_soln.magnitude]
-        broyden1(donnan_solve,x)
+        x = conc_cation_soln.magnitude
+        brentq(donnan_solve,1e-10,x,xtol=0.001)
     elif fixed_charge.magnitude <0:
-        x = [conc_anion_soln.magnitude]
-        broyden1(donnan_solve,x)
+        x = conc_anion_soln.magnitude
+        brentq(donnan_solve,1e-10,x,xtol=0.001)
     else:
         pass
 
@@ -777,9 +777,9 @@ class Solution:
             pH = kwargs('pH')
         else:
             pH = 7
-        conc = 10 ** (-1 * pH)
-        self.add_solute('H+',str(conc)+'mol/L')
-        self.add_solute('OH-',str(conc)+'mol/L')        
+
+        self.add_solute('H+',str(10 ** (-1 * pH))+'mol/L')
+        self.add_solute('OH-',str(10 ** (-1 * (14-pH)))+'mol/L')        
         
         # populate the other solutes
         for item in solutes:
@@ -927,8 +927,8 @@ class Solution:
         <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
         <http://apple.csgi.unifi.it/~fratini/chen/pdf/14.pdf>
         '''
-        if self.get_ionic_strength().magnitude > 0.2:
-            logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+        #if self.get_ionic_strength().magnitude > 0.2:
+         #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
         
         viscosity_rel = 1
         for item in self.components:
@@ -1761,7 +1761,7 @@ class Solution:
             
             solute = self.get_solute(item)            
             
-            if item in ['H2O','H+','OH-','HOH']:
+            if item in ['H2O','HOH']:
                 continue
             
             # use the pitzer approach if parameters are available
