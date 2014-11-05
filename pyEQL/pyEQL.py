@@ -1423,9 +1423,16 @@ class Solution:
                     else:
                         alpha1 = 2
                         alpha2 = 0
+                    
+                    # determine the average molality of the salt
+                    # this is necessary for solutions inside e.g. an ion exchange
+                    # membrane, where the cation and anion concentrations may be
+                    # unequal
+                    molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+                    
                         
                     activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                    self.get_amount(solute,'mol/kg'),alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                    molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
                     Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                     
                     logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
@@ -1853,9 +1860,8 @@ class Solution:
         '''
         self.act_list={}
         for i in self.components.keys():
-            self.act_list.update({i:self.components[i].self.get_activity(i)})
-        print('Component activities:\n',self.act_list )   
-
+            self.act_list.update({i:str(self.get_activity(i))})
+        print('Component activities: (%s) \n' % self.act_list )
      
     def __str__(self):
         #set output of the print() statement for the solution     
