@@ -1382,9 +1382,51 @@ class Solution:
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
-        # for very low ionic strength, use the Debye-Huckel limiting law
         
-        if self.get_ionic_strength().magnitude <= 0.005:
+        # identify the predominant salt in the solution
+        Salt = self.get_salt()
+        
+        # search the database for pitzer parameters for 'salt'
+        database.search_parameters(Salt.formula)
+    
+        found = False
+        # search for Pitzer parameters        
+        for item in db[Salt.formula]:
+            if item.get_name() == 'pitzer_parameters_activity':
+                found = True
+        
+        # use the Pitzer model for higher ionic strenght, if the parameters are available
+                
+        if found == True:
+            # determine alpha1 and alpha2 based on the type of salt
+            # see the May reference for the rules used to determine
+            # alpha1 and alpha2 based on charge
+            if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                    alpha1 = 2
+                    alpha2 = 50
+                else:
+                    alpha1 = 1.4
+                    alpha2 = 12
+            else:
+                alpha1 = 2
+                alpha2 = 0
+            
+            # determine the average molality of the salt
+            # this is necessary for solutions inside e.g. an ion exchange
+            # membrane, where the cation and anion concentrations may be
+            # unequal
+            molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+            
+            activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
+            molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+            
+            logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
+            return activity_coefficient            
+
+        # for very low ionic strength, use the Debye-Huckel limiting law
+        elif self.get_ionic_strength().magnitude <= 0.005:
             logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
             
@@ -1399,56 +1441,16 @@ class Solution:
             return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
               
         else:
-            # identify the predominant salt in the solution
-            Salt = self.get_salt()
+            print('WARNING: Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
             
-            # search the database for pitzer parameters for 'salt'
-            database.search_parameters(Salt.formula)
-        
-            found = False
-            # use the Pitzer model for higher ionic strenght, if the parameters are available
-            for item in db[Salt.formula]:
-                if item.get_name() == 'pitzer_parameters_activity':
-                    found == True
-                    # determine alpha1 and alpha2 based on the type of salt
-                    # see the May reference for the rules used to determine
-                    # alpha1 and alpha2 based on charge
-                    if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                        if Salt.nu_cation >=3 or Salt.nu_anion >=3:
-                            alpha1 = 2
-                            alpha2 = 50
-                        else:
-                            alpha1 = 1.4
-                            alpha2 = 12
-                    else:
-                        alpha1 = 2
-                        alpha2 = 0
-                    
-                    # determine the average molality of the salt
-                    # this is necessary for solutions inside e.g. an ion exchange
-                    # membrane, where the cation and anion concentrations may be
-                    # unequal
-                    molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-                    
-                        
-                    activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                    molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
-                    Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-                    
-                    logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-                    return activity_coefficient            
-                    
+            return unit('1 dimensionless')
+                
             # TODO - fix TCPC implementation
             # use the TCPC model for higher ionic strengths, if the parameters have been set
-            if self.components[solute].parameters_TCPC:
-                logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
-                return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
-            
-            if found == False:
-                print('WARNING: Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
-                return unit('1 dimensionless')
-        # TODO - NEED TO TEST THIS FUNCTION
-    
+#            if self.components[solute].parameters_TCPC:
+#                logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
+#                return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
+#    
     def get_activity(self,solute):
         '''returns the thermodynamic activity of the solute in solution
        
