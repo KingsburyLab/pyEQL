@@ -1861,7 +1861,7 @@ class Solution:
         self.act_list={}
         for i in self.components.keys():
             self.act_list.update({i:str(self.get_activity(i))})
-        print('Component activities: (%s) \n' % self.act_list )
+        print('Component activities:\n',self.act_list )
      
     def __str__(self):
         #set output of the print() statement for the solution     
