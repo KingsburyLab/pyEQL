@@ -1714,7 +1714,9 @@ class Solution:
         '''
         # retrieve the base value and the conditions of measurement from the
         # database
-        base_value = self.get_solute(solute).get_parameter(name)
+        
+        if solute != 'H2O':
+            base_value = self.get_solute(solute).get_parameter(name)
         base_temperature = unit('25 degC')
         
         # perform temperature-corrections or other adjustments for certain
