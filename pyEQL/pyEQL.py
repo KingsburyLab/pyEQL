@@ -1727,7 +1727,12 @@ class Solution:
         # just return the base-value molar volume for now; find a way to adjust for
         # concentration later
         if name == 'partial_molar_volume':
-            return base_value
+            # calculate the partial molar volume for water since it isn't in the database            
+            if solute == 'H2O':
+                vol = self.get_solute('H2O').get_molecular_weight() / h2o.water_density(self.get_temperature())
+                return vol.to('cm **3 / mol')
+            else:
+                return base_value
     
     def get_lattice_distance(self,solute):
         '''Calculate the average distance between molecules of the given solute,
