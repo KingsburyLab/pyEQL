@@ -1723,6 +1723,11 @@ class Solution:
             # where $\mu$ is the dynamic viscosity
             # assume that the base viscosity is that of pure water
             return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature) / self.get_viscosity_dynamic()
+            
+        # just return the base-value molar volume for now; find a way to adjust for
+        # concentration later
+        if name == 'partial_molar_volume':
+            return base_value
     
     def get_lattice_distance(self,solute):
         '''Calculate the average distance between molecules of the given solute,
