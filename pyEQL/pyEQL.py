@@ -860,6 +860,9 @@ class Solution:
     def get_temperature(self):
         return self.temperature.to('degC')
     
+    def get_pressure(self):
+        return self.pressure.to('atm')
+    
     def get_solvent_mass(self):
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
