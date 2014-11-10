@@ -1392,13 +1392,15 @@ class Solution:
         # search the database for pitzer parameters for 'salt'
         database.search_parameters(Salt.formula)
     
+
+        # use the Pitzer model for higher ionic strenght, if the parameters are available
+        
+        # search for Pitzer parameters    
         found = False
-        # search for Pitzer parameters        
         for item in db[Salt.formula]:
             if item.get_name() == 'pitzer_parameters_activity':
                 found = True
-        
-        # use the Pitzer model for higher ionic strenght, if the parameters are available
+                break       
                 
         if found == True:
             # determine alpha1 and alpha2 based on the type of salt
