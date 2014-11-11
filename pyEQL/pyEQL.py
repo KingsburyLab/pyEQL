@@ -278,16 +278,14 @@ def alpha(n,pH,pKa_list):
 
 ### Functions that operate on Solution Objects
 
-def gibbsmix(Solution1, Solution2,temperature=25*unit('degC')):
+def gibbs_mix(Solution1, Solution2):
     '''(Solution, Solution) -> float
-    Return the Gibbs energychange associated with mixing two solutions
+    Return the Gibbs energy change associated with mixing two solutions
 
     Parameters:
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-    temperature : Quantity, optional
-                  The temperature in Celsius. Defaults to 25 degrees if not specified.
         
     Returns:
     -------
@@ -322,6 +320,7 @@ def gibbsmix(Solution1, Solution2,temperature=25*unit('degC')):
     dilute = Solution2
     blend = mix(Solution1,Solution2)
     term_list = {concentrate:0, dilute:0, blend:0}
+    temperature = blend.get_temperature()
 
     # calculte the entropy change and number of moles solute for each solution
     for solution in term_list:
@@ -330,9 +329,9 @@ def gibbsmix(Solution1, Solution2,temperature=25*unit('degC')):
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_activity(solute))
 
-    return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
+    return (unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to('J')
 
-def entropy_mix(Solution1, Solution2,temperature=25*unit('degC')):
+def entropy_mix(Solution1, Solution2):
     '''(Solution, Solution) -> float
     Return the ideal mixing entropy associated with mixing two solutions
 
@@ -340,8 +339,6 @@ def entropy_mix(Solution1, Solution2,temperature=25*unit('degC')):
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-    temperature : Quantity, optional
-                  The temperature in Celsius. Defaults to 25 degrees if not specified.
         
     Returns:
     -------
@@ -376,16 +373,17 @@ def entropy_mix(Solution1, Solution2,temperature=25*unit('degC')):
     dilute = Solution2
     blend = mix(Solution1,Solution2)
     term_list = {concentrate:0, dilute:0, blend:0}
+    temperature = blend.get_temperature()
 
-    # calculte the entropy change and number of moles solute for each solution
+    # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
-        #mole_fraction_water = solution.get_moles_water() / (solution.get_total_moles_solute() + solution.get_moles_water())
+        
         for solute in solution.components:
             #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_amount(solute,'fraction'))
 
-    return unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])
+    return (unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to('J')
 
 def has_parameter(formula,name):
     '''
@@ -1066,7 +1064,7 @@ class Solution:
         elif activity is False:
             return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
     
-    def get_amount(self,solute,unit,temperature=25):
+    def get_amount(self,solute,unit):
         '''returns the amount of 'solute' in the parent solution
        
         Parameters:
@@ -1075,9 +1073,7 @@ class Solution:
                     String representing the name of the solute of interest
         unit : str
                     Units desired for the output. Valid units are 'mol/L','mol/kg','mol', 'kg', and 'g/L'
-        temperature : float or int, optional
-                    The temperature in Celsius. Defaults to 25 degrees if not specified.
-        
+
         Returns:
         -------
         The amount of the solute in question, in the specified units
@@ -1089,60 +1085,14 @@ class Solution:
         See Also:
         --------
         '''
-        moles = self.get_solute(solute).get_moles()
-        mw = self.get_solute(solute).get_molecular_weight()
+        if unit == 'fraction':
+            return self.get_mole_fraction(solute)
+        else:
+            moles = self.get_solute(solute).get_moles()
+            mw = self.get_solute(solute).get_molecular_weight()
         
-        # with pint unit conversions enabled, we just pass the unit to pint
-        return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
-        
-#        if unit == 'mol':
-#            return moles
-#        elif unit == 'mmol':
-#            return moles * 1000
-#        elif unit == 'mol/kg':
-#            return moles / self.get_solvent_mass()
-#        elif unit == 'fraction':
-#            return moles / (self.get_total_moles_solute() + self.get_moles_water())
-#        # mass per volume units
-#        elif unit == 'mol/L':
-#            return moles / self.get_volume()
-#        elif unit == 'mmol/L':
-#            return moles * 1000 / self.get_volume()
-#        elif unit == 'ng/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e9 / self.get_volume()
-#        elif unit == 'ug/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e6 / self.get_volume()
-#        elif unit == 'mg/L':
-#            return moles * self.components[solute].get_molecular_weight() * 1e3 / self.get_volume()
-#        elif unit == 'g/L':
-#            return moles * self.components[solute].get_molecular_weight() / self.get_volume()
-#        elif unit == 'kg/L':
-#            return moles * self.components[solute].get_molecular_weight() / 1e3 / self.get_volume()
-#        # mass units
-#        elif unit == 'ng':
-#            return moles * self.components[solute].get_molecular_weight() * 1e9
-#        elif unit == 'ug':
-#            return moles * self.components[solute].get_molecular_weight() * 1e6
-#        elif unit == 'mg':
-#            return moles * self.components[solute].get_molecular_weight() * 1e3
-#        elif unit == 'g':
-#            return moles * self.components[solute].get_molecular_weight()
-#        elif unit == 'kg':
-#            return moles * self.components[solute].get_molecular_weight() / 1e3
-#        # mass fraction units
-#        elif unit == 'ppt':
-#            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e8
-#        elif unit == 'ppb':
-#            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e7
-#        elif unit == 'ppm' or unit == 'mg/kg':
-#            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 1e6
-#        elif unit == '%':
-#            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3) * 100
-#        elif unit == 'g/g' or unit == 'mg/mg' or unit == 'kg/kg':
-#            return moles * self.components[solute].get_molecular_weight() / (self.get_mass * 1e3)
-#        else:
-#            print('Invalid unit %s specified for amount % unit')
-#            return None
+            # with pint unit conversions enabled, we just pass the unit to pint
+            return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
     
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
@@ -1341,10 +1291,10 @@ class Solution:
         TBD
         
         '''
-        return self.get_amount(solute,'moles') / (self.get_moles_water() + self.get_total_moles_solute())
+        return self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute())
     
-    def get_moles_water(self):
-        return self.get_amount(self.solvent_name,'mol',self.temperature)
+    def get_moles_solvent(self):
+        return self.get_amount(self.solvent_name,'mol')
     
     def get_salt(self):
         # identify the predominant salt in the solution
