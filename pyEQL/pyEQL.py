@@ -575,62 +575,51 @@ def mix(Solution1, Solution2):
     
     if not Solution1.solvent_name == 'H2O' or Solution1.solvent_name == 'water':
         logger.error('mix() function does not support non-water solvents. Aborting.')
-    
-    # set solvent as water and retrieve total mass from solutions
-    solvent_mass = Solution1.get_solvent_mass() + Solution2.get_solvent_mass()
-    solvent = [Solution1.solvent_name,18,solvent_mass]
-    
-    # determine the volume for the new solution (assume additive)
-    mix_vol = Solution1.get_volume() + Solution2.get_volume()
-    
-    # determine the density for the new solution. Assume volume is additive.
-    # Convert from kg/L to kg/m3
-    mix_dense = (Solution1.get_mass() + Solution2.get_mass()) / mix_vol *1000
-    
-    #conductivity will be initialized to zero in the new solution TODO
-    
-    #temperature and pressure will be left at defaults TODO
 
-    # Loop through all the solutes in Solution1 and Solution2 and make a list
-    mix_solute_list=[]
-    for item in Solution1.components.keys():
-            if not item in mix_solute_list:
-                mix_solute_list.append(item)
-    for item in Solution2.components.keys():
-        if not item in mix_solute_list:
-            mix_solute_list.append(item)
-            
-    # add each solute to the new solution
-    component_list=[]
-    for item in mix_solute_list:
-        if item in Solution1.components and item in Solution2.components:
-            mix_moles = Solution1.components[item].get_moles() + Solution2.components[item].get_moles()
-            
-            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution1.get_solute(item).parameters])
-        
-        elif item in Solution1.components:
-            mix_moles = Solution1.components[item].get_moles()
-        
-            component_list.append([Solution1.get_solute(item).get_name(),Solution1.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution1.get_solute(item).parameters])
-                        
-        elif item in Solution2.components:
-            mix_moles = Solution2.components[item].get_moles()
-            
-            component_list.append([Solution2.get_solute(item).get_name(),Solution2.get_solute(item).get_molecular_weight(),mix_moles,'mol',Solution2.get_solute(item).parameters])
+    # set the pressure for the new solution
+    p1 = Solution1.get_pressure()
+    t1 = Solution1.get_temperature()
+    v1 = Solution1.get_volume()
+    p2 = Solution2.get_pressure()
+    t2 = Solution2.get_temperature()
+    v2 = Solution2.get_volume()
+
+    # check to see if the solutions have the same temperature and pressure
+    if not p1 == p2:
+        logger.warning('mix() function called between two solutions of different pressure. Pressures will be averaged (weighted by volume)')
+          
+    blend_pressure = str((p1 * v1 + p2 * v2) / (v1 + v2))
     
-    #create a new Solution object for the blend
-    Blend = Solution(component_list,solvent,mix_dense)
-        
-    #copy over any activity coefficient parameters and others TODO
-    for item in Blend.components:
-        if item in Solution1.components:
-            if Solution1.components[item].parameters_TCPC:
-                Blend.components[item].set_parameters_TCPC(Solution1.components[item].get_parameters_TCPC('S'),Solution1.components[item].get_parameters_TCPC('b'),Solution1.components[item].get_parameters_TCPC('n'),Solution1.components[item].get_parameters_TCPC('z_plus'),Solution1.components[item].get_parameters_TCPC('z_minus'),Solution1.components[item].get_parameters_TCPC('nu_plus'),Solution1.components[item].get_parameters_TCPC('nu_minus'))
-
-        elif item in Solution2.componenents:
-            if Solution2.components[item].parameters_TCPC:
-                Blend.components[item].set_parameters_TCPC(Solution2.components[item].get_parameters_TCPC('S'),Solution2.components[item].get_parameters_TCPC('b'),Solution2.components[item].get_parameters_TCPC('n'),Solution2.components[item].get_parameters_TCPC('z_plus'),Solution2.components[item].get_parameters_TCPC('z_minus'),Solution2.components[item].get_parameters_TCPC('nu_plus'),Solution2.components[item].get_parameters_TCPC('nu_minus'))
-
+    if not t1 == t2:
+        logger.warning('mix() function called between two solutions of different temperature. Temperatures will be averaged (weighted by volume)')
+    
+    blend_temperature = str((t1 * v1 + t2 * v2) / (v1 + v2))
+          
+    # retrieve the amount of each component in the parent solution and 
+    # store in a list.
+    mix_species={}
+    for item in Solution1.components:
+        mix_species.update({item:str(Solution1.get_amount(item,'mol'))})
+    for item in Solution2.components:
+        if item in mix_species:
+            new_amt = str(unit(mix_species[item]) + Solution2.get_amount(item,'mol'))
+            mix_species.update({item:new_amt})
+        else:
+            mix_species.update({item:Solution2.get_amount(item,'mol')}) 
+            
+    
+    # create an empty solution for the mixture
+    Blend = Solution(temperature = blend_temperature,pressure= blend_pressure)
+    
+    # set or add the appropriate amount of all the components
+    for item in mix_species.keys():
+        if item in Blend.components:
+            # if already present (e.g. H2O, H+), modify the amount
+            Blend.set_amount(item,mix_species[item])
+        else:
+            # if not already present, add the component
+            Blend.add_solute(item,mix_species[item])
+            
     return Blend
 
 #####CLASS DEFINITIONS
