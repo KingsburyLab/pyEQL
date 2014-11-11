@@ -1072,15 +1072,14 @@ class Solution:
         solute : str 
                     String representing the name of the solute of interest
         unit : str
-                    Units desired for the output. Valid units are 'mol/L','mol/kg','mol', 'kg', and 'g/L'
+                    Units desired for the output. Examples of valid units are 
+                    'mol/L','mol/kg','mol', 'kg', and 'g/L'
+                    Use 'fraction' to return the mole fraction.
 
         Returns:
         -------
         The amount of the solute in question, in the specified units
         
-        Notes:
-        -----
-        Amount-per-volume units such as mol/L and g/L are dependent on temperature. Others are not.
         
         See Also:
         --------
