@@ -16,6 +16,8 @@ import pyEQL.water_properties as h2o
 
 # the pint unit registry
 from pyEQL.parameter import unit
+# TODO fix this to handle offsets the way pint wants us to since 0.7
+unit.autoconvert_offset_to_baseunit = True
 
 # logging system
 import logging

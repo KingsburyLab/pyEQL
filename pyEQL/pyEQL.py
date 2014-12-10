@@ -15,6 +15,9 @@ import pyEQL.water_properties as h2o
 
 # the pint unit registry
 from pyEQL.parameter import unit
+# TODO fix this to handle offsets the way pint wants us to since 0.7
+unit.autoconvert_offset_to_baseunit = True
+
 # functions to manage importing paramters from database files and making them accessible to pyEQL
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db
@@ -845,7 +848,7 @@ class Solution:
         return self.components[self.solvent_name]
     
     def get_temperature(self):
-        return self.temperature.to('degC')
+        return self.temperature.to('K')
     
     def get_pressure(self):
         return self.pressure.to('atm')
@@ -1147,7 +1150,12 @@ class Solution:
             self.set_amount(solute,'0 mol')
 
         # update the volume to account for the space occupied by all the solutes
-        self._update_volume()
+        # make sure that there is still solvent present in the first place
+        if self.get_solvent_mass() <= unit('0 kg'):
+            logger.error('All solvent has been depleted from the solution')
+            return None
+        else:
+            self._update_volume()
         
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
@@ -1225,7 +1233,12 @@ class Solution:
             self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
 
             # update the volume to account for the space occupied by all the solutes
-            self._update_volume()
+            # make sure that there is still solvent present in the first place
+            if self.get_solvent_mass() <= unit('0 kg'):
+                logger.error('All solvent has been depleted from the solution')
+                return None
+            else:
+                self._update_volume()
             
             # if units are given on a per-volume basis, 
             # iteratively solve for the amount of solute that will preserve the
