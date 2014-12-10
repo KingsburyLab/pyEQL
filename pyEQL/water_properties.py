@@ -40,7 +40,8 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     -----
     Based on the following empirical equation reported in [1]
     
-    $$ \rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ 1.5
+    
+    .. math:: \\rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ {1.5}
     
     Where T is the temperature in Celsius.
     
@@ -237,7 +238,7 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     range 273 K to 372 K. Permittivity should not be extrapolated beyond this
     range.
     
-    :math: \epsilon(T) = a + b T + c T^2
+    .. math:: \\epsilon(T) = a + b T + c T^2
     
     .. [1] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
             Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.
