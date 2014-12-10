@@ -911,7 +911,8 @@ class Solution:
         Return the viscosity of the solution relative to that of water
         
         This is calculated using a simplified form of the Jones-Dole equation:
-        $$ \eta_rel = 1 + \sum_i B_i m_i $$
+        
+        .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
         
         Where m is the molal concentration and B is an empirical parameter.
         
@@ -1529,7 +1530,7 @@ class Solution:
         -----
         Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]
         
-        $$ ln a_w = - \Phi M_w \sum_i m_i    $$
+        .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
         Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
         of each species.
@@ -1590,6 +1591,15 @@ class Solution:
 #         {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
 #         >>> conc_soln.get_ionic_strength()
 #         5.999639608985288
+        
+        Notes
+        -----
+        The ionic strength is calculated according to:
+        
+        .. math:: I = \sum_i m_i z_i^2
+        
+        Where m_i is the molal concentration and z_i is the charge on species i.
+        
         '''
         self.ionic_strength=0
         for solute in self.components.keys():
@@ -1708,6 +1718,12 @@ class Solution:
         >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
         >>> soln.get_lattice_distance('Na+')
         1.492964.... nanometer
+        
+        Notes
+        -----
+        The lattice distance is related to the molar concentration as follows:
+        
+        .. math:: d = ( C_i N_A ) ^ {-{1\over3}}
         
         '''
         # calculate the volume per particle as the reciprocal of the molar concentration
@@ -2022,8 +2038,7 @@ class Solute:
         -----
         Molar conductivity is calculated from the Nernst-Einstein relation:[1]
             
-        .. math::
-            \DELTA_i = {z_i^2 D_i F^2 \over RT}
+        .. math:: \\kappa_i = {z_i^2 D_i F^2 \\over RT}
         
         Note that the diffusion coefficient is strongly variable with temperature.
         
@@ -2057,8 +2072,7 @@ class Solute:
         This function uses the Einstein relation to convert a diffusion coefficient
         into an ionic mobility[1]
         
-        .. math::
-            \mu_i = {F |z_i| D_i \over RT}
+        .. math:: \mu_i = {F |z_i| D_i \over RT}
         
         .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
