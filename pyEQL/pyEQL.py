@@ -408,7 +408,7 @@ def has_parameter(formula,name):
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
-    Parameters:
+    Parameters
     ----------
     Solution : Solution object
         The external solution to be brought into equilibrium with the fixed
@@ -417,23 +417,24 @@ def donnan_eql(solution,fixed_charge):
         String representing the concentration of fixed charges, including sign. 
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
         
-    Returns:
+    Returns
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
     
-    Notes:
+    Notes
     -----
     
     The general equation representing the equilibrium between an external 
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[1]
     
-    $$ {a_-^s \over a_-^m}^{1 \over z_-} {a_+^m \over a_+^s}^{1 \over z_+} = exp({\DELTA \pi V \over {RT z_+ \nu_+}}) $$
+    .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
+    = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
     
     Where subscripts + and - indicate the cation and anion, respectively, 
-    superscripts s and m indicate the membrane phase and the solution phase,
+    the overbar indicates the membrane phase,
     a represents activity, z represents charge, nu represents the stoichiometric
     coefficient, V represents the partial molar volume of the salt, and 
     delta pi is the difference in osmotic pressure between the membrane and the
@@ -441,7 +442,7 @@ def donnan_eql(solution,fixed_charge):
     
     In addition, electroneutrality must prevail within the membrane phase:
     
-    $$ C_+^m z_+ + X + C_-^m z_- = 0 $$
+    .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
     
     Where C represents concentration and X is the fixed charge concentration
     in the membrane or ion exchange phase.
@@ -455,16 +456,15 @@ def donnan_eql(solution,fixed_charge):
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
     
-    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. 
-    Chapter 2, p. 51. 
-    http://dx.doi.org/10.1016/S0927-5193(04)80033-0
+    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
+    Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     
-    Examples:
+    Examples
     --------
     TODO
     
-    See Also:
+    See Also
     --------
     get_salt()
     
@@ -911,7 +911,8 @@ class Solution:
         Return the viscosity of the solution relative to that of water
         
         This is calculated using a simplified form of the Jones-Dole equation:
-        $$ \eta_rel = 1 + \sum_i B_i m_i $$
+        
+        .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
         
         Where m is the molal concentration and B is an empirical parameter.
         
@@ -1529,7 +1530,7 @@ class Solution:
         -----
         Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]
         
-        $$ ln a_w = - \Phi M_w \sum_i m_i    $$
+        .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
         Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
         of each species.
@@ -1590,6 +1591,15 @@ class Solution:
 #         {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
 #         >>> conc_soln.get_ionic_strength()
 #         5.999639608985288
+        
+        Notes
+        -----
+        The ionic strength is calculated according to:
+        
+        .. math:: I = \sum_i m_i z_i^2
+        
+        Where m_i is the molal concentration and z_i is the charge on species i.
+        
         '''
         self.ionic_strength=0
         for solute in self.components.keys():
@@ -1620,7 +1630,7 @@ class Solution:
     def get_transport_number(self,solute):
         '''Calculate the transport number of the solute in the solution
         
-        $$ t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i} $$
+        .. math:: t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
         Where C is the concentration in mol/L
         TODO - add more references / explanation here        
@@ -1708,6 +1718,12 @@ class Solution:
         >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
         >>> soln.get_lattice_distance('Na+')
         1.492964.... nanometer
+        
+        Notes
+        -----
+        The lattice distance is related to the molar concentration as follows:
+        
+        .. math:: d = ( C_i N_A ) ^ {-{1\over3}}
         
         '''
         # calculate the volume per particle as the reciprocal of the molar concentration
@@ -2022,8 +2038,7 @@ class Solute:
         -----
         Molar conductivity is calculated from the Nernst-Einstein relation:[1]
             
-        .. math::
-            \DELTA_i = {z_i^2 D_i F^2 \over RT}
+        .. math:: \\kappa_i = {z_i^2 D_i F^2 \\over RT}
         
         Note that the diffusion coefficient is strongly variable with temperature.
         
@@ -2057,8 +2072,7 @@ class Solute:
         This function uses the Einstein relation to convert a diffusion coefficient
         into an ionic mobility[1]
         
-        .. math::
-            \mu_i = {F |z_i| D_i \over RT}
+        .. math:: \mu_i = {F |z_i| D_i \over RT}
         
         .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
