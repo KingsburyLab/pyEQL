@@ -408,7 +408,7 @@ def has_parameter(formula,name):
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
-    Parameters:
+    Parameters
     ----------
     Solution : Solution object
         The external solution to be brought into equilibrium with the fixed
@@ -417,23 +417,24 @@ def donnan_eql(solution,fixed_charge):
         String representing the concentration of fixed charges, including sign. 
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
         
-    Returns:
+    Returns
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
     
-    Notes:
+    Notes
     -----
     
     The general equation representing the equilibrium between an external 
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[1]
     
-    $$ {a_-^s \over a_-^m}^{1 \over z_-} {a_+^m \over a_+^s}^{1 \over z_+} = exp({\DELTA \pi V \over {RT z_+ \nu_+}}) $$
+    .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
+    = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
     
     Where subscripts + and - indicate the cation and anion, respectively, 
-    superscripts s and m indicate the membrane phase and the solution phase,
+    the overbar indicates the membrane phase,
     a represents activity, z represents charge, nu represents the stoichiometric
     coefficient, V represents the partial molar volume of the salt, and 
     delta pi is the difference in osmotic pressure between the membrane and the
@@ -441,7 +442,7 @@ def donnan_eql(solution,fixed_charge):
     
     In addition, electroneutrality must prevail within the membrane phase:
     
-    $$ C_+^m z_+ + X + C_-^m z_- = 0 $$
+    .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
     
     Where C represents concentration and X is the fixed charge concentration
     in the membrane or ion exchange phase.
@@ -455,16 +456,15 @@ def donnan_eql(solution,fixed_charge):
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
     
-    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. 
-    Chapter 2, p. 51. 
-    http://dx.doi.org/10.1016/S0927-5193(04)80033-0
+    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
+    Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     
-    Examples:
+    Examples
     --------
     TODO
     
-    See Also:
+    See Also
     --------
     get_salt()
     
@@ -1620,7 +1620,7 @@ class Solution:
     def get_transport_number(self,solute):
         '''Calculate the transport number of the solute in the solution
         
-        $$ t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i} $$
+        .. math:: t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
         Where C is the concentration in mol/L
         TODO - add more references / explanation here        
