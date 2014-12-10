@@ -38,7 +38,7 @@ def _debye_parameter_B(temperature='25 degC'):
     -----
     The parameter B is equal to:[1]
 
-    $$ B = ( {8 \pi N_A e^2} \over {1000 \epsilon k T} ) ^ {1 \over 2}    $$
+    .. math:: B = ( {8 \\pi N_A e^2 \\over 1000 \\epsilon k T} ) ^ {1 \\over 2}
     
     .. [1] Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.    
     
@@ -72,7 +72,7 @@ def _debye_parameter_activity(temperature='25 degC'):
     The parameter A is equal to:[1]
      
     ..  math::    
-        A^'\gamma' = e^3 ( 2 '\pi' N_A {\rho})^{0.5} / (4 \pi \epsilon_o \epsilon_r k T)^{1.5}
+        A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
     
     Note that this equation returns the parameter value that can be used to calculate
     the natural logarithm of the activity coefficient. For base 10, divide the
@@ -114,9 +114,7 @@ def _debye_parameter_osmotic(temperature='25 degC'):
     Takes the value 0.392 at 25 C.
     This constant is calculated according to:[1][2]
 
-     .. math::
-     A^{\phi} = {1 \over 3} A^{\gamma}
-    
+     .. math:: A^{\\phi} = {1 \\over 3} A^{\\gamma}
     
     .. [1] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
     //J. Chemical Engineering Data// 33, pp.177-184.
@@ -155,8 +153,8 @@ def _debye_parameter_volume(temperature='25 degC'):
     Takes the value 1.898 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
     This constant is calculated according to:[1]
 
-     .. math::
-     A_V = -2 A_{\phi} R T [ 3 {{\partial \epsilon \over \partial p} \over \epsilon} - {{\partial rho \over \parial p} \over \rho}]
+     .. math:: A_V = -2 A_{\\phi} R T [ {3 \\over \\epsilon} {{\\partial \\epsilon \\over \\partial p} \
+     } - {{1 \\over \\rho}{\\partial \\rho \\over \\partial p} }]
     
     .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
@@ -185,7 +183,7 @@ def _debye_parameter_volume(temperature='25 degC'):
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
-    Parameters:
+    Parameters
     ----------
     formal_charge : int, optional      
                     The charge on the solute, including sign. Defaults to +1 if not specified.
@@ -194,7 +192,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     temperature :    str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
-    Returns:
+    Returns
     -------
     float
          The mean molal (mol/kg) scale ionic activity coefficient of solute
@@ -203,8 +201,12 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     --------
     _debye_parameter_activity
     
-    Notes:
-    ------
+    Notes
+    -----
+    Activity coefficient is calculated according to: 
+
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 \sqrt I
+    
     Valid only for I < 0.005
     
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
@@ -221,7 +223,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
 def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
     
-    Parameters:
+    Parameters
     ----------
     formal_charge : int, optional      
                     The charge on the solute, including sign. Defaults to +1 if not specified.
@@ -230,17 +232,21 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     temperature :    str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
-    Returns:
+    Returns
     -------
     float
          The mean molal (mol/kg) scale ionic activity coefficient of solute
          
-    See Also:
+    See Also
     --------
     _debye_parameter_activity
     
-    Notes:
+    Notes
     ------
+    Activity coefficient is calculated according to: 
+
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 {\sqrt I \\over (1 + \sqrt I)}
+    
     Valid for I < 0.1
     
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
@@ -257,7 +263,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
 def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
     
-    Parameters:
+    Parameters
     ----------
     formal_charge : int, optional      
                     The charge on the solute, including sign. Defaults to +1 if not specified.
@@ -266,17 +272,21 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     temperature :    str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
-    Returns:
+    Returns
     -------
     float
          The mean molal (mol/kg) scale ionic activity coefficient of solute
 
-    See Also:
+    See Also
     --------
     _debye_parameter_activity
     
-    Notes:
-    ------
+    Notes
+    -----
+    Activity coefficient is calculated according to: 
+
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 ({\sqrt I \\over (1 + \sqrt I)} + 0.2 I)
+    
     Valid for 0.1 < I < 0.5
     
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
@@ -542,7 +552,7 @@ def _pitzer_f1(x):
     '''
     The function of ionic strength used to calculate \beta_MX in the Pitzer ion intercation model.
     
-    f(x) = 2 [ 1- (1+x) \exp(-x)] / x ^ 2
+    .. math:: f(x) = 2 [ 1- (1+x) \exp(-x)] / x ^ 2
     
     References:
     ----------
@@ -564,7 +574,7 @@ def _pitzer_f2(x):
     '''
     The function of ionic strength used to calculate \beta_\gamma in the Pitzer ion intercation model.
     
-    f(x) = -2 [ 1 - (1+x+ x^2 \over 2) \exp(-x)] / x ^ 2
+    .. math:: f(x) = -{2 \\over x ^ 2} [ 1 - ({1+x+ x^2 \\over 2}) \\exp(-x)] 
     
     References:
     ----------
@@ -586,7 +596,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     '''
     Return the B_MX coefficient for the Pitzer ion interaction model.
     
-    $$ B_MX = \beta_0 + \beta_1 f1(\alpha_1 I ^ 0.5) + \beta_2 f2(\alpha_2 I ^ 0.5) $$
+    .. math:: B_MX = \\beta_0 + \\beta_1 f1(\\alpha_1 I ^ {0.5}) + \\beta_2 f2(\\alpha_2 I ^ {0.5})
     
     Parameters:
     ----------
@@ -624,7 +634,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    '''
 #    Return the B^\gamma coefficient for the Pitzer ion interaction model.
 #    
-#    $$ B_\gamma = [ \beta_1 f2(\alpha_1 I ^ 0.5) + beta_2 f2(\alpha_2 I^0.5) ] / I $$
+#    .. math:: B_\gamma = [ \beta_1 f2(\alpha_1 I ^ 0.5) + beta_2 f2(\alpha_2 I^0.5) ] / I
 #    
 #    Parameters:
 #    ----------
@@ -662,11 +672,11 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     '''
     Return the B^\Phi coefficient for the Pitzer ion interaction model.
     
-    $$ B^\Phi = \beta_0 + \beta1 \exp(-\alpha_1 I ^ 0.5) + \beta_2 \exp(-\alpha_2 I ^ 0.5) $$
+    .. math:: B^\Phi = \\beta_0 + \\beta1 \exp(-\\alpha_1 I ^{0.5}) + \\beta_2 \exp(-\\alpha_2 I ^ {0.5})
     
     or 
     
-    B^\Phi = B^\gamma - B_MX
+    .. math:: B^\\Phi = B^\\gamma - B_{MX}
     
     Parameters:
     ----------
@@ -704,7 +714,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    '''
 #    Return the C^\Phi coefficient for the Pitzer ion interaction model.
 #    
-#    $$ C_MX = C^\Phi / 2 \sqrt( \abs(z_+ z_-)) $$
+#    .. math:: C_MX = C^\Phi / 2 \sqrt( \abs(z_+ z_-))
 #    
 #    Parameters:
 #    ----------
@@ -737,10 +747,9 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
     ion interaction model.
     
-    $$ \ln \gamma_MX = -\abs(z_+ z_-) A^Phi ( I ^ 0.5 \over (1 + b I ^ 0.5) + 2 \over b \ln (1 + b I ^ 0.5) )+
-    + m (2 \nu_+ \nu_-) \over (\nu_+ + \nu_-) (B_MX + B_MX^\Phi) + m^2(3 (\nu_+ \nu_-)^1.5 \over (\nu_+ + \nu_-)) C_MX^\Phi    
+    .. math:: \\ln \\gamma_{MX} = -{|z_+ z_-| A^{Phi} ( I ^ {0.5} \\over (1 + b I ^ {0.5})} + {2 \\over b }\\ln (1 + b I ^ {0.5}) )+\
+    + {m (2 \\nu_+ \\nu_-) \\over (\\nu_+ + \\nu_-)} (B_{MX} + B_{MX}^\\Phi) + {m^2(3 (\\nu_+ \\nu_-)^{1.5} \\over (\\nu_+ + \\nu_-))} C_{MX}^\\Phi    
     
-    $$
     
     Parameters:
     ----------
