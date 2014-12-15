@@ -55,7 +55,7 @@ def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
     Calculate a parameter for th e Pitzer model based on temperature-dependent
     coefficients c1,c2,c3,c4,and c5.
     
-    Parameters:
+    Parameters
     ----------
     c1, c2, c3, c4, c5: float
                 Temperature-dependent coefficients for the pitzer parameter of 
@@ -80,7 +80,7 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     
     Adjust a reaction equilibrium constant from one temperature to another.
     
-    Parameters:
+    Parameters
     ----------
     equilibrium_constant : float
                            The reaction equilibrium constant for the reaction
@@ -92,12 +92,12 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     reference_temperature : Quantity, optional
                       the temperature at which equilibrium_constant is valid. (25 degrees C if omitted).
    
-    Returns:
+    Returns
     -------
     float
         adjusted reaction equilibrium constant
     
-    Notes:
+    Notes
     -----
     This function implements the Van't Hoff equation to adjust measured 
     equilibrium constants to other temperatures. 
@@ -111,7 +111,7 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53. 
         Wiley Interscience, 1996.
     
-    Examples:
+    Examples
     --------
     >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC'),25*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
@@ -134,7 +134,7 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     
     Adjust a reaction equilibrium constant from one temperature to another.
     
-    Parameters:
+    Parameters
     ----------
     rate_constant : Quantity
                 The parameter value (usually a rate constant) being adjusted
@@ -146,16 +146,16 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
                       the temperature at which equilibrium_constant is valid
                       Defaults to 25 degrees C if omitted.
    
-    Returns:
+    Returns
     -------
     Quantity
         The adjusted reaction equilibrium constant
 
-    See Also:
+    See Also
     --------
     kelvin
     
-    Notes:
+    Notes
     -----
     This function implements the Arrhenius equation to adjust measured rate
     constants to other temperatures. [1]
@@ -166,7 +166,7 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
     TODO - add better reference
     
-    Examples:
+    Examples
     --------
     >>> adjust_temp_arrhenius(7,900*unit('kJ/mol'),37*unit('degC'),97*unit('degC')) #doctest: +ELLIPSIS
     1.8867225...e-24
@@ -183,7 +183,7 @@ def alpha(n,pH,pKa_list):
     Returns the acid-base distribution coefficient (alpha) of an acid in the 
     n-deprotonated form at a given pH.
     
-    Parameters:
+    Parameters
     ----------
     n : int
         The number of protons that have been lost by the desired form of the
@@ -196,12 +196,12 @@ def alpha(n,pH,pKa_list):
                The pKa values (negative log of equilibrium constants) for the acid
                of interest. There must be a minimum of n pKa values in the list.
     
-    Returns:
+    Returns
     -------
     float
         The fraction of total acid present in the specified form.
     
-    Notes:
+    Notes
     -----
     The acid-base distribution coefficient is calculated as follows:[1]
         
@@ -213,7 +213,7 @@ def alpha(n,pH,pKa_list):
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
         pp 127-130. Wiley Interscience, 1996.
     
-    Examples:
+    Examples
     --------
     >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
     0.999...
@@ -285,21 +285,21 @@ def gibbs_mix(Solution1, Solution2):
     '''(Solution, Solution) -> float
     Return the Gibbs energy change associated with mixing two solutions
 
-    Parameters:
+    Parameters
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
         
-    Returns:
+    Returns
     -------
     float
         The change in Gibbs eneryg associated with complete mixing of the
         Solutions, in Joules.
     
-    Notes:
+    Notes
     -----
     
-    The Gibbs energy of mixing is calculated as follows:[1]
+    The Gibbs energy of mixing is calculated as follows: [1]_
         
     .. math::
         \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
@@ -312,10 +312,13 @@ def gibbs_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
     
+    References
+    ----------
+    
     .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
     A differential approach.// Elsevier, 2007, pp. 23-37.
     
-    Examples:
+    Examples
     --------
  
     '''
@@ -338,21 +341,21 @@ def entropy_mix(Solution1, Solution2):
     '''(Solution, Solution) -> float
     Return the ideal mixing entropy associated with mixing two solutions
 
-    Parameters:
+    Parameters
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
         
-    Returns:
+    Returns
     -------
     float
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
     
-    Notes:
+    Notes
     -----
     
-    The ideal entropy of mixing is calculated as follows:[1]
+    The ideal entropy of mixing is calculated as follows:[1]_
         
     .. math::
         \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
@@ -365,10 +368,13 @@ def entropy_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
     
+    References
+    ----------
+    
     .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
     A differential approach.// Elsevier, 2007, pp. 23-37.
     
-    Examples:
+    Examples
     --------
  
     '''
@@ -428,7 +434,7 @@ def donnan_eql(solution,fixed_charge):
     
     The general equation representing the equilibrium between an external 
     electrolyte solution and an ion-exchange medium containing fixed charges
-    is:[1]
+    is:[1]_
     
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
@@ -455,6 +461,9 @@ def donnan_eql(solution,fixed_charge):
     
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
+    
+    References
+    ----------
     
     .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
     Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
@@ -659,7 +668,7 @@ remove_ - Method removes data from an existing object. Typically used to remove
 class Solution:
     '''Class representing the properties of a solution. Instances of this class contain information about the solutes, solvent, and bulk properties.
     
-    Parameters:
+    Parameters
     ----------
     solutes : list of lists, optional
                 See add_solute() documentation for formatting of this list
@@ -678,11 +687,11 @@ class Solution:
                 initialized to pH 7 (neutral) with appropriate quantities of 
                 H+ and OH- ions
     
-    Returns:
+    Returns
     -------
     A Solution object.
     
-    Examples:
+    Examples
     --------
     # Defining a 0.5M NaCl solution
     >>> solutes = [['Na+',23,0.0115],['Cl-',35,0.0175]]
@@ -694,7 +703,7 @@ class Solution:
     Density: 1000 kg/m3
     
     
-    See Also:
+    See Also
     --------
     add_solute
     
@@ -778,7 +787,7 @@ class Solution:
     def add_solute(self,formula,amount,parameters={}):
         '''Primary method for adding substances to a pyEQL solution
         
-        Parameters:
+        Parameters
         ----------
         formula : str
                     Chemical formula for the solute. 
@@ -867,12 +876,12 @@ class Solution:
         '''Change the total solution volume to volume, while preserving
         all component concentrations
         
-        Parameters:
+        Parameters
         ----------
         volume : str quantity
                 Total volume of the solution, including the unit, e.g. '1 L' 
         
-        Examples:
+        Examples
         ---------
         >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
         >>> print(mysol.get_volume())
@@ -943,7 +952,7 @@ class Solution:
         '''
         Return the dynamic (absolute) viscosity of the solution.
     
-        See Also:
+        See Also
         --------
         get_viscosity_kinematic
         get_viscosity_relative
@@ -954,7 +963,7 @@ class Solution:
         '''
         Return the kinematic viscosity of the solution.
                 
-        See Also:
+        See Also
         --------
         get_density_dynamic
         get_viscosity_relative
@@ -1052,7 +1061,7 @@ class Solution:
         
         .. [2] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
         
-        Examples:
+        Examples
         --------
         If 'soln' is pure water, return 0
         >>> soln.get_osmotic_pressure()
@@ -1078,7 +1087,7 @@ class Solution:
         Return the negative log of the activity of solute.
         Generally used for expressing concentration of hydrogen ions (pH)
         
-        Parameters:
+        Parameters
         ----------
         solute : str
             String representing the formula of the solute
@@ -1086,13 +1095,13 @@ class Solution:
             If False, the function will use the molar concentration rather 
             than the activity to calculate p. Defaults to True.
         
-        Returns:
+        Returns
         -------
         Quantity
             The negative log10 of the activity (or molar concentration if
             activity = False) of the solute.
             
-        Examples:
+        Examples
         --------
 
         
@@ -1105,7 +1114,7 @@ class Solution:
     def get_amount(self,solute,unit):
         '''returns the amount of 'solute' in the parent solution
        
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
@@ -1114,12 +1123,12 @@ class Solution:
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
                     Use 'fraction' to return the mole fraction.
 
-        Returns:
+        Returns
         -------
         The amount of the solute in question, in the specified units
         
         
-        See Also:
+        See Also
         --------
         '''
         if unit == 'fraction':
@@ -1134,7 +1143,7 @@ class Solution:
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
        
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
@@ -1146,12 +1155,12 @@ class Solution:
                     per-substance basis, then the solution volume is recalculated
                     based on the new composition
 
-        Returns:
+        Returns
         -------
         Nothing. The concentration of solute is modified.
         
 
-        See Also:
+        See Also
         --------
         Solute.add_moles()
         '''
@@ -1221,7 +1230,7 @@ class Solution:
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
        
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
@@ -1233,12 +1242,12 @@ class Solution:
                     per-substance basis, then the solution volume is recalculated
                     based on the new composition
 
-        Returns:
+        Returns
         -------
         Nothing. The concentration of solute is modified.
         
 
-        See Also:
+        See Also
         --------
         Solute.set_moles()
         '''
@@ -1315,25 +1324,25 @@ class Solution:
         Return the mole fraction of 'solute' in the solution
         
         
-        Parameters:
+        Parameters
         ----------
         solute : str 
                  String representing the name of the solute of interest
     
-        Returns:
+        Returns
         -------
         float
             The mole fraction of 'solute' in the parent Solution object
     
-        See Also:
+        See Also
         --------
         get_solvent_mass()
         
-        Notes:
+        Notes
         -----
         This function assumes water is the solvent with MW = 18
  
-        Examples:
+        Examples
         --------
         TBD
         
@@ -1352,16 +1361,16 @@ class Solution:
     def get_activity_coefficient(self,solute):
         '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
         
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
         
-        Returns:
+        Returns
         -------
         The molal (mol/kg) scale mean ion activity coefficient of the solute in question
         
-        See Also:
+        See Also
         --------
         get_activity_coefficient_debyehuckel
         get_activity_coefficient_guntelberg
@@ -1445,30 +1454,30 @@ class Solution:
     def get_activity(self,solute):
         '''returns the thermodynamic activity of the solute in solution
        
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
         temperature :    Quantity, optional
                      The temperature of the solution. Defaults to 25 degrees C if omitted
         
-        Returns:
+        Returns
         -------
         The thermodynamic activity of the solute in question (dimensionless)
         
-        Notes:
+        Notes
         -----
         The thermodynamic activity is independent of the concentration scale used. However,
-        the concentration and the activity coefficient must use corresponding scales.[1][2]
+        the concentration and the activity coefficient must use corresponding scales.[1]_ [2]_
         In this module, ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale.
         
-        References:
+        References
         ----------
-        ..[1] http://adsorption.org/awm/utils/Activity.htm
-        ..[2] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
+        .. [1] http://adsorption.org/awm/utils/Activity.htm
+        .. [2] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
         
-        See Also:
+        See Also
         --------
         get_activity_coefficient
         get_ionic_strength
@@ -1487,12 +1496,12 @@ class Solution:
     def get_osmotic_coefficient(self):
         '''calculate the osmotic coefficient
 
-        Returns:
+        Returns
         -------
         Quantity : 
             The osmotic coefficient
             
-        Notes:
+        Notes
         -----
         For ionic strengths below 0.5 mol/kg, the osmotic coefficient is assumed to equal 1.0.
         1.0 will also be returned at higher ionic strengths if appropriate Pitzer
@@ -1544,12 +1553,12 @@ class Solution:
     def get_water_activity(self):
         '''return the water activity
         
-        Returns:
+        Returns
         -------
         float : 
             The thermodynamic activity of water in the solution.
             
-        Examples:
+        Examples
         --------
         If 'soln' is a 0.5 mol/kg NaCl solution at 25 degC:
         >>> soln.get_water_activity()
@@ -1560,9 +1569,9 @@ class Solution:
         >>> soln.get_water_activity()
         0.8631...
         
-        Notes:
+        Notes
         -----
-        Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]
+        Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]_
         
         .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
@@ -1572,9 +1581,9 @@ class Solution:
         If appropriate Pitzer or TCPC model parameters are not available, the
         water activity is assumed equal to the mole fraction of water.
         
-        References:
+        References
         ----------
-        Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
+        .. [1] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
         //Chemical Society Review// 34, 440-458.
         
         '''
@@ -1613,12 +1622,12 @@ class Solution:
         the returned value does not carry units.
         
         
-        Returns:
+        Returns
         -------
         float : 
             The ionic strength of the parent solution, mol/kg.
         
-        Examples:
+        Examples
         --------
         TODO
 #         >>> conc_soln.list_concentrations()
@@ -1664,10 +1673,28 @@ class Solution:
     def get_transport_number(self,solute):
         '''Calculate the transport number of the solute in the solution
         
+        Parameters
+        ----------
+        solute : str
+            String identifying the solute for which the transport number is
+            to be calculated.
+        
+        Returns
+        -------
+        float
+            The transport number of `solute`
+        
+        Notes
+        -----
+        Transport number is calculated according to:[1]_
+        
         .. math:: t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
         Where C is the concentration in mol/L
-        TODO - add more references / explanation here        
+        
+        References
+        ----------
+        .. [1] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
 
         '''
         denominator= 0
@@ -1694,7 +1721,7 @@ class Solution:
         for solute, and adjust it from the reference conditions to the conditions
         of the solution
         
-        Parameters:
+        Parameters
         ----------
         solute: str
             String representing the chemical formula of the solute species
@@ -1702,7 +1729,7 @@ class Solution:
             The name of the property needed, e.g.
             'diffusion coefficient'
         
-        Returns:
+        Returns
         -------
         Quantity: The desired parameter
         
@@ -1738,16 +1765,16 @@ class Solution:
         assuming that the molecules are uniformly distributed throughout the
         solution.
         
-        Parameters:
+        Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
         
-        Returns:
+        Returns
         -------
         Quantity : The average distance between solute molecules
         
-        Examples:
+        Examples
         --------
         >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
         >>> soln.get_lattice_distance('Na+')
@@ -1894,7 +1921,7 @@ class Solute:
 
     def __init__(self,formula,amount,volume,solvent_mass,parameters={}):
         '''
-        Parameters:
+        Parameters
         ----------
         formula : str
                     Chemical formula for the solute. 
@@ -1977,7 +2004,7 @@ class Solute:
     def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
         '''Use this function to store parameters for the TCPC activity model
         
-        Parameters:
+        Parameters
         ----------
         S : float
                         The solvation parameter for the parent salt. See Reference.
@@ -1997,11 +2024,11 @@ class Solute:
                             The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
                             E.g. for Cl- in ZnCl2, stoich_coeff = 2
         
-        Returns:
+        Returns
         -------
         No return value. Parameter values are stored in a dictionary.
         
-        See Also:
+        See Also
         get_parameters_TCPC
         
         '''
@@ -2011,12 +2038,12 @@ class Solute:
     def get_parameters_TCPC(self,name):
         '''Retrieve modeling parameters used for activity coefficient modeling
         
-        Parameters:
+        Parameters
         ----------
         name : str
                     String identifying the specific parameter to be retrieved. Must correspond to a key in the 'name' dictionary
         
-        Returns:
+        Returns
         -------
         The parameter stored at key 'name' in the 'model' dictionary
         
@@ -2039,7 +2066,7 @@ class Solute:
     def add_moles(self,amount,volume,solvent_mass):
         '''Increase or decrease the amount of a substance present in the solution
         
-        Parameters:
+        Parameters
         ----------
         amount: str quantity
                 Amount of substance to add. Must be in mass or substance units.
@@ -2058,27 +2085,30 @@ class Solute:
         '''(float,int,number) -> float
         Calculate the molar (equivalent) conductivity at infinte dilution for a species
         
-        Parameters:
+        Parameters
         ----------
         temperature : Quantity, optional
                     The temperature of the parent solution. Defaults to 25 degC if omitted.
             
-        Returns:
+        Returns
         -------
         float
                 The molar or equivalent conductivity of the species at infinte dilution.
         
-        Notes:
+        Notes
         -----
-        Molar conductivity is calculated from the Nernst-Einstein relation:[1]
+        Molar conductivity is calculated from the Nernst-Einstein relation:[1]_
             
         .. math:: \\kappa_i = {z_i^2 D_i F^2 \\over RT}
         
         Note that the diffusion coefficient is strongly variable with temperature.
         
+        References
+        ----------
+        
         .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
         
-        TODO Examples:
+        TODO Examples
 #             --------
 #             
         '''
@@ -2091,23 +2121,25 @@ class Solute:
     def get_mobility(self,temperature=25*unit('degC')):
         '''Return the ionic mobility of a species
         
-        Parameters:
+        Parameters
         ----------
         temperature : Quantity, optional
                     The temperature of the parent solution. Defaults to 25 degC if omitted.
         
-        Returns:
+        Returns
         -------
         float : the ionic mobility
         
         
-        Notes:
+        Notes
         -----
         This function uses the Einstein relation to convert a diffusion coefficient
-        into an ionic mobility[1]
+        into an ionic mobility [1]_
         
         .. math:: \mu_i = {F |z_i| D_i \over RT}
         
+        References
+        ----------
         .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
         '''
