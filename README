@@ -1,34 +1,15 @@
 pyEQL: A Python library for solution chemistry
 ==============================================
 
-## test change for master branch
-
-pyEQL is a python library that provides tools for chemical equilibrium modeling 
-in aqueous solutions. It allows the user to manipulate solutions as Python
+pyEQL is a python library that provides tools for modeling aqueous electrolyte
+solutions. It allows the user to manipulate solutions as Python
 objects, providing methods to populate them with solutes, calculate 
-species-specific properties (such as activity coefficients), and retreive bulk 
-properties (such as density, conductivity, or volume).
+species-specific properties (such as activity and diffusion coefficients),
+and retreive bulk properties (such as density, conductivity, or volume).
 
-It aspires to provide flexibilty, transparency, extensibility, and robust 
-features. It is designed to be customizable and easy to integrate into projects 
+It aspires to provide flexibilty, transparency, extensibility. 
+It is designed to be customizable and easy to integrate into projects 
 that require chemical modeling.
-
-Design Principles
------------------
-
-- Problems can be set up and executed with minimal user input, if desired. Use 
-  of pyEQL is scaleable from minimal input (in which pyEQL inserts reasonable 
-  assumptions) to very detailed input, depending on the needs of the user.
-
-- Sufficient details regarding assumptions, limitations, or qualifications to 
-  any calculation executed by pyEQL should be logged to help the researcher  
-  understand the limitations of pyEQL's output. pyEQL should throw warnings 
-  and/or errors when calculations exceed the valid limits of an equation or 
-  paramter.
-
-- Detailed information about all parameter values supplied from the pyEQL 
-  database should be readily accessible to the user, including units, the 
-  conditions of measurement, and literature reference.
 
 Key Features
 ------------
@@ -49,3 +30,31 @@ Key Features
   
 - Logging system provides robust documentation of data sources, assumptions, 
   and limitations of all calculations
+
+Design Principles
+-----------------
+
+- Problems can be set up and executed with minimal user input, if desired. Use 
+  of pyEQL is scaleable from minimal input (in which pyEQL inserts reasonable 
+  assumptions) to very detailed input, depending on the needs of the user.
+
+- Sufficient details regarding assumptions, limitations, or qualifications to 
+  any calculation executed by pyEQL should be logged to help the researcher  
+  understand the limitations of pyEQL's output. pyEQL should throw warnings 
+  and/or errors when calculations exceed the valid limits of an equation or 
+  parameter.
+
+- Detailed information about all parameter values supplied from the pyEQL 
+  database should be readily accessible to the user, including units, the 
+  conditions of measurement, and literature reference.
+
+Dependencies
+------------
+Python 3
+pint - for units-aware calculations
+scipy - for certain nonlinear equation solvers
+
+Note: pyEQL includes a copy of `elements.py` - an informational library for 
+chemical information written by Christoph Gohlke <http://www.lfd.uci.edu/~gohlke/>
+
+
