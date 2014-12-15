@@ -773,7 +773,7 @@ class Solution:
 
         # set the pH with H+ and OH-
         if 'pH' in kwargs:
-            pH = kwargs('pH')
+            pH = kwargs['pH']
         else:
             pH = 7
 
