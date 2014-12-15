@@ -1670,7 +1670,7 @@ class Solution:
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
 
-    def get_transport_number(self,solute):
+    def get_transport_number(self,solute,activity_correction = True):
         '''Calculate the transport number of the solute in the solution
         
         Parameters
@@ -1678,6 +1678,10 @@ class Solution:
         solute : str
             String identifying the solute for which the transport number is
             to be calculated.
+        activity_correction: bool
+            If True, the transport number will be corrected for activity following
+            the same method used for solution conductivity. Defaults to True
+            if omitted.
         
         Returns
         -------
@@ -1690,12 +1694,19 @@ class Solution:
         
         .. math:: t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
-        Where C is the concentration in mol/L
+        Where C is the concentration in mol/L.
+        
+        If `activity_correction` is True, the contribution of each ion to the
+        transport number is corrected with an activity factor. See the documentation
+        for get_conductivity() for an explanation of this correction.
         
         References
         ----------
         .. [1] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
 
+        See Also
+        --------
+        get_conductivity()
         '''
         denominator= 0
         numerator = 0
@@ -1705,14 +1716,28 @@ class Solution:
             if item == 'H2O':
                 continue
             
+            z = self.get_solute(item).get_formal_charge()
             term = self.get_property(item,'diffusion_coefficient') * \
-            self.get_solute(item).get_formal_charge() ** 2 * \
-            self.get_amount(item,'mol/L')
+            z ** 2 * self.get_amount(item,'mol/L')
             
-            if item == solute:
-                numerator = term
+            if activity_correction == True:
+                gamma = self.get_activity_coefficient(item)
+                
+                if self.get_ionic_strength().magnitude < 0.36 * z:
+                    alpha = 0.6 / z ** 0.5
+                else:
+                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z   
+                
+                if item == solute:
+                    numerator = term * gamma ** alpha
             
-            denominator += term
+                denominator += term  * gamma ** alpha
+                        
+            else:
+                if item == solute:
+                    numerator = term
+            
+                denominator += term
         
         return numerator / denominator
     
