@@ -963,15 +963,39 @@ class Solution:
         
     def get_conductivity(self):
         '''
+        Compute the electrical conductivity of the solution.
+        
+        Parameters
+        ----------
+        None        
+        
+        Returns
+        -------
+        Quantity
+            The electrical conductivity of the solution in Siemens / meter.
+            
+        Notes
+        -----
         Conductivity is calculated by summing the molar conductivities of the respective
         solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion as described at these URLs:        
-        <http://www.aqion.de/site/77>        
-        <http://www.hydrochemistry.eu/exmpls/sc.html>
-        Note: PHREEQC uses the molal rather than molar concentration according to
-        <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm>        
+        This approach is used in PHREEQC and Aqion models [1]_ [2]_
         
-        See Also:
+        .. math:: EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+        
+        Where:
+        
+        .. math:: \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
+        
+        Note: PHREEQC uses the molal rather than molar concentration according to
+        <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm>
+
+        References
+        ----------
+        .. [1] <http://www.aqion.de/site/77>        
+        .. [2] <http://www.hydrochemistry.eu/exmpls/sc.html>
+                
+        
+        See Also
         --------
         get_ionic_strength()
         get_molar_conductivity()
@@ -1003,20 +1027,30 @@ class Solution:
         ''' 
         Return the osmotic pressure of the solution relative to pure water
         
-        Parameters:
+        Parameters
         ----------
-        none
+        None
         
-        Returns:
+        Returns
         -------
         Quantity
                 The osmotic pressure of the solution relative to pure water in Pa
                 
-        References:
-        ----------
-        Sata, Toshikatsu. /Ion Exchange Membranes: Preparation, Characterization, and Modification./ Royal Society of Chemistry, 2004, p. 10.
+        Notes
+        -----
+        Osmotic pressure is calculated based on the water activity [1]_ [2]_ :
         
-        http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
+        .. math:: \\Pi = {RT \\over V_w} \ln a_w
+        
+        Where :math:`\\Pi` is the osmotic pressure, :math:`V_w` is the partial
+        molar volume of water (18.2 cm**3/mol), and :math:`a_w` is the water
+        activity.
+                
+        References
+        ----------
+        .. [1] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification. Royal Society of Chemistry, 2004, p. 10.
+        
+        .. [2] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
         
         Examples:
         --------
