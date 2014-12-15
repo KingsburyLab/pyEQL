@@ -1670,7 +1670,7 @@ class Solution:
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
 
-    def get_transport_number(self,solute,activity_correction = True):
+    def get_transport_number(self,solute,activity_correction = False):
         '''Calculate the transport number of the solute in the solution
         
         Parameters
@@ -1680,7 +1680,7 @@ class Solution:
             to be calculated.
         activity_correction: bool
             If True, the transport number will be corrected for activity following
-            the same method used for solution conductivity. Defaults to True
+            the same method used for solution conductivity. Defaults to False
             if omitted.
         
         Returns
