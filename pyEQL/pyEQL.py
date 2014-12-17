@@ -412,7 +412,7 @@ def has_parameter(formula,name):
         logger.error('Species %s not found in database' % formula)
         return None    
 
-@profile
+@profile(filename='donnan_eql')
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
@@ -508,52 +508,45 @@ def donnan_eql(solution,fixed_charge):
     # do nothing if either of the ion concentrations is zero
     if conc_cation_soln.magnitude == 0 or conc_anion_soln.magnitude == 0:
         return donnan_soln
-    
-    # add fixed charge groups to the solution as if they were solutes
-    # this is necessary to keep the solution volume from becoming distorted
-    # since some single ions have negative partial molar volumes
-    # see Durchschlag and Zipper "Calculation of the Molar Volumes of Organic
-    # Compounds and Polymers" Progr Colloid Polymer Science 94:20-39
-    # for approximate molar volumes
-#    if fixed_charge.magnitude < 0:
-#        # assume sulfonic acid group
-#        donnan_soln.add_solute('SO3-',str(-1*fixed_charge))
-#        # assign a partial molar volume
-#        donnan_soln.get_solute('SO3-').add_parameter('partial_molar_volume',25,'cm**3/mol')
-#    elif fixed_charge.magnitude > 0:
-#        # assume quaternary ammonium functional group
-#        donnan_soln.add_solute('N+',str(fixed_charge))
-#        donnan_soln.get_solute('N+').add_parameter('partial_molar_volume',50,'cm**3/mol')
-    
+  
     # define a function representing the donnan equilibrium as a function
     # of the two unknown actvities to feed to the nonlinear solver
+    
+    # the stuff in the term below doesn't change on iteration, so calculate it up-front
+    # assign it the correct units and extract the magnitude for a performance gain
+    exp_term =  (molar_volume / (unit.R * solution.get_temperature() * z_cation * nu_cation)).to('1/Pa').magnitude
+    
     def donnan_solve(x):
         '''Where x is the magnitude of co-ion concentration
         '''
         # solve for the counter-ion concentration by enforcing electroneutrality
-        # match the units given for fixed_charge
+        # using only floats / ints here instead of quantities helps performance
         if fixed_charge.magnitude >= 0:
             # counter-ion is the anion
-            conc_cation_mem = unit(str(x) + str(fixed_charge.units)) / abs(z_cation)
-            conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge) / z_anion
+            conc_cation_mem = x / abs(z_cation)
+            conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge.magnitude) / z_anion
         elif fixed_charge.magnitude < 0:
             # counter-ion is the cation
-            conc_anion_mem = unit(str(x) + str(fixed_charge.units)) / abs(z_anion)
-            conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge) / z_cation
-        #print('DEBUG: '+str(donnan_soln.get_solvent_mass()))  
+            conc_anion_mem = x / abs(z_anion) 
+            conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge.magnitude) / z_cation
+        
+        # match the units given for fixed_charge
+        units = str(fixed_charge.units)
+        
         # set the cation and anion concentrations in the membrane phase equal
         # to the current guess
-        donnan_soln.set_amount(salt.cation,str(conc_cation_mem))
-        donnan_soln.set_amount(salt.anion,str(conc_anion_mem))
+        donnan_soln.set_amount(salt.cation,str(conc_cation_mem)+units)
+        donnan_soln.set_amount(salt.anion,str(conc_anion_mem)+units)
 
         # get the new concentrations and activities
         act_cation_mem = donnan_soln.get_activity(salt.cation)
         act_anion_mem = donnan_soln.get_activity(salt.anion)
         
         # compute the difference in osmotic pressure
-        delta_pi = donnan_soln.get_osmotic_pressure() - solution.get_osmotic_pressure()
+        # using the magnitudes here helps performance
+        delta_pi = donnan_soln.get_osmotic_pressure().magnitude - solution.get_osmotic_pressure().magnitude
         
-        return (act_cation_mem/act_cation_soln) ** (1/z_cation) * (act_anion_soln/act_anion_mem)**(1/z_anion) - math.exp(delta_pi * molar_volume / (unit.R * solution.get_temperature() * z_cation * nu_cation))
+        return (act_cation_mem/act_cation_soln) ** (1/z_cation) * (act_anion_soln/act_anion_mem)**(1/z_anion) - math.exp(delta_pi * exp_term)
 
     # solve the function above using one of scipy's nonlinear solvers
     # the initial guess is to set the cation concentration in the membrane
