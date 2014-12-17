@@ -412,6 +412,7 @@ def has_parameter(formula,name):
         logger.error('Species %s not found in database' % formula)
         return None    
 
+@profile
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
@@ -1141,6 +1142,7 @@ class Solution:
             # with pint unit conversions enabled, we just pass the unit to pint
             return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
     
+    @profile
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
        
