@@ -271,29 +271,29 @@ class Test_solute_addition(unittest.TestCase):
     # If the concentration of a solute is directly increased with a substance / mass
     # unit, the volume should increase
     def test_solute_addition_14(self):
-        original = self.s2.get_volume().to('L').magnitude        
-        self.s2.add_amount('Na+','1 mol/kg')
-        self.s2.add_amount('Cl-','1 mol/kg')
-        result = self.s2.get_volume().to('L').magnitude
+        original = self.s3.get_volume().to('L').magnitude        
+        self.s3.add_amount('Na+','1 mol/kg')
+        self.s3.add_amount('Cl-','1 mol/kg')
+        result = self.s3.get_volume().to('L').magnitude
         
         self.assertGreater(result,original)
     
     # If the concentration of a solute is directly increased with a substance / mass
     # unit, the water mass should not change
     def test_solute_addition_15(self):
-        original = self.s2.get_solvent_mass().to('kg').magnitude
-        self.s2.add_amount('Na+','1 mol/kg')
-        self.s2.add_amount('Cl-','1 mol/kg')
-        result = self.s2.get_solvent_mass().to('kg').magnitude
+        original = self.s3.get_solvent_mass().to('kg').magnitude
+        self.s3.add_amount('Na+','1 mol/kg')
+        self.s3.add_amount('Cl-','1 mol/kg')
+        result = self.s3.get_solvent_mass().to('kg').magnitude
         
         self.assertEqual(result,original)
     
     # If the concentration of a solute is directly increased with a substance / mass
     # unit, the resulting concentration should be exactly what was specified
     def test_solute_addition_16(self):
-        self.s2.add_amount('Na+','1 mol/kg')
-        self.s2.add_amount('Cl-','1 mol/kg')
-        result = self.s2.get_amount('Na+','mol/kg').magnitude
+        self.s3.add_amount('Na+','1 mol/kg')
+        self.s3.add_amount('Cl-','1 mol/kg')
+        result = self.s3.get_amount('Na+','mol/kg').magnitude
         expected = 5
         
         self.assertEqual(result,expected)
