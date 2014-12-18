@@ -1294,7 +1294,7 @@ class Solution:
                     # directly set the amount of solute
                     self.get_solute(solute).moles= x * unit('mol')
                     # compare the resulting molar concentration with the target value
-                    return self.get_amount(solute,'mol/L') - unit(amount).to('mol/L')
+                    return self.get_amount(solute,'mol/L').magnitude - unit(amount).to('mol/L').magnitude
                 
                 x = self.get_solute(solute).get_moles().magnitude
                 # the alpha=1 is necessary to prevent a divide by zero error
@@ -1305,7 +1305,7 @@ class Solution:
                 # restore all the other (non-solvent) solutes to their original quantities
                 for item in orig_conc:
                     self.get_solute(item).moles = orig_conc[item]
-        
+
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
         tot_mol = 0
