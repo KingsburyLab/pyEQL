@@ -22,7 +22,6 @@ unit.autoconvert_offset_to_baseunit = True
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db
 
-from profilehooks import profile
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
@@ -412,7 +411,6 @@ def has_parameter(formula,name):
         logger.error('Species %s not found in database' % formula)
         return None    
 
-@profile(filename='donnan_eql')
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
@@ -721,7 +719,6 @@ class Solution:
     
     
     '''
-    @profile
     def __init__(self,solutes=[],**kwargs):
         
         # initialize the volume
@@ -1135,7 +1132,6 @@ class Solution:
             # with pint unit conversions enabled, we just pass the unit to pint
             return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
     
-    @profile
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
        
@@ -1815,7 +1811,6 @@ class Solution:
         
         return distance.to('nm')
     
-    @profile
     def _update_volume(self):
         '''
         Recalculate the solution volume based on composition
