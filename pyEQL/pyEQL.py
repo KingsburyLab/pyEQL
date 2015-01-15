@@ -22,6 +22,8 @@ unit.autoconvert_offset_to_baseunit = True
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db
 
+# activate for performance profiling
+from profilehooks import profile
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
@@ -892,7 +894,7 @@ class Solution:
         
         # scale down the amount of all the solutes according to the factor        
         for item in self.components:
-            self.set_amount(item,str(self.get_solute(item).get_moles()*scale_factor))
+            self.get_solute(item).moles = self.get_solute(item).moles * scale_factor
         
         # update the solution volume
         self.volume = unit(volume)
@@ -1102,7 +1104,7 @@ class Solution:
             return -1 * math.log10(self.get_activity(solute))
         elif activity is False:
             return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
-    
+    @profile
     def get_amount(self,solute,unit):
         '''returns the amount of 'solute' in the parent solution
        
@@ -1131,7 +1133,7 @@ class Solution:
         
             # with pint unit conversions enabled, we just pass the unit to pint
             return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
-    
+    @profile
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
        
@@ -1218,7 +1220,7 @@ class Solution:
             # restore all the other (non-solvent) solutes to their original quantities
             for item in orig_conc:
                 self.get_solute(item).moles = orig_conc[item]
-    
+    @profile
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
        
@@ -1248,7 +1250,7 @@ class Solution:
             logger.error('Negative amount specified for solute %s. Concentration not changed.' % solute)
         
         # if positive or zero, go ahead and update the amount
-        elif unit(amount).magnitude >= 0:
+        else:
             
             # store the original volume for later
             orig_volume = self.get_volume()
@@ -1290,7 +1292,7 @@ class Solution:
                     # directly set the amount of solute
                     self.get_solute(solute).moles= x * unit('mol')
                     # compare the resulting molar concentration with the target value
-                    return self.get_amount(solute,'mol/L').magnitude - unit(amount).to('mol/L').magnitude
+                    return self.get_amount(solute,'mol/L') - unit(amount).to('mol/L')
                 
                 x = self.get_solute(solute).get_moles().magnitude
                 # the alpha=1 is necessary to prevent a divide by zero error
@@ -1930,12 +1932,13 @@ class Solution:
     def __str__(self):
         #set output of the print() statement for the solution     
         return 'Components: \n'+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
-      
+
+
 class Solute:
     '''represent each chemical species as an object containing its formal charge, transport numbers, concentration, activity, etc. 
     
     '''
-
+    
     def __init__(self,formula,amount,volume,solvent_mass,parameters={}):
         '''
         Parameters
