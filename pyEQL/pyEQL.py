@@ -1578,7 +1578,7 @@ class Solution:
                     
             logger.info('Calculated water activity using osmotic coefficient')  
             
-            return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * concentration_sum)
+            return math.exp(- osmotic_coefficient * 0.018015*unit('kg/mol') * concentration_sum)
     
     def get_ionic_strength(self):
         '''() -> float
