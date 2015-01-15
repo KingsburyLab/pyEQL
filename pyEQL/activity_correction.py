@@ -175,7 +175,7 @@ def _debye_parameter_volume(temperature='25 degC'):
     result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
     
     if unit(temperature) != unit('25 degC'):
-        logger.warning('Debye-Huckel limiting slope for volume is valid only at 25 degC')
+        logger.debug('Debye-Huckel limiting slope for volume is valid only at 25 degC')
         
     return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
@@ -742,7 +742,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    coeff = C_phi / ( 2 * abs(z_cation * z_anion) ** 0.5 ) 
 #    return coeff * unit('kg ** 2 /mol ** 2')
 
-def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
+def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=unit('1.2 kg**0.5/mol**0.5')):
     '''
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
     ion interaction model.
@@ -753,11 +753,11 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     
     Parameters:
     ----------
-    ionic_strength: number
+    ionic_strength: Quantity
                     The ionic strength of the parent solution, mol/kg
-    molality:       number
+    molality:       Quantity
                     The concentration of the salt, mol/kg
-    B_MX,B_phi,C_phi: number
+    B_MX,B_phi,C_phi: Quantity
                     Calculated paramters for the Pitzer ion interaction model.
     z_cation, z_anion: int
                     The formal charge on the cation and anion, respectively
