@@ -22,6 +22,8 @@ unit.autoconvert_offset_to_baseunit = True
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db
 
+# activate for performance profiling
+from profilehooks import profile
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
@@ -410,7 +412,7 @@ def has_parameter(formula,name):
     except KeyError:
         logger.error('Species %s not found in database' % formula)
         return None    
-
+@profile
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
@@ -547,13 +549,14 @@ def donnan_eql(solution,fixed_charge):
         return (act_cation_mem/act_cation_soln) ** (1/z_cation) * (act_anion_soln/act_anion_mem)**(1/z_anion) - math.exp(delta_pi * exp_term)
 
     # solve the function above using one of scipy's nonlinear solvers
-    # the initial guess is to set the cation concentration in the membrane
-    # equal to that in the solution
+
     from scipy.optimize import brentq
     
     # determine which ion concentration represents the co-ion
     # call a nonlinear solver to adjust the concentrations per the donnan
     # equilibrium, unless the membrane is uncharged
+    # the initial guess is to set the co-ion concentration in the membrane
+    # equal to that in the solution
     if fixed_charge.magnitude >0:
         x = conc_cation_soln.magnitude
         brentq(donnan_solve,1e-10,x,xtol=0.001)
@@ -742,7 +745,10 @@ class Solution:
             self.pressure = unit('1 atm')
                         
         # create an empty dictionary of components
-        self.components={}        
+        self.components={}
+
+        # initialize the volume recalculation flag
+        self.volume_update_required = False        
         
         # define the solvent
         if 'solvent' in kwargs:
@@ -791,50 +797,45 @@ class Solution:
                     Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
                         
         '''   
-        # store the original volume for later
-        orig_volume = self.get_volume()
-        
-        # store the current quantity of all other solutes
-        orig_conc = {}
-        for item in self.components:
-            # ignore the solvent, because we want its quantity to change
-            if item == self.get_solvent().get_name():
-                pass
-            else:
-                orig_conc.update({item:self.get_solute(item).get_moles()})
-        
-        # add the new solute
-        new_solute = Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
-        self.components.update({new_solute.get_name():new_solute})
-
-        # update the volume to account for the space occupied by all the solutes
-        self._update_volume()
         
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration  
         if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-
-            from scipy.optimize import broyden1
             
-            def volume_solve(x):
-                # scale the solution down so as to preserve the original volume            
-                self.set_volume(str(orig_volume))                
-                
-                # directly set the amount of solute
-                self.get_solute(formula).moles= x * unit('mol')
-                # compare the resulting molar concentration with the target value
-                return self.get_amount(formula,'mol/L') - unit(amount).to('mol/L')
+            # store the original volume for later
+            orig_volume = self.get_volume()
             
-            x = self.get_solute(formula).get_moles().magnitude
-            # the alpha=1 is necessary to prevent a divide by zero error
-            # prior to scipy 0.14
-            # see https://github.com/scipy/scipy/pull/3390
-            broyden1(volume_solve,x,alpha=1)
-        
-            # restore all the other (non-solvent) solutes to their original quantities
-            for item in orig_conc:
-                self.get_solute(item).moles = orig_conc[item]
+            # add the new solute
+            new_solute = Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
+            self.components.update({new_solute.get_name():new_solute})            
+            
+            # calculate the volume occupied by all the solutes
+            solute_vol = self._get_solute_volume()
+            
+            # determine the volume of solvent that will preserve the original volume
+            target_vol = orig_volume - solute_vol
+            
+            # adjust the amount of solvent
+            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            mw = self.get_solvent().get_molecular_weight()
+            target_mol = target_mass / mw
+            self.get_solvent().moles = target_mol
+            
+        else:
+            
+            # add the new solute
+            new_solute = Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
+            self.components.update({new_solute.get_name():new_solute})            
+            
+            # update the volume to account for the space occupied by all the solutes
+            # make sure that there is still solvent present in the first place
+            if self.get_solvent_mass() <= unit('0 kg'):
+                logger.error('All solvent has been depleted from the solution')
+                return None
+            else:
+                # set the volume recalculation flag
+                self.volume_update_required = True
         
     def add_solvent(self,formula,amount):
         '''Same as add_solute but omits the need to pass solvent mass to pint
@@ -862,6 +863,11 @@ class Solution:
         return solvent.get_moles().to('kg','chem',mw=mw)
             
     def get_volume(self):
+        # if the composition has changed, recalculate the volume first
+        if self.volume_update_required is True:
+            self._update_volume()
+            self.volume_update_required = False
+            
         return self.volume.to('L')
         
     def set_volume(self,volume):
@@ -892,7 +898,7 @@ class Solution:
         
         # scale down the amount of all the solutes according to the factor        
         for item in self.components:
-            self.set_amount(item,str(self.get_solute(item).get_moles()*scale_factor))
+            self.get_solute(item).moles = self.get_solute(item).moles * scale_factor
         
         # update the solution volume
         self.volume = unit(volume)
@@ -949,7 +955,7 @@ class Solution:
         get_viscosity_kinematic
         get_viscosity_relative
         '''
-        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature())        
+        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())        
     
     def get_viscosity_kinematic(self):
         '''
@@ -1102,15 +1108,15 @@ class Solution:
             return -1 * math.log10(self.get_activity(solute))
         elif activity is False:
             return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
-    
-    def get_amount(self,solute,unit):
+
+    def get_amount(self,solute,units):
         '''returns the amount of 'solute' in the parent solution
        
         Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        unit : str
+        units : str
                     Units desired for the output. Examples of valid units are 
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
                     Use 'fraction' to return the mole fraction.
@@ -1129,9 +1135,22 @@ class Solution:
             moles = self.get_solute(solute).get_moles()
             mw = self.get_solute(solute).get_molecular_weight()
         
-            # with pint unit conversions enabled, we just pass the unit to pint
-            return moles.to(unit,'chem',mw=mw,volume=self.get_volume(),solvent_mass=self.get_solvent_mass())
-    
+        # with pint unit conversions enabled, we just pass the unit to pint
+        # the logic tests here ensure that only the required arguments are 
+        # passed to pint for the unit conversion. This avoids unecessary 
+        # function calls.
+        if unit(units).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+            return moles.to(units,'chem',mw=mw,volume=self.get_volume())
+        elif unit(units).dimensionality == ('[substance]/[mass]' or '[mass]/[mass]'):
+            return moles.to(units,'chem',mw=mw,solvent_mass=self.get_solvent_mass())
+        elif unit(units).dimensionality == ('[mass]'):
+            return moles.to(units,'chem',mw=mw)
+        elif unit(units).dimensionality == ('[substance]'):
+            return moles
+        else:
+            logger.error('Unsupported unit specified for get_amount')
+            return None
+
     def add_amount(self,solute,amount):
         '''Adds the amount of 'solute' to the parent solution.
        
@@ -1157,68 +1176,55 @@ class Solution:
         Solute.add_moles()
         '''
         
-        # store the original volume for later
-        orig_volume = self.get_volume()
-        
-        # store the current quantity of all other solutes
-        orig_conc = {}
-        for item in self.components:
-            # ignore the solvent, because we want its quantity to change
-            if item == self.get_solvent().get_name():
-                pass
-            # ignore the solute we are modifying
-            elif item == solute:
-                pass
-            else:
-                orig_conc.update({item:self.get_solute(item).get_moles()})
-        
-                    
-        # determine the target (total) concentration
-        target = self.get_amount(solute,unit(amount).units) + unit(amount)
-            
-        # change the amount of the solute present
-        self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
-        
-        # set the amount to zero and log a warning if the desired amount
-        # change would result in a negative concentration
-        if self.get_amount(solute,'mol').magnitude < 0:
-            logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
-            self.set_amount(solute,'0 mol')
-
-        # update the volume to account for the space occupied by all the solutes
-        # make sure that there is still solvent present in the first place
-        if self.get_solvent_mass() <= unit('0 kg'):
-            logger.error('All solvent has been depleted from the solution')
-            return None
-        else:
-            self._update_volume()
-        
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration  
         if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-
-            from scipy.optimize import broyden1
-
-            def volume_solve(x):
-                # scale the solution down so as to preserve the original volume            
-                self.set_volume(str(orig_volume))                
-                
-                # directly set the amount of solute
-                self.get_solute(solute).moles= x * unit('mol')
-                # compare the resulting molar concentration with the target value
-                return self.get_amount(solute,'mol/L') - target.to('mol/L')
             
-            x = self.get_solute(solute).get_moles().magnitude
-            # the alpha=1 is necessary to prevent a divide by zero error
-            # prior to scipy 0.14
-            # see https://github.com/scipy/scipy/pull/3390
-            broyden1(volume_solve,x,alpha=1)
+            # store the original volume for later
+            orig_volume = self.get_volume()
+            
+            # change the amount of the solute present to match the desired amount
+            self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())            
+            
+            # set the amount to zero and log a warning if the desired amount
+            # change would result in a negative concentration
+            if self.get_amount(solute,'mol').magnitude < 0:
+                logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
+                self.set_amount(solute,'0 mol')
+            
+            # calculate the volume occupied by all the solutes
+            solute_vol = self._get_solute_volume()
+            
+            # determine the volume of solvent that will preserve the original volume
+            target_vol = orig_volume - solute_vol
+            
+            # adjust the amount of solvent
+            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            mw = self.get_solvent().get_molecular_weight()
+            target_mol = target_mass / mw
+            self.get_solvent().moles = target_mol
+            
+        else:
+
+            # change the amount of the solute present
+            self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
         
-            # restore all the other (non-solvent) solutes to their original quantities
-            for item in orig_conc:
-                self.get_solute(item).moles = orig_conc[item]
-    
+            # set the amount to zero and log a warning if the desired amount
+            # change would result in a negative concentration
+            if self.get_amount(solute,'mol').magnitude < 0:
+                logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
+                self.set_amount(solute,'0 mol')
+            
+            # update the volume to account for the space occupied by all the solutes
+            # make sure that there is still solvent present in the first place
+            if self.get_solvent_mass() <= unit('0 kg'):
+                logger.error('All solvent has been depleted from the solution')
+                return None
+            else:
+                # set the volume recalculation flag
+                self.volume_update_required = True
+
     def set_amount(self,solute,amount):
         '''Sets the amount of 'solute' in the parent solution.
        
@@ -1229,10 +1235,15 @@ class Solution:
         amount : str Quantity
                     String representing the concentration desired, e.g. '1 mol/kg'
                     If the units are given on a per-volume basis, the solution 
-                    volume is not recalculated
+                    volume is not recalculated and the molar concentrations of 
+                    other components in the solution are not altered, while the
+                    molal concentrations are modified.
+                    
                     If the units are given on a mass, substance, per-mass, or 
                     per-substance basis, then the solution volume is recalculated
-                    based on the new composition
+                    based on the new composition and the molal concentrations of
+                    other components are not altered, while the molar concentrations
+                    are modified.
 
         Returns
         -------
@@ -1247,23 +1258,30 @@ class Solution:
         if unit(amount).magnitude < 0:
             logger.error('Negative amount specified for solute %s. Concentration not changed.' % solute)
         
-        # if positive or zero, go ahead and update the amount
-        elif unit(amount).magnitude >= 0:
+        # if units are given on a per-volume basis, 
+        # iteratively solve for the amount of solute that will preserve the
+        # original volume and result in the desired concentration  
+        elif unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
             
             # store the original volume for later
             orig_volume = self.get_volume()
             
-            # store the current quantity of all other solutes
-            orig_conc = {}
-            for item in self.components:
-                # ignore the solvent, because we want its quantity to change
-                if item == self.get_solvent().get_name():
-                    pass
-                # ignore the solute we are modifying
-                elif item == solute:
-                    pass
-                else:
-                    orig_conc.update({item:self.get_solute(item).get_moles()})
+            # change the amount of the solute present to match the desired amount
+            self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())            
+
+            # calculate the volume occupied by all the solutes
+            solute_vol = self._get_solute_volume()
+            
+            # determine the volume of solvent that will preserve the original volume
+            target_vol = orig_volume - solute_vol
+            
+            # adjust the amount of solvent
+            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            mw = self.get_solvent().get_molecular_weight()
+            target_mol = target_mass / mw
+            self.get_solvent().moles = target_mol
+            
+        else:
             
             # change the amount of the solute present
             self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
@@ -1276,32 +1294,6 @@ class Solution:
             else:
                 self._update_volume()
             
-            # if units are given on a per-volume basis, 
-            # iteratively solve for the amount of solute that will preserve the
-            # original volume and result in the desired concentration  
-            if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
-    
-                from scipy.optimize import broyden1
-                
-                def volume_solve(x):
-                    # scale the solution down so as to preserve the original volume            
-                    self.set_volume(str(orig_volume))                
-                    
-                    # directly set the amount of solute
-                    self.get_solute(solute).moles= x * unit('mol')
-                    # compare the resulting molar concentration with the target value
-                    return self.get_amount(solute,'mol/L').magnitude - unit(amount).to('mol/L').magnitude
-                
-                x = self.get_solute(solute).get_moles().magnitude
-                # the alpha=1 is necessary to prevent a divide by zero error
-                # prior to scipy 0.14
-                # see https://github.com/scipy/scipy/pull/3390
-                broyden1(volume_solve,x,alpha=1)
-            
-                # restore all the other (non-solvent) solutes to their original quantities
-                for item in orig_conc:
-                    self.get_solute(item).moles = orig_conc[item]
-
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
         tot_mol = 0
@@ -1604,7 +1596,7 @@ class Solution:
                     
             logger.info('Calculated water activity using osmotic coefficient')  
             
-            return math.exp(- self.get_osmotic_coefficient() * 0.018015*unit('kg/mol') * concentration_sum)
+            return math.exp(- osmotic_coefficient * 0.018015*unit('kg/mol') * concentration_sum)
     
     def get_ionic_strength(self):
         '''() -> float
@@ -1661,7 +1653,7 @@ class Solution:
         of ionic strength is not yet accounted for')
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
-
+    
     def get_transport_number(self,solute,activity_correction = False):
         '''Calculate the transport number of the solute in the solution
         
@@ -1757,6 +1749,7 @@ class Solution:
         if solute != 'H2O':
             base_value = self.get_solute(solute).get_parameter(name)
         base_temperature = unit('25 degC')
+        base_pressure = unit ('1 atm')
         
         # perform temperature-corrections or other adjustments for certain
         # parameter types        
@@ -1765,7 +1758,7 @@ class Solution:
             # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
             # where $\mu$ is the dynamic viscosity
             # assume that the base viscosity is that of pure water
-            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature) / self.get_viscosity_dynamic()
+            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
             
         # just return the base-value molar volume for now; find a way to adjust for
         # concentration later
@@ -1816,7 +1809,23 @@ class Solution:
         Recalculate the solution volume based on composition
         
         '''    
+        self.volume = self._get_solvent_volume() + self._get_solute_volume()
         
+    def _get_solvent_volume(self):
+        '''
+        Return the volume of the pure solvent
+        
+        '''        
+        # calculate the volume of the pure solvent
+        solvent_vol = self.get_solvent_mass() / h2o.water_density(self.get_temperature())
+        
+        return solvent_vol.to('L')
+        
+    def _get_solute_volume(self):
+        '''
+        Return the volume of only the solutes
+        
+        '''   
         temperature = str(self.get_temperature())
         
         # identify the predominant salt in the solution
@@ -1824,9 +1833,8 @@ class Solution:
         
         # search the database for pitzer parameters for 'salt'
         database.search_parameters(Salt.formula)
-        
-        # calculate the volume of the pure solvent
-        self.volume = self.get_solvent_mass() / h2o.water_density(unit(temperature))
+         
+        solute_vol = 0 * unit('L')
         
         for item in self.components:
             
@@ -1865,7 +1873,7 @@ class Solution:
                         molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
                         params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
-                self.volume += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
+                solute_vol += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
                 +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
                 logger.info('Updated solution volume using Pitzer model for solute %s' % item)
                 
@@ -1873,12 +1881,14 @@ class Solution:
                 break
             
             elif has_parameter(item,'partial_molar_volume'):
-                self.volume += solute.get_parameter('partial_molar_volume') * solute.get_moles()
+                solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
                 logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
                 
             else:
                 logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
-        
+                
+        return solute_vol.to('L')
+            
     def copy(self):
         '''Return a copy of the solution
         
@@ -1930,12 +1940,13 @@ class Solution:
     def __str__(self):
         #set output of the print() statement for the solution     
         return 'Components: \n'+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
-      
+
+
 class Solute:
     '''represent each chemical species as an object containing its formal charge, transport numbers, concentration, activity, etc. 
     
     '''
-
+    
     def __init__(self,formula,amount,volume,solvent_mass,parameters={}):
         '''
         Parameters
