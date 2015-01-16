@@ -94,7 +94,6 @@ def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
     logger.info('Computed specific weight of water as %s at T=%s and P = %s' % (spweight,temperature,pressure))
     return spweight.to('N/m ** 3')
 
-
 def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     '''
     Return the dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
@@ -135,11 +134,11 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     '''
     # generate warnings if temp or pressure are outside valid range of equation
-    if temperature.to('K').magnitude < 273 or temperature.to('K').magnitude>1073:
+    if temperature < 273 * unit('K') or temperature > 1073 * unit('K'):
         logger.error('Specified temperature (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % temperature)
         return None
         
-    if pressure.to('Pa').magnitude < 0 or pressure.to('Pa').magnitude > 100000000:
+    if pressure < 0 * unit('Pa') or pressure > 100000000 * unit ('Pa'):
         logger.error('Specified pressure (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % pressure)
         return None
     
@@ -256,7 +255,7 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     '''
     # do not return anything if 'temperature' is outside the range for which
     # this fit applies
-    if temperature.to('K').magnitude < 273 or temperature.to('K').magnitude > 372:
+    if temperature < 273 * unit('K') or temperature > 372 * unit('K'):
         logger.error('Specified temperature (%s) exceeds valid range of data. Cannot extrapolate.' % temperature.to('K'))
         return None
     
