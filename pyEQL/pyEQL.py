@@ -412,7 +412,7 @@ def has_parameter(formula,name):
     except KeyError:
         logger.error('Species %s not found in database' % formula)
         return None    
-
+@profile
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
@@ -549,13 +549,14 @@ def donnan_eql(solution,fixed_charge):
         return (act_cation_mem/act_cation_soln) ** (1/z_cation) * (act_anion_soln/act_anion_mem)**(1/z_anion) - math.exp(delta_pi * exp_term)
 
     # solve the function above using one of scipy's nonlinear solvers
-    # the initial guess is to set the cation concentration in the membrane
-    # equal to that in the solution
+
     from scipy.optimize import brentq
     
     # determine which ion concentration represents the co-ion
     # call a nonlinear solver to adjust the concentrations per the donnan
     # equilibrium, unless the membrane is uncharged
+    # the initial guess is to set the co-ion concentration in the membrane
+    # equal to that in the solution
     if fixed_charge.magnitude >0:
         x = conc_cation_soln.magnitude
         brentq(donnan_solve,1e-10,x,xtol=0.001)
@@ -1652,7 +1653,7 @@ class Solution:
         of ionic strength is not yet accounted for')
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
-
+    
     def get_transport_number(self,solute,activity_correction = False):
         '''Calculate the transport number of the solute in the solution
         
