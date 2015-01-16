@@ -951,7 +951,7 @@ class Solution:
         get_viscosity_kinematic
         get_viscosity_relative
         '''
-        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature())        
+        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())        
     
     def get_viscosity_kinematic(self):
         '''
@@ -1731,6 +1731,7 @@ class Solution:
         if solute != 'H2O':
             base_value = self.get_solute(solute).get_parameter(name)
         base_temperature = unit('25 degC')
+        base_pressure = unit ('1 atm')
         
         # perform temperature-corrections or other adjustments for certain
         # parameter types        
@@ -1739,7 +1740,7 @@ class Solution:
             # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
             # where $\mu$ is the dynamic viscosity
             # assume that the base viscosity is that of pure water
-            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature) / self.get_viscosity_dynamic()
+            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
             
         # just return the base-value molar volume for now; find a way to adjust for
         # concentration later
