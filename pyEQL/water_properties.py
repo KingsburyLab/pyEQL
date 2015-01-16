@@ -143,16 +143,16 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
         return None
     
     # calculate dimensionless temperature and pressure
-    T_star = 647.27*unit('K') #K
-    P_star = 22115000*unit('Pa') #Pa
-    rho_star = 317.763*unit('kg/m**3') #kg/m3
+    T_star = 647.27 #K
+    P_star = 22115000 #Pa
+    rho_star = 317.763 #kg/m3
     
-    T_bar = temperature.to('K') / T_star
-    P_bar = pressure.to('Pa') / P_star
-    rho_bar = water_density(temperature,pressure) / rho_star
+    T_bar = temperature.to('K').magnitude / T_star
+    P_bar = pressure.to('Pa').magnitude / P_star
+    rho_bar = water_density(temperature,pressure).magnitude / rho_star
     
     # calculate the first function, mu_o
-    mu_star = 1e-6*unit('Pa * s') #Pa-s
+    mu_star = 1e-6 #Pa-s
     a = [0.0181583,0.0177624,0.0105287,-0.0036477]
     sum_o = 0
     mu_temp = 0
@@ -171,7 +171,7 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     mu_1 = math.exp(mu_temp)
     # multiply the functions to return the viscosity
-    viscosity = mu_o * mu_1
+    viscosity = mu_o * mu_1 *unit('kg/m/s')
     
     logger.info('Computed dynamic (absolute) viscosity of water as %s at T=%s and P = %s'  % (viscosity,temperature,pressure)) 
     
