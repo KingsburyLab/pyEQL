@@ -1129,7 +1129,7 @@ class Solution:
         See Also
         --------
         '''
-        if unit == 'fraction':
+        if units == 'fraction':
             return self.get_mole_fraction(solute)
         else:
             moles = self.get_solute(solute).get_moles()
@@ -1769,7 +1769,68 @@ class Solution:
                 return vol.to('cm **3 / mol')
             else:
                 return base_value
+                
+    def get_chemical_potential_energy(self,activity_correction=True):
+        '''
+        Return the total chemical potential energy of a solution (not including
+        pressure or electric effects)
     
+        Parameters
+        ----------
+        activity_correction : bool, optional
+            If True, activities will be used to calculate the true chemical 
+            potential. If False, mole fraction will be used, resulting in 
+            a calculation of the ideal chemical potential.
+            
+        Returns
+        -------
+        Quantity
+            The actual or ideal chemical potential energy of the solution, in Joules.
+        
+        Notes
+        -----
+        
+        The chemical potential energy (related to the Gibbs mixing energy) is
+        calculated as follows: [1]_
+            
+        .. math::
+            E = R T \sum_i n_i  \ln a_i
+            
+            or 
+            
+            E = R T \sum_i n_i \ln x_i
+        
+        Where n is the number of moles of substance, T is the temperature in kelvin,
+        R the ideal gas constant, x the mole fraction, and a the activity of
+        each component.
+        
+        Note that dissociated ions must be counted as separate components,
+        so a simple salt dissolved in water is a three component solution (cation,
+        anion, and water).
+        
+        References
+        ----------
+        
+        .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
+        A differential approach.// Elsevier, 2007, pp. 23-37.
+        
+        Examples
+        --------
+     
+        '''
+        temperature = self.get_temperature()
+        
+        E = unit('0 J')
+        
+        # loop through all the components and add their potential energy
+        for item in self.components:
+            if activity_correction is True:
+                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
+            else:
+                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
+    
+        return E.to('J')
+
     def get_lattice_distance(self,solute):
         '''Calculate the average distance between molecules of the given solute,
         assuming that the molecules are uniformly distributed throughout the
