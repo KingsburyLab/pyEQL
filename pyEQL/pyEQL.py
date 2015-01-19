@@ -931,42 +931,113 @@ class Solution:
         #if self.get_ionic_strength().magnitude > 0.2:
          #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
         
-        viscosity_rel = 1
-        for item in self.components:
-            # ignore water
-            if item != 'H2O':
-                # skip over solutes that don't have parameters
-                try:
-                    conc = self.get_amount(item,'mol/kg').magnitude
-                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
-                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-                    coefficients[2] * conc ** 2
-                except TypeError:
-                    continue
+#        viscosity_rel = 1
+#        for item in self.components:
+#            # ignore water
+#            if item != 'H2O':
+#                # skip over solutes that don't have parameters
+#                try:
+#                    conc = self.get_amount(item,'mol/kg').magnitude
+#                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+#                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+#                    coefficients[2] * conc ** 2
+#                except TypeError:
+#                    continue
+        viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())    
         
         return viscosity_rel
         
     def get_viscosity_dynamic(self):
         '''
         Return the dynamic (absolute) viscosity of the solution.
+        
+        Calculated from the kinematic viscosity
     
         See Also
         --------
         get_viscosity_kinematic
         get_viscosity_relative
         '''
-        return self.get_viscosity_relative() * h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())        
+        return self.get_viscosity_kinematic() * self.get_density()    
     
     def get_viscosity_kinematic(self):
         '''
         Return the kinematic viscosity of the solution.
+        
+        Notes
+        -----
+        The calculation is based on a model derived from the Eyring equation
+        and presented in [1]_
+        
+        .. math:: \\ln \\nu = \\ln {\\nu_w MW_w \over \sum_i x_i MW_i } + \
+        15 x_+^2 + x_+^3  \delta G^*_{123} + 3 x_+ \delta G^*_{23} (1-0.05x_+)
+        
+        Where:
+        
+        .. math:: \delta G^*_{123} = a_o + a_1 (T)^{0.75}
+        .. math:: \delta G^*_{23} = b_o + b_1 (T)^{0.5}
+        
+        In which `\\nu` is the kinematic viscosity, MW is the molecular weight,
+        `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
+        
+        The a and b fitting parameters for a variety of common salts are included in the
+        database.        
+        
+        References
+        ----------  
+        .. [1] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
+        of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
+        Fluid Phase Equilib. 2013, 358, 44–49.
                 
         See Also
         --------
         get_density_dynamic
         get_viscosity_relative
         '''
-        return self.get_viscosity_dynamic(self.get_temperature()) / self.get_density(self.get_temperature())
+        # identify the main salt in the solution
+        salt = self.get_salt()
+        cation = salt.cation
+        
+        # search the database for parameters for 'salt'
+        database.search_parameters(salt.formula)
+        
+        a0=a1=b0=b1 = 0
+        
+        found = False                
+        
+        # retrieve the parameters for the delta G equations
+        for item in db[salt.formula]:
+
+            if item.get_name() == 'erying_viscosity_coefficients':
+                found = True
+    
+                a0 = item.get_value()[0]
+                a1 = item.get_value()[1]
+                b0 = item.get_value()[2]
+                b1 = item.get_value()[3]
+
+        # compute the delta G parameters
+        temperature = self.get_temperature().to('degC')
+        G_123 = a0 + a1 * (temperature.magnitude) ** 0.75
+        G_23 = b0 + b1 * (temperature.magnitude) ** 0.5
+        
+        # get the kinematic viscosity of water
+        nu_w = h2o.water_viscosity_kinematic(temperature,self.get_pressure()).to('m**2 / s').magnitude
+        
+        # compute the effective molar mass of the solution
+        MW= self.get_mass() / (self.get_moles_solvent() + self.get_total_moles_solute())
+        
+        # get the MW of water
+        MW_w = self.get_solvent().get_molecular_weight()
+        
+        # calculate the cation mole fraction
+        x_cat = self.get_amount(cation,'fraction')
+        
+        # calculate the kinematic viscosity
+        nu = math.log(nu_w * MW_w / MW) + 15 * x_cat ** 2 + x_cat ** 3 * G_123 + \
+        3 * x_cat * G_23 * (1-0.05*x_cat)
+
+        return math.exp(nu) * unit('m**2 / s')
         
     def get_conductivity(self):
         '''
@@ -1511,7 +1582,7 @@ class Solution:
         
         for item in db[Salt.formula]:
             if item.get_name() == 'pitzer_parameters_activity':
-                found == True
+                found = True
                 # TODO - fix inputs for alpha1 and alpha2
                 osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
                 concentration,2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
