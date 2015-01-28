@@ -1979,58 +1979,68 @@ class Solution:
         database.search_parameters(Salt.formula)
          
         solute_vol = 0 * unit('L')
+
+        # use the pitzer approach if parameters are available
         
-        for item in self.components:
+        pitzer_calc = False
+
+        if has_parameter(Salt.formula,'pitzer_parameters_volume'):
             
-            solute = self.get_solute(item)            
-            
-            if item in ['H2O','HOH']:
-                continue
-            
-            # use the pitzer approach if parameters are available
-            elif has_parameter(Salt.formula,'pitzer_parameters_volume'):
-                
-                for params in db[Salt.formula]:
-                    if params.get_name() == 'pitzer_parameters_volume':
-                        
-                        # determine the average molality of the salt
-                        # this is necessary for solutions inside e.g. an ion exchange
-                        # membrane, where the cation and anion concentrations may be
-                        # unequal
-                        molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-                        
-                        # determine alpha1 and alpha2 based on the type of salt
-                        # see the May reference for the rules used to determine
-                        # alpha1 and alpha2 based on charge
-                        if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                            if Salt.nu_cation >=3 or Salt.nu_anion >=3:
-                                alpha1 = 2
-                                alpha2 = 50
-                            else:
-                                alpha1 = 1.4
-                                alpha2 = 12
-                        else:
+            for params in db[Salt.formula]:
+                if params.get_name() == 'pitzer_parameters_volume':
+                    
+                    # determine the average molality of the salt
+                    # this is necessary for solutions inside e.g. an ion exchange
+                    # membrane, where the cation and anion concentrations may be
+                    # unequal
+                    molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+                    
+                    # determine alpha1 and alpha2 based on the type of salt
+                    # see the May reference for the rules used to determine
+                    # alpha1 and alpha2 based on charge
+                    if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                        if Salt.nu_cation >=3 or Salt.nu_anion >=3:
                             alpha1 = 2
-                            alpha2 = 0
-                            
-                        apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
-                        molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
-                        params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-                
-                solute_vol += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
-                +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
-                logger.info('Updated solution volume using Pitzer model for solute %s' % item)
-                
-                # since the salt accounts for all solutes, stop                
-                break
+                            alpha2 = 50
+                        else:
+                            alpha1 = 1.4
+                            alpha2 = 12
+                    else:
+                        alpha1 = 2
+                        alpha2 = 0
+                        
+                    apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
+                    molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
+                    params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
             
-            elif has_parameter(item,'partial_molar_volume'):
-                solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
-                logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
+            solute_vol += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
+            +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
+            
+            pitzer_calc = True
+            
+            logger.info('Updated solution volume using Pitzer model for solute %s' % Salt.formula)
+            
+            # add the partial molar volume of any other solutes, except for water
+            # which is already accounted for by the Pitzer parameters
+            for item in self.components:
                 
-            else:
-                logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
+                solute = self.get_solute(item)            
                 
+                # ignore water
+                if item in ['H2O','HOH']:
+                    continue
+                
+                # ignore the salt cation and anion, if already accounted for by Pitzer
+                if pitzer_calc is True and item in [Salt.anion,Salt.cation]:
+                    continue                
+                
+                if has_parameter(item,'partial_molar_volume'):
+                    solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
+                    logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
+                    
+                else:
+                    logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
+                    
         return solute_vol.to('L')
             
     def copy(self):
