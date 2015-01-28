@@ -1217,7 +1217,7 @@ class Solution:
         elif unit(units).dimensionality == ('[mass]'):
             return moles.to(units,'chem',mw=mw)
         elif unit(units).dimensionality == ('[substance]'):
-            return moles
+            return moles.to(units)
         else:
             logger.error('Unsupported unit specified for get_amount')
             return None
@@ -1402,7 +1402,7 @@ class Solution:
         TBD
         
         '''
-        return self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute())
+        return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute())).magnitude
     
     def get_moles_solvent(self):
         return self.get_amount(self.solvent_name,'mol')
@@ -1818,18 +1818,26 @@ class Solution:
         # database
         
         if solute != 'H2O':
-            base_value = self.get_solute(solute).get_parameter(name)
+            if has_parameter(solute,name):
+                base_value = self.get_solute(solute).get_parameter(name)
+            else:
+                base_value = None                
+                
         base_temperature = unit('25 degC')
         base_pressure = unit ('1 atm')
         
         # perform temperature-corrections or other adjustments for certain
         # parameter types        
         if name == 'diffusion_coefficient':
-            # correct for temperature and viscosity
-            # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
-            # where $\mu$ is the dynamic viscosity
-            # assume that the base viscosity is that of pure water
-            return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
+            if base_value is not None:
+                # correct for temperature and viscosity
+                # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
+                # where $\mu$ is the dynamic viscosity
+                # assume that the base viscosity is that of pure water
+                return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
+            else:
+                logger.warning('Diffusion coefficient not found for species %s. Assuming zero.' % (solute))
+                return unit('0 m**2/s')
             
         # just return the base-value molar volume for now; find a way to adjust for
         # concentration later
@@ -1839,7 +1847,11 @@ class Solution:
                 vol = self.get_solute('H2O').get_molecular_weight() / h2o.water_density(self.get_temperature())
                 return vol.to('cm **3 / mol')
             else:
-                return base_value
+                if base_value is not None:
+                    return base_value
+                else:
+                    logger.warning('Partial molar volume not found for species %s. Assuming zero.' % (solute))
+                    return unit ('0 cm **3 / mol')
                 
     def get_chemical_potential_energy(self,activity_correction=True):
         '''
