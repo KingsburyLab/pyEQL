@@ -1,5 +1,5 @@
 Welcome to pyEQL's documentation!
-=================================
+*********************************
 
 :Release: |release|
 :Date: |today|
@@ -10,4 +10,5 @@ Contents:
    :maxdepth: 2
 
    tutorial
+   contributing
 
