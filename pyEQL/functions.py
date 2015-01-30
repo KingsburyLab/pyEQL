@@ -11,9 +11,7 @@ import math
 import pyEQL
 
 # the pint unit registry
-from pyEQL.parameter import unit
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
+from pyEQL import unit
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 

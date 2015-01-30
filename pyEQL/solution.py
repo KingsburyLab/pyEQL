@@ -14,9 +14,7 @@ import pyEQL.water_properties as h2o
 import pyEQL.solute as sol
 
 # the pint unit registry
-from pyEQL.parameter import unit
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
+from pyEQL import unit
 
 # functions to manage importing paramters from database files and making them accessible to pyEQL
 import pyEQL.database as database

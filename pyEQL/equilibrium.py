@@ -10,9 +10,7 @@ NOTE: these methods are not currently used but are here for the future.
 import math
 
 # the pint unit registry
-from pyEQL.parameter import unit
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
+from pyEQL import unit
 
 # logging system
 import logging
