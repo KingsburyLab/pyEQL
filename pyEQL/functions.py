@@ -8,7 +8,7 @@ pyEQL functions that take Solution objects as inputs or return Solution objects
 import math
 
 # internal pyEQL imports
-from pyEQL import solution
+import pyEQL
 
 # the pint unit registry
 from pyEQL.parameter import unit
@@ -351,7 +351,7 @@ def mix(Solution1, Solution2):
             
     
     # create an empty solution for the mixture
-    Blend = solution.Solution(temperature = blend_temperature,pressure= blend_pressure)
+    Blend = pyEQL.Solution(temperature = blend_temperature,pressure= blend_pressure)
     
     # set or add the appropriate amount of all the components
     for item in mix_species.keys():
