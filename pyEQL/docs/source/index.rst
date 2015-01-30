@@ -11,4 +11,5 @@ Contents:
 
    tutorial
    contributing
+   chemistry
 

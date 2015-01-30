@@ -15,7 +15,7 @@ Contributing Code
 To contribute bug fixes, documentation enhancements, or new code, please 
 fork pyEQL and send us a pull request. It's not as hard as it sounds!
 
-Hacking pyEQL in Four Easy Steps:
+Hacking pyEQL in Five Easy Steps:
 ---------------------------------
 
 1. Clone the repository::
