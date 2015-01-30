@@ -221,8 +221,30 @@ class Solution:
     def get_temperature(self):
         return self.temperature.to('K')
     
+    def set_temperature(self,temperature):
+        '''
+        Set the solution temperature.
+        
+        Parameters
+        ----------
+        temperature : str
+            String representing the temperature, e.g. '25 degC'
+        '''
+        self.temperature = unit(temperature)
+    
     def get_pressure(self):
         return self.pressure.to('atm')
+        
+    def set_pressure(self,pressure):
+        '''
+        Set the hydrostatic pressure of the solution.
+        
+        Parameters
+        ----------
+        pressure : str
+            String representing the temperature, e.g. '25 degC'
+        '''
+        self.pressure = unit(pressure)
     
     def get_solvent_mass(self):
         # return the total mass (kg) of the solvent
