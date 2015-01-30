@@ -10,18 +10,12 @@ TODO - LICENSE INFO
 import math
 
 # internal pyEQL imports
-import pyEQL.activity_correction as ac
-import pyEQL.water_properties as h2o
-import pyEQL.solute as sol
+from pyEQL import solution
 
 # the pint unit registry
 from pyEQL.parameter import unit
 # TODO fix this to handle offsets the way pint wants us to since 0.7
 unit.autoconvert_offset_to_baseunit = True
-
-# functions to manage importing paramters from database files and making them accessible to pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
 
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
@@ -43,12 +37,6 @@ CRITICAL    -   not used
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-
-## Automated Tests
-''' This section will only run when the pyEQL module is executed on its own (i.e.
-not called from another program). It creates a couple of standard test solutions
-that are used for automated tests of the functions.
-'''
 
 def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
     '''
@@ -596,7 +584,7 @@ def mix(Solution1, Solution2):
             
     
     # create an empty solution for the mixture
-    Blend = Solution(temperature = blend_temperature,pressure= blend_pressure)
+    Blend = solution.Solution(temperature = blend_temperature,pressure= blend_pressure)
     
     # set or add the appropriate amount of all the components
     for item in mix_species.keys():
@@ -608,43 +596,3 @@ def mix(Solution1, Solution2):
             Blend.add_solute(item,mix_species[item])
             
     return Blend
-
-#####CLASS DEFINITIONS
-'''
-
-Idiom for Class Methods
------------------------
-
-All class methods begin with a verb such as "get," "set," or "calc." The Solution
-class provides a few methods with "add" and "remove" methods as well. 
-The following meaning is assigned to these verbs:
-
-get_ - Method returns an attribute from the object. Object data is not modified.
-
-list_ - Method returns a human-readable representation of some object data. Not
-        intended for use with functions.
-
-set_ - Method modifies an object's attribute. These methods are often used to 
-       override default parameter values, or replace calculated values with 
-       more precise data. Does not return a value.
-        
-calc_ - Method calculates and updates an object's attribute using data internal
-        to the object and possibly additional arguments. Often used for triggering
-        updates to dynamic attributes, such as species concentrations before and
-        after a chemical reaction.
-    
-add_ - Method adds data to an existing object. Typically used to add chemical
-       species to a Solution object.
-       
-remove_ - Method removes data from an existing object. Typically used to remove
-          a chemical species from a Solution object.
-
-'''
-
-
-
-
-# TODO - turn doctest back on when the nosigint error is gone        
-#if __name__ == "__main__":
- #   import doctest
-  #  doctest.testmod()
