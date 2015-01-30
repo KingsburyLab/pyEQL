@@ -22,9 +22,6 @@ unit.autoconvert_offset_to_baseunit = True
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db
 
-# activate for performance profiling
-from profilehooks import profile
-
 ## Logging System
 ''' Create a logging system using Python's built-in module. 
 Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
@@ -412,7 +409,7 @@ def has_parameter(formula,name):
     except KeyError:
         logger.error('Species %s not found in database' % formula)
         return None    
-@profile
+
 def donnan_eql(solution,fixed_charge):
     ''' Return a solution object in equilibrium with fixed_charge
     
