@@ -166,6 +166,23 @@ def search_parameters(formula):
                 
             current_file.close()
 
+def has_parameter(formula,name):
+    '''
+    Boolean test to determine whether a parameter exists in the database for a given species
+    '''
+    found = False
+    try:
+        for item in parameters_database[formula]:
+            if item.get_name() == name:
+                found = True
+            else:
+                continue
+        
+        return found
+    except KeyError:
+        logger.error('Species %s not found in database' % formula)
+        return None    
+
 def _parse_line(line):
     '''
     Function to parse lines in a tab-seprated value file format.
