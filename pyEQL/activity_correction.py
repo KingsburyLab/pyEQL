@@ -22,6 +22,11 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
+
 
 def _debye_parameter_B(temperature='25 degC'):
     '''

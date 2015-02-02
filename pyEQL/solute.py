@@ -13,6 +13,11 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
+
 # functions to manage importing paramters from database files and making them accessible to pyEQL
 import pyEQL.database as database
 from pyEQL.database import parameters_database as db

@@ -8,9 +8,15 @@ coefficient data) can only be determined for salts (e.g. NaCl) and not individua
 species (e.g. Na+)
 
 '''
+# logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 import pyEQL.chemical_formula as chem
 

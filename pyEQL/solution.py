@@ -25,6 +25,10 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 
 class Solution:
@@ -885,7 +889,7 @@ class Solution:
             return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
               
         else:
-            print('WARNING: Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
+            logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
             
             return unit('1 dimensionless')
                 
