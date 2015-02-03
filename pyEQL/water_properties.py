@@ -9,9 +9,15 @@ import math
 
 from pyEQL import unit
 
+# logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 
 def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):

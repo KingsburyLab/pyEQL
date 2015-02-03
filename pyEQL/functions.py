@@ -9,30 +9,21 @@ import math
 
 # internal pyEQL imports
 import pyEQL
+import pyEQL.database as database
+from pyEQL.database import parameters_database as db
 
 # the pint unit registry
 from pyEQL import unit
 
-## Logging System
-''' Create a logging system using Python's built-in module. 
-Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
-
-NOTE: make sure to set the disable_existing_loggers option in the log configuration
-options of the calling application in order to avoid disabling the pyEQL module's log
- 
-The default logging levels are mapped to pyEQL events as follows:
- 
-DEBUG       -   detailed messages about function execution including methods used, data sources,
-                temperature adjustments, etc.
-INFO        -   Messages indicating calculation steps, function calls, etc.
-WARNING     -   assumptions or limitations of module output
-ERROR       -   Module could not complete a task due to invalid input or other problem
-CRITICAL    -   not used
-
-'''
+# logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 def gibbs_mix(Solution1, Solution2):
     '''(Solution, Solution) -> float
@@ -229,11 +220,19 @@ def donnan_eql(solution,fixed_charge):
     z_anion = salt.z_anion
     nu_cation = salt.nu_cation
     
-    # get the partial molar volume for the salt
+    # get the partial molar volume for the salt, or calculate it from the ions
     # TODO - consider how to incorporate pitzer parameters
-    cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
-    anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
-    molar_volume = cation_vol + anion_vol
+    if database.has_parameter(salt.formula,'partial_molar_volume'):
+            for item in db[salt.formula]:
+                if item.get_name() =='partial_molar_volume':              
+                    molar_volume = item.get_value()
+    elif database.has_parameter(salt.cation,'partial_molar_volume') and database.has_parameter(salt.anion,'partial_molar_volume'):
+        cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
+        anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
+        molar_volume = cation_vol + anion_vol
+    else:
+        logger.error('Required partial molar volume information not available. Aborting.')
+        return None
     
     # initialize the equilibrated solution - start with a direct copy of the 
     # input / external solution
