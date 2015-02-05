@@ -1242,8 +1242,10 @@ class Solution:
             else:
                 if base_value is not None:
                     return base_value
+                    if self.get_temperature() != base_temperature:
+                        logger.warning('Partial molar volume for species %s not corrected for temperature' % solute)
                 else:
-                    logger.warning('Partial molar volume not found for species %s. Assuming zero.' % (solute))
+                    logger.warning('Partial molar volume not found for species %s. Assuming zero.' % solute)
                     return unit ('0 cm **3 / mol')
                 
     def get_chemical_potential_energy(self,activity_correction=True):
