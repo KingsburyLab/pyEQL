@@ -15,6 +15,14 @@ Contributing Code
 To contribute bug fixes, documentation enhancements, or new code, please 
 fork pyEQL and send us a pull request. It's not as hard as it sounds!
 
+It is **strongly** recommended that you read the following short articles
+before starting your work, especially if you are new to the open source community.
+
+* `Open Source Contribution Etiquette <http://tirania.org/blog/archive/2010/Dec-31.html>`_
+* `Don't "Push" Your Pull Requests <https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/>`_
+* `A Successful Git Branching Model <http://nvie.com/posts/a-successful-git-branching-model>`_
+
+
 Hacking pyEQL in Five Easy Steps:
 ---------------------------------
 
