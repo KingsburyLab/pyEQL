@@ -7,13 +7,17 @@ of water substance
 '''
 import math
 
-from pyEQL.parameter import unit
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
+from pyEQL import unit
 
+# logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 
 def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):

@@ -2,7 +2,7 @@
 
 
 Tutorial
-========
+********
 
 pyEQL creates a new type (`Solution` class) to represent a chemical solution. 
 It also comes pre-loaded with a database of diffusion coefficients, activity
@@ -11,7 +11,7 @@ Virtually all of the user-facing functions in pyEQL are accessed through the
 `Solution` class.
 
 Creating a Solution Object
---------------------------
+==========================
 
 Create a Solution object by invoking the Solution class:
 
@@ -31,6 +31,9 @@ More usefully, you can specify solutes and bulk properties:
 .. doctest::
 
     >>> s2 = pyEQL.Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']],pH=8,temperature = '20 degC', volume='8 L')
+
+Retrieving Solution Properties
+==============================
     
 Bulk Solution Properties
 --------------------------
@@ -64,9 +67,9 @@ You can also retrieve properties for individual solutes (or the solvent, water)
     1.1206048116287536e-05 centimeter2/second
 
 Units-Aware Calculations using pint
-------------------------
+===================================
 
-pyEQL uses pint to perform units-aware calculations. The pint library creates
+pyEQL uses `pint <https://github.com/hgrecco/pint>`_ to perform units-aware calculations. The pint library creates
 Quantity objects that contain both a magnitude and a unit.
 
     >>> from pyEQL import unit
@@ -95,7 +98,7 @@ See the `pint documentation <http://pint.readthedocs.org/>`_ for more details on
 
 
 Using pyEQL in your projects
----------------------------
+============================
 
 To access pyEQL's main features in your project all that is needed is an import statement:
 

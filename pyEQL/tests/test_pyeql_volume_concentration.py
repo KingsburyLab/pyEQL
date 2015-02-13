@@ -21,7 +21,7 @@ class Test_empty_solution(unittest.TestCase):
         
     # It should return type Solution
     def test_empty_solution_1(self):
-        expected = pyEQL.pyEQL.Solution
+        expected = pyEQL.solution.Solution
         
         self.assertIsInstance(self.s1,expected)
     

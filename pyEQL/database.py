@@ -24,26 +24,15 @@ rows for Name, Units, etc.
 
 """
 
-## Logging System
-''' Create a logging system using Python's built-in module. 
-Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
-
-NOTE: make sure to set the disable_existing_loggers option in the log configuration
-options of the calling application in order to avoid disabling the pyEQL module's log
- 
-The default logging levels are mapped to pyEQL events as follows:
- 
-DEBUG       -   detailed messages about function execution including methods used, data sources,
-                temperature adjustments, etc.
-INFO        -   Messages indicating calculation steps, function calls, etc.
-WARNING     -   assumptions or limitations of module output
-ERROR       -   Module could not complete a task due to invalid input or other problem
-CRITICAL    -   not used
-
-'''
+# logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 # for parameter creation functions
 import pyEQL.parameter as pm
@@ -165,6 +154,23 @@ def search_parameters(formula):
                     logger.warning('Invalid character found when reading %s. File skipped.' % file)
                 
             current_file.close()
+
+def has_parameter(formula,name):
+    '''
+    Boolean test to determine whether a parameter exists in the database for a given species
+    '''
+    found = False
+    try:
+        for item in parameters_database[formula]:
+            if item.get_name() == name:
+                found = True
+            else:
+                continue
+        
+        return found
+    except KeyError:
+        logger.error('Species %s not found in database' % formula)
+        return None    
 
 def _parse_line(line):
     '''

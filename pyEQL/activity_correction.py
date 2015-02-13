@@ -15,14 +15,17 @@ import math
 import pyEQL.water_properties as h2o
 
 # the pint unit registry
-from pyEQL.parameter import unit
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
+from pyEQL import unit
 
 # logging system
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# add a filter to emit only unique log messages to the handler
+import pyEQL.logging_system
+unique = pyEQL.logging_system.Unique()
+logger.addFilter(unique)
 
 
 def _debye_parameter_B(temperature='25 degC'):
@@ -96,7 +99,7 @@ def _debye_parameter_activity(temperature='25 degC'):
     debyeparam = unit.elementary_charge ** 3 * ( 2 * math.pi * unit.avogadro_number * h2o.water_density(unit(temperature))) ** 0.5 \
     / ( 4 * math.pi * unit.epsilon_0 * h2o.water_dielectric_constant(unit(temperature)) * unit.boltzmann_constant * unit(temperature)) ** 1.5
     
-    logger.info('Computed Debye-Huckel Limiting Law Constant A = %s at %s' % (debyeparam,temperature))
+    logger.info('Computed Debye-Huckel Limiting Law Constant A^{\\gamma} = %s at %s' % (debyeparam,temperature))
     return debyeparam.to('kg ** 0.5 / mol ** 0.5')
 
 def _debye_parameter_osmotic(temperature='25 degC'):
@@ -136,6 +139,7 @@ def _debye_parameter_osmotic(temperature='25 degC'):
     '''
     
     output = 1/3 * _debye_parameter_activity(temperature)
+    logger.info('Computed Debye-Huckel Limiting slope for osmotic coefficient A^{\\phi} = %s at %s' % (output,temperature))
     return output.to('kg ** 0.5 /mol ** 0.5')
 
 def _debye_parameter_volume(temperature='25 degC'):
@@ -150,15 +154,27 @@ def _debye_parameter_volume(temperature='25 degC'):
     
     Notes:
     -----
-    Takes the value 1.898 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
+    Takes the value 1.8305 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
     This constant is calculated according to:[1]
 
      .. math:: A_V = -2 A_{\\phi} R T [ {3 \\over \\epsilon} {{\\partial \\epsilon \\over \\partial p} \
      } - {{1 \\over \\rho}{\\partial \\rho \\over \\partial p} }]
+     
+    NOTE: at this time, the term in brackets (containing the partial derivatives) is approximate.
+    These approximations give the correct value of the slope at 25 degC and 
+    produce estimates with less than 10% error between 0 and 60 degC.
+     
+    The derivative of epsilon with respect to pressure is assumed constant (for atmospheric pressure)
+    at -0.01275 1/MPa. Note that the negative sign does not make sense in light
+    of real data, but is required to give the correct result.
+     
+    The second term is equivalent to the inverse of the bulk modulus of water, which
+    is taken to be 2.2 GPa.[2]
     
     .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
         
+    .. [2] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
     
     Examples:
     --------
@@ -171,14 +187,18 @@ def _debye_parameter_volume(temperature='25 degC'):
     '''
     
     # TODO - add partial derivatives to calculation
-    #result = -2 * _debye_parameter_osmotic(temperature) * unit.R * temperature * (unit('1 * Pa ** -1'))
-    result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
+    epsilon = h2o.water_dielectric_constant(unit(temperature))
+    dedp = unit('-0.01275 1/MPa')
+    result = -2 * _debye_parameter_osmotic(temperature) * unit.R * unit(temperature) * \
+    (3 / epsilon * dedp - 1/unit('2.2 GPa'))
+    #result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
     
     if unit(temperature) != unit('25 degC'):
-        logger.debug('Debye-Huckel limiting slope for volume is valid only at 25 degC')
-        
+        logger.warning('Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC')
+    
+    logger.info('Computed Debye-Huckel Limiting Slope for volume A^V = %s at %s' % (result,temperature))
+    
     return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
-
 
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
