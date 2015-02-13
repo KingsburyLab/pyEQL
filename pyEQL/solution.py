@@ -832,46 +832,48 @@ class Solution:
         # identify the predominant salt in the solution
         Salt = self.get_salt()
         
-        # search the database for pitzer parameters for 'salt'
-        database.search_parameters(Salt.formula)
-    
-
-        # use the Pitzer model for higher ionic strenght, if the parameters are available
+        if solute in (Salt.anion,Salt.cation):
         
-        # search for Pitzer parameters    
-        found = False
-        for item in db[Salt.formula]:
-            if item.get_name() == 'pitzer_parameters_activity':
-                found = True
-                break       
-                
-        if found == True:
-            # determine alpha1 and alpha2 based on the type of salt
-            # see the May reference for the rules used to determine
-            # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                if Salt.nu_cation >=3 or Salt.nu_anion >=3:
-                    alpha1 = 2
-                    alpha2 = 50
+            # search the database for pitzer parameters for 'salt'
+            database.search_parameters(Salt.formula)
+        
+    
+            # use the Pitzer model for higher ionic strenght, if the parameters are available
+            
+            # search for Pitzer parameters    
+            found = False
+            for item in db[Salt.formula]:
+                if item.get_name() == 'pitzer_parameters_activity':
+                    found = True
+                    break       
+                    
+            if found == True:
+                # determine alpha1 and alpha2 based on the type of salt
+                # see the May reference for the rules used to determine
+                # alpha1 and alpha2 based on charge
+                if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                    if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                        alpha1 = 2
+                        alpha2 = 50
+                    else:
+                        alpha1 = 1.4
+                        alpha2 = 12
                 else:
-                    alpha1 = 1.4
-                    alpha2 = 12
-            else:
-                alpha1 = 2
-                alpha2 = 0
-            
-            # determine the average molality of the salt
-            # this is necessary for solutions inside e.g. an ion exchange
-            # membrane, where the cation and anion concentrations may be
-            # unequal
-            molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-            
-            activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-            molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
-            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-            
-            logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-            return activity_coefficient            
+                    alpha1 = 2
+                    alpha2 = 0
+                
+                # determine the average molality of the salt
+                # this is necessary for solutions inside e.g. an ion exchange
+                # membrane, where the cation and anion concentrations may be
+                # unequal
+                molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+                
+                activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
+                molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+                
+                logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
+                return activity_coefficient            
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif self.get_ionic_strength().magnitude <= 0.005:
