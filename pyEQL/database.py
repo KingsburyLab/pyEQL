@@ -1,26 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 This module contains classes, functions, and methods for reading input files
 and assembling database entries for use by pyEQL.
 
 By default, pyEQL searches all files in the /database subdirectory for parameters.
-
-File Format:
------------
-
-Database files are tab-separated text files. The first column must contain a key (usually a chemical formula), 
-while the actual parameter values are in the 2nd and following columns. Each database
-file is intended to contain a single parameter type from a single source for multiple chemical species.
-I.e., we have one database file that contains diffusion coefficients for a bunch ofions as found
-in the CRC Handbook of Chemistry and Physics.
-
-The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'. Preferably,
-other information such as conditions, notes and a reference are also supplied. See 'template.csv' in the
-/database directory for an example.
-
-Multi-member parameters (e.g. coefficients for an equation) can be defined by using mutiple
-columns. Multiple columns are only searched for the actual parameter, not for the header
-rows for Name, Units, etc.
 
 """
 

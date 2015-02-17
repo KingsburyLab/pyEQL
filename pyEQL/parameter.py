@@ -62,7 +62,7 @@ class Parameter:
     '''
     def __init__(self,name,magnitude,units='',**kwargs):
         '''
-        Parameters:
+        Parameters
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
@@ -92,7 +92,7 @@ class Parameter:
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
                     
-        Optional Keyword Arguments:
+        Optional Keyword Arguments
         --------------------------
         reference : str, optional
                     A string containing reference information documenting the source of
@@ -122,14 +122,14 @@ class Parameter:
                     A string containing additional notes pertaining to the context,
                     conditions, or assumptions that may restrict the use of 'value'
                     
-        Notes:
+        Notes
         -----
         In general, parameter values are assumed to be entered in fundamental 
         SI units (m, kg, s, etc.). The 'units' field is required to call attention 
         to this fact and provide a levelof error-checking in calculations involving
         the parameter.
         
-        Examples:
+        Examples
         --------
         # TODO fix this example
         >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
