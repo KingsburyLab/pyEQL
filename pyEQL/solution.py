@@ -949,6 +949,20 @@ class Solution:
         # identify the predominant salt in the solution
         Salt = self.get_salt()
         
+        # determine alpha1 and alpha2 based on the type of salt
+        # see the May reference for the rules used to determine
+        # alpha1 and alpha2 based on charge
+        if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+            if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                alpha1 = 2
+                alpha2 = 50
+            else:
+                alpha1 = 1.4
+                alpha2 = 12
+        else:
+            alpha1 = 2
+            alpha2 = 0
+        
         # set the concentration as the average concentration of the cation and
         # anion in the salt, accounting for stoichiometry
         concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
@@ -961,15 +975,14 @@ class Solution:
             
             param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
             
-            # TODO - fix inputs for alpha1 and alpha2
             osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
-            concentration,2,0,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+            concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
             Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
             
             logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
             return osmotic_coefficient
 
-        if found == False:
+        else:
             logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
             return unit('1 dimensionless')
     
