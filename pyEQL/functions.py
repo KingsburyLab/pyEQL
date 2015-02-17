@@ -9,8 +9,9 @@ import math
 
 # internal pyEQL imports
 import pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
+
+# import the parameters database
+from pyEQL import paramsDB as db
 
 # the pint unit registry
 from pyEQL import unit
@@ -222,11 +223,11 @@ def donnan_eql(solution,fixed_charge):
     
     # get the partial molar volume for the salt, or calculate it from the ions
     # TODO - consider how to incorporate pitzer parameters
-    if database.has_parameter(salt.formula,'partial_molar_volume'):
+    if db.has_parameter(salt.formula,'partial_molar_volume'):
             for item in db[salt.formula]:
                 if item.get_name() =='partial_molar_volume':              
                     molar_volume = item.get_value()
-    elif database.has_parameter(salt.cation,'partial_molar_volume') and database.has_parameter(salt.anion,'partial_molar_volume'):
+    elif db.has_parameter(salt.cation,'partial_molar_volume') and db.has_parameter(salt.anion,'partial_molar_volume'):
         cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
         anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
         molar_volume = cation_vol + anion_vol

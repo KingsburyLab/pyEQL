@@ -16,9 +16,8 @@ import pyEQL.solute as sol
 # the pint unit registry
 from pyEQL import unit
 
-# functions to manage importing paramters from database files and making them accessible to pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
+# import the parameters database
+from pyEQL import paramsDB as db
 
 # logging system
 import logging
@@ -392,22 +391,17 @@ class Solution:
         cation = salt.cation
         
         # search the database for parameters for 'salt'
-        database.search_parameters(salt.formula)
+        db.search_parameters(salt.formula)
         
         a0=a1=b0=b1 = 0
-        
-        found = False                
-        
-        # retrieve the parameters for the delta G equations
-        for item in db[salt.formula]:
 
-            if item.get_name() == 'erying_viscosity_coefficients':
-                found = True
-    
-                a0 = item.get_value()[0]
-                a1 = item.get_value()[1]
-                b0 = item.get_value()[2]
-                b1 = item.get_value()[3]
+        # retrieve the parameters for the delta G equations
+        params = db.get_parameter(salt.formula,'erying_viscosity_coefficients')
+        
+        a0 = params.get_value()[0]
+        a1 = params.get_value()[1]
+        b0 = params.get_value()[2]
+        b1 = params.get_value()[3]
 
         # compute the delta G parameters
         temperature = self.get_temperature().to('degC')
@@ -835,19 +829,15 @@ class Solution:
         if solute in (Salt.anion,Salt.cation):
         
             # search the database for pitzer parameters for 'salt'
-            database.search_parameters(Salt.formula)
+            db.search_parameters(Salt.formula)
         
-    
             # use the Pitzer model for higher ionic strenght, if the parameters are available
             
-            # search for Pitzer parameters    
-            found = False
-            for item in db[Salt.formula]:
-                if item.get_name() == 'pitzer_parameters_activity':
-                    found = True
-                    break       
-                    
-            if found == True:
+            # search for Pitzer parameters
+            if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
+                
+                param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+    
                 # determine alpha1 and alpha2 based on the type of salt
                 # see the May reference for the rules used to determine
                 # alpha1 and alpha2 based on charge
@@ -869,11 +859,12 @@ class Solution:
                 molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
                 
                 activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                molality,alpha1,alpha2,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
+                molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
                 Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
                 
                 logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-                return activity_coefficient            
+                return activity_coefficient
+
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif self.get_ionic_strength().magnitude <= 0.005:
@@ -971,20 +962,19 @@ class Solution:
         self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
         
         # search the database for pitzer parameters for 'salt'
-        database.search_parameters(Salt.formula)
+        db.search_parameters(Salt.formula)
         
-        found = False        
-        
-        for item in db[Salt.formula]:
-            if item.get_name() == 'pitzer_parameters_activity':
-                found = True
-                # TODO - fix inputs for alpha1 and alpha2
-                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
-                concentration,2,0,item.get_value()[0],item.get_value()[1],item.get_value()[2],item.get_value()[3], \
-                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-                
-                logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
-                return osmotic_coefficient
+        if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
+            
+            param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+            
+            # TODO - fix inputs for alpha1 and alpha2
+            osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
+            concentration,2,0,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+            
+            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
+            return osmotic_coefficient
             
             # TODO - either deprecate or update to parameter framework
 #            elif self.components[solute].parameters_TCPC:
@@ -992,10 +982,7 @@ class Solution:
 #                osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
 #                logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
 #                return osmotic_coefficient
-                
-            else:
-                continue
-            
+
         if found == False:
             logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
             return unit('1 dimensionless')
@@ -1213,7 +1200,7 @@ class Solution:
         # database
         
         if solute != 'H2O':
-            if database.has_parameter(solute,name):
+            if db.has_parameter(solute,name):
                 base_value = self.get_solute(solute).get_parameter(name)
             else:
                 base_value = None                
@@ -1373,7 +1360,7 @@ class Solution:
         Salt = self.get_salt()
         
         # search the database for pitzer parameters for 'salt'
-        database.search_parameters(Salt.formula)
+        db.search_parameters(Salt.formula)
          
         solute_vol = 0 * unit('L')
 
@@ -1381,34 +1368,33 @@ class Solution:
         
         pitzer_calc = False
 
-        if database.has_parameter(Salt.formula,'pitzer_parameters_volume'):
+        if db.has_parameter(Salt.formula,'pitzer_parameters_volume'):
             
-            for params in db[Salt.formula]:
-                if params.get_name() == 'pitzer_parameters_volume':
-                    
-                    # determine the average molality of the salt
-                    # this is necessary for solutions inside e.g. an ion exchange
-                    # membrane, where the cation and anion concentrations may be
-                    # unequal
-                    molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-                    
-                    # determine alpha1 and alpha2 based on the type of salt
-                    # see the May reference for the rules used to determine
-                    # alpha1 and alpha2 based on charge
-                    if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                        if Salt.nu_cation >=3 or Salt.nu_anion >=3:
-                            alpha1 = 2
-                            alpha2 = 50
-                        else:
-                            alpha1 = 1.4
-                            alpha2 = 12
-                    else:
-                        alpha1 = 2
-                        alpha2 = 0
-                        
-                    apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
-                    molality,alpha1,alpha2,params.get_value()[0],params.get_value()[1],params.get_value()[2],params.get_value()[3], \
-                    params.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+            param = db.get_parameter(Salt.formula,'pitzer_parameters_volume')
+            
+            # determine the average molality of the salt
+            # this is necessary for solutions inside e.g. an ion exchange
+            # membrane, where the cation and anion concentrations may be
+            # unequal
+            molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+            
+            # determine alpha1 and alpha2 based on the type of salt
+            # see the May reference for the rules used to determine
+            # alpha1 and alpha2 based on charge
+            if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
+                if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                    alpha1 = 2
+                    alpha2 = 50
+                else:
+                    alpha1 = 1.4
+                    alpha2 = 12
+            else:
+                alpha1 = 2
+                alpha2 = 0
+                
+            apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
+            molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+            param.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
             
             solute_vol += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
             +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
@@ -1417,27 +1403,27 @@ class Solution:
             
             logger.info('Updated solution volume using Pitzer model for solute %s' % Salt.formula)
             
-            # add the partial molar volume of any other solutes, except for water
-            # which is already accounted for by the Pitzer parameters
-            for item in self.components:
+        # add the partial molar volume of any other solutes, except for water
+        # or the parent salt, which is already accounted for by the Pitzer parameters
+        for item in self.components:
+            
+            solute = self.get_solute(item)            
+            
+            # ignore water
+            if item in ['H2O','HOH']:
+                continue
+            
+            # ignore the salt cation and anion, if already accounted for by Pitzer
+            if pitzer_calc is True and item in [Salt.anion,Salt.cation]:
+                continue                
+            
+            if db.has_parameter(item,'partial_molar_volume'):
+                solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
+                logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
                 
-                solute = self.get_solute(item)            
+            else:
+                logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
                 
-                # ignore water
-                if item in ['H2O','HOH']:
-                    continue
-                
-                # ignore the salt cation and anion, if already accounted for by Pitzer
-                if pitzer_calc is True and item in [Salt.anion,Salt.cation]:
-                    continue                
-                
-                if database.has_parameter(item,'partial_molar_volume'):
-                    solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
-                    logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
-                    
-                else:
-                    logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
-                    
         return solute_vol.to('L')
             
     def copy(self):

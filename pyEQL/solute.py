@@ -18,9 +18,8 @@ import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
-# functions to manage importing paramters from database files and making them accessible to pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
+# import the parameters database
+from pyEQL import paramsDB as db
 
 class Solute:
     '''represent each chemical species as an object containing its formal charge, 
@@ -71,7 +70,7 @@ class Solute:
             
             # trigger the function that checks whether parameters already exist for this species, and if not,
             # searches the database files and creates them
-            database.search_parameters(self.formula)
+            db.search_parameters(self.formula)
 
     def get_parameter(self,parameter,temperature=None,pressure=None,ionic_strength=None):
         '''
@@ -79,25 +78,12 @@ class Solute:
         
         '''
         # Search for this solute in the database of parameters
-        if self.formula in db:
-            # loop over the parameters in the python set associated with this solute species to find the one 
-            #we're looking for
         
-            # TODO - handle the case where multiple parameters with same name exist. Need function
-            # to compare specified conditions and choose the most appropriate parameter
-            found = False
-            
-            for item in db[self.formula]:
-                if item.get_name() == parameter:
-                    found = True
-                    return item.get_value(temperature,pressure,ionic_strength)
-            
-            # Log an error if the parameter was not found
-            if found == False:
-                logger.error('Required parameter %s not found for species %s.' % (parameter,self.formula))
-        else:
-            logger.error('No entry for species %s in parameters database' % self.formula)
-            return None
+        # TODO - handle the case where multiple parameters with same name exist. Need function
+        # to compare specified conditions and choose the most appropriate parameter
+        param = db.get_parameter(self.formula,parameter)
+        
+        return param.get_value(temperature,pressure,ionic_strength)
                 
     def add_parameter(self,name,magnitude,units='',**kwargs):
         '''manually insert a parameter into the parameters database for a solute
@@ -107,7 +93,7 @@ class Solute:
         '''
         import pyEQL.parameter as pm
         newparam = pm.Parameter(name,magnitude,units,**kwargs)
-        db[self.get_name()].add(newparam)
+        db.add_parameter(self.get_name(),newparam)
         
     # TODO - deprecate in favor of the parameter module
     def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):

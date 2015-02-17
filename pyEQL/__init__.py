@@ -2,11 +2,16 @@
 pyEQL
 =====
 
-pyEQL is a python package for computing chemical equilibria.
+pyEQL is a python package for calculating the properties of aqueous solutions
+and performing chemical thermodynamics computations.
 
 :copyright: 2013-2015 by Ryan S. Kingsbury
 :license: TBD
 '''
+# initialize the parameters database
+from pyEQL.database import paramsdb
+paramsDB = database.paramsdb()
+
 from pyEQL.parameter import unit
 from pyEQL.functions import *
 from pyEQL.solution import Solution
