@@ -80,6 +80,8 @@ different solutes.
 
 The upper section of each file contains information about the source of the
 data, the units, the name of the parameter, and the conditions of measurement.
+The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'. 
+Preferably, other information such as conditions, notes and a reference are also supplied.
 See `template.csv` in the \database subdirectory for an example.
 
 The remainder of the file contains solute formulas in the first column (see
@@ -143,3 +145,15 @@ of your script. The output is organized by solute.
    Notes: correction factor 5e-4 cm3/g-K
    Reference: Durchschlag, H., Zipper, P., 1994. "Calculation of the Partial Molal Volume of Organic Compounds and Polymers." Progress in Colloid & Polymer Science (94), 20-39.
    ...
+
+API Documentation (database.py)
+===============================
+
+.. automodule:: pyEQL.database
+   :members:
+
+API Documentation (parameter.py)
+================================
+
+.. automodule:: pyEQL.parameter
+   :members:

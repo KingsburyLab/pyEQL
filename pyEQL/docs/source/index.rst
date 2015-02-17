@@ -13,4 +13,9 @@ Contents:
    contributing
    chemistry
    database
+   class_solution
+   class_solute
+   internal
+   module_functions
+   
 
