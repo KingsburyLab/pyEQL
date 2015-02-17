@@ -320,56 +320,7 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     log_f = - _debye_parameter_activity(temperature).magnitude * formal_charge ** 2 * (ionic_strength.magnitude ** 0.5 / (1+ionic_strength.magnitude ** 0.5) - 0.2 * ionic_strength.magnitude)
     
     return math.exp(log_f)
-    
-def get_activity_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_formal_charge=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25*unit('degC')):
-    '''Return the activity coefficient of solute in the parent solution according to the modified TCPC model.
-    
-    Parameters:
-    ----------
-    ionic_strength : Quantity
-                        The ionic strength of the parent solution, mol/kg
-    S : float
-                        The solvation parameter for the parent salt. See Reference.
-    b : float
-                        The approaching parameter for the parent salt. See Reference.
-    n : float       
-                        The n parameter for the parent salt. See Reference.
-    formal_charge : int, optional           
-                        The charge on the solute, including sign. Defaults to +1 if not specified.
-    counter_formal_charge : int, optional           
-                        The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                        E.g. if the solute is Na+ and the salt is NaCl, counter_formal_charge = -1
-    stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                        E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-    counter_stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                        E.g. for Cl- in ZnCl2, stoich_coeff = 2
-    temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
-    
-    Returns:
-    -------
-    float
-        The mean molal (mol/kgL) scale ionic activity coefficient of solute
 
-    See Also:
-    --------
-    _debye_parameter_osmotic
-    
-    Notes:
-    ------
-    Valid for concentrated solutions up to saturation. Accuracy compares well with the Pitzer approach. See Reference [1] for a compilation of the appropriate parameters for a variety of commonly-encountered electrolytes.
-    
-    .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
-    '''
-    # compute the PDF parameter
-    PDH = - math.fabs(formal_charge * counter_formal_charge) * _debye_parameter_osmotic(temperature) * ( ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5) + 2/b * math.log(1 + b * ionic_strength ** 0.5))
-    # compute the SV parameter
-    SV = S / temperature.to('K') * ionic_strength  ** (2*n) / (stoich_coeff + counter_stoich_coeff)
-    # add and exponentiate to eliminate the log
-    return math.exp(PDH + SV)
-    
 def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
@@ -811,56 +762,6 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     
     return ln_gamma
 
-def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_formal_charge=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
-    '''Return the osmotic coefficient of solute in the parent solution according to the modified TCPC model.
-    
-    Parameters:
-    ----------
-    ionic_strength : number
-                        The ionic strength of the parent solution, mol/kg
-    S : float
-                        The solvation parameter for the parent salt. See Reference.
-    b : float
-                        The approaching parameter for the parent salt. See Reference.
-    n : float       
-                        The n parameter for the parent salt. See Reference.
-    formal_charge : int, optional           
-                        The charge on the solute, including sign. Defaults to +1 if not specified.
-    counter_formal_charge : int, optional           
-                        The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                        E.g. if the solute is Na+ and the salt is NaCl, counter_formal_charge = -1
-    stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                        E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-    counter_stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                        E.g. for Cl- in ZnCl2, stoich_coeff = 2
-    temperature : float or int, optional
-                        The solution temperature in degrees Celsius. 
-                        Defaults to 25 degrees if omitted.
-    Returns:
-    -------
-    float
-        The osmotic coefficient of the solute
-
-    See Also:
-    --------
-    _debye_parameter_osmotic
-    get_ionic_strength
-    
-    Notes:
-    ------
-    Valid for concentrated solutions up to saturation. Accuracy compares well with the Pitzer approach. See Reference [1] for a compilation of the appropriate parameters for a variety of commonly-encountered electrolytes.
-    
-    .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
-    '''
-    # compute the 2nd term
-    term2 = - math.fabs(formal_charge * counter_formal_charge) * _debye_parameter_osmotic(temperature) * ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5)
-    # compute the 3rd term
-    term3 = S / (kelvin(temperature) * ( stoich_coeff + counter_stoich_coeff)) * 2 * n / (2 * n + 1) * ionic_strength  ** (2 * n)
-    # add and return the osmotic coefficient
-    return 1 - term2 + term3
-    
 def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the osmotic coefficient of water in an electrolyte solution according to the Pitzer model.
     

@@ -818,7 +818,6 @@ class Solution:
         get_activity_coefficient_guntelberg
         get_activity_coefficient_davies
         get_activity_coefficient_pitzer
-        get_activity_coefficient_TCPC
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
@@ -882,16 +881,10 @@ class Solution:
             return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
               
         else:
-            logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer or TCPC models. Returning unit activity coefficient' % solute)
+            logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient' % solute)
             
             return unit('1 dimensionless')
                 
-            # TODO - fix TCPC implementation
-            # use the TCPC model for higher ionic strengths, if the parameters have been set
-#            if self.components[solute].parameters_TCPC:
-#                logger.info('Ionic strength = %s. Using TCPC model to calculate activity coefficient.' % self.get_ionic_strength())
-#                return ac.get_activity_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
-#    
     def get_activity(self,solute):
         '''returns the thermodynamic activity of the solute in solution
        
@@ -975,13 +968,6 @@ class Solution:
             
             logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
             return osmotic_coefficient
-            
-            # TODO - either deprecate or update to parameter framework
-#            elif self.components[solute].parameters_TCPC:
-#                ion = self.components[solute]
-#                osmotic_coefficient= ac.get_osmotic_coefficient_TCPC(self.get_ionic_strength(),ion.get_parameters_TCPC('S'),ion.get_parameters_TCPC('b'),ion.get_parameters_TCPC('n'),ion.get_parameters_TCPC('z_plus'),ion.get_parameters_TCPC('z_minus'),ion.get_parameters_TCPC('nu_plus'),ion.get_parameters_TCPC('nu_minus'),temperature)
-#                logger.info('Calculated osmotic coefficient of water as %s based on solute %s using TCPC model' % (osmotic_coefficient,solute))
-#                return osmotic_coefficient
 
         if found == False:
             logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
@@ -1015,7 +1001,7 @@ class Solution:
         Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
         of each species.
         
-        If appropriate Pitzer or TCPC model parameters are not available, the
+        If appropriate Pitzer model parameters are not available, the
         water activity is assumed equal to the mole fraction of water.
         
         References

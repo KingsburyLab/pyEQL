@@ -64,10 +64,7 @@ class Solute:
             quantity = unit(amount)
             
             self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)                
-                        
-            # TODO - deprecate in favor of the parameter module
-            self.parameters_TCPC={}
-            
+
             # trigger the function that checks whether parameters already exist for this species, and if not,
             # searches the database files and creates them
             db.search_parameters(self.formula)
@@ -95,57 +92,6 @@ class Solute:
         newparam = pm.Parameter(name,magnitude,units,**kwargs)
         db.add_parameter(self.get_name(),newparam)
         
-    # TODO - deprecate in favor of the parameter module
-    def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
-        '''Use this function to store parameters for the TCPC activity model
-        
-        Parameters
-        ----------
-        S : float
-                        The solvation parameter for the parent salt. See Reference.
-        b : float
-                            The approaching parameter for the parent salt. See Reference.
-        n : float       
-                            The n parameter for the parent salt. See Reference.
-        valence : int, optional           
-                            The charge on the solute, including sign. Defaults to +1 if not specified.
-        counter_valence : int, optional           
-                            The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                            E.g. if the solute is Na+ and the salt is NaCl, counter_valence = -1
-        stoich_coeff : int, optional
-                            The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                            E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-        counter_stoich_coeff : int, optional
-                            The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                            E.g. for Cl- in ZnCl2, stoich_coeff = 2
-        
-        Returns
-        -------
-        No return value. Parameter values are stored in a dictionary.
-        
-        See Also
-        get_parameters_TCPC
-        
-        '''
-        self.parameters_TCPC={'S':S,'b':b,'n':n,'z_plus':valence,'z_minus':counter_valence,'nu_plus':stoich_coeff,'nu_minus':counter_stoich_coeff}
-    
-    # TODO - deprecate in favor of the parameter module
-    def get_parameters_TCPC(self,name):
-        '''Retrieve modeling parameters used for activity coefficient modeling
-        
-        Parameters
-        ----------
-        name : str
-                    String identifying the specific parameter to be retrieved. Must correspond to a key in the 'name' dictionary
-        
-        Returns
-        -------
-        The parameter stored at key 'name' in the 'model' dictionary
-        
-        '''
-        return self.parameters_TCPC[name]
-    
-    
     def get_name(self):
         return self.formula
         
