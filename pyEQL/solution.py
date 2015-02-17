@@ -867,7 +867,7 @@ class Solution:
 
 
         # for very low ionic strength, use the Debye-Huckel limiting law
-        elif self.get_ionic_strength().magnitude <= 0.005:
+        if self.get_ionic_strength().magnitude <= 0.005:
             logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
             return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
             
