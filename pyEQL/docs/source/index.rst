@@ -12,4 +12,5 @@ Contents:
    tutorial
    contributing
    chemistry
+   database
 
