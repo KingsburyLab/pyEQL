@@ -396,12 +396,16 @@ class Solution:
         a0=a1=b0=b1 = 0
 
         # retrieve the parameters for the delta G equations
-        params = db.get_parameter(salt.formula,'erying_viscosity_coefficients')
+        if db.has_parameter(salt.formula,'erying_viscosity_coefficients'):
+            params = db.get_parameter(salt.formula,'erying_viscosity_coefficients')
         
-        a0 = params.get_value()[0]
-        a1 = params.get_value()[1]
-        b0 = params.get_value()[2]
-        b1 = params.get_value()[3]
+            a0 = params.get_value()[0]
+            a1 = params.get_value()[1]
+            b0 = params.get_value()[2]
+            b1 = params.get_value()[3]
+        else:
+            # proceed with the coefficients equal to zero and log a warning
+            logger.warning('Viscosity coefficients for %s not found. Viscosity will be approximate.' % salt.formula)
 
         # compute the delta G parameters
         temperature = self.get_temperature().to('degC')
