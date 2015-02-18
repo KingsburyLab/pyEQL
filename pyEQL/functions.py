@@ -224,9 +224,8 @@ def donnan_eql(solution,fixed_charge):
     # get the partial molar volume for the salt, or calculate it from the ions
     # TODO - consider how to incorporate pitzer parameters
     if db.has_parameter(salt.formula,'partial_molar_volume'):
-            for item in db[salt.formula]:
-                if item.get_name() =='partial_molar_volume':              
-                    molar_volume = item.get_value()
+            item = db.get_parameter(salt.formula,'partial_molar_volume')  
+            molar_volume = item.get_value()
     elif db.has_parameter(salt.cation,'partial_molar_volume') and db.has_parameter(salt.anion,'partial_molar_volume'):
         cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
         anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
