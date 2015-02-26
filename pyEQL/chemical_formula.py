@@ -5,9 +5,9 @@ input, output, and parsing of chemical formulas for pyEQL.
 
 The correct case must be used when specifying elements.
 
-Created on Wed Jun 11 14:38:05 2014
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
 
-@author: ryan
 """
 
 # logging system

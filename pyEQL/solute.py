@@ -3,6 +3,10 @@ pyEQL solute class
 
 This file contains functions and methods for managing properties of 
 individual solutes
+
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 
 # the pint unit registry

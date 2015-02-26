@@ -4,6 +4,9 @@ and assembling database entries for use by pyEQL.
 
 By default, pyEQL searches all files in the /database subdirectory for parameters.
 
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 """
 
 # logging system

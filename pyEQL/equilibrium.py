@@ -3,6 +3,10 @@ pyEQL methods for chemical equilibrium calculations (e.g. acid/base, reactions,
 redox, complexation, etc.)
 
 NOTE: these methods are not currently used but are here for the future.
+
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 
 ## Dependencies
