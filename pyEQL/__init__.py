@@ -10,8 +10,8 @@ and performing chemical thermodynamics computations.
 
 '''
 # initialize the parameters database
-from pyEQL.database import paramsdb
-paramsDB = database.paramsdb()
+from pyEQL.database import Paramsdb
+paramsDB = database.Paramsdb()
 
 from pyEQL.parameter import unit
 from pyEQL.functions import *

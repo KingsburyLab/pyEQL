@@ -13,22 +13,24 @@ following parameters for some common electrolytes:
  - Coefficients for activity correction equations (e.g. Pitzer model)
  - Coefficients for viscosity equations
 
+.. note:: Due to copyright restrictions, pyEQL's built-in databases contain only a small selection of diffusion coefficients, partial molar volumes, and viscosity coefficients for some common ions like H+, Na+, Cl-, and OH-. We are working on securing permission to distribute a more complete dataset. In the mean time, see the references in the example databases for good data sources. Alternatively, you can provide your own parameters in a custom database (see below). pyEQL does already contain a fairly large collection of Pitzer parameters for both activity correction and partial molar volume; and this will be expanded in the future.
+
 Basics
 ======
 
-The paramsdb() class creates a container for parameters. Each paramter
+The Paramsdb class creates a container for parameters. Each paramter
 is an object which contains not only the value, but also information about
 the units, the reference, and the conditions of measurement. paramsdb() also
 defines several methods that are helpful for retrieving parameters.
 
-pyEQL automatically initializes an instance of paramsdb() under the name 'db'.
+pyEQL automatically initializes an instance of Paramsdb under the name 'db'.
 You can access database methods like this:
 
 .. doctest::
 
    >>> import pyEQL
    >>> pyEQL.db
-   <pyEQL.database.paramsdb at 0x7fead183f240>
+   <pyEQL.database.Paramsdb at 0x7fead183f240>
    >>> pyEQL.db.has_species('H+')
    True
 
@@ -67,7 +69,7 @@ only need to contain extra parameters that are not included already.
 File Format
 -----------
 
-Databases are formatted as TAB-SEPARATED text files and carry the *.csv extension.
+Databases are formatted as TAB-SEPARATED text files and carry the .csv extension.
 The intent of this format is to make database files easy to edit with common
 spreadsheet software. 
 

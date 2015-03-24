@@ -27,16 +27,17 @@ import os
 
 ## Database Management Functions
 
-class paramsdb():
+class Paramsdb:
+    '''
+    create a global dictionary to contain a dynamically-generated list of Parameters
+    for solute species. The dictionary keys are the individual chemical species
+    formulas. The dictionary's values are a python set object containing all parameters
+    that apply to the species.
+    '''  
     
     def __init__(self):
     
-        '''
-        create a global dictionary to contain a dynamically-generated list of Parameters
-        for solute species. The dictionary keys are the individual chemical species
-        formulas. The dictionary's values are a python set object containing all parameters
-        that apply to the species.
-        '''    
+  
         self.parameters_database={}
         
         # set the directory containing database files
