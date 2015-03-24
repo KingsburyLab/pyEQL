@@ -216,9 +216,6 @@ class Parameter:
        
     def get_name(self):
         return self.name
-        
-    def test_print(self):
-        return 'This is a test of the parameter with value',self.value
             
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
         '''return a temperature-adjusted paramter value and log any qualifying
