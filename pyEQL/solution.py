@@ -210,18 +210,34 @@ class Solution:
                 self.volume_update_required = True
         
     def add_solvent(self,formula,amount):
-        '''Same as add_solute but omits the need to pass solvent mass to pint
+        '''
+        Same as add_solute but omits the need to pass solvent mass to pint
         '''
         new_solvent = sol.Solute(formula,amount,self.get_volume(),amount)
         self.components.update({new_solvent.get_name():new_solvent})
                         
     def get_solute(self,i):
+        '''
+        Return the specified solute object.
+        
+        '''
         return self.components[i]
     
     def get_solvent(self):
         return self.components[self.solvent_name]
     
     def get_temperature(self):
+        '''
+        Return the temperature of the solution.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: The temperature of the solution, in Kelvin.
+        '''
         return self.temperature.to('K')
     
     def set_temperature(self,temperature):
@@ -236,6 +252,13 @@ class Solution:
         self.temperature = unit(temperature)
     
     def get_pressure(self):
+        '''
+        Return the hydrostatic pressure of the solution.
+        
+        Returns
+        -------
+        Quantity: The hydrostatic pressure of the solution, in atm.
+        '''
         return self.pressure.to('atm')
         
     def set_pressure(self,pressure):
@@ -250,6 +273,25 @@ class Solution:
         self.pressure = unit(pressure)
     
     def get_solvent_mass(self):
+        '''
+        Return the mass of the solvent.
+        
+        This method is used whenever mol/kg (or similar) concentrations
+        are requested by get_amount()
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: the mass of the solvent, in kg
+
+        See Also
+        --------
+        get_amount()        
+        
+        '''
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
         mw = solvent.get_molecular_weight()
@@ -257,6 +299,18 @@ class Solution:
         return solvent.get_moles().to('kg','chem',mw=mw)
             
     def get_volume(self):
+        '''
+        Return the volume of the solution.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: the volume of the solution, in L
+        '''
+        
         # if the composition has changed, recalculate the volume first
         if self.volume_update_required is True:
             self._update_volume()
@@ -298,13 +352,34 @@ class Solution:
         self.volume = unit(volume)
         
     def get_mass(self):
-        '''returns the total solution mass in kg'''
+        '''
+        Return the total mass of the solution.
+        
+        The mass is calculated each time this method is called.
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: the mass of the solution, in kg        
+        
+        '''
         total_mass = 0
         for item in self.components:
             total_mass+= self.get_amount(item,'kg')
         return total_mass.to('kg')
         
     def get_density(self):
+        '''
+        Return the density of the solution.
+        
+        Density is calculated from the mass and volume each time this method is called.
+        
+        Returns
+        -------
+        Quantity: The density of the solution.
+        '''
         return self.get_mass() / self.get_volume()
     
     def get_viscosity_relative(self):
