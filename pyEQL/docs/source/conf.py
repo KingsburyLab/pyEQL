@@ -35,9 +35,12 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    #'sphinx.ext.autosummary',
+    'sphinx.ext.autosummary',
     'numpydoc'
 ]
+
+# added by ryan to avoid "nonexisting document" errors during build
+numpydoc_class_members_toctree = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
