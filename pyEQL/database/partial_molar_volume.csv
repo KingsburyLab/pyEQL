@@ -1,0 +1,22 @@
+Name:	partial_molar_volume
+Description:	Partial molar volume
+Unit:	cm ** 3 / mol
+Reference:	"Durchschlag, H., Zipper, P., 1994. ""Calculation of the Partial Molal Volume of Organic Compounds and Polymers."" Progress in Colloid & Polymer Science (94), 20-39."
+Temperature:	25 degC
+Pressure:	1 atm
+Ionic Strength:	0
+Uncertainty:	
+Uncertainty Type:	
+Comment:	correction factor 5e-4 cm3/g-K
+	
+Key:	Value:
+H+	-3.8
+Na+	-5
+K+	5.2
+NH4+	14.6
+OH-	-0.2
+Cl-	21.6
+Br-	28.5
+I-	40
+HCO3-	27.2
+CO3-2	3.3
