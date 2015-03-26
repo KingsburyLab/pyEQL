@@ -7,9 +7,16 @@ Welcome to pyEQL's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   tutorial
-   contributing
-   chemistry
+    installation
+    tutorial
+    contributing
+    chemistry
+    database
+    class_solution
+    class_solute
+    internal
+    module_functions
+   
 

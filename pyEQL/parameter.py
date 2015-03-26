@@ -4,9 +4,9 @@ This module implements the Parameter() class, which is used to store
 values, units, uncertainties, and reference data for various quantities
 used throughout pyEQL.
 
-Created on Wed Jun 11 09:27:01 2014
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
 
-@author: ryan
 """
 
 # logging system
@@ -62,7 +62,7 @@ class Parameter:
     '''
     def __init__(self,name,magnitude,units='',**kwargs):
         '''
-        Parameters:
+        Parameters
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
@@ -92,7 +92,7 @@ class Parameter:
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
                     
-        Optional Keyword Arguments:
+        Optional Keyword Arguments
         --------------------------
         reference : str, optional
                     A string containing reference information documenting the source of
@@ -122,14 +122,14 @@ class Parameter:
                     A string containing additional notes pertaining to the context,
                     conditions, or assumptions that may restrict the use of 'value'
                     
-        Notes:
+        Notes
         -----
         In general, parameter values are assumed to be entered in fundamental 
         SI units (m, kg, s, etc.). The 'units' field is required to call attention 
         to this fact and provide a levelof error-checking in calculations involving
         the parameter.
         
-        Examples:
+        Examples
         --------
         # TODO fix this example
         >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
@@ -215,15 +215,26 @@ class Parameter:
         # TODO - temperature adjustment functions / parameters     
        
     def get_name(self):
-        return self.name
+        '''
+        Return the name of the parameter.
         
-    def test_print(self):
-        return 'This is a test of the parameter with value',self.value
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        str
+            The name of the parameter
+        '''
+        return self.name
             
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
-        '''return a temperature-adjusted paramter value and log any qualifying
-        assumptions
+        '''
+        Return the value of a parameter at the specified conditions.
         
+        Parameters
+        ----------        
         temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
@@ -237,6 +248,11 @@ class Parameter:
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
                     the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
         
+        Returns
+        -------
+        Quantity
+            The value of the parameter at the specified conditions.
+            
         '''
         # if the user does not specify conditions, return the value at base_temperature,
         # base_pressure, and/or base_ionic_strength
@@ -278,17 +294,41 @@ class Parameter:
         return self.value
         
     def get_magnitude(self,temperature=None,pressure=None,ionic_strength=None):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the magnitude of a parameter at the specified conditions.
+        
+        Parameters
+        ----------        
+        temperature : str, optional
+                    The temperature at which 'magnitude' was measured in degrees Celsius.
+                    Specify the temperature as a string containing the magnitude and
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+        pressure : str, optional
+                    The pressure at which 'magnitude' was measured in Pascals
+                    Specify the pressure as a string containing the magnitude and a
+                    unit. e.g. '101 kPa'.
+                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+        ionic_strength : str, optional
+                    The ionic strength of the solution in which 'magnitude' was measured. Specify
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
+        
+        Returns
+        -------
+        Number
+            The magnitude of the parameter at the specified conditions.
+            
         '''
         return self.get_value(temperature,pressure,ionic_strength).magnitude
         
     def get_units(self):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the units of a parameter
         '''
         return self.get_value().units
     
     def get_dimensions(self):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the dimensions of the parameter.
         '''
         return self.get_value().dimensionality
     

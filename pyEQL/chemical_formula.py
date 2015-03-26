@@ -5,9 +5,9 @@ input, output, and parsing of chemical formulas for pyEQL.
 
 The correct case must be used when specifying elements.
 
-Created on Wed Jun 11 14:38:05 2014
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
 
-@author: ryan
 """
 
 # logging system
@@ -35,21 +35,24 @@ def _check_formula(formula):
     
     Similar to Python's default list() function for strings.
     
-    Parameters:
+    Parameters
     ----------
-    :formula: str
-            String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
-            Valid molecular formulas must meet the following criteria:
-            1. Are composed of valid atomic symbols that start with capital letters
-            2. Contain no non-alphanumeric characters other than '(', ')',
-               '+', or '-'
-            3. If a '+' or '-' is present, the formula must contain ONLY '+' or
-               '-' (e.g. 'Na+-' is invalid) and the formula must end with either
-               a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
-            4. Formula must contain matching numbers of '(' and ')'
-            5. Open parentheses must precede closed parentheses  
-    
-    Examples:
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
+        
+        
+    Examples
+    --------
     >>> _check_formula('Fe2(SO4)3')
     ['Fe', '2', '(', 'S', 'O', '4', ')', '3']
     >>> _check_formula('C10H12')
@@ -190,8 +193,8 @@ def _remove_parentheses(formula):
     ['Fe', '2', 'S', '3', 'O', '12']
 
     
-    See Also:
-    ---------
+    See Also
+    --------
     _check_formula()
     '''
  
@@ -239,8 +242,8 @@ def _consolidate_formula(formula):
     Consolidate a formula into its simplest form, containing only one
     instance of each element and no parentheses
     
-    Examples:
-    ---------
+    Examples
+    --------
     >>> _consolidate_formula('CH3(CH2)6CH3')
     ['C', 8, 'H', 18]
     >>> _consolidate_formula('(Fe)2(SO4)4')
@@ -290,18 +293,18 @@ def is_valid_element(formula):
     '''
     Check whether a string is a valid atomic symbol
     
-    Parameters:
+    Parameters
     ----------
     :formula: str
             String representing an atomic symbol. First letter must be 
             uppercase, second letter must be lowercase.
     
-    Returns:
+    Returns
     -------
     bool
             True if the string is a valid atomic symbol. False otherwise.     
     
-    Examples:
+    Examples
     --------
     >>> is_valid_element('Cu')
     True
@@ -318,26 +321,27 @@ def is_valid_formula(formula):
     '''
     Check that a molecular formula is formatted correctly
     
-    Parameters:
+    Parameters
     ----------
-    :formula: str
-            String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
-            Valid molecular formulas must meet the following criteria:
-            1. Are composed of valid atomic symbols that start with capital letters
-            2. Contain no non-alphanumeric characters other than '(', ')',
-               '+', or '-'
-            3. If a '+' or '-' is present, the formula must contain ONLY '+' or
-               '-' (e.g. 'Na+-' is invalid) and the formula must end with either
-               a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
-            4. Formula must contain matching numbers of '(' and ')'
-            5. Open parentheses must precede closed parentheses  
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
     
-    Returns:
+    Returns
     -------
     bool
             True if the formula is valid. False otherwise.
             
-    Examples:
+    Examples
     --------
     >>> is_valid_formula('Fe2(SO4)3')
     True
@@ -348,8 +352,7 @@ def is_valid_formula(formula):
     >>> is_valid_formula('Na+-')
     False
     >>> is_valid_formula('C10h12')
-    False
-    
+    False 
     '''
     
     try:
@@ -363,13 +366,13 @@ def get_element_numbers(formula):
     '''
     Return the atomic numbers of the elements in a chemical formula
     
-    Parameters:
+    Parameters
     ----------
-    :formula: str
+    formula: str
             String representing a chemical formula
     
-    Examples:
-    ---------
+    Examples
+    --------
     >>> get_element_numbers('FeSO4')
     [26, 16, 8]
     
@@ -388,13 +391,13 @@ def get_element_names(formula):
     '''
     Return the names of the elements in a chemical formula
     
-    Parameters:
+    Parameters
     ----------
-    :formula: str
+    formula: str
             String representing a chemical formula
     
-    Examples:
-    ---------
+    Examples
+    --------
     >>> get_element_names('FeSO4')
     ['Iron', 'Sulfur', 'Oxygen']
     
@@ -420,7 +423,7 @@ def hill_order(formula):
     for acids, hydroxides, oxides, and ionic compounds. It follows the
     rule above no matter what.
     
-    Examples:
+    Examples
     --------
     >>> hill_order('CH2(CH3)4COOH')
     'C6H15O2'
@@ -486,14 +489,14 @@ def get_elements(formula):
     Return a list of strings representing the elements in a 
     molecular formula, with no duplicates.
     
-    Examples:
-    ---------
+    Examples
+    --------
     >>> get_elements('FeSO4')
     ['Fe', 'S', 'O']
     >>> get_elements('CH3(CH2)4(CO)3')
     ['C', 'H', 'O']
     
-    See Also:
+    See Also
     --------
     _check_formula()
     '''
@@ -511,7 +514,7 @@ def get_formal_charge(formula):
     '''
     Return the formal charge on a molecule based on its formula
     
-    Examples:
+    Examples
     --------
     >>> get_formal_charge('Na+')
     1
@@ -520,7 +523,7 @@ def get_formal_charge(formula):
     >>> get_formal_charge('Fe+++')
     3
     
-    See Also:
+    See Also
     --------
     _check_formula()
     
@@ -560,8 +563,8 @@ def get_molecular_weight(formula):
     >>> get_molecular_weight('CH3CH2CH3')
     44.09562
     
-    See Also:
-    ---------
+    See Also
+    --------
     _consolidate_formula()
     elements
     
@@ -594,7 +597,7 @@ def print_latex(formula):
     '''
     Print a LaTeX - formatted version of the formula
     
-    Examples:
+    Examples
     ---------
     >>> print_latex('Fe2SO4')
     Fe_2SO_4

@@ -8,6 +8,9 @@ Individual functions for activity coefficients are defined here so that they
 can be used independently of a pyEQL solution object. Normally, these functions
 are called from within the get_activity_coefficient method of the Solution class.
 
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 import math
 
@@ -30,22 +33,22 @@ logger.addFilter(unique)
 
 def _debye_parameter_B(temperature='25 degC'):
     '''
-    return the constant B used in the extended Debye-Huckel equation
+    Return the constant B used in the extended Debye-Huckel equation
     
-    Parameters:
+    Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
-    Notes:
+    Notes
     -----
-    The parameter B is equal to:[1]
+    The parameter B is equal to: [#]_
 
     .. math:: B = ( {8 \\pi N_A e^2 \\over 1000 \\epsilon k T} ) ^ {1 \\over 2}
     
-    .. [1] Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.    
+    .. [#] Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.    
     
-    Examples:
+    Examples
     --------
     >>> _debye_parameter_B() #doctest: +ELLIPSIS
     0.3291...
@@ -57,22 +60,22 @@ def _debye_parameter_B(temperature='25 degC'):
     return param_B.to_base_units()
     
 def _debye_parameter_activity(temperature='25 degC'):
-    '''(number) -> float
-    return the constant A for use in the Debye-Huckel limiting law (base 10)
+    '''
+    Return the constant A for use in the Debye-Huckel limiting law (base 10)
     
-    Parameters:
+    Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
-    Returns:
+    Returns
     -------
     Quantity          The parameter A for use in the Debye-Huckel limiting law (base e)
     
-    Notes:
+    Notes
     -----
      
-    The parameter A is equal to:[1]
+    The parameter A is equal to: [#]_
      
     ..  math::    
         A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
@@ -82,15 +85,17 @@ def _debye_parameter_activity(temperature='25 degC'):
     value returned by 2.303. The value is often given in base 10 terms (0.509 at
     25 degC) in older textbooks.
     
-    .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+    References
+    ----------
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
         
-    Examples:
+    Examples
     --------
     >>> _debye_parameter_activity() #doctest: +ELLIPSIS
     1.17499...
     
-    See Also:
+    See Also
     --------
     _debye_parameter_osmotic
     
@@ -103,36 +108,36 @@ def _debye_parameter_activity(temperature='25 degC'):
     return debyeparam.to('kg ** 0.5 / mol ** 0.5')
 
 def _debye_parameter_osmotic(temperature='25 degC'):
-    '''(number) -> float
-    return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
+    '''
+    Return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
     
-    Parameters:
+    Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
-    Notes:
+    Notes
     -----
     Not to be confused with the Debye-Huckel constant used for activity coefficients in the limiting law. 
     Takes the value 0.392 at 25 C.
-    This constant is calculated according to:[1][2]
+    This constant is calculated according to: [#]_ [#]_
 
      .. math:: A^{\\phi} = {1 \\over 3} A^{\\gamma}
     
-    .. [1] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
-    //J. Chemical Engineering Data// 33, pp.177-184.
+    References
+    ----------
+    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
+       //J. Chemical Engineering Data// 33, pp.177-184.
     
-    .. [2] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
-    and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
-        
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+       and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
     
-    Examples:
+    Examples
     --------
     >>> _debye_parameter_osmotic() #doctest: +ELLIPSIS
     0.3916... 
-  
-    
-    See Also:
+
+    See Also
     --------
     _debye_parameter_activity
     
@@ -144,18 +149,18 @@ def _debye_parameter_osmotic(temperature='25 degC'):
 
 def _debye_parameter_volume(temperature='25 degC'):
     '''
-    return the constant A_V, the Debye-Huckel limiting slope for apparent
+    Return the constant A_V, the Debye-Huckel limiting slope for apparent
     molar volume.
     
-    Parameters:
+    Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     
-    Notes:
+    Notes
     -----
-    Takes the value 1.8305 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
-    This constant is calculated according to:[1]
+    Takes the value 1.8305 cm ** 3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
+    This constant is calculated according to: [#]_
 
      .. math:: A_V = -2 A_{\\phi} R T [ {3 \\over \\epsilon} {{\\partial \\epsilon \\over \\partial p} \
      } - {{1 \\over \\rho}{\\partial \\rho \\over \\partial p} }]
@@ -169,21 +174,24 @@ def _debye_parameter_volume(temperature='25 degC'):
     of real data, but is required to give the correct result.
      
     The second term is equivalent to the inverse of the bulk modulus of water, which
-    is taken to be 2.2 GPa.[2]
+    is taken to be 2.2 GPa. [#]_
     
-    .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+    References
+    ----------
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
         
-    .. [2] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
+    .. [#] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
     
-    Examples:
+    Examples
     --------
     TODO
   
     
-    See Also:
+    See Also
     --------
     _debye_parameter_osmotic
+    
     '''
     
     # TODO - add partial derivatives to calculation
@@ -201,7 +209,8 @@ def _debye_parameter_volume(temperature='25 degC'):
     return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
     Parameters
     ----------
@@ -209,7 +218,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    str Quantity, optional
+    temperature : str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns
@@ -217,20 +226,23 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     float
          The mean molal (mol/kg) scale ionic activity coefficient of solute
 
-    See Also:
+    See Also
     --------
     _debye_parameter_activity
     
     Notes
     -----
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_ 
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 \sqrt I
     
     Valid only for I < 0.005
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
+    
     '''
     # check if this method is valid for the given ionic strength
     if not ionic_strength.magnitude <= 0.005:
@@ -241,7 +253,8 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     return math.exp(log_f)
 
 def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
     
     Parameters
     ----------
@@ -249,7 +262,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    str Quantity, optional
+    temperature : str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns
@@ -263,14 +276,17 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     
     Notes
     ------
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_ 
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 {\sqrt I \\over (1 + \sqrt I)}
     
     Valid for I < 0.1
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
+    
     '''
     # check if this method is valid for the given ionic strength
     if not ionic_strength.magnitude <= 0.1:
@@ -281,7 +297,8 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     return math.exp(log_f)
     
 def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Davies equation.
     
     Parameters
     ----------
@@ -289,7 +306,7 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
                     The charge on the solute, including sign. Defaults to +1 if not specified.
     ionic_strength : Quantity
                      The ionic strength of the parent solution, mol/kg
-    temperature :    str Quantity, optional
+    temperature : str Quantity, optional
                      String representing the temperature of the solution. Defaults to '25 degC' if not specified.
                   
     Returns
@@ -303,14 +320,17 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     
     Notes
     -----
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 ({\sqrt I \\over (1 + \sqrt I)} + 0.2 I)
     
     Valid for 0.1 < I < 0.5
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
+    
     '''
     # check if this method is valid for the given ionic strength
     if not ionic_strength.magnitude <= 0.5 and ionic_strength.magnitude >= 0.1:
@@ -320,60 +340,12 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     log_f = - _debye_parameter_activity(temperature).magnitude * formal_charge ** 2 * (ionic_strength.magnitude ** 0.5 / (1+ionic_strength.magnitude ** 0.5) - 0.2 * ionic_strength.magnitude)
     
     return math.exp(log_f)
-    
-def get_activity_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_formal_charge=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25*unit('degC')):
-    '''Return the activity coefficient of solute in the parent solution according to the modified TCPC model.
-    
-    Parameters:
-    ----------
-    ionic_strength : Quantity
-                        The ionic strength of the parent solution, mol/kg
-    S : float
-                        The solvation parameter for the parent salt. See Reference.
-    b : float
-                        The approaching parameter for the parent salt. See Reference.
-    n : float       
-                        The n parameter for the parent salt. See Reference.
-    formal_charge : int, optional           
-                        The charge on the solute, including sign. Defaults to +1 if not specified.
-    counter_formal_charge : int, optional           
-                        The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                        E.g. if the solute is Na+ and the salt is NaCl, counter_formal_charge = -1
-    stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                        E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-    counter_stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                        E.g. for Cl- in ZnCl2, stoich_coeff = 2
-    temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
-    
-    Returns:
-    -------
-    float
-        The mean molal (mol/kgL) scale ionic activity coefficient of solute
 
-    See Also:
-    --------
-    _debye_parameter_osmotic
-    
-    Notes:
-    ------
-    Valid for concentrated solutions up to saturation. Accuracy compares well with the Pitzer approach. See Reference [1] for a compilation of the appropriate parameters for a variety of commonly-encountered electrolytes.
-    
-    .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
-    '''
-    # compute the PDF parameter
-    PDH = - math.fabs(formal_charge * counter_formal_charge) * _debye_parameter_osmotic(temperature) * ( ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5) + 2/b * math.log(1 + b * ionic_strength ** 0.5))
-    # compute the SV parameter
-    SV = S / temperature.to('K') * ionic_strength  ** (2*n) / (stoich_coeff + counter_stoich_coeff)
-    # add and exponentiate to eliminate the log
-    return math.exp(PDH + SV)
-    
 def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
-    '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: Quantity
                     The ionic strength of the parent solution, mol/kg
@@ -397,12 +369,12 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
                     coefficient is assigned proper units of kg ** 0.5 / mol ** 0.5  after
                     entry.
     
-    Returns:
+    Returns
     -------
     float
         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless
     
-    Examples:
+    Examples
     --------  
     >>> get_activity_coefficient_pitzer(0.5*unit('mol/kg'),0.5*unit('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
     ￼0.61915...   
@@ -413,20 +385,22 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     NOTE: the examples below are for comparison with experimental and modeling data presented in
     the May et al reference below. 
     
-    10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725    
+    10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725
+    
     >>> get_activity_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.22595 ...
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.3011
+    
     >>> get_activity_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.30249 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.1653
+    
     >>> get_activity_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.16241 ...
-    
-    
-    References:
+      
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -443,7 +417,7 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     and Representation with an Ion Interaction (Pitzer) Model. 
     Journal of Chemical & Engineering Data, 55(2), 830–838. doi:10.1021/je900487a
     
-    See also:
+    See Also
     --------
     _debye_parameter_activity
     _pitzer_B_MX
@@ -468,9 +442,10 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     return math.exp(loggamma) 
     
 def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
-    '''Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
+    '''
+    Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: Quantity
                     The ionic strength of the parent solution, mol/kg
@@ -496,29 +471,33 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
                     coefficient is assigned proper units of kg ** 0.5 / mol ** 0.5  after
                     entry.
     
-    Returns:
+    Returns
     -------
     float
-        The apparent molar volume of the solute, cm **3 / mol
+        The apparent molar volume of the solute, cm ** 3 / mol
     
-    Examples:
+    Examples
     --------  
     NOTE: the example below is for comparison with experimental and modeling data presented in
     the Krumgalz et al reference below. 
     
     0.25 mol/kg CuSO4. Expected result (from graph) = 0.5 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     0.404...    
     
     1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),1.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     4.424...
     
     10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     50.286...
     
     20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(20.0*unit('mol/kg'),20.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     51.145...
     
@@ -526,11 +505,12 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     the Krumgalz et al reference below. 
     
     0.8 mol/kg NaF. Expected result = 0.03  
+    
     >>> get_apparent_volume_pitzer(0.8*unit('mol/kg'),0.8*unit('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
     0.22595 ...
     
     
-    References:
+    References
     ----------  
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
@@ -541,7 +521,7 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     Represented by Pitzer's Ion-Interaction Equations.
     Journal of Physical Chemical Reference Data, 25(2), 663-689.
     
-    See also:
+    See Also
     --------
     _debye_parameter_volume
     _pitzer_B_MX
@@ -574,7 +554,7 @@ def _pitzer_f1(x):
     
     .. math:: f(x) = 2 [ 1- (1+x) \exp(-x)] / x ^ 2
     
-    References:
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -596,7 +576,7 @@ def _pitzer_f2(x):
     
     .. math:: f(x) = -{2 \\over x ^ 2} [ 1 - ({1+x+ x^2 \\over 2}) \\exp(-x)] 
     
-    References:
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -618,7 +598,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     
     .. math:: B_MX = \\beta_0 + \\beta_1 f1(\\alpha_1 I ^ {0.5}) + \\beta_2 f2(\\alpha_2 I ^ {0.5})
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: number
                     The ionic strength of the parent solution, mol/kg
@@ -628,12 +608,12 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
                     Coefficients for the Pitzer model. These ion-interaction parameters are
                     specific to each salt system.
                     
-    Returns:
+    Returns
     -------
     float
             The B_MX parameter for the Pitzer ion interaction model.
     
-    References:
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -642,7 +622,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
     Journal of Chemical and Engineering Data, (2), 177–184.
     
-    See Also:
+    See Also
     --------
     _pitzer_f1
     
@@ -656,7 +636,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    
 #    .. math:: B_\gamma = [ \beta_1 f2(\alpha_1 I ^ 0.5) + beta_2 f2(\alpha_2 I^0.5) ] / I
 #    
-#    Parameters:
+#    Parameters
 #    ----------
 #    ionic_strength: number
 #                    The ionic strength of the parent solution, mol/kg
@@ -666,12 +646,12 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #                    Coefficients for the Pitzer model. These ion-interaction parameters are
 #                    specific to each salt system.
 #                    
-#    Returns:
+#    Returns
 #    -------
 #    float
 #            The B^gamma parameter for the Pitzer ion interaction model.
 #    
-#    References:
+#    References
 #    ----------
 #    Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
 #    Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -680,7 +660,7 @@ def _pitzer_B_MX(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
 #    Journal of Chemical and Engineering Data, (2), 177–184.
 #    
-#    See Also:
+#    See Also
 #    --------
 #    _pitzer_f2
 #    
@@ -698,7 +678,7 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
     
     .. math:: B^\\Phi = B^\\gamma - B_{MX}
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: number
                     The ionic strength of the parent solution, mol/kg
@@ -708,12 +688,12 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
                     Coefficients for the Pitzer model. These ion-interaction parameters are
                     specific to each salt system.
                     
-    Returns:
+    Returns
     -------
     float
             The B^Phi parameter for the Pitzer ion interaction model.
     
-    References:
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -736,19 +716,19 @@ def _pitzer_B_phi(ionic_strength,alpha1,alpha2,beta0,beta1,beta2):
 #    
 #    .. math:: C_MX = C^\Phi / 2 \sqrt( \abs(z_+ z_-))
 #    
-#    Parameters:
+#    Parameters
 #    ----------
 #    C_phi: number
 #                    The C_phi paramter for the Pitzer ion interaction model.
 #    z_cation, z_anion: int
 #                    The formal charge on the cation and anion, respectively
 #                    
-#    Returns:
+#    Returns
 #    -------
 #    float
 #            The C_MX parameter for the Pitzer ion interaction model.
 #    
-#    References:
+#    References
 #    ----------       
 #    Kim, H., & Jr, W. F. (1988). 
 #    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
@@ -771,7 +751,7 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     + {m (2 \\nu_+ \\nu_-) \\over (\\nu_+ + \\nu_-)} (B_{MX} + B_{MX}^\\Phi) + {m^2(3 (\\nu_+ \\nu_-)^{1.5} \\over (\\nu_+ + \\nu_-))} C_{MX}^\\Phi    
     
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: Quantity
                     The ionic strength of the parent solution, mol/kg
@@ -788,12 +768,12 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 kg ** 0.5 / mol ** 0.5 and considered independent of temperature and pressure
                     
-    Returns:
+    Returns
     -------
     float
             The natural logarithm of the binary activity coefficient calculated by the Pitzer ion interaction model.
     
-    References:
+    References
     ----------       
     Kim, H., & Jr, W. F. (1988). 
     Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
@@ -811,60 +791,10 @@ def _pitzer_log_gamma(ionic_strength,molality,B_MX,B_phi,C_phi,z_cation,z_anion,
     
     return ln_gamma
 
-def get_osmotic_coefficient_TCPC(ionic_strength,S,b,n,formal_charge=1,counter_formal_charge=-1,stoich_coeff=1,counter_stoich_coeff=1,temperature=25):
-    '''Return the osmotic coefficient of solute in the parent solution according to the modified TCPC model.
-    
-    Parameters:
-    ----------
-    ionic_strength : number
-                        The ionic strength of the parent solution, mol/kg
-    S : float
-                        The solvation parameter for the parent salt. See Reference.
-    b : float
-                        The approaching parameter for the parent salt. See Reference.
-    n : float       
-                        The n parameter for the parent salt. See Reference.
-    formal_charge : int, optional           
-                        The charge on the solute, including sign. Defaults to +1 if not specified.
-    counter_formal_charge : int, optional           
-                        The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                        E.g. if the solute is Na+ and the salt is NaCl, counter_formal_charge = -1
-    stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                        E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-    counter_stoich_coeff : int, optional
-                        The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                        E.g. for Cl- in ZnCl2, stoich_coeff = 2
-    temperature : float or int, optional
-                        The solution temperature in degrees Celsius. 
-                        Defaults to 25 degrees if omitted.
-    Returns:
-    -------
-    float
-        The osmotic coefficient of the solute
-
-    See Also:
-    --------
-    _debye_parameter_osmotic
-    get_ionic_strength
-    
-    Notes:
-    ------
-    Valid for concentrated solutions up to saturation. Accuracy compares well with the Pitzer approach. See Reference [1] for a compilation of the appropriate parameters for a variety of commonly-encountered electrolytes.
-    
-    .. [1] Ge, Xinlei, Wang, Xidong, Zhang, Mei, and Seetharaman, Seshadri. "Correlation and Prediction of Activity and Osmotic Coefficients of Aqueous Electrolytes at 298.15 K by the Modified TCPC Model." J. Chemical Engineering Data 52, pp.538-547, 2007.
-    '''
-    # compute the 2nd term
-    term2 = - math.fabs(formal_charge * counter_formal_charge) * _debye_parameter_osmotic(temperature) * ionic_strength ** 0.5 / (1 + b * ionic_strength ** 0.5)
-    # compute the 3rd term
-    term3 = S / (kelvin(temperature) * ( stoich_coeff + counter_stoich_coeff)) * 2 * n / (2 * n + 1) * ionic_strength  ** (2 * n)
-    # add and return the osmotic coefficient
-    return 1 - term2 + term3
-    
 def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''Return the osmotic coefficient of water in an electrolyte solution according to the Pitzer model.
     
-    Parameters:
+    Parameters
     ----------
     ionic_strength: Quantity
                     The ionic strength of the parent solution, mol/kg
@@ -888,12 +818,12 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
                     coefficient is assigned proper units of kg ** 0.5 / mol ** 0.5  after
                     entry.
     
-    Returns:
+    Returns
     -------
     Quantity
         The osmotic coefficient of water, dimensionless
     
-    Examples:
+    Examples
     --------
     Experimental value according to Beyer and Stieger reference is 1.3550
     
@@ -909,18 +839,21 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     the May et al reference below. 
     
     10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.62    
+    
     >>> get_osmotic_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6143 ...
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.7
+    
     >>> get_osmotic_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6925 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.555
+    
     >>> get_osmotic_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.5556 ...
     
-    References:
+    References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
@@ -937,7 +870,7 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     and Representation with an Ion Interaction (Pitzer) Model. 
     Journal of Chemical & Engineering Data, 55(2), 830–838. doi:10.1021/je900487a
     
-    See also:
+    See Also
     --------
     _debye_parameter_activity
     _pitzer_B_MX

@@ -50,3 +50,9 @@ a solution containing 'ClNa', pyEQL would still match it with parameters for
 'NaCl'.
 
 Currently pyEQL **does not distinguish between isomers**. 
+
+API Documentation (chemical_formula.py)
+=======================================
+
+.. automodule:: pyEQL.chemical_formula
+   :members:

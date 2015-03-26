@@ -3,6 +3,10 @@ pyEQL solute class
 
 This file contains functions and methods for managing properties of 
 individual solutes
+
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 
 # the pint unit registry
@@ -18,12 +22,12 @@ import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
-# functions to manage importing paramters from database files and making them accessible to pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
+# import the parameters database
+from pyEQL import paramsDB as db
 
 class Solute:
-    '''represent each chemical species as an object containing its formal charge, 
+    '''
+    represent each chemical species as an object containing its formal charge, 
     transport numbers, concentration, activity, etc. 
     
     '''
@@ -65,13 +69,10 @@ class Solute:
             quantity = unit(amount)
             
             self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)                
-                        
-            # TODO - deprecate in favor of the parameter module
-            self.parameters_TCPC={}
-            
+
             # trigger the function that checks whether parameters already exist for this species, and if not,
             # searches the database files and creates them
-            database.search_parameters(self.formula)
+            db.search_parameters(self.formula)
 
     def get_parameter(self,parameter,temperature=None,pressure=None,ionic_strength=None):
         '''
@@ -79,101 +80,90 @@ class Solute:
         
         '''
         # Search for this solute in the database of parameters
-        if self.formula in db:
-            # loop over the parameters in the python set associated with this solute species to find the one 
-            #we're looking for
         
-            # TODO - handle the case where multiple parameters with same name exist. Need function
-            # to compare specified conditions and choose the most appropriate parameter
-            found = False
-            
-            for item in db[self.formula]:
-                if item.get_name() == parameter:
-                    found = True
-                    return item.get_value(temperature,pressure,ionic_strength)
-            
-            # Log an error if the parameter was not found
-            if found == False:
-                logger.error('Required parameter %s not found for species %s.' % (parameter,self.formula))
-        else:
-            logger.error('No entry for species %s in parameters database' % self.formula)
-            return None
+        # TODO - handle the case where multiple parameters with same name exist. Need function
+        # to compare specified conditions and choose the most appropriate parameter
+        param = db.get_parameter(self.formula,parameter)
+        
+        return param.get_value(temperature,pressure,ionic_strength)
                 
     def add_parameter(self,name,magnitude,units='',**kwargs):
-        '''manually insert a parameter into the parameters database for a solute
+        '''
+        Add a parameter to the parameters database for a solute
         
         See pyEQL.parameters documentation for a description of the arguments
         
         '''
         import pyEQL.parameter as pm
         newparam = pm.Parameter(name,magnitude,units,**kwargs)
-        db[self.get_name()].add(newparam)
+        db.add_parameter(self.get_name(),newparam)
         
-    # TODO - deprecate in favor of the parameter module
-    def set_parameters_TCPC(self,S,b,n,valence=1,counter_valence=-1,stoich_coeff=1,counter_stoich_coeff=1):
-        '''Use this function to store parameters for the TCPC activity model
-        
-        Parameters
-        ----------
-        S : float
-                        The solvation parameter for the parent salt. See Reference.
-        b : float
-                            The approaching parameter for the parent salt. See Reference.
-        n : float       
-                            The n parameter for the parent salt. See Reference.
-        valence : int, optional           
-                            The charge on the solute, including sign. Defaults to +1 if not specified.
-        counter_valence : int, optional           
-                            The charge on the solute's complementary ion, including sign. Defaults to -1 if not specified.
-                            E.g. if the solute is Na+ and the salt is NaCl, counter_valence = -1
-        stoich_coeff : int, optional
-                            The stoichiometric coefficient of the solute in its parent salt. Defaults to1 if not specified.
-                            E.g. for Zn+2 in ZnCl2, stoich_coeff = 1
-        counter_stoich_coeff : int, optional
-                            The stoichiometric coefficient of the solute's complentary ion in its parent salt. Defaults to 1 if not specified.
-                            E.g. for Cl- in ZnCl2, stoich_coeff = 2
-        
-        Returns
-        -------
-        No return value. Parameter values are stored in a dictionary.
-        
-        See Also
-        get_parameters_TCPC
-        
-        '''
-        self.parameters_TCPC={'S':S,'b':b,'n':n,'z_plus':valence,'z_minus':counter_valence,'nu_plus':stoich_coeff,'nu_minus':counter_stoich_coeff}
-    
-    # TODO - deprecate in favor of the parameter module
-    def get_parameters_TCPC(self,name):
-        '''Retrieve modeling parameters used for activity coefficient modeling
-        
-        Parameters
-        ----------
-        name : str
-                    String identifying the specific parameter to be retrieved. Must correspond to a key in the 'name' dictionary
-        
-        Returns
-        -------
-        The parameter stored at key 'name' in the 'model' dictionary
-        
-        '''
-        return self.parameters_TCPC[name]
-    
-    
     def get_name(self):
+        '''
+        Return the name (formula) of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        str
+            The chemical formula of the solute
+            
+        '''
         return self.formula
         
     def get_formal_charge(self):
+        '''
+        Return the formal charge of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        int
+            The formal charge of the solute
+            
+        '''
         return self.charge
         
     def get_molecular_weight(self):
+        '''
+        Return the molecular weight of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The molecular weight of the solute, in g/mol
+        '''
         return self.mw
     
     def get_moles(self):
+        '''
+        Return the moles of solute in the solution
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The number of moles of solute
+            
+        '''
         return self.moles
     
     def add_moles(self,amount,volume,solvent_mass):
-        '''Increase or decrease the amount of a substance present in the solution
+        '''
+        Increase or decrease the amount of a substance present in the solution
         
         Parameters
         ----------
@@ -186,13 +176,23 @@ class Solute:
         self.moles += quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)
     
     def set_moles(self,amount,volume,solvent_mass):
+        '''
+        Set the amount of a substance present in the solution
+        
+        Parameters
+        ----------
+        amount: str quantity
+                Desired amount of substance. Must be greater than or equal to 
+                zero and given in mass or substance units.
+        
+        '''
         quantity = unit(amount)
         self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
   
     def get_molar_conductivity(self,temperature=25*unit('degC')):
         # TODO - requires diffusion coefficient which may not be present
-        '''(float,int,number) -> float
-        Calculate the molar (equivalent) conductivity at infinte dilution for a species
+        '''
+        Calculate the molar (equivalent) conductivity for a solute
         
         Parameters
         ----------
@@ -206,20 +206,23 @@ class Solute:
         
         Notes
         -----
-        Molar conductivity is calculated from the Nernst-Einstein relation:[1]_
+        Molar conductivity is calculated from the Nernst-Einstein relation [#]_
             
-        .. math:: \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+        .. math::
         
+            \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                
         Note that the diffusion coefficient is strongly variable with temperature.
         
         References
         ----------
         
-        .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+        .. [#] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
         
-        TODO Examples
-#             --------
-#             
+        Examples
+        --------
+        TODO
+             
         '''
         diffusion_coefficient = self.get_parameter('diffusion_coefficient')
         
@@ -228,7 +231,8 @@ class Solute:
         return molar_cond.to('mS / cm / (mol/L)')
             
     def get_mobility(self,temperature=25*unit('degC')):
-        '''Return the ionic mobility of a species
+        '''
+        Calculate the ionic mobility of the solute
         
         Parameters
         ----------
@@ -243,13 +247,15 @@ class Solute:
         Notes
         -----
         This function uses the Einstein relation to convert a diffusion coefficient
-        into an ionic mobility [1]_
+        into an ionic mobility [#]_
         
-        .. math:: \mu_i = {F |z_i| D_i \over RT}
+        .. math::
+            
+            \mu_i = {F |z_i| D_i \over RT}
         
         References
         ----------
-        .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+        .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
         '''
         mobility = unit.N_A * unit.e * abs(self.get_formal_charge()) * self.get_parameter('diffusion_coefficient') / (unit.R * temperature)

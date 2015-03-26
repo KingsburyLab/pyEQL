@@ -14,6 +14,9 @@ WARNING     -   assumptions or limitations of module output
 ERROR       -   Module could not complete a task due to invalid input or other problem
 CRITICAL    -   not used
 
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 import logging
 # define a log filter to emit only unique log messages

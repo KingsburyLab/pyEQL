@@ -1,6 +1,9 @@
 '''
 pyEQL functions that take Solution objects as inputs or return Solution objects
 
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 
 ## Dependencies
@@ -9,8 +12,9 @@ import math
 
 # internal pyEQL imports
 import pyEQL
-import pyEQL.database as database
-from pyEQL.database import parameters_database as db
+
+# import the parameters database
+from pyEQL import paramsDB as db
 
 # the pint unit registry
 from pyEQL import unit
@@ -26,7 +30,7 @@ unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
 def gibbs_mix(Solution1, Solution2):
-    '''(Solution, Solution) -> float
+    '''
     Return the Gibbs energy change associated with mixing two solutions
 
     Parameters
@@ -43,7 +47,7 @@ def gibbs_mix(Solution1, Solution2):
     Notes
     -----
     
-    The Gibbs energy of mixing is calculated as follows: [1]_
+    The Gibbs energy of mixing is calculated as follows: [#]_
         
     .. math::
         \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
@@ -59,8 +63,8 @@ def gibbs_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-    A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.// Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -82,7 +86,7 @@ def gibbs_mix(Solution1, Solution2):
     return (unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to('J')
 
 def entropy_mix(Solution1, Solution2):
-    '''(Solution, Solution) -> float
+    '''
     Return the ideal mixing entropy associated with mixing two solutions
 
     Parameters
@@ -99,7 +103,7 @@ def entropy_mix(Solution1, Solution2):
     Notes
     -----
     
-    The ideal entropy of mixing is calculated as follows:[1]_
+    The ideal entropy of mixing is calculated as follows:[#]_
         
     .. math::
         \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
@@ -115,8 +119,8 @@ def entropy_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-    A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.// Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -139,7 +143,8 @@ def entropy_mix(Solution1, Solution2):
     return (unit.R * temperature.to('K') * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to('J')
 
 def donnan_eql(solution,fixed_charge):
-    ''' Return a solution object in equilibrium with fixed_charge
+    '''
+    Return a solution object in equilibrium with fixed_charge
     
     Parameters
     ----------
@@ -161,7 +166,7 @@ def donnan_eql(solution,fixed_charge):
     
     The general equation representing the equilibrium between an external 
     electrolyte solution and an ion-exchange medium containing fixed charges
-    is:[1]_
+    is:[#]_
     
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
@@ -192,8 +197,8 @@ def donnan_eql(solution,fixed_charge):
     References
     ----------
     
-    .. [1] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
-    Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
+    .. [#] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
+           Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     
     Examples
@@ -222,11 +227,10 @@ def donnan_eql(solution,fixed_charge):
     
     # get the partial molar volume for the salt, or calculate it from the ions
     # TODO - consider how to incorporate pitzer parameters
-    if database.has_parameter(salt.formula,'partial_molar_volume'):
-            for item in db[salt.formula]:
-                if item.get_name() =='partial_molar_volume':              
-                    molar_volume = item.get_value()
-    elif database.has_parameter(salt.cation,'partial_molar_volume') and database.has_parameter(salt.anion,'partial_molar_volume'):
+    if db.has_parameter(salt.formula,'partial_molar_volume'):
+            item = db.get_parameter(salt.formula,'partial_molar_volume')  
+            molar_volume = item.get_value()
+    elif db.has_parameter(salt.cation,'partial_molar_volume') and db.has_parameter(salt.anion,'partial_molar_volume'):
         cation_vol = solution.get_solute(salt.cation).get_parameter('partial_molar_volume')
         anion_vol = solution.get_solute(salt.anion).get_parameter('partial_molar_volume')
         molar_volume = cation_vol + anion_vol
@@ -303,7 +307,9 @@ def donnan_eql(solution,fixed_charge):
     return donnan_soln
 
 def mix(Solution1, Solution2):
-    '''(Solution, Solution) -> Solution
+    '''
+    Mix two solutions together    
+    
     Returns a new Solution object that results from the mixing of Solution1
     and Solution2
     

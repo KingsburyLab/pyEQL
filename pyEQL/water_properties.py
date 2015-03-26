@@ -4,6 +4,9 @@ pyEQL water properties library
 This file contains functions for retrieving various physical properties
 of water substance
 
+:copyright: 2013-2015 by Ryan S. Kingsbury
+:license: LGPL, see LICENSE for more details.
+
 '''
 import math
 
@@ -23,11 +26,10 @@ logger.addFilter(unique)
 def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     # TODO add pressure??
     # TODO more up to date equation??
-    '''(number) -> float
-    
+    '''    
     Return the density of water in kg/m3 at the specified temperature and pressure.
     
-    Parameters:
+    Parameters
     ----------
     temperature : float or int, optional
                   The temperature in Celsius. Defaults to 25 degrees if not specified.
@@ -35,14 +37,14 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
                   The ambient pressure of the solution in Pascals (N/m2). 
                   Defaults to atmospheric pressure (101325 Pa) if not specified.
     
-    Returns:
+    Returns
     -------
     float
             The density of water in kg/m3.
     
-    Notes:
+    Notes
     -----
-    Based on the following empirical equation reported in [1]
+    Based on the following empirical equation reported in [#]_
     
     
     .. math:: \\rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ {1.5}
@@ -50,9 +52,9 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     Where T is the temperature in Celsius.
     
     
-    ..[1] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
+    .. [#] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
     
-    Examples:
+    Examples
     --------
     >>> water_density(25*unit('degC')) #doctest: +ELLIPSIS
     <Quantity(997.0415, 'kilogram / meter ** 3')>
@@ -67,11 +69,10 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     return density.to('kg/m**3')
     
 def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
-    '''(number) -> float
-    
+    '''    
     Return the specific weight of water in N/m3 at the specified temperature and pressure.
     
-    Parameters:
+    Parameters
     ----------
     temperature : Quantity, optional
                   The temperature. Defaults to 25 degC if omitted.
@@ -79,17 +80,17 @@ def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
                   The ambient pressure of the solution. 
                   Defaults to atmospheric pressure (1 atm) if omitted.
                   
-    Returns:
+    Returns
     -------
     Quantity
             The specific weight of water in N/m3.  
     
-    Examples:
+    Examples
     --------
     >>> water_specific_weight() #doctest: +ELLIPSIS
     <Quantity(9777.637025975, 'newton / meter ** 3')>
             
-    See Also:
+    See Also
     --------
     water_density
     
@@ -103,7 +104,7 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     Return the dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
     at the specified temperature.
     
-    Parameters:
+    Parameters
     ----------
     temperature : Quantity, optional
                   The temperature. Defaults to 25 degC if omitted.
@@ -111,21 +112,23 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
                   The ambient pressure of the solution. 
                   Defaults to atmospheric pressure (1 atm) if omitted.
     
-    Returns:
+    Returns
     -------
     Quantity 
                 The dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
                   
-    Notes:
+    Notes
     -----
-    Implements the international equation for viscosity of water as specified by NIST[1]
+    Implements the international equation for viscosity of water as specified by NIST [#]_
     
     Valid for 273 < temperature < 1073 K and 0 < pressure < 100,000,000 Pa
     
-    .. [1] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
+    References
+    ----------
+    .. [#] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
         J. Phys. Chem. Ref. Data 13(1), 1984.http://www.nist.gov/data/PDFfiles/jpcrd243.pdf
     
-    Examples:
+    Examples
     --------
     >>> water_viscosity_dynamic(20*unit('degC')) #doctest: +ELLIPSIS
     <Quantity(0.000998588610804179, 'kilogram / meter / second')>
@@ -189,7 +192,7 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
     Return the kinematic viscosity of water in m2/s = Stokes
     at the specified temperature.
     
-    Parameters:
+    Parameters
     ----------
     temperature : Quantity, optional
                   The temperature. Defaults to 25 degC if omitted.
@@ -197,17 +200,17 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
                   The ambient pressure of the solution. 
                   Defaults to atmospheric pressure (1 atm) if omitted.
                   
-    Returns:
+    Returns
     -------
     Quantity
             The kinematic viscosity of water in Stokes (m2/s)
     
-    Examples:
+    Examples
     --------
     >>> water_viscosity_kinematic()  #doctest: +ELLIPSIS
     <Quantity(8.899146003595295e-07, 'meter ** 2 / second')>
             
-    See Also:
+    See Also
     --------
     water_viscosity_dynamic
     water_density
@@ -219,34 +222,35 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
     
 
 def water_dielectric_constant(temperature=25*unit('degC')):
-    '''(number) -> float
-    
+    '''    
     Return the dielectric constant of water at the specified temperature.
     
-    Parameters:
+    Parameters
     ----------
     temperature : Quantity, optional
                   The temperature. Defaults to 25 degC if omitted.
                   
-    Returns:
+    Returns
     -------
     float
             The dielectric constant (or permittivity) of water relative to the
             permittivity of a vacuum. Dimensionless.
     
-    Notes:
+    Notes
     -----
     This function implements a quadratic fit of measured permittivity data as
-    reported in the CRC Handbook[1]. The parameters given are valid over the
+    reported in the CRC Handbook [#]_. The parameters given are valid over the
     range 273 K to 372 K. Permittivity should not be extrapolated beyond this
     range.
     
     .. math:: \\epsilon(T) = a + b T + c T^2
     
-    .. [1] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
+    References
+    ----------
+    .. [#] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
             Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.
     
-    Examples:
+    Examples
     --------
     >>> water_dielectric_constant(unit('20 degC')) #doctest: +ELLIPSIS
     80.15060...
