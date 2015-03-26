@@ -215,12 +215,26 @@ class Parameter:
         # TODO - temperature adjustment functions / parameters     
        
     def get_name(self):
+        '''
+        Return the name of the parameter.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        str
+            The name of the parameter
+        '''
         return self.name
             
     def get_value(self,temperature=None,pressure=None,ionic_strength=None):
-        '''return a temperature-adjusted paramter value and log any qualifying
-        assumptions
+        '''
+        Return the value of a parameter at the specified conditions.
         
+        Parameters
+        ----------        
         temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
@@ -234,6 +248,11 @@ class Parameter:
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
                     the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
         
+        Returns
+        -------
+        Quantity
+            The value of the parameter at the specified conditions.
+            
         '''
         # if the user does not specify conditions, return the value at base_temperature,
         # base_pressure, and/or base_ionic_strength
@@ -275,17 +294,41 @@ class Parameter:
         return self.value
         
     def get_magnitude(self,temperature=None,pressure=None,ionic_strength=None):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the magnitude of a parameter at the specified conditions.
+        
+        Parameters
+        ----------        
+        temperature : str, optional
+                    The temperature at which 'magnitude' was measured in degrees Celsius.
+                    Specify the temperature as a string containing the magnitude and
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+        pressure : str, optional
+                    The pressure at which 'magnitude' was measured in Pascals
+                    Specify the pressure as a string containing the magnitude and a
+                    unit. e.g. '101 kPa'.
+                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+        ionic_strength : str, optional
+                    The ionic strength of the solution in which 'magnitude' was measured. Specify
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
+        
+        Returns
+        -------
+        Number
+            The magnitude of the parameter at the specified conditions.
+            
         '''
         return self.get_value(temperature,pressure,ionic_strength).magnitude
         
     def get_units(self):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the units of a parameter
         '''
         return self.get_value().units
     
     def get_dimensions(self):
-        '''return the temperature-adjusted magnitude of the parameter
+        '''
+        Return the dimensions of the parameter.
         '''
         return self.get_value().dimensionality
     

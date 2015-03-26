@@ -33,13 +33,14 @@ logger.addFilter(unique)
 
 
 class Solution:
-    '''Class representing the properties of a solution. Instances of this class 
+    '''
+    Class representing the properties of a solution. Instances of this class 
     contain information about the solutes, solvent, and bulk properties.
     
     Parameters
     ----------
     solutes : list of lists, optional
-                See add_solute() documentation for formatting of this list
+                See add_solute() documentation for formatting of this list.
                 Defaults to empty (pure solvent) if omitted
     volume : str, optional
                 Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
@@ -57,43 +58,24 @@ class Solution:
     
     Returns
     -------
-    A Solution object.
+    Solution
+        A Solution object.
     
     Examples
     --------
-    # Defining a 0.5M NaCl solution
-    >>> solutes = [['Na+',23,0.0115],['Cl-',35,0.0175]]
-    >>> solvent = ['H2O',18,1]
-    >>> my_solution = Solution(solutes,solvent)
-    >>> print(my_solution)
-    Components: ['Na+', 'H2O', 'Cl-']
-    Volume: 1.0290000000000001L
-    Density: 1000 kg/m3
-    
+    >>> s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']],temperature='20 degC',volume='500 mL')
+    >>> print(s1)
+    Components: 
+    ['H2O', 'Cl-', 'H+', 'OH-', 'Na+']
+    Volume: 0.5 l
+    Density: 1.0383030844030992 kg/l
     
     See Also
     --------
     add_solute
     
     '''
-    
-    '''THE PLAN FOR SOLUTION INIT
-    A) Solvent: specify mass and bulk density Solutes: amount per mass units
-    Calculate total solution volume
-    
-    OR 
-    
-    B) Solvent: total solution volume and density. Solutes: amount per volume units
-    Calculate solvent mass
-    
-    conductivity is calculated from solutes/database and can be directly set with a method
-    When solvent=H2O, pH is calculated through speciation / reaction and can be directly set with a method
-    
-    temperature is always set as a bulk property
-    
-    
-    
-    '''
+
     def __init__(self,solutes=[],**kwargs):
         
         # initialize the volume
@@ -224,6 +206,10 @@ class Solution:
         return self.components[i]
     
     def get_solvent(self):
+        '''
+        Return the solvent object.
+        
+        '''
         return self.components[self.solvent_name]
     
     def get_temperature(self):
@@ -436,17 +422,19 @@ class Solution:
         Notes
         -----
         The calculation is based on a model derived from the Eyring equation
-        and presented in [1]_
+        and presented in [#]_
         
-        .. math:: \\ln \\nu = \\ln {\\nu_w MW_w \over \sum_i x_i MW_i } + \
-        15 x_+^2 + x_+^3  \delta G^*_{123} + 3 x_+ \delta G^*_{23} (1-0.05x_+)
+        .. math:: 
+            
+            \\ln \\nu = \\ln {\\nu_w MW_w \over \sum_i x_i MW_i } +
+            15 x_+^2 + x_+^3  \delta G^*_{123} + 3 x_+ \delta G^*_{23} (1-0.05x_+)
         
         Where:
         
         .. math:: \delta G^*_{123} = a_o + a_1 (T)^{0.75}
         .. math:: \delta G^*_{23} = b_o + b_1 (T)^{0.5}
         
-        In which `\\nu` is the kinematic viscosity, MW is the molecular weight,
+        In which :math: `\\nu` is the kinematic viscosity, MW is the molecular weight,
         `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
         
         The a and b fitting parameters for a variety of common salts are included in the
@@ -454,9 +442,9 @@ class Solution:
         
         References
         ----------  
-        .. [1] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
-        of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
-        Fluid Phase Equilib. 2013, 358, 44–49.
+        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
+               of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
+               Fluid Phase Equilib. 2013, 358, 44–49.
                 
         See Also
         --------
@@ -524,22 +512,25 @@ class Solution:
         -----
         Conductivity is calculated by summing the molar conductivities of the respective
         solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion models [1]_ [2]_
+        This approach is used in PHREEQC and Aqion models [#]_ [#]_
         
-        .. math:: EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+        .. math:: 
+        
+            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
         
         Where:
         
-        .. math:: \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
+        .. math:: 
+        
+            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
         
         Note: PHREEQC uses the molal rather than molar concentration according to
-        <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm>
+        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
 
         References
         ----------
-        .. [1] <http://www.aqion.de/site/77>        
-        .. [2] <http://www.hydrochemistry.eu/exmpls/sc.html>
-                
+        .. [#] http://www.aqion.de/site/77
+        .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
         
         See Also
         --------
@@ -584,7 +575,7 @@ class Solution:
                 
         Notes
         -----
-        Osmotic pressure is calculated based on the water activity [1]_ [2]_ :
+        Osmotic pressure is calculated based on the water activity [#]_ [#]_ :
         
         .. math:: \\Pi = {RT \\over V_w} \ln a_w
         
@@ -594,9 +585,9 @@ class Solution:
                 
         References
         ----------
-        .. [1] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification. Royal Society of Chemistry, 2004, p. 10.
+        .. [#] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification. Royal Society of Chemistry, 2004, p. 10.
         
-        .. [2] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
+        .. [#] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
         
         Examples
         --------
@@ -620,8 +611,9 @@ class Solution:
 ## Concentration  Methods        
     
     def p(self,solute,activity=True):
-        ''' (number) -> float
+        '''
         Return the negative log of the activity of solute.
+        
         Generally used for expressing concentration of hydrogen ions (pH)
         
         Parameters
@@ -640,7 +632,7 @@ class Solution:
             
         Examples
         --------
-
+        TODO
         
         '''
         if activity is True:
@@ -649,7 +641,8 @@ class Solution:
             return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
 
     def get_amount(self,solute,units):
-        '''returns the amount of 'solute' in the parent solution
+        '''
+        Return the amount of 'solute' in the parent solution
        
         Parameters
         ----------
@@ -691,7 +684,8 @@ class Solution:
             return None
 
     def add_amount(self,solute,amount):
-        '''Adds the amount of 'solute' to the parent solution.
+        '''
+        Add the amount of 'solute' to the parent solution.
        
         Parameters
         ----------
@@ -765,7 +759,8 @@ class Solution:
                 self.volume_update_required = True
 
     def set_amount(self,solute,amount):
-        '''Sets the amount of 'solute' in the parent solution.
+        '''
+        Set the amount of 'solute' in the parent solution.
        
         Parameters
         ----------
@@ -843,9 +838,8 @@ class Solution:
     
     #TODO - figure out how best to integrate with pint / units
     def get_mole_fraction(self,solute):
-        '''(Solute) -> float
+        '''
         Return the mole fraction of 'solute' in the solution
-        
         
         Parameters
         ----------
@@ -867,15 +861,46 @@ class Solution:
  
         Examples
         --------
-        TBD
+        TODO
         
         '''
         return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute())).magnitude
     
     def get_moles_solvent(self):
+        '''
+        Return the moles of solvent present in the solution
+        
+        Parameters
+        ----------
+        None
+    
+        Returns
+        -------
+        Quantity
+            The moles of solvent in the solution.
+        
+        '''
+        
         return self.get_amount(self.solvent_name,'mol')
     
     def get_salt(self):
+        '''
+        Match ions in the solution to a parent salt.
+        
+        Parameters
+        ----------
+        None
+    
+        Returns
+        -------
+        Salt
+            Salt object containing information about the parent salt.
+            
+        See Also
+        --------
+        salt_ion_match.py
+        
+        '''
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
         return salt.identify_salt(self)
@@ -967,7 +992,8 @@ class Solution:
             return unit('1 dimensionless')
                 
     def get_activity(self,solute):
-        '''returns the thermodynamic activity of the solute in solution
+        '''
+        Return the thermodynamic activity of the solute in solution
        
         Parameters
         ----------
@@ -983,14 +1009,14 @@ class Solution:
         Notes
         -----
         The thermodynamic activity is independent of the concentration scale used. However,
-        the concentration and the activity coefficient must use corresponding scales.[1]_ [2]_
+        the concentration and the activity coefficient must use corresponding scales. [#]_ [#]_
         In this module, ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale.
         
         References
         ----------
-        .. [1] http://adsorption.org/awm/utils/Activity.htm
-        .. [2] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
+        .. [#] http://adsorption.org/awm/utils/Activity.htm
+        .. [#] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
         
         See Also
         --------
@@ -1009,7 +1035,8 @@ class Solution:
         return activity
 
     def get_osmotic_coefficient(self):
-        '''calculate the osmotic coefficient
+        '''
+        Calculate the osmotic coefficient
 
         Returns
         -------
@@ -1068,7 +1095,8 @@ class Solution:
             return unit('1 dimensionless')
     
     def get_water_activity(self):
-        '''return the water activity
+        '''
+        Return the water activity
         
         Returns
         -------
@@ -1088,7 +1116,7 @@ class Solution:
         
         Notes
         -----
-        Water activity is related to the osmotic coefficient in a solution containing i solutes by:[1]_
+        Water activity is related to the osmotic coefficient in a solution containing i solutes by: [#]_
         
         .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
@@ -1100,8 +1128,8 @@ class Solution:
         
         References
         ----------
-        .. [1] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
-        //Chemical Society Review// 34, 440-458.
+        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
+           //Chemical Society Review// 34, 440-458.
         
         '''
         '''
@@ -1132,12 +1160,12 @@ class Solution:
             return math.exp(- osmotic_coefficient * 0.018015*unit('kg/mol') * concentration_sum)
     
     def get_ionic_strength(self):
-        '''() -> float
+        '''
+        Return the ionic strength of the solution.
         
         Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
         Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas, but
         the returned value does not carry units.
-        
         
         Returns
         -------
@@ -1147,10 +1175,6 @@ class Solution:
         Examples
         --------
         TODO
-#         >>> conc_soln.list_concentrations()
-#         {'Na+': 5.999375074924214, 'Cl-': 5.999904143046362, 'HCO3-': 0, 'NaCO3-': 0, 'NaHCO3': 0}
-#         >>> conc_soln.get_ionic_strength()
-#         5.999639608985288
         
         Notes
         -----
@@ -1169,12 +1193,36 @@ class Solution:
     
 
     def get_debye_length(self):
-        '''(number,number,number) -> float
-        Return the Debye length of a solution in meters
+        '''
+        Return the Debye length of a solution
         
-        dielectric_constant is the dielectric constant of the solution
-        ionic_strength is the ionic strength in moles per cubic meter
-        temp is the temperature in degrees celsius
+        Debye length is calculated as [#]_
+        
+        .. math::
+        
+            \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o R T \\over (2 N_A e^2 I)})
+        
+        NOTE: The influence of ionic strength on the dielectric constant is not
+        currently accounted for. The dielectric constant of pure water is used
+        in the calculation.        
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The Debye length.
+        
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
+
+        See Also
+        --------
+        get_ionic_strength()
+        h2o.water_dielectric_constant()
         
         '''
         # TODO - make dielectric constant dependent on ionic strength
@@ -1195,6 +1243,7 @@ class Solution:
         solute : str
             String identifying the solute for which the transport number is
             to be calculated.
+            
         activity_correction: bool
             If True, the transport number will be corrected for activity following
             the same method used for solution conductivity. Defaults to False
@@ -1207,9 +1256,11 @@ class Solution:
         
         Notes
         -----
-        Transport number is calculated according to:[1]_
+        Transport number is calculated according to [#]_ : 
         
-        .. math:: t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
+        .. math:: 
+            
+            t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
         Where C is the concentration in mol/L.
         
@@ -1219,8 +1270,8 @@ class Solution:
         
         References
         ----------
-        .. [1] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
-
+        .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
+        
         See Also
         --------
         get_conductivity()
@@ -1338,12 +1389,13 @@ class Solution:
         -----
         
         The chemical potential energy (related to the Gibbs mixing energy) is
-        calculated as follows: [1]_
+        calculated as follows: [#]_
             
         .. math::
+        
             E = R T \sum_i n_i  \ln a_i
             
-            or 
+        or 
             
             E = R T \sum_i n_i \ln x_i
         
@@ -1357,9 +1409,7 @@ class Solution:
         
         References
         ----------
-        
-        .. [1] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-        A differential approach.// Elsevier, 2007, pp. 23-37.
+        .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.// Elsevier, 2007, pp. 23-37.
         
         Examples
         --------
@@ -1379,7 +1429,10 @@ class Solution:
         return E.to('J')
 
     def get_lattice_distance(self,solute):
-        '''Calculate the average distance between molecules of the given solute,
+        '''
+        Calculate the average distance between molecules
+        
+        Calculate the average distance between molecules of the given solute,
         assuming that the molecules are uniformly distributed throughout the
         solution.
         
@@ -1532,12 +1585,26 @@ class Solution:
     ## informational methods
         
     def list_solutes(self):
+        '''
+        List all the solutes in the solution.
+        
+        '''
         return list(self.components.keys())
     
     def list_concentrations(self,unit='mol/kg'):
-        '''() -> dict
+        '''
+        List the concentration of each species in a solution.        
         
-        Return a dictionary containing a list of the species in solution paired with their amount in the specified units
+        Parameters
+        ----------
+        unit: str
+            String representing the desired concentration unit.
+            
+        Returns
+        -------
+        dict        
+            Dictionary containing a list of the species in solution paired with their amount in the specified units
+            
         '''
         self.mol_list={}
         for i in self.components.keys():
@@ -1545,9 +1612,14 @@ class Solution:
         print('Component amounts (%s):\n' % unit,self.mol_list )
         
     def list_activities(self):
-        '''() -> dict
+        '''
+        List the activity of each species in a solution.        
         
-        Return a dictionary containing a list of the species in solution paired with their molal activity
+        Returns
+        -------
+        dict        
+            Dictionary containing a list of the species in solution paired with their activity
+            
         '''
         self.act_list={}
         for i in self.components.keys():

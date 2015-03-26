@@ -26,8 +26,7 @@ logger.addFilter(unique)
 def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     # TODO add pressure??
     # TODO more up to date equation??
-    '''(number) -> float
-    
+    '''    
     Return the density of water in kg/m3 at the specified temperature and pressure.
     
     Parameters
@@ -45,7 +44,7 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     Notes
     -----
-    Based on the following empirical equation reported in [1]
+    Based on the following empirical equation reported in [#]_
     
     
     .. math:: \\rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ {1.5}
@@ -53,7 +52,7 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     Where T is the temperature in Celsius.
     
     
-    ..[1] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
+    .. [#] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
     
     Examples
     --------
@@ -70,8 +69,7 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     return density.to('kg/m**3')
     
 def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
-    '''(number) -> float
-    
+    '''    
     Return the specific weight of water in N/m3 at the specified temperature and pressure.
     
     Parameters
@@ -121,11 +119,13 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
                   
     Notes
     -----
-    Implements the international equation for viscosity of water as specified by NIST[1]
+    Implements the international equation for viscosity of water as specified by NIST [#]_
     
     Valid for 273 < temperature < 1073 K and 0 < pressure < 100,000,000 Pa
     
-    .. [1] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
+    References
+    ----------
+    .. [#] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
         J. Phys. Chem. Ref. Data 13(1), 1984.http://www.nist.gov/data/PDFfiles/jpcrd243.pdf
     
     Examples
@@ -222,8 +222,7 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
     
 
 def water_dielectric_constant(temperature=25*unit('degC')):
-    '''(number) -> float
-    
+    '''    
     Return the dielectric constant of water at the specified temperature.
     
     Parameters
@@ -240,13 +239,15 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     Notes
     -----
     This function implements a quadratic fit of measured permittivity data as
-    reported in the CRC Handbook[1]. The parameters given are valid over the
+    reported in the CRC Handbook [#]_. The parameters given are valid over the
     range 273 K to 372 K. Permittivity should not be extrapolated beyond this
     range.
     
     .. math:: \\epsilon(T) = a + b T + c T^2
     
-    .. [1] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
+    References
+    ----------
+    .. [#] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
             Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.
     
     Examples

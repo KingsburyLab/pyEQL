@@ -33,7 +33,7 @@ logger.addFilter(unique)
 
 def _debye_parameter_B(temperature='25 degC'):
     '''
-    return the constant B used in the extended Debye-Huckel equation
+    Return the constant B used in the extended Debye-Huckel equation
     
     Parameters
     ----------
@@ -42,11 +42,11 @@ def _debye_parameter_B(temperature='25 degC'):
     
     Notes
     -----
-    The parameter B is equal to:[1]
+    The parameter B is equal to: [#]_
 
     .. math:: B = ( {8 \\pi N_A e^2 \\over 1000 \\epsilon k T} ) ^ {1 \\over 2}
     
-    .. [1] Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.    
+    .. [#] Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.    
     
     Examples
     --------
@@ -60,8 +60,8 @@ def _debye_parameter_B(temperature='25 degC'):
     return param_B.to_base_units()
     
 def _debye_parameter_activity(temperature='25 degC'):
-    '''(number) -> float
-    return the constant A for use in the Debye-Huckel limiting law (base 10)
+    '''
+    Return the constant A for use in the Debye-Huckel limiting law (base 10)
     
     Parameters
     ----------
@@ -75,7 +75,7 @@ def _debye_parameter_activity(temperature='25 degC'):
     Notes
     -----
      
-    The parameter A is equal to:[1]
+    The parameter A is equal to: [#]_
      
     ..  math::    
         A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
@@ -85,7 +85,9 @@ def _debye_parameter_activity(temperature='25 degC'):
     value returned by 2.303. The value is often given in base 10 terms (0.509 at
     25 degC) in older textbooks.
     
-    .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+    References
+    ----------
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
         
     Examples
@@ -106,8 +108,8 @@ def _debye_parameter_activity(temperature='25 degC'):
     return debyeparam.to('kg ** 0.5 / mol ** 0.5')
 
 def _debye_parameter_osmotic(temperature='25 degC'):
-    '''(number) -> float
-    return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
+    '''
+    Return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
     
     Parameters
     ----------
@@ -118,23 +120,23 @@ def _debye_parameter_osmotic(temperature='25 degC'):
     -----
     Not to be confused with the Debye-Huckel constant used for activity coefficients in the limiting law. 
     Takes the value 0.392 at 25 C.
-    This constant is calculated according to:[1][2]
+    This constant is calculated according to: [#]_ [#]_
 
      .. math:: A^{\\phi} = {1 \\over 3} A^{\\gamma}
     
-    .. [1] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
-    //J. Chemical Engineering Data// 33, pp.177-184.
+    References
+    ----------
+    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
+       //J. Chemical Engineering Data// 33, pp.177-184.
     
-    .. [2] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
-    and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
-        
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+       and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
     
     Examples
     --------
     >>> _debye_parameter_osmotic() #doctest: +ELLIPSIS
     0.3916... 
-  
-    
+
     See Also
     --------
     _debye_parameter_activity
@@ -147,7 +149,7 @@ def _debye_parameter_osmotic(temperature='25 degC'):
 
 def _debye_parameter_volume(temperature='25 degC'):
     '''
-    return the constant A_V, the Debye-Huckel limiting slope for apparent
+    Return the constant A_V, the Debye-Huckel limiting slope for apparent
     molar volume.
     
     Parameters
@@ -157,8 +159,8 @@ def _debye_parameter_volume(temperature='25 degC'):
     
     Notes
     -----
-    Takes the value 1.8305 cm **3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
-    This constant is calculated according to:[1]
+    Takes the value 1.8305 cm ** 3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
+    This constant is calculated according to: [#]_
 
      .. math:: A_V = -2 A_{\\phi} R T [ {3 \\over \\epsilon} {{\\partial \\epsilon \\over \\partial p} \
      } - {{1 \\over \\rho}{\\partial \\rho \\over \\partial p} }]
@@ -172,12 +174,14 @@ def _debye_parameter_volume(temperature='25 degC'):
     of real data, but is required to give the correct result.
      
     The second term is equivalent to the inverse of the bulk modulus of water, which
-    is taken to be 2.2 GPa.[2]
+    is taken to be 2.2 GPa. [#]_
     
-    .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+    References
+    ----------
+    .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
         
-    .. [2] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
+    .. [#] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
     
     Examples
     --------
@@ -205,7 +209,8 @@ def _debye_parameter_volume(temperature='25 degC'):
     return result.to('cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
 def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
     
     Parameters
     ----------
@@ -227,14 +232,16 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     
     Notes
     -----
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_ 
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 \sqrt I
     
     Valid only for I < 0.005
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
     
     '''
     # check if this method is valid for the given ionic strength
@@ -246,7 +253,8 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     return math.exp(log_f)
 
 def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
     
     Parameters
     ----------
@@ -268,14 +276,16 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     
     Notes
     ------
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_ 
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 {\sqrt I \\over (1 + \sqrt I)}
     
     Valid for I < 0.1
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
     
     '''
     # check if this method is valid for the given ionic strength
@@ -287,7 +297,8 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     return math.exp(log_f)
     
 def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='25 degC'):
-    '''Return the activity coefficient of solute in the parent solution according to the Davies equation.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Davies equation.
     
     Parameters
     ----------
@@ -309,14 +320,16 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     
     Notes
     -----
-    Activity coefficient is calculated according to: 
+    Activity coefficient is calculated according to: [#]_
 
     .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 ({\sqrt I \\over (1 + \sqrt I)} + 0.2 I)
     
     Valid for 0.1 < I < 0.5
     
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-    pp 103. Wiley Interscience, 1996.
+    References
+    ----------
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+           pp 103. Wiley Interscience, 1996.
     
     '''
     # check if this method is valid for the given ionic strength
@@ -329,7 +342,8 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     return math.exp(log_f)
 
 def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
-    '''Return the activity coefficient of solute in the parent solution according to the Pitzer model.
+    '''
+    Return the activity coefficient of solute in the parent solution according to the Pitzer model.
     
     Parameters
     ----------
@@ -371,19 +385,21 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     NOTE: the examples below are for comparison with experimental and modeling data presented in
     the May et al reference below. 
     
-    10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725    
+    10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725
+    
     >>> get_activity_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.22595 ...
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.3011
+    
     >>> get_activity_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.30249 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.1653
+    
     >>> get_activity_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.16241 ...
-    
-    
+      
     References
     ----------
     Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
@@ -426,7 +442,8 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     return math.exp(loggamma) 
     
 def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
-    '''Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
+    '''
+    Return the apparent molar volume of solute in the parent solution according to the Pitzer model.
     
     Parameters
     ----------
@@ -457,7 +474,7 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     Returns
     -------
     float
-        The apparent molar volume of the solute, cm **3 / mol
+        The apparent molar volume of the solute, cm ** 3 / mol
     
     Examples
     --------  
@@ -465,18 +482,22 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     the Krumgalz et al reference below. 
     
     0.25 mol/kg CuSO4. Expected result (from graph) = 0.5 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     0.404...    
     
     1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),1.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     4.424...
     
     10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     50.286...
     
     20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol 
+    
     >>> get_apparent_volume_pitzer(20.0*unit('mol/kg'),20.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     51.145...
     
@@ -484,6 +505,7 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     the Krumgalz et al reference below. 
     
     0.8 mol/kg NaF. Expected result = 0.03  
+    
     >>> get_apparent_volume_pitzer(0.8*unit('mol/kg'),0.8*unit('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
     0.22595 ...
     
@@ -817,14 +839,17 @@ def get_osmotic_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,b
     the May et al reference below. 
     
     10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.62    
+    
     >>> get_osmotic_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6143 ...
     
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.7
+    
     >>> get_osmotic_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6925 ...
     
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.555
+    
     >>> get_osmotic_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.5556 ...
     

@@ -26,7 +26,8 @@ logger.addFilter(unique)
 from pyEQL import paramsDB as db
 
 class Solute:
-    '''represent each chemical species as an object containing its formal charge, 
+    '''
+    represent each chemical species as an object containing its formal charge, 
     transport numbers, concentration, activity, etc. 
     
     '''
@@ -87,7 +88,8 @@ class Solute:
         return param.get_value(temperature,pressure,ionic_strength)
                 
     def add_parameter(self,name,magnitude,units='',**kwargs):
-        '''manually insert a parameter into the parameters database for a solute
+        '''
+        Add a parameter to the parameters database for a solute
         
         See pyEQL.parameters documentation for a description of the arguments
         
@@ -97,19 +99,71 @@ class Solute:
         db.add_parameter(self.get_name(),newparam)
         
     def get_name(self):
+        '''
+        Return the name (formula) of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        str
+            The chemical formula of the solute
+            
+        '''
         return self.formula
         
     def get_formal_charge(self):
+        '''
+        Return the formal charge of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        int
+            The formal charge of the solute
+            
+        '''
         return self.charge
         
     def get_molecular_weight(self):
+        '''
+        Return the molecular weight of the solute
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The molecular weight of the solute, in g/mol
+        '''
         return self.mw
     
     def get_moles(self):
+        '''
+        Return the moles of solute in the solution
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The number of moles of solute
+            
+        '''
         return self.moles
     
     def add_moles(self,amount,volume,solvent_mass):
-        '''Increase or decrease the amount of a substance present in the solution
+        '''
+        Increase or decrease the amount of a substance present in the solution
         
         Parameters
         ----------
@@ -122,13 +176,23 @@ class Solute:
         self.moles += quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)
     
     def set_moles(self,amount,volume,solvent_mass):
+        '''
+        Set the amount of a substance present in the solution
+        
+        Parameters
+        ----------
+        amount: str quantity
+                Desired amount of substance. Must be greater than or equal to 
+                zero and given in mass or substance units.
+        
+        '''
         quantity = unit(amount)
         self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
   
     def get_molar_conductivity(self,temperature=25*unit('degC')):
         # TODO - requires diffusion coefficient which may not be present
-        '''(float,int,number) -> float
-        Calculate the molar (equivalent) conductivity at infinte dilution for a species
+        '''
+        Calculate the molar (equivalent) conductivity for a solute
         
         Parameters
         ----------
@@ -142,20 +206,23 @@ class Solute:
         
         Notes
         -----
-        Molar conductivity is calculated from the Nernst-Einstein relation:[1]_
+        Molar conductivity is calculated from the Nernst-Einstein relation [#]_
             
-        .. math:: \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+        .. math::
         
+            \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                
         Note that the diffusion coefficient is strongly variable with temperature.
         
         References
         ----------
         
-        .. [1] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+        .. [#] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
         
-        TODO Examples
-#             --------
-#             
+        Examples
+        --------
+        TODO
+             
         '''
         diffusion_coefficient = self.get_parameter('diffusion_coefficient')
         
@@ -164,7 +231,8 @@ class Solute:
         return molar_cond.to('mS / cm / (mol/L)')
             
     def get_mobility(self,temperature=25*unit('degC')):
-        '''Return the ionic mobility of a species
+        '''
+        Calculate the ionic mobility of the solute
         
         Parameters
         ----------
@@ -179,13 +247,15 @@ class Solute:
         Notes
         -----
         This function uses the Einstein relation to convert a diffusion coefficient
-        into an ionic mobility [1]_
+        into an ionic mobility [#]_
         
-        .. math:: \mu_i = {F |z_i| D_i \over RT}
+        .. math::
+            
+            \mu_i = {F |z_i| D_i \over RT}
         
         References
         ----------
-        .. [1] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+        .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
         '''
         mobility = unit.N_A * unit.e * abs(self.get_formal_charge()) * self.get_parameter('diffusion_coefficient') / (unit.R * temperature)
