@@ -7,7 +7,9 @@ Activity Correction API
 =======================
 
 .. automodule:: pyEQL.activity_correction
-   :members:
+    :members:
+    :private-members:
+
 
 Water Properties API
 ====================

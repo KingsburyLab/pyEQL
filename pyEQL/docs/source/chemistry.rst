@@ -56,4 +56,3 @@ API Documentation (chemical_formula.py)
 
 .. automodule:: pyEQL.chemical_formula
    :members:
-   :private-members:

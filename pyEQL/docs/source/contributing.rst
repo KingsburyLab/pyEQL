@@ -28,7 +28,7 @@ Hacking pyEQL in Five Easy Steps:
 
 1. Clone the repository::
 
-    git clone https://github.com/rsking84/pyeql
+    git clone https://github.com/rkingsbury/pyEQL
 
 2. Create a branch for your work. We loosely follow the branching guidelines
    outlined at http://nvie.com/posts/a-successful-git-branching-model.

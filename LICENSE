@@ -14,6 +14,10 @@ permission of the authors. If you wish to redistribute these databases
 as part of a derived work, you are advised to contact the authors or 
 publishers for copyright information.
 
+pyEQL also includes a copy of `elements.py <http://www.lfd.uci.edu/~gohlke/>`_ 
+- a library of chemical information written by Christoph Gohlke and released 
+under the BSD license.
+
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
