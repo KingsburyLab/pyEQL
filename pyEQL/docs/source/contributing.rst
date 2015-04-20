@@ -23,14 +23,16 @@ before starting your work, especially if you are new to the open source communit
 * `A Successful Git Branching Model <http://nvie.com/posts/a-successful-git-branching-model>`_
 
 
-Hacking pyEQL in Five Easy Steps:
+Hacking pyEQL in Six Easy Steps:
 ---------------------------------
 
-1. Clone the repository::
+1. `Fork the pyEQL repository <https://help.github.com/articles/fork-a-repo/>`_ on Github
 
-    git clone https://github.com/rkingsbury/pyEQL
+2. Clone your repository to a directory of your choice::
 
-2. Create a branch for your work. We loosely follow the branching guidelines
+    git clone https://github.com/<username>/pyEQL
+
+3. Create a branch for your work. We loosely follow the branching guidelines
    outlined at http://nvie.com/posts/a-successful-git-branching-model.
 
    If you are adding **documentation** or **bug fixes**, start with the **master** branch and
@@ -45,11 +47,11 @@ Hacking pyEQL in Five Easy Steps:
 
     git checkout -b feature-myfeature develop
 
-3. Hack away until you're satisfied.
+4. Hack away until you're satisfied.
 
-4. Push your work to the pyEQL repository::
+5. Push your work back to Github::
 
     git push origin feature-myfeature
 
-5. Create a pull request with your changes. See the tutorial at https://yangsu.github.io/pull-request-tutorial for instructions.
+6. Create a pull request with your changes. See the tutorial at https://yangsu.github.io/pull-request-tutorial for instructions.
 
