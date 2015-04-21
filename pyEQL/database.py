@@ -88,11 +88,11 @@ class Paramsdb:
                     line_num = 0
                     
                     # ignore the template file
-                    if file == 'template.csv':
+                    if file == 'template.tsv':
                         continue
                     
                     # look at only .csv files
-                    if ".csv" in file:
+                    if ".tsv" in file:
                         
                         # open each file
                         current_file = open(directory+'/'+file,'r')

@@ -69,7 +69,7 @@ only need to contain extra parameters that are not included already.
 File Format
 -----------
 
-Databases are formatted as TAB-SEPARATED text files and carry the .csv extension.
+Databases are formatted as TAB-SEPARATED text files and carry the .tsv extension.
 The intent of this format is to make database files easy to edit with common
 spreadsheet software. 
 
@@ -84,7 +84,7 @@ The upper section of each file contains information about the source of the
 data, the units, the name of the parameter, and the conditions of measurement.
 The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'. 
 Preferably, other information such as conditions, notes and a reference are also supplied.
-See `template.csv` in the \database subdirectory for an example.
+See `template.tsv` in the \database subdirectory for an example.
 
 The remainder of the file contains solute formulas in the first column (see
 :ref:`chemistry`) and corresponding values of the parameter in the following columns.
