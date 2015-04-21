@@ -1,7 +1,7 @@
 Name:	pitzer_parameters_activity				
-Description:	Beta0, Beta1, Beta2, and Cphi parameters for calculating activity and osmotic coefficients according to the Pitzer ion interaction model				
+Description:	"Beta0, Beta1, Beta2, and Cphi parameters for calculating activity and osmotic coefficients according to the Pitzer ion interaction model"				
 Unit:	None				
-Reference:	May, P. M., Rowland, D., Hefter, G., & Kanigsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329				
+Reference:	"May, P. M., Rowland, D., Hefter, G., & Kanigsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329"				
 Temperature:	25 degC				
 Pressure:	1 atm				
 Ionic Strength:					
@@ -23,7 +23,7 @@ BaBr2	0.316	1.529	0	-0.01638	2.321
 BaCl2	0.2891	1.217	0	-0.02987	1.8
 BaI2	0.4008	1.881	0	-0.00843	2
 Ba(NO3)2	-0.06464	0.8598	0	0.04046	0.4
-Ba(ClO4)2	0.3309	1.729	0	-0.010883	3.5
+Ba(ClO4)2	0.3309	1.729	0	-0.01883	3.5
 BeSO4	0.3162	2.867	-58.93	0.006172	4
 Cd(NO3)2	0.2833	1.665	0	-0.02426	3
 Cd(NO2)2	-0.02389	-1.511	0	0.007885	5
@@ -54,7 +54,7 @@ CuCl2	0.277	1.496	0	-0.02806	3.75
 Cu(NO3)2	0.281	1.683	0	-0.00845	7.84
 CuSO4	0.2281	2.505	-50.28	0.005787	1.42
 EuCl3	0.6048	5.322	0	-0.01999	3.584
-Eu(NO3)3	0.477	4.706	0	-0.04847	2
+Eu(NO3)3	0.4777	4.706	0	-0.04847	2
 GdCl3	0.6129	5.359	0	-0.0197	3.59
 HI	0.2242	0.4685	0	0.004286	7
 HBr	0.2093	0.3401	0	0.001364	6
@@ -63,7 +63,7 @@ FeCl2	0.3516	1.432	0	-0.0156	2.05
 FeCl3	0.5516	5.488	0	-0.06453	1.8
 LaCl3	0.593	5.277	0	-0.02434	3.894
 La(NO3)3	0.4915	4.99	0	-0.0747	1.555
-Pb(NO3)2	-0.0058	0.1669	0	-0.00522	2
+Pb(NO3)2	-0.0058	-0.1669	0	-0.00522	2
 Pb(ClO4)2	0.3328	1.658	0	-0.00885	12.58
 LiCH3COO	0.1081	0.257	0	-0.0042	4
 LiBr	0.1842	0.2363	0	0.003333	11
