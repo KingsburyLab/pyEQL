@@ -8,12 +8,13 @@ pyEQL creates a database to collect various parameters needed to perform
 it's calculations. pyEQL's default database includes a collection of the
 following parameters for some common electrolytes:
 
- - Diffusion coefficients
- - Partial molar volumes
- - Coefficients for activity correction equations (e.g. Pitzer model)
- - Coefficients for viscosity equations
+ - Diffusion coefficients for 104 ions
+ - Pitzer model activity correction coefficients for 157 salts
+ - Pitzer model partial molar volume coefficients for 120 salts
+ - Partial molar volumes for 10 ions (see note)
+ - Viscosity model coefficients for 6 salts (see note)
 
-.. note:: Due to copyright restrictions, pyEQL's built-in databases contain only a small selection of diffusion coefficients, partial molar volumes, and viscosity coefficients for some common ions like H+, Na+, Cl-, and OH-. We are working on securing permission to distribute a more complete dataset. In the mean time, see the references in the example databases for good data sources. Alternatively, you can provide your own parameters in a custom database (see below). pyEQL does already contain a fairly large collection of Pitzer parameters for both activity correction and partial molar volume; and this will be expanded in the future.
+.. note:: Due to copyright restrictions, pyEQL's built-in databases contain only a small selection of partial molar volumes and viscosity coefficients for some common ions like H+, Na+, Cl-, and OH-. We are working on securing permission to distribute a more complete dataset. In the mean time, see the references in the example databases for good data sources. Alternatively, you can provide your own parameters in a custom database (see below). pyEQL does already contain a fairly large collection of Pitzer parameters for both activity correction and partial molar volume; and this will be expanded in the future.
 
 Basics
 ======
