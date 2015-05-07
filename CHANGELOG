@@ -9,6 +9,7 @@ pyEQL Changelog
  - Add 130 entries to Pitzer activity parameters database
  - Change extension for database files from .csv to .tsv
  - Corrections and additions to the contributing documentation
+ - Uploaded to the Python Package Index for easier installation
  - Add this changelog
 
 0.2.0 (2015-03-26)
