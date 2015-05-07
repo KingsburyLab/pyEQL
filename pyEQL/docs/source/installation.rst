@@ -29,12 +29,11 @@ Then install by executing
 Automatically via pip and PyPI
 ==============================
 
-.. warning:: COMING SOON - NOT IMPLEMENTED YET
-
 The `Python Package Index <https://pypi.python.org/pypi>`_ repository will allow installation to be done easily from the command line as follows:
 
     pip install pyEQL
 
 This should automatically pull in the required dependencies as well.
 
+.. note:: You may have to run 'pip3' rather than 'pip' depending on your system configuration. pyEQL works only on Python 3.
 
