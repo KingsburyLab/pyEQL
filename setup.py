@@ -40,7 +40,7 @@ setup(
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
-        'Topic :: Software Development :: Libraries'
+        'Topic :: Software Development :: Libraries',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: LGPL v3.0',
