@@ -7,7 +7,7 @@ Reporting Issues
 ================
 
 You can report any bugs, packaging issues, feature requests, comments, or questions
-using the `issue tracker <URL>`_ on `github <https://github.com/rsking84/pyeql>`_.
+using the `issue tracker https://github.com/rkingsbury/pyEQL/issues`_ on `github <https://github.com/rsking84/pyeql>`_.
 
 Contributing Code
 =================
@@ -21,7 +21,6 @@ before starting your work, especially if you are new to the open source communit
 * `Open Source Contribution Etiquette <http://tirania.org/blog/archive/2010/Dec-31.html>`_
 * `Don't "Push" Your Pull Requests <https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/>`_
 * `A Successful Git Branching Model <http://nvie.com/posts/a-successful-git-branching-model>`_
-
 
 Hacking pyEQL in Six Easy Steps:
 ---------------------------------
@@ -53,5 +52,20 @@ Hacking pyEQL in Six Easy Steps:
 
     git push origin feature-myfeature
 
-6. Create a pull request with your changes. See the tutorial at https://yangsu.github.io/pull-request-tutorial for instructions.
+6. Create a pull request with your changes. See `this tutorial <https://yangsu.github.io/pull-request-tutorial>`_ for instructions.
 
+Generating Test Cases
+=====================
+
+pyEQL has many capabilities that have not been tested thoroughly. You can help
+the project simply by using pyEQL and comparing the output to experimental data
+and/or more established models. Report back your results on the 
+`issue tracker https://github.com/rkingsbury/pyEQL/issues`_.
+
+Even better, write up an automated test case (see the tests/ directory for examples).
+
+Making a Donation
+=================
+
+If you'd like to leave a 'tip' for the project maintainer to support the time and effort
+required to develop pyEQL, simply send it via Paypal to RyanSKingsbury@alumni.unc.edu
