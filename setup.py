@@ -14,20 +14,20 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.2',
+    version='0.2.1',
 
     description='A Python library for solution chemistry',
     long_description=long_description,
 
     # The project's main homepage.
-    #url='https://github.com/pypa/sampleproject',
+    url='https://github.com/rkingsbury/pyEQL',
 
     # Author details
     author='Ryan S. Kingsbury',
     author_email='RyanSKingsbury@alumni.unc.edu',
 
     # Choose your license
-    license='LGPL',
+    license='GNU Lesser General Public License v3 (LGPLv3)',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -43,7 +43,7 @@ setup(
         'Topic :: Software Development :: Libraries',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: LGPL v3.0',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
@@ -54,7 +54,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='thermodynamics chemistry chemical equilibrium MinEQL ChemEQL PHREEQC',
+    keywords='thermodynamics chemistry chemical equilibrium desalination MinEQL ChemEQL PHREEQC',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
