@@ -39,9 +39,9 @@ Detailed documentation is available at http://pyeql.readthedocs.org/
 
 Dependencies
 ------------
-Python 3
-pint - for units-aware calculations
-scipy - for certain nonlinear equation solvers
+ - Python 3
+ - pint - for units-aware calculations
+ - scipy - for certain nonlinear equation solvers
 
 
 

@@ -7,7 +7,7 @@ Reporting Issues
 ================
 
 You can report any bugs, packaging issues, feature requests, comments, or questions
-using the `issue tracker https://github.com/rkingsbury/pyEQL/issues`_ on `github <https://github.com/rsking84/pyeql>`_.
+using the `issue tracker <https://github.com/rkingsbury/pyEQL/issues>`_ on `github <https://github.com/rsking84/pyeql>`_.
 
 Contributing Code
 =================
@@ -60,7 +60,7 @@ Generating Test Cases
 pyEQL has many capabilities that have not been tested thoroughly. You can help
 the project simply by using pyEQL and comparing the output to experimental data
 and/or more established models. Report back your results on the 
-`issue tracker https://github.com/rkingsbury/pyEQL/issues`_.
+`issue tracker <https://github.com/rkingsbury/pyEQL/issues>`_.
 
 Even better, write up an automated test case (see the tests/ directory for examples).
 
