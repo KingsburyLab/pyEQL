@@ -1,0 +1,19 @@
+pyEQL Changelog
+===============
+
+0.2.1 (2015-05-06)
+------------------
+
+ - Add 93 entries to diffusion coefficient database
+ - Add 93 entries to Pitzer partial molar volume parameters database
+ - Add 130 entries to Pitzer activity parameters database
+ - Change extension for database files from .csv to .tsv
+ - Corrections and additions to the contributing documentation
+ - Add this changelog
+
+0.2.0 (2015-03-26)
+------------------
+
+ - First public release
+
+
