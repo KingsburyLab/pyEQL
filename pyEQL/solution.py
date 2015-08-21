@@ -661,12 +661,17 @@ class Solution:
         See Also
         --------
         '''
-        if units == 'fraction':
-            return self.get_mole_fraction(solute)
-        else:
-            moles = self.get_solute(solute).get_moles()
-            mw = self.get_solute(solute).get_molecular_weight()
-        
+        try:
+            if units == 'fraction':
+                return self.get_mole_fraction(solute)
+            else:
+                moles = self.get_solute(solute).get_moles()
+                mw = self.get_solute(solute).get_molecular_weight()
+        # if the solute is not present in the solution, we'll get a KeyError
+        # In that case, the amount is zero
+        except KeyError:
+            return 0 * unit(units)
+            
         # with pint unit conversions enabled, we just pass the unit to pint
         # the logic tests here ensure that only the required arguments are 
         # passed to pint for the unit conversion. This avoids unecessary 
