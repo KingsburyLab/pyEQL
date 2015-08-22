@@ -366,3 +366,69 @@ def mix(Solution1, Solution2):
             Blend.add_solute(item,mix_species[item])
             
     return Blend
+
+
+def auto(solution=""):
+    '''
+    This method provides a quick way to create Solution objects representing
+    commonly-encountered solutions, such as seawater and freshwater. 
+    
+    Parameters
+    ----------
+    solution : str
+                String representing the desired solution
+                Valid entries are 'seawater' and 'surface'
+    Returns
+    -------
+    Solution : a pyEQL Solution object
+    
+    Notes
+    -----
+    The following sections explain the different solution options:
+    
+    Standard Seawater (argument - 'seawater') [#]_
+            
+    Standard seawater at atmospheric pressure. See Table 4 of Reference for Composition
+    
+    pH = 8.1 on the seawater pH scale [H+] + [HSO4-]+[HF]
+    TODO - correct pH to be on the regular scale
+    P =1 atm
+    T = 25 degC
+    
+    References
+    ----------
+    .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
+           the Reference-Composition Salinity Scale." Deep-sea Research. Part I 55(1), 2008, 50-72.
+
+    '''
+    
+    if solution == "":
+        temperature='25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = []
+    elif solution == 'seawater':
+        temperature = '24 degC'
+        pressure = '1 atm'
+        pH = 8.1
+        solutes = [
+        ['Na+','10.78145 g/kg'],
+        ['Mg+2','1.28372 g/kg'],
+        ['Ca+2','0.41208 g/kg'],
+        ['K+','0.39910 g/kg'],
+        ['Sr+2','0.00795 g/kg'],
+        ['Cl-','19.35271 g/kg'],
+        ['SO4-2','2.71235 g/kg'],
+        ['HCO3-','0.10481 g/kg'],
+        ['Br-','0.06728 g/kg'],
+        ['CO3-2','0.01434 g/kg'],
+        ['B(OH)4','0.00795 g/kg'],
+        ['F-','0.00130 g/kg'],
+        ['OH-','0.00014 g/kg'],
+        ['B(OH)3','0.01944 g/kg'],
+        ['CO2','0.00042 g/kg'],
+        ]
+    
+    sol = pyEQL.Solution(solutes,temperature=temperature,pressure=pressure,pH=pH)
+    
+    return sol
