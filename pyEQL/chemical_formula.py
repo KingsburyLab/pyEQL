@@ -360,6 +360,46 @@ def is_valid_formula(formula):
         return True
     except:
         return False
+        
+def contains(formula,element):
+    '''
+    Check whether a formula contains a given element.
+    
+    Parameters
+    ----------
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
+    element: str
+        String representing the element to check for. Must be a valid element 
+        name.
+    
+    Returns
+    -------
+    bool
+            True if the formula contains the element. False otherwise.
+            
+    Examples
+    --------
+    >>> contains('Fe2(SO4)3','Fe')
+    True
+    >>> contains('NaCOOH','S')
+    False
+    '''
+    if is_valid_element(element):
+        if element in get_elements(formula):
+            return True
+        else:
+            return False  
     
 ## Information Retrieval Functions    
 def get_element_numbers(formula):
