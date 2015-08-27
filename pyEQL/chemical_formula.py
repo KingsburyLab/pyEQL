@@ -592,6 +592,66 @@ def get_formal_charge(formula):
         
     return formal_charge
 
+def get_element_weight(formula,element):
+    '''
+    compute the  weight of a specific element in a formula
+    
+    Parameters
+    ----------
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
+    element: str
+        String representing the element to check for. Must be a valid element 
+        name.
+    
+    Returns
+    -------
+    number
+            The weight of the specified element within the formula, g/mol.
+    
+    >>> get_element_weight('NaCl','Na')
+    22.98977
+    >>> get_element_weight('H2O','H')
+    2.01588
+    >>> get_element_weight('H2O','Br')
+    0
+    >>> get_element_weight('CH3CH2CH3','C')
+    36.0321
+    
+    See Also
+    --------
+    contains()
+    _consolidate_formula()
+    elements
+    
+    '''
+    # import elements.py - used to retreive various molecular data
+    from pyEQL.elements import ELEMENTS    
+    
+    # perform validity check and return a parsed list of the chemical formula
+    if contains(formula,element):
+        input_list = _consolidate_formula(formula)
+        index = input_list.index(element)
+        quantity = input_list[index+1]              
+        # look up the molecular weight for the element
+        mass = ELEMENTS[element].mass
+        wt = mass * quantity
+    # return 0 weight if the element isn't present in the formula
+    else:
+        wt = 0
+
+    return wt
+
 def get_molecular_weight(formula):
     '''
     compute the molecular weight of a formula
