@@ -703,7 +703,7 @@ def get_element_weight_fraction(formula,element):
     
     return frac
 
-def get_element_moles(formula,element):
+def get_element_mole_ratio(formula,element):
     '''
     compute the  moles of a specific element per mole of formula
     
@@ -730,13 +730,13 @@ def get_element_moles(formula,element):
     number
             The number of moles of element per mole of formula, mol/mol.
     
-    >>> get_element_moles('NaCl','Na')
+    >>> get_element_mole_ratio('NaCl','Na')
     1
-    >>> get_element_weight('H2O','H')
+    >>> get_element_mole_ratio('H2O','H')
     1
-    >>> get_element_weight('H2O','Br')
+    >>> get_element_mole_ratio('H2O','Br')
     0
-    >>> get_element_weight('CH3CH2CH3','C')
+    >>> get_element_mole_ratio('CH3CH2CH3','C')
     3
     
     See Also
