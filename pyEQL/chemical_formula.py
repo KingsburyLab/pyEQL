@@ -624,7 +624,7 @@ def get_element_weight(formula,element):
     >>> get_element_weight('H2O','H')
     2.01588
     >>> get_element_weight('H2O','Br')
-    0
+    0.0
     >>> get_element_weight('CH3CH2CH3','C')
     36.0321
     
@@ -635,20 +635,19 @@ def get_element_weight(formula,element):
     elements
     
     '''
-    # import elements.py - used to retreive various molecular data
-    from pyEQL.elements import ELEMENTS    
+    # find the number of moles of element per mole of formula
+    moles = get_element_moles(formula,element)
     
-    # perform validity check and return a parsed list of the chemical formula
-    if contains(formula,element):
-        input_list = _consolidate_formula(formula)
-        index = input_list.index(element)
-        quantity = input_list[index+1]              
+    if moles != 0:
+        # import elements.py - used to retreive various molecular data
+        from pyEQL.elements import ELEMENTS    
+            
         # look up the molecular weight for the element
         mass = ELEMENTS[element].mass
-        wt = mass * quantity
-    # return 0 weight if the element isn't present in the formula
+        
+        wt = mass * moles
     else:
-        wt = 0
+        wt = 0.0
 
     return wt
 
@@ -703,6 +702,61 @@ def get_element_weight_fraction(formula,element):
     frac = wt  / get_molecular_weight(formula)
     
     return frac
+
+def get_element_moles(formula,element):
+    '''
+    compute the  moles of a specific element per mole of formula
+    
+    Parameters
+    ----------
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
+    element: str
+        String representing the element to check for. Must be a valid element 
+        name.
+    
+    Returns
+    -------
+    number
+            The number of moles of element per mole of formula, mol/mol.
+    
+    >>> get_element_moles('NaCl','Na')
+    1
+    >>> get_element_weight('H2O','H')
+    1
+    >>> get_element_weight('H2O','Br')
+    0
+    >>> get_element_weight('CH3CH2CH3','C')
+    3
+    
+    See Also
+    --------
+    contains
+    consolidate_formula
+    get_element_weight
+    get_element_weight_fraction
+    
+    '''
+    # perform validity check and return a parsed list of the chemical formula
+    if contains(formula,element):
+        input_list = _consolidate_formula(formula)
+        index = input_list.index(element)
+        moles = input_list[index+1]              
+    # return 0 weight if the element isn't present in the formula
+    else:
+        moles = 0
+
+    return moles
     
 def get_molecular_weight(formula):
     '''
