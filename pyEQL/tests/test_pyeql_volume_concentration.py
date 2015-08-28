@@ -361,7 +361,59 @@ class Test_solute_addition(unittest.TestCase):
         
         self.assertEqual(result,expected)    
     
+class Test_get_amount(unittest.TestCase):
+    '''
+    test the get_amount() method on a 1 mol/L NaCl solution
+    ----------------------------
+    1 mol NaCl / L = 58.44 g/L
+    Na+ = 22.98977 g/mol
     
+    '''
+    # create the 1 M NaCl solution
+    def setUp(self):
+        self.s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']])
+            
+    # get_amount() - mol/L
+    def test_get_amount_molL(self):
+        result = self.s1.get_amount('Na+','mol/L').magnitude
+        expected = 1
+        
+        self.assertAlmostEqual(result,expected,9)
+    
+    # get_amount() - mol/kg
+    def test_get_amount_molkg(self):
+        result = self.s1.get_amount('Na+','mol/kg').magnitude
+        expected = 1.02181221888
+        
+        self.assertAlmostEqual(result,expected,9)
+        
+    # get_amount() - g/L
+    def test_get_amount_gL(self):
+        result = self.s1.get_amount('Na+','g/L').magnitude
+        expected = 22.98977
+        
+        self.assertAlmostEqual(result,expected,9)
+    
+    # get_amount() - mg
+    def test_get_amount_mg(self):
+        result = self.s1.get_amount('Na+','mg').magnitude
+        expected = 22989.77
+        
+        self.assertAlmostEqual(result,expected,9)
+    
+    # get_amount() - mol
+    def test_get_amount_mol(self):
+        result = self.s1.get_amount('Na+','mol').magnitude
+        expected = 1
+        
+        self.assertAlmostEqual(result,expected,9)
+    
+    # get_amount() - fraction
+    def test_get_amount_fraction(self):
+        result = self.s1.get_amount('Na+','fraction')
+        expected = 0.01775457254
+        
+        self.assertAlmostEqual(result,expected,9)    
     
     
     
