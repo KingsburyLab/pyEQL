@@ -155,7 +155,7 @@ class Solution:
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration  
-        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+        if unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             
             # store the original volume for later
             orig_volume = self.get_volume()
@@ -671,13 +671,13 @@ class Solution:
         # the logic tests here ensure that only the required arguments are 
         # passed to pint for the unit conversion. This avoids unecessary 
         # function calls.
-        if unit(units).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+        if unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             return moles.to(units,'chem',mw=mw,volume=self.get_volume())
-        elif unit(units).dimensionality == ('[substance]/[mass]' or '[mass]/[mass]'):
+        elif unit(units).dimensionality in ('[substance]/[mass]','[mass]/[mass]'):
             return moles.to(units,'chem',mw=mw,solvent_mass=self.get_solvent_mass())
-        elif unit(units).dimensionality == ('[mass]'):
+        elif unit(units).dimensionality == '[mass]':
             return moles.to(units,'chem',mw=mw)
-        elif unit(units).dimensionality == ('[substance]'):
+        elif unit(units).dimensionality == '[substance]':
             return moles.to(units)
         else:
             logger.error('Unsupported unit specified for get_amount')
@@ -712,7 +712,7 @@ class Solution:
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration  
-        if unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+        if unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             
             # store the original volume for later
             orig_volume = self.get_volume()
@@ -795,7 +795,7 @@ class Solution:
         # if units are given on a per-volume basis, 
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration  
-        elif unit(amount).dimensionality == ('[substance]/[length]**3' or '[mass]/[length]**3'):
+        elif unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             
             # store the original volume for later
             orig_volume = self.get_volume()
