@@ -1,6 +1,11 @@
 pyEQL Changelog
 ===============
 
+0.2.2 (2015-08-28)
+------------------
+
+ - Fix bug in get_amount() causing no output when mass-based units were specified.
+
 0.2.1 (2015-05-06)
 ------------------
 
@@ -16,5 +21,3 @@ pyEQL Changelog
 ------------------
 
  - First public release
-
-
