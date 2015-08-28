@@ -622,7 +622,7 @@ def get_element_mole_ratio(formula,element):
     >>> get_element_mole_ratio('NaCl','Na')
     1
     >>> get_element_mole_ratio('H2O','H')
-    1
+    2
     >>> get_element_mole_ratio('H2O','Br')
     0
     >>> get_element_mole_ratio('CH3CH2CH3','C')
