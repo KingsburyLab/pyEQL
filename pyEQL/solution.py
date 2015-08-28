@@ -660,6 +660,9 @@ class Solution:
         
         See Also
         --------
+        add_amount
+        set_amount
+        get_amount_total
         '''
         try:
             if units == 'fraction':
@@ -687,6 +690,53 @@ class Solution:
         else:
             logger.error('Unsupported unit specified for get_amount')
             return None
+
+    def get_total_amount(self,element,units):
+        '''
+        Return the total amount of 'element' (across all solutes) in the solution.
+       
+        Parameters
+        ----------
+        element : str 
+                    String representing the name of the element of interest
+        units : str
+                    Units desired for the output. Examples of valid units are 
+                    'mol/L','mol/kg','mol', 'kg', and 'g/L'
+
+        Returns
+        -------
+        The total amount of the element in the solution, in the specified units
+        
+        Notes
+        -----
+        There is currently no way to distinguish between different oxidation 
+        states of the same element (e.g. TOTFe(II) vs. TOTFe(III)). This
+        is planned for a future release. 
+        
+        See Also
+        --------
+        get_amount
+        '''
+        import pyEQL.chemical_formula as ch
+        
+        TOT = 0 * unit(units)
+        
+        # loop through all the solutes, process each one containing element
+        for item in self.components:
+            # check whether the solute contains the element
+            if ch.contains(item,element):
+                # start with the amount of the solute in the desired units
+                amt = self.get_amount(item,units)
+
+                # convert the solute amount into the amount of element by
+                # either the mole / mole or weight ratio
+                if unit(units).dimensionality in ('[substance]','[substance]/[length]**3','[substance]/[mass]'):
+                    TOT += amt * ch.get_element_mole_ratio(item,element)
+
+                elif unit(units).dimensionality in ('[mass]','[mass]/[length]**3','[mass]/[mass]'):
+                    TOT += amt * ch.get_element_weight_fraction(item,element)
+            
+        return TOT
 
     def add_amount(self,solute,amount):
         '''
