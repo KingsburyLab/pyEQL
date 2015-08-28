@@ -652,6 +652,58 @@ def get_element_weight(formula,element):
 
     return wt
 
+def get_element_weight_fraction(formula,element):
+    '''
+    compute the  weight fraction of a specific element in a formula
+    
+    Parameters
+    ----------
+    formula: str
+        String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
+        Valid molecular formulas must meet the following criteria:
+        
+        #. Are composed of valid atomic symbols that start with capital letters
+        #. Contain no non-alphanumeric characters other than '(', ')',
+           '+', or '-'
+        #. If a '+' or '-' is present, the formula must contain ONLY '+' or
+           '-' (e.g. 'Na+-' is invalid) and the formula must end with either
+           a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
+        #. Formula must contain matching numbers of '(' and ')'
+        #. Open parentheses must precede closed parentheses
+    element: str
+        String representing the element to check for. Must be a valid element 
+        name.
+    
+    Returns
+    -------
+    number
+            The weight fraction of the specified element within the formula.
+    
+    >>> get_element_weight_fraction('NaCl','Na')
+    0.39337...
+    >>> get_element_weight_fraction('H2O','H')
+    0.111898...
+    >>> get_element_weight_fraction('H2O','Br')
+    0.0
+    >>> get_element_weight_fraction('CH3CH2CH3','C')
+    0.8171355...
+    
+    See Also
+    --------
+    get_element_weight
+    contains
+    _consolidate_formula
+    elements
+    
+    '''
+    # calculate the element weight in the formula
+    wt = get_element_weight(formula,element)
+    
+    # calculate the fraction
+    frac = wt  / get_molecular_weight(formula)
+    
+    return frac
+    
 def get_molecular_weight(formula):
     '''
     compute the molecular weight of a formula
