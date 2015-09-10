@@ -2246,7 +2246,7 @@ def _descriptions(symbol):
         "Ir-192 with a half-life of 73.83 days. Ir-192 decays into "
         "Platinum, while the other radioisotopes decay into Osmium. "
         "Iridium is used in high temperature apparatus, electrical "
-        "contacts, and as a hardening agent for platinumpy. Discovered in "
+        "contacts, and as a hardening agent for platinum. Discovered in "
         "1803 by Smithson Tennant in England. The name comes from the "
         "Greek word iris, which means rainbow. Iridium metal is generally "
         "non-toxic due to its relative unreactivity, but iridium compounds "
@@ -2256,7 +2256,7 @@ def _descriptions(symbol):
         "ductile. Does not oxidize in air, insoluble in hydrochloric and "
         "nitric acid. Corroded by halogens, cyandies, sulphur and alkalis. "
         "Hydrogen and Oxygen react explosively in the presence of "
-        "platinumpy. There are six stable isotopes and three "
+        "platinum. There are six stable isotopes and three "
         "radioisotopes, the most stable being Pt-193 with a half-life of "
         "60 years. Platinum is used in jewelry, laboratory equipment, "
         "electrical contacts, dentistry, and anti-pollution devices in "
@@ -2344,7 +2344,7 @@ def _descriptions(symbol):
         "of 217 years. Ac-228 (half-life of 6.13 hours) also occurs in "
         "nature. There are 22 other artificial isotopes, all radioactive "
         "and having very short half-lives. Chemistry similar to "
-        "lanthanumpy. Used as a source of alpha particles. Discovered by "
+        "lanthanum. Used as a source of alpha particles. Discovered by "
         "A. Debierne in 1899.")
     e['Th'].description = (
         "Grey radioactive metallic element. Belongs to actinoids. Found "
