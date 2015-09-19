@@ -1356,6 +1356,7 @@ class Solution:
         -------
         float
                 The molar or equivalent conductivity of the species in the solution.
+                Zero if the solute is not charged.
         
         Notes
         -----
@@ -1399,7 +1400,7 @@ class Solution:
             
         Returns
         -------
-        float : the ionic mobility
+        float : The ionic mobility. Zero if the solute is not charged.
         
         
         Notes
