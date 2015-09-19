@@ -1340,7 +1340,92 @@ class Solution:
                 denominator += term
         
         return numerator / denominator
-    
+          
+    def get_molar_conductivity(self,solute):
+        # TODO - requires diffusion coefficient which may not be present
+        '''
+        Calculate the molar (equivalent) conductivity for a solute
+        
+        Parameters
+        ----------
+        solute : str
+            String identifying the solute for which the molar conductivity is
+            to be calculated.
+            
+        Returns
+        -------
+        float
+                The molar or equivalent conductivity of the species in the solution.
+        
+        Notes
+        -----
+        Molar conductivity is calculated from the Nernst-Einstein relation [#]_
+            
+        .. math::
+        
+            \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                
+        Note that the diffusion coefficient is strongly variable with temperature.
+        
+        References
+        ----------
+        
+        .. [#] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+        
+        Examples
+        --------
+        TODO
+             
+        '''
+        temperature = self.get_temperature()
+        
+        D = self.get_property(solute,'diffusion_coefficient')
+        
+        molar_cond = D * (unit.e * unit.N_A) ** 2 * self.get_solute(solute).get_formal_charge() ** 2 / (unit.R * temperature)
+        
+        logger.info('Computed molar conductivity as %s from D = %s at T=%s' % (molar_cond,str(D),temperature))
+        
+        return molar_cond.to('mS / cm / (mol/L)')
+            
+    def get_mobility(self,solute):
+        '''
+        Calculate the ionic mobility of the solute
+        
+        Parameters
+        ----------
+        solute : str
+            String identifying the solute for which the mobility is
+            to be calculated.
+            
+        Returns
+        -------
+        float : the ionic mobility
+        
+        
+        Notes
+        -----
+        This function uses the Einstein relation to convert a diffusion coefficient
+        into an ionic mobility [#]_
+        
+        .. math::
+            
+            \mu_i = {F |z_i| D_i \over RT}
+        
+        References
+        ----------
+        .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+        
+        '''
+        temperature = self.get_temperature()
+        
+        D = self.get_property(solute,'diffusion_coefficient')
+        
+        mobility = unit.N_A * unit.e * abs(self.get_solute(solute).get_formal_charge()) * D / (unit.R * temperature)
+        
+        logger.info('Computed ionic mobility as %s from D = %s at T=%s' % (mobility,str(D),temperature))
+        
+        return mobility.to('m**2/V/s')
+        
     def get_property(self,solute,name):
         '''Retrieve a thermodynamic property (such as diffusion coefficient)
         for solute, and adjust it from the reference conditions to the conditions
