@@ -228,6 +228,8 @@ class Solute:
         
         molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * temperature)
         
+        logger.info('Computed molar conductivity as %s from D = %s at T=%s' % (molar_cond,str(self.get_parameter('diffusion_coefficient')),temperature))
+        
         return molar_cond.to('mS / cm / (mol/L)')
             
     def get_mobility(self,temperature=25*unit('degC')):
@@ -260,9 +262,9 @@ class Solute:
         '''
         mobility = unit.N_A * unit.e * abs(self.get_formal_charge()) * self.get_parameter('diffusion_coefficient') / (unit.R * temperature)
         
-        logger.info('Computed ionic mobility as %s from D = %s at T=%S' % mobility,self.get_diffusion_coefficient(),temperature)
+        logger.info('Computed ionic mobility as %s from D = %s at T=%s' % (mobility,str(self.get_parameter('diffusion_coefficient')),temperature))
         
-        return mobility
+        return mobility.to('m**2/V/s')
         
     #set output of the print() statement
     def __str__(self):
