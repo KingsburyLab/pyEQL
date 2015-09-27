@@ -1447,12 +1447,11 @@ class Solution:
         '''
         # retrieve the base value and the conditions of measurement from the
         # database
-        
-        if solute != 'H2O':
-            if db.has_parameter(solute,name):
-                base_value = self.get_solute(solute).get_parameter(name)
-            else:
-                base_value = None                
+    
+        if db.has_parameter(solute,name):
+            base_value = self.get_solute(solute).get_parameter(name)
+        else:
+            base_value = None                
                 
         base_temperature = unit('25 degC')
         base_pressure = unit ('1 atm')
