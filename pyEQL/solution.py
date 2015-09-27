@@ -1312,10 +1312,7 @@ class Solution:
         numerator = 0
         
         for item in self.components:
-            
-            if item == 'H2O':
-                continue
-            
+
             z = self.get_solute(item).get_formal_charge()
             term = self.get_property(item,'diffusion_coefficient') * \
             z ** 2 * self.get_amount(item,'mol/L')
@@ -1338,9 +1335,95 @@ class Solution:
                     numerator = term
             
                 denominator += term
+
+        return (numerator / denominator).to('dimensionless')
+          
+    def get_molar_conductivity(self,solute):
+
+        '''
+        Calculate the molar (equivalent) conductivity for a solute
         
-        return numerator / denominator
-    
+        Parameters
+        ----------
+        solute : str
+            String identifying the solute for which the molar conductivity is
+            to be calculated.
+            
+        Returns
+        -------
+        float
+                The molar or equivalent conductivity of the species in the solution.
+                Zero if the solute is not charged.
+        
+        Notes
+        -----
+        Molar conductivity is calculated from the Nernst-Einstein relation [#]_
+            
+        .. math::
+        
+            \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                
+        Note that the diffusion coefficient is strongly variable with temperature.
+        
+        References
+        ----------
+        
+        .. [#] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+        
+        Examples
+        --------
+        TODO
+             
+        '''
+        temperature = self.get_temperature()
+        
+        D = self.get_property(solute,'diffusion_coefficient')
+        
+        molar_cond = D * (unit.e * unit.N_A) ** 2 * self.get_solute(solute).get_formal_charge() ** 2 / (unit.R * temperature)
+        
+        logger.info('Computed molar conductivity as %s from D = %s at T=%s' % (molar_cond,str(D),temperature))
+        
+        return molar_cond.to('mS / cm / (mol/L)')
+            
+    def get_mobility(self,solute):
+        '''
+        Calculate the ionic mobility of the solute
+        
+        Parameters
+        ----------
+        solute : str
+            String identifying the solute for which the mobility is
+            to be calculated.
+            
+        Returns
+        -------
+        float : The ionic mobility. Zero if the solute is not charged.
+        
+        
+        Notes
+        -----
+        This function uses the Einstein relation to convert a diffusion coefficient
+        into an ionic mobility [#]_
+        
+        .. math::
+            
+            \mu_i = {F |z_i| D_i \over RT}
+        
+        References
+        ----------
+        .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
+        
+        '''
+        temperature = self.get_temperature()
+        
+        D = self.get_property(solute,'diffusion_coefficient')
+        
+        mobility = unit.N_A * unit.e * abs(self.get_solute(solute).get_formal_charge()) * D / (unit.R * temperature)
+        
+        logger.info('Computed ionic mobility as %s from D = %s at T=%s' % (mobility,str(D),temperature))
+        
+        return mobility.to('m**2/V/s')
+        
     def get_property(self,solute,name):
         '''Retrieve a thermodynamic property (such as diffusion coefficient)
         for solute, and adjust it from the reference conditions to the conditions
@@ -1361,12 +1444,11 @@ class Solution:
         '''
         # retrieve the base value and the conditions of measurement from the
         # database
-        
-        if solute != 'H2O':
-            if db.has_parameter(solute,name):
-                base_value = self.get_solute(solute).get_parameter(name)
-            else:
-                base_value = None                
+    
+        if db.has_parameter(solute,name):
+            base_value = self.get_solute(solute).get_parameter(name)
+        else:
+            base_value = None                
                 
         base_temperature = unit('25 degC')
         base_pressure = unit ('1 atm')
