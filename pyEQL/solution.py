@@ -1339,7 +1339,7 @@ class Solution:
         return (numerator / denominator).to('dimensionless')
           
     def get_molar_conductivity(self,solute):
-        # TODO - requires diffusion coefficient which may not be present
+
         '''
         Calculate the molar (equivalent) conductivity for a solute
         
