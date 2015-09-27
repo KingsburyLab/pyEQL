@@ -1312,10 +1312,7 @@ class Solution:
         numerator = 0
         
         for item in self.components:
-            
-            if item == 'H2O':
-                continue
-            
+
             z = self.get_solute(item).get_formal_charge()
             term = self.get_property(item,'diffusion_coefficient') * \
             z ** 2 * self.get_amount(item,'mol/L')
@@ -1338,8 +1335,8 @@ class Solution:
                     numerator = term
             
                 denominator += term
-        
-        return numerator / denominator
+
+        return (numerator / denominator).to('dimensionless')
           
     def get_molar_conductivity(self,solute):
         # TODO - requires diffusion coefficient which may not be present
