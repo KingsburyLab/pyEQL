@@ -1224,6 +1224,36 @@ class Solution:
 
             return self.charge_balance.magnitude
 
+    def get_hardness(self):
+        '''
+        Return the hardness of a solution.
+        
+        Hardness is defined as the sum of the equivalent (charge-weighted) concentrations
+        of multivalent cations.
+        
+        NOTE: hardness is traditionally reported in units of 'mg/L as CaCO3' but these 
+        are not currently supported. The returned units will have dimensions of
+        [substance]/[volume] and should be interpreted as 'equivalents' per volume.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The hardness of the solution in eq/L
+        
+        '''
+        hardness = 0 * unit('mol/L')
+        
+        for item in self.components:
+            z = self.get_solute(item).get_formal_charge()
+            if z > 1:
+                hardness += z * self.get_amount(item,'mol/L')
+        
+        return hardness                
+        
     def get_debye_length(self):
         '''
         Return the Debye length of a solution
