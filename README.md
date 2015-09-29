@@ -1,4 +1,4 @@
-![](pyeql-logo.svg)
+![](pyeql-logo.png)
 
 A Python library for solution chemistry
 =======================================
