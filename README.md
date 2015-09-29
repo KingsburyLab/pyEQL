@@ -34,7 +34,7 @@ Key Features
 - Extensible database system that allows one to supplement pyEQL's default
   parameters with project-specific data.
 
-- Units-aware calculations (by means of the pint library)
+- Units-aware calculations (by means of the [pint](https://github.com/hgrecco/pint) library)
 
 Documentation
 -------------
@@ -43,5 +43,5 @@ Detailed documentation is available at <https://pyeql.readthedocs.org/>
 Dependencies
 ------------
  - Python 3
- - pint - for units-aware calculations
- - scipy - for certain nonlinear equation solvers
+ - [pint](https://github.com/hgrecco/pint) - for units-aware calculations
+ - [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
