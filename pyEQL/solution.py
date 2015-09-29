@@ -1228,12 +1228,11 @@ class Solution:
         '''
         Return the hardness of a solution.
         
-        Hardness is defined as the sum of the equivalent (charge-weighted) concentrations
-        of multivalent cations.
+        Hardness is defined as the sum of the equivalent concentrations
+        of multivalent cations as calcium carbonate.
         
-        NOTE: hardness is traditionally reported in units of 'mg/L as CaCO3' but these 
-        are not currently supported. The returned units will have dimensions of
-        [substance]/[volume] and should be interpreted as 'equivalents' per volume.
+        NOTE: at present pyEQL cannot distinguish between mg/L as CaCO3
+        and mg/L units. Use with caution.
         
         Parameters
         ----------
@@ -1242,17 +1241,19 @@ class Solution:
         Returns
         -------
         Quantity
-            The hardness of the solution in eq/L
+            The hardness of the solution in mg/L as CaCO3
         
         '''
         hardness = 0 * unit('mol/L')
+        equiv_wt_CaCO3 = 100.09 / 2 * unit('g/mol')
         
         for item in self.components:
             z = self.get_solute(item).get_formal_charge()
             if z > 1:
                 hardness += z * self.get_amount(item,'mol/L')
         
-        return hardness                
+        # convert the hardness to mg/L as CaCO3
+        return (hardness*equiv_wt_CaCO3).to('mg/L')
         
     def get_debye_length(self):
         '''

@@ -46,7 +46,7 @@ class test_hardness(unittest.TestCase):
     def test_hardness_3(self):
         s1 = pyEQL.Solution([['Fe+3','0.1 mol/L'],['Cl-','0.3 mol/L']])
         result = s1.get_hardness().magnitude
-        expected = 0.3
+        expected = 15013.5
         
         self.assertAlmostEqual(result,expected)
     
@@ -55,7 +55,7 @@ class test_hardness(unittest.TestCase):
     def test_hardness_4(self):
         s1 = pyEQL.Solution([['Na+','0.1 mol/L'],['K+','0.1 mol/L'],['Mg+2','0.1 mol/L'],['Ca+2','0.1 mol/L'],['Fe+3','0.1 mol/L'],['Cl-','0.1 mol/L'],['F-','0.1 mol/L'],['SO4-2','0.2 mol/L'],['PO4-3','0.1 mol/L']])
         result = s1.get_hardness().magnitude
-        expected = 0.7
+        expected = 35031.5
         
         self.assertAlmostEqual(result,expected)
     
@@ -63,7 +63,7 @@ class test_hardness(unittest.TestCase):
     def test_hardness_5(self):
         s1 = pyEQL.Solution([['Fe+3','0.1 mol/L'],['Cl-','0.3 mol/L']])
         result = str(s1.get_hardness().dimensionality)
-        expected = '[substance] / [length] ** 3'
+        expected = '[mass] / [length] ** 3'
         
         self.assertEqual(result,expected)
         
