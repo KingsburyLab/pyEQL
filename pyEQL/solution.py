@@ -1209,32 +1209,32 @@ class Solution:
         return self.ionic_strength
     
     def get_charge_balance(self):
-            '''
-            Return the charge balance of the solution.
+        '''
+        Return the charge balance of the solution.
 
-            Return the charge balance of the solution. The charge balance represents the net electric charge
-            on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-            have a small nonzero value.
+        Return the charge balance of the solution. The charge balance represents the net electric charge
+        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
+        have a small nonzero value.
 
-            Returns
-            -------
-            float :
-                The charge balance of the solution, in equivalents.
+        Returns
+        -------
+        float :
+            The charge balance of the solution, in equivalents.
 
-            Notes
-            -----
-            The charge balance is calculated according to:
+        Notes
+        -----
+        The charge balance is calculated according to:
 
-            .. math:: CB = F \sum_i n_i z_i
+        .. math:: CB = F \sum_i n_i z_i
 
-            Where n_i is the number of moles, z_i is the charge on species i, and F is the Faraday constant.
+        Where n_i is the number of moles, z_i is the charge on species i, and F is the Faraday constant.
 
-            '''
-            self.charge_balance=0
-            for solute in self.components.keys():
-                self.charge_balance += self.get_amount(solute,'mol') * self.components[solute].get_formal_charge() * unit.e * unit.N_A
+        '''
+        self.charge_balance=0
+        for solute in self.components.keys():
+            self.charge_balance += self.get_amount(solute,'mol') * self.components[solute].get_formal_charge() * unit.e * unit.N_A
 
-            return self.charge_balance.magnitude
+        return self.charge_balance.magnitude
 
     def get_hardness(self):
         '''
