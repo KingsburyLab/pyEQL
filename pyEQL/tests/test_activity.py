@@ -25,14 +25,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         # list of molal concentrations for published activity coefficients
 
     def test_activity_pitzer_coeff_units(self):
-        # the activity coefficient should be a float
-        result = self.s1.get_activity_coefficient('Na+')
-        self.assertIsInstance(result,float)
+        # the activity coefficient should be dimensionless
+        result = self.s1.get_activity_coefficient('Na+').dimensionality
+        self.assertEqual(result,'')
 
     def test_activity_pitzer_units(self):
-        # the activity should be a float
-        result = self.s1.get_activity('Na+')
-        self.assertIsInstance(result,float)          
+        # the activity should be dimensionless
+        result = self.s1.get_activity('Na+').dimensionality
+        self.assertEqual(result,'')         
         
     def test_activity_pitzer_equality(self):
         # the activity coefficient of both the Na+ and Cl- should be the same
