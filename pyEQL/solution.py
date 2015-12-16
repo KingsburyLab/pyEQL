@@ -929,6 +929,12 @@ class Solution:
         get_activity_coefficient_guntelberg
         get_activity_coefficient_davies
         get_activity_coefficient_pitzer
+        
+        References
+        ----------
+        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
@@ -951,8 +957,8 @@ class Solution:
                 # determine alpha1 and alpha2 based on the type of salt
                 # see the May reference for the rules used to determine
                 # alpha1 and alpha2 based on charge
-                if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                    if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+                if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
+                    if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
                         alpha1 = 2
                         alpha2 = 50
                     else:
@@ -1053,6 +1059,12 @@ class Solution:
         For ionic strengths below 0.5 mol/kg, the osmotic coefficient is assumed to equal 1.0.
         1.0 will also be returned at higher ionic strengths if appropriate Pitzer
         parameters are not supplied.
+        
+        References
+        ----------
+        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
         '''
         temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
@@ -1065,8 +1077,8 @@ class Solution:
         # determine alpha1 and alpha2 based on the type of salt
         # see the May reference for the rules used to determine
         # alpha1 and alpha2 based on charge
-        if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-            if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+        if Salt.z_cation >= 2 and Salt.z_anion <= -2:
+            if Salt.z_cation >=3 or Salt.z_anion <= -3:
                 alpha1 = 2
                 alpha2 = 50
             else:

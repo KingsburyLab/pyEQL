@@ -33,6 +33,9 @@
 
 @end
 
+@context electricity = elec
+    [length] ** 2 * [mass] / [current] ** 2 / [time] ** 3 <-> [length] ** -2 * [mass] **-1 / [current] ** -2 / [time] ** -3: 1 / value
+@end
 
 
 #From the pint documentation:
