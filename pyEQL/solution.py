@@ -1236,6 +1236,47 @@ class Solution:
 
         return self.charge_balance.magnitude
 
+    def get_alkalinity(self):
+        '''
+        Return the alkalinity or acid neutralizing capacity of a solution
+        
+        Returns
+        -------
+        Quantity :
+            The alkalinity of the solution in mg/L as CaCO3
+
+        Notes
+        -----
+        The alkalinity is calculated according to: [#]_
+
+        .. math:: Alk = F \sum_i z_i C_B - \sum_i z_i C_A
+
+        Where C_B and C_A are conservative cations and anions, respectively (i.e. ions that do not participate in acid-base reactions), and z_i is their charge.
+        In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions
+        are all the anions of strong acids.
+
+        References
+        ----------
+        .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+               pp 165. Wiley Interscience, 1996.
+        '''
+        alkalinity = 0 * unit('mol/L')
+        equiv_wt_CaCO3 = 100.09 / 2 * unit('g/mol')
+        
+        base_cations=['Li+','Na+','K+','Rb+','Cs+','Fr+','Be+2','Mg+2','Ca+2','Sr+2','Ba+2','Ra+2']
+        acid_anions=['Cl-','Br-','I-','SO4-2','NO3-','ClO4-','ClO3-']
+        
+        for item in self.components:
+            if item in base_cations:
+                z = self.get_solute(item).get_formal_charge()
+                alkalinity += self.get_amount(item,'mol/L') * z
+            if item in acid_anions:
+                z = self.get_solute(item).get_formal_charge()
+                alkalinity -= self.get_amount(item,'mol/L') * z 
+        
+        # convert the alkalinity to mg/L as CaCO3
+        return (alkalinity*equiv_wt_CaCO3).to('mg/L')
+
     def get_hardness(self):
         '''
         Return the hardness of a solution.
