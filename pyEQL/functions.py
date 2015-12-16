@@ -368,7 +368,7 @@ def mix(Solution1, Solution2):
     return Blend
 
 
-def auto(solution=""):
+def autogenerate(solution=""):
     '''
     This method provides a quick way to create Solution objects representing
     commonly-encountered solutions, such as seawater and freshwater. 
@@ -377,7 +377,7 @@ def auto(solution=""):
     ----------
     solution : str
                 String representing the desired solution
-                Valid entries are 'seawater' and 'surface'
+                Valid entries are 'seawater' and ''
     Returns
     -------
     Solution : a pyEQL Solution object
@@ -386,15 +386,10 @@ def auto(solution=""):
     -----
     The following sections explain the different solution options:
     
-    Standard Seawater (argument - 'seawater') [#]_
-            
-    Standard seawater at atmospheric pressure. See Table 4 of Reference for Composition
-    
-    pH = 8.1 on the seawater pH scale [H+] + [HSO4-]+[HF]
-    TODO - correct pH to be on the regular scale
-    P =1 atm
-    T = 25 degC
-    
+    - '' - empty solution, equivalent to pyEQL.Solution()
+    - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+    - 'seawater' - Standard Seawater. See Table 4 of the Reference for Composition [#]_
+
     References
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
@@ -408,7 +403,7 @@ def auto(solution=""):
         pH = 7
         solutes = []
     elif solution == 'seawater':
-        temperature = '24 degC'
+        temperature = '25 degC'
         pressure = '1 atm'
         pH = 8.1
         solutes = [
@@ -428,7 +423,15 @@ def auto(solution=""):
         ['B(OH)3','0.01944 g/kg'],
         ['CO2','0.00042 g/kg'],
         ]
-    
+    elif solution == 'rainwater':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 6
+        solutes = [
+        ['HCO3-','10^-5.5 mol/L'],
+        ['CO3-2','10^-9 mol/L']
+        ]
+        
     sol = pyEQL.Solution(solutes,temperature=temperature,pressure=pressure,pH=pH)
     
     return sol
