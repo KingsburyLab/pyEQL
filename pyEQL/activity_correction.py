@@ -223,8 +223,8 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
                   
     Returns
     -------
-    float
-         The mean molal (mol/kg) scale ionic activity coefficient of solute
+    Quantity
+         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless.
 
     See Also
     --------
@@ -250,7 +250,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength,formal_charge=1,temperat
     
     log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * ionic_strength ** 0.5
 
-    return math.exp(log_f)
+    return math.exp(log_f) * unit('1 dimensionless')
 
 def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''
@@ -267,8 +267,8 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
                   
     Returns
     -------
-    float
-         The mean molal (mol/kg) scale ionic activity coefficient of solute
+    Quantity
+         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless.
          
     See Also
     --------
@@ -294,7 +294,7 @@ def get_activity_coefficient_guntelberg(ionic_strength,formal_charge=1,temperatu
     
     log_f = - _debye_parameter_activity(temperature) * formal_charge ** 2 * ionic_strength ** 0.5 / (1+ionic_strength.magnitude ** 0.5)
 
-    return math.exp(log_f)
+    return math.exp(log_f) * unit('1 dimensionless')
     
 def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='25 degC'):
     '''
@@ -311,8 +311,8 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
                   
     Returns
     -------
-    float
-         The mean molal (mol/kg) scale ionic activity coefficient of solute
+    Quantity
+         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless.
 
     See Also
     --------
@@ -339,7 +339,7 @@ def get_activity_coefficient_davies(ionic_strength,formal_charge=1,temperature='
     # the units in this empirical equation don't work out, so we must use magnitudes
     log_f = - _debye_parameter_activity(temperature).magnitude * formal_charge ** 2 * (ionic_strength.magnitude ** 0.5 / (1+ionic_strength.magnitude ** 0.5) - 0.2 * ionic_strength.magnitude)
     
-    return math.exp(log_f)
+    return math.exp(log_f) * unit('1 dimensionless')
 
 def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''
@@ -371,7 +371,7 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     
     Returns
     -------
-    float
+    Quantity
         The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless
     
     Examples
@@ -439,7 +439,7 @@ def get_activity_coefficient_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,
     
     loggamma = _pitzer_log_gamma(ionic_strength,molality,BMX,Bphi,C_phi,z_cation,z_anion,nu_cation,nu_anion,temperature,b)
     
-    return math.exp(loggamma) 
+    return math.exp(loggamma) * unit('1 dimensionless')
     
 def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1,beta2,C_phi,V_o,z_cation,z_anion,nu_cation,nu_anion,temperature='25 degC',b=1.2):
     '''
@@ -473,7 +473,7 @@ def get_apparent_volume_pitzer(ionic_strength,molality,alpha1,alpha2,beta0,beta1
     
     Returns
     -------
-    float
+    Quantity
         The apparent molar volume of the solute, cm ** 3 / mol
     
     Examples
