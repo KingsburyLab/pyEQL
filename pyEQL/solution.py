@@ -1789,7 +1789,7 @@ class Solution:
         '''
         return list(self.components.keys())
     
-    def list_concentrations(self,unit='mol/kg'):
+    def list_concentrations(self,unit='mol/kg',decimals=4):
         '''
         List the concentration of each species in a solution.        
         
@@ -1797,6 +1797,8 @@ class Solution:
         ----------
         unit: str
             String representing the desired concentration unit.
+        decimals: int
+            The number of decimal places to display. Defaults to 4.
             
         Returns
         -------
@@ -1804,14 +1806,19 @@ class Solution:
             Dictionary containing a list of the species in solution paired with their amount in the specified units
             
         '''
-        self.mol_list={}
+        print('Component Concentrations:\n')
+        print('========================\n')
         for i in self.components.keys():
-            self.mol_list.update({i:str(self.get_amount(i,unit))})
-        print('Component amounts (%s):\n' % unit,self.mol_list )
+            print(i+':'+'\t {0:0.{decimals}f~}'.format(self.get_amount(i,unit),decimals=decimals))    
         
-    def list_activities(self):
+    def list_activities(self,decimals=4):
         '''
         List the activity of each species in a solution.        
+        
+        Parameters
+        ----------
+        decimals: int
+            The number of decimal places to display. Defaults to 4.
         
         Returns
         -------
@@ -1819,10 +1826,10 @@ class Solution:
             Dictionary containing a list of the species in solution paired with their activity
             
         '''
-        self.act_list={}
+        print('Component Activities:\n')
+        print('=====================\n')
         for i in self.components.keys():
-            self.act_list.update({i:str(self.get_activity(i))})
-        print('Component activities:\n',self.act_list )
+            print(i+':'+'\t {0.magnitude:0.{decimals}f}'.format(self.get_activity(i),decimals=decimals)) 
      
     def __str__(self):
         #set output of the print() statement for the solution     
