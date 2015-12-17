@@ -1832,5 +1832,9 @@ class Solution:
             print(i+':'+'\t {0.magnitude:0.{decimals}f}'.format(self.get_activity(i),decimals=decimals)) 
      
     def __str__(self):
-        #set output of the print() statement for the solution     
-        return 'Components: \n'+str(self.list_solutes()) + '\n' + 'Volume: '+str(self.get_volume()) + '\n' + 'Density: '+str(self.get_density())
+        #set output of the print() statement for the solution
+        str1 =  'Volume: {0:.3f~}\n'.format(self.get_volume())
+        str2 =  'Pressure: {0:.3f~}\n'.format(self.get_pressure())
+        str3 =  'Temperature: {0:.3f~}\n'.format(self.get_temperature())
+        str4 =  'Components: {0:}\n'.format(self.list_solutes())
+        return str1+str2+str3+str4
