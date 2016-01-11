@@ -1,0 +1,32 @@
+Name	jones_dole_B
+Description	B' Parameter in the Jones-Dole equation for relative viscosity
+Unit	dm ** 3 / mol
+Reference	"B. Tansel, Significance of thermodynamic and physical characteristics on permeation of ions during membrane separation: Hydrated radius, hydration free energy and viscous effects, Sep. Purif. Technol. 86 (2012) 119-126."
+Temperature	273 K
+Pressure	1 atm
+Ionic Strength	0
+Uncertainty	
+Uncertainty Type	
+Comment	"Average of several values reported in the paper, weighted by the number of references for each"
+	
+Key	Value
+Ag+	0.143
+Al+3	0.670
+Ca+2	0.2893
+Cs+	-0.045
+Fe+2	0.520
+Li+	0.1495
+K+	-0.0077
+Mg+2	0.385
+NH4+	-0.0075
+Na+	0.0855
+Ni+2	0.510
+Zn+2	0.429
+Br-	-0.0326
+Cl-	-0.006
+CLO4-	-0.0585
+F-	0.1023
+I-	-0.0697
+NO3-	-0.0455
+PO4-3	0.486
+SO4-2	0.2066
