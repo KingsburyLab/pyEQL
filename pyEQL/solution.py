@@ -1565,6 +1565,11 @@ class Solution:
                 else:
                     logger.warning('Partial molar volume not found for species %s. Assuming zero.' % solute)
                     return unit ('0 cm **3 / mol')
+        
+        # for parameters not named above, just return the base value
+        else:
+            logger.warning('%s has not been corrected for solution conditions' % name)
+            return base_value
                 
     def get_chemical_potential_energy(self,activity_correction=True):
         '''
