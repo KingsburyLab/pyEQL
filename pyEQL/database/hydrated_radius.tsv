@@ -1,0 +1,35 @@
+Name	hydrated_radius
+Description	Hydrated radius
+Unit	nm
+Reference	"B. Tansel, Significance of thermodynamic and physical characteristics on permeation of ions during membrane separation: Hydrated radius, hydration free energy and viscous effects, Sep. Purif. Technol. 86 (2012) 119-126."
+Temperature	
+Pressure	1 atm
+Ionic Strength	0
+Uncertainty	
+Uncertainty Type	
+Comment	Average of several values reported in the paper
+	
+Key	Value
+Ag+	0.212
+Al+3	0.48
+Ca+2	0.416
+Cd+2	0.426
+Cs+	0.329
+Cu+	0.419
+Fe+2	0.43
+Fe+3	0.48
+Li+	0.361
+K+	0.2598
+Mg+2	0.407
+NH4+	0.331
+Na+	0.323
+Ni+2	0.404
+Zn+2	0.417
+Br-	0.33
+Cl-	0.3293
+CLO4-	0.338
+F-	0.351
+I-	0.3
+NO3-	0.3375
+PO4-3	0.339
+SO4-2	0.339
