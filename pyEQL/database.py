@@ -12,7 +12,7 @@ By default, pyEQL searches all files in the /database subdirectory for parameter
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
