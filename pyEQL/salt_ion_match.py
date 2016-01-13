@@ -7,7 +7,7 @@ salts. This mapping is necessary because some parameters (such as activity
 coefficient data) can only be determined for salts (e.g. NaCl) and not individual
 species (e.g. Na+)
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''

@@ -7,7 +7,7 @@ ONLY those properties that DO NOT depend on solution composition.
 Solute properties such as activity coefficient or concentration
 that do depend on compsition are accessed via Solution class methods.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''

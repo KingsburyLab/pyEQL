@@ -8,7 +8,7 @@ Individual functions for activity coefficients are defined here so that they
 can be used independently of a pyEQL solution object. Normally, these functions
 are called from within the get_activity_coefficient method of the Solution class.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
