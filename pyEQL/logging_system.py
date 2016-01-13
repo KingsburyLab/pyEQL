@@ -1,6 +1,5 @@
 # logging system
 ''' Create a logging system using Python's built-in module. 
-Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
 
 The default logging levels are mapped to pyEQL events as follows:
  
