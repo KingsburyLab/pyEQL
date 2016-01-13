@@ -24,12 +24,20 @@ from pyEQL import unit
 import logging
 logger = logging.getLogger(__name__)
 
-
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def _debye_parameter_B(temperature='25 degC'):
     '''

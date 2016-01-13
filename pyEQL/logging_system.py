@@ -1,6 +1,11 @@
 # logging system
 ''' Create a logging system using Python's built-in module. 
 
+Each module within pyEQL has its own logger, with a StreamHandler attached to it that
+directs formatted messages to standard output. This is intended to facilitate the use
+of pyEQL as an interactive console program, at the expense of some flexibility when
+using it as a true library in another application.
+
 The default logging levels are mapped to pyEQL events as follows:
  
 DEBUG       -   detailed messages about function execution including methods used, data sources,
