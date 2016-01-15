@@ -1408,7 +1408,58 @@ class Solution:
         of ionic strength is not yet accounted for')
         
         return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
-    
+
+    def get_bjerrum_length(self):
+        '''
+        Return the Bjerrum length of a solution
+        
+        Bjerrum length is calculated as [#]_
+        
+        .. math::
+        
+            \\lambda_B = e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)
+        
+        It representes the distance at which electrostatic interactions between
+        particles become comparable in magnitude to the thermal energy.
+        
+        NOTE: The influence of ionic strength on the dielectric constant is not
+        currently accounted for. The dielectric constant of pure water is used
+        in the calculation.        
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity
+            The Bjerrum length, in nanometers.
+        
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Bjerrum_length
+        
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution()
+        >>> s1.get_bjerrum_length()
+        <Quantity(0.7152793009386953, 'nanometer')>
+
+        See Also
+        --------
+        h2o.water_dielectric_constant()
+        
+        '''
+        # TODO - make dielectric constant dependent on ionic strength
+        temperature = self.get_temperature()
+        dielectric_constant = h2o.water_dielectric_constant()
+        
+        logger.warning('Bjerrum length is being calculated using the dielectric constant for pure water. The influence \
+        of ionic strength is not yet accounted for')
+        
+        return unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
+         * temperature).to('nm')
+        
     def get_transport_number(self,solute,activity_correction = False):
         '''Calculate the transport number of the solute in the solution
         
