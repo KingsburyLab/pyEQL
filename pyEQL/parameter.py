@@ -345,13 +345,14 @@ class Parameter:
         '''
         Set the output of the print() statement for a parameter value
         '''
-        return 'Parameter '+str(self.name)+'\n'+str(self.description)+'\n' \
-        +'-------------------------------------------'+'\n'+ \
+        return '\n'+'----------------------------------------------------------------------------'+'\n'+ \
+        'Parameter '+str(self.name)+'\n\n'+str(self.description)+'\n' \
         'Value: '+str(self.get_value())+'\n'+ \
         'Conditions (T,P,Ionic Strength): '+str(self.base_temperature)+', '+str(self.base_pressure)+', ' \
         +str(self.base_ionic_strength)+'\n'+ \
         'Notes: '+str(self.comment)+'\n'+ \
-        'Reference: '+str(self.reference)+'\n'
+        'Reference: '+str(self.reference)+'\n' + \
+        '--------------------------------------------------------------------------------------'+'\n'
 
 # TODO - turn doctest back on when the nosigint error is gone
 ## Tests

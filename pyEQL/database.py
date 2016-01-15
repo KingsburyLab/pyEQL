@@ -229,16 +229,33 @@ class Paramsdb:
         else:
             return False
         
-    def print_database(self):
+    def print_database(self,solute=None):
         ''' Function to generate a human-friendly summary of all the database parameters
         that are actually used in the simulation
+        
+        Parameters
+        ----------
+        solute : str, optional
+                The chemical formula for a species. If this argument of supplied, the output
+                will contain only the database entries for this species. Otherwise,
+                all database entries will be printed.
       
         '''
-        for key in self.parameters_database.keys():
-            print('Parameters for species %s:' % key)
-            print('--------------------------')
-            for item in self.parameters_database[key]:
-                print(item)
+        if solute is not None:
+            try:
+                key = solute
+                print('Parameters for species %s:' % key)
+                print('--------------------------\n')
+                for item in self.parameters_database[key]:
+                    print(item)
+            except KeyError:
+                print('Species %s not found in database.' % solute)
+        else:
+            for key in self.parameters_database.keys():
+                print('Parameters for species %s:' % key)
+                print('--------------------------\n')
+                for item in self.parameters_database[key]:
+                    print(item)
 
 def _parse_line(line):
     '''
