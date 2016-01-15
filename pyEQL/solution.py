@@ -1239,8 +1239,7 @@ class Solution:
         Return the ionic strength of the solution.
         
         Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
-        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas, but
-        the returned value does not carry units.
+        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
         
         Returns
         -------
@@ -1374,7 +1373,7 @@ class Solution:
         
         .. math::
         
-            \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o R T \\over (2 N_A e^2 I)})
+            \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
         
         NOTE: The influence of ionic strength on the dielectric constant is not
         currently accounted for. The dielectric constant of pure water is used
@@ -1387,7 +1386,7 @@ class Solution:
         Returns
         -------
         Quantity
-            The Debye length.
+            The Debye length, in nanometers.
         
         References
         ----------
@@ -1399,15 +1398,18 @@ class Solution:
         h2o.water_dielectric_constant()
         
         '''
-        # TODO - make dielectric constant dependent on ionic strength
         temperature = self.get_temperature()
-        ionic_strength= self.get_ionic_strength()
+        # TODO - make dielectric constant dependent on ionic strength
+        # to preserve dimensionality, convert the ionic strength into mol/L units
+        ionic_strength= self.get_ionic_strength().magnitude*unit('mol/L')
         dielectric_constant = h2o.water_dielectric_constant()
         
         logger.warning('Debye length is being calculated using the dielectric constant for pure water. The influence \
         of ionic strength is not yet accounted for')
         
-        return math.sqrt(dielectric_constant * unit.epsilon_0 * unit.R * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength) )
+        debye_length = (dielectric_constant * unit.epsilon_0 * unit.k * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength)) ** 0.5
+        
+        return debye_length.to('nm')
 
     def get_bjerrum_length(self):
         '''
