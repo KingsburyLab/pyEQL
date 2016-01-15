@@ -5,7 +5,7 @@ input, output, and parsing of chemical formulas for pyEQL.
 
 The correct case must be used when specifying elements.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -13,12 +13,21 @@ The correct case must be used when specifying elements.
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 ## Formula validation and processing functions. These internal routines
 ## parse chemical formulas into a format that can be easily processed

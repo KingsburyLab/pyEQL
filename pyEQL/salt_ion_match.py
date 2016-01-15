@@ -7,19 +7,28 @@ salts. This mapping is necessary because some parameters (such as activity
 coefficient data) can only be determined for salts (e.g. NaCl) and not individual
 species (e.g. Na+)
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 import pyEQL.chemical_formula as chem
 

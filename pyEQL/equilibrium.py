@@ -4,7 +4,7 @@ redox, complexation, etc.)
 
 NOTE: these methods are not currently used but are here for the future.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
@@ -19,12 +19,21 @@ from pyEQL import unit
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
     '''
