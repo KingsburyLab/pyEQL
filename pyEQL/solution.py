@@ -1459,8 +1459,9 @@ class Solution:
         logger.warning('Bjerrum length is being calculated using the dielectric constant for pure water. The influence \
         of ionic strength is not yet accounted for')
         
-        return unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
-         * temperature).to('nm')
+        bjerrum_length = unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
+         * temperature)
+        return bjerrum_length.to('nm')
         
     def get_transport_number(self,solute,activity_correction = False):
         '''Calculate the transport number of the solute in the solution
