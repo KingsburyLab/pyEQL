@@ -1,6 +1,24 @@
 pyEQL Changelog
 ===============
 
+0.3.0 (2015-01-15)
+------------------
+
+ - Add method to calculate the total concentration of an element in a solution
+ - Add method to automatically generate certain solutions (like seawater)
+ - Add method to calculate the hardness of a solution
+ - Add method to calculate the alkalinity of a solution
+ - Add method to calculate the charge balance of a solution
+ - Add method to calculate the Bjerrum length
+ - Add database entries for hydrated and ionic radii of common ions
+ - Add database entries for the 'B' parameter in the Jones-Dole viscosity equation for common ions
+ - Add test suites for solute property methods, hardness, osmotic coefficient, and Debye length
+ - Improve logging system to work better when using pyEQL interactively
+ - Improved README with graphics and rich formatting
+ - Fix bug related to activity and osmotic coefficients for multivalent salts
+ - Fix bug related to retreival of water properties
+ - Documentation enhancements and fixes
+ 
 0.2.2 (2015-08-28)
 ------------------
 
