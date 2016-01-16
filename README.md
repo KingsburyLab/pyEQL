@@ -1,5 +1,7 @@
-pyEQL: A Python library for solution chemistry
-==============================================
+![](pyeql-logo.png)
+
+A Python library for solution chemistry
+=======================================
 
 pyEQL is a Python library that provides tools for modeling aqueous electrolyte
 solutions. It allows the user to manipulate solutions as Python
@@ -7,9 +9,13 @@ objects, providing methods to populate them with solutes, calculate
 species-specific properties (such as activity and diffusion coefficients),
 and retreive bulk properties (such as density, conductivity, or volume).
 
-It aspires to provide flexibilty, transparency, and extensibility. 
-It is designed to be customizable and easy to integrate into projects 
+![](pyeql-demo.png)
+---
+
+pyEQL is designed to be customizable and easy to integrate into projects 
 that require modeling of chemical thermodyanmics of aqueous solutions.
+It aspires to provide a flexible, extensible framework for the user, with a 
+high level of transparency about data sources and calculation methods. 
 
 pyEQL runs on Python 3.0+ and is licensed under LGPL.
 
@@ -25,23 +31,17 @@ Key Features
 - Not limited to dilute solutions. pyEQL contains out of the box support for 
   the Pitzer Model and other methods for modeling concentrated solutions.
   
-- Extensible database system that facilitates integrating supplemental 
-  parameter values with pyEQL's defaults.
+- Extensible database system that allows one to supplement pyEQL's default
+  parameters with project-specific data.
 
-- Units-aware calculations (by means of the pint library)
-  
-- Logging system provides robust documentation of data sources, assumptions, 
-  and limitations of all calculations
+- Units-aware calculations (by means of the [pint](https://github.com/hgrecco/pint) library)
 
 Documentation
 -------------
-Detailed documentation is available at http://pyeql.readthedocs.org/
+Detailed documentation is available at <https://pyeql.readthedocs.org/>
 
 Dependencies
 ------------
  - Python 3
- - pint - for units-aware calculations
- - scipy - for certain nonlinear equation solvers
-
-
-
+ - [pint](https://github.com/hgrecco/pint) - for units-aware calculations
+ - [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers

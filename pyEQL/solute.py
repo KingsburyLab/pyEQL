@@ -1,10 +1,13 @@
 '''
-pyEQL solute class
+pyEQL Solute class
 
 This file contains functions and methods for managing properties of 
-individual solutes
+individual solutes. The Solute class contains methods for accessing
+ONLY those properties that DO NOT depend on solution composition.
+Solute properties such as activity coefficient or concentration
+that do depend on compsition are accessed via Solution class methods.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
@@ -15,12 +18,21 @@ from pyEQL import unit
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 # import the parameters database
 from pyEQL import paramsDB as db
@@ -188,81 +200,6 @@ class Solute:
         '''
         quantity = unit(amount)
         self.moles = quantity.to('moles','chem',mw=self.mw,volume=volume,solvent_mass=solvent_mass)  
-  
-    def get_molar_conductivity(self,temperature=25*unit('degC')):
-        # TODO - requires diffusion coefficient which may not be present
-        '''
-        Calculate the molar (equivalent) conductivity for a solute
-        
-        Parameters
-        ----------
-        temperature : Quantity, optional
-                    The temperature of the parent solution. Defaults to 25 degC if omitted.
-            
-        Returns
-        -------
-        float
-                The molar or equivalent conductivity of the species at infinte dilution.
-        
-        Notes
-        -----
-        Molar conductivity is calculated from the Nernst-Einstein relation [#]_
-            
-        .. math::
-        
-            \\kappa_i = {z_i^2 D_i F^2 \\over RT}
-                
-        Note that the diffusion coefficient is strongly variable with temperature.
-        
-        References
-        ----------
-        
-        .. [#] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
-        
-        Examples
-        --------
-        TODO
-             
-        '''
-        diffusion_coefficient = self.get_parameter('diffusion_coefficient')
-        
-        molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_formal_charge() ** 2 / (unit.R * temperature)
-        
-        return molar_cond.to('mS / cm / (mol/L)')
-            
-    def get_mobility(self,temperature=25*unit('degC')):
-        '''
-        Calculate the ionic mobility of the solute
-        
-        Parameters
-        ----------
-        temperature : Quantity, optional
-                    The temperature of the parent solution. Defaults to 25 degC if omitted.
-        
-        Returns
-        -------
-        float : the ionic mobility
-        
-        
-        Notes
-        -----
-        This function uses the Einstein relation to convert a diffusion coefficient
-        into an ionic mobility [#]_
-        
-        .. math::
-            
-            \mu_i = {F |z_i| D_i \over RT}
-        
-        References
-        ----------
-        .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
-        
-        '''
-        mobility = unit.N_A * unit.e * abs(self.get_formal_charge()) * self.get_parameter('diffusion_coefficient') / (unit.R * temperature)
-        
-        logger.info('Computed ionic mobility as %s from D = %s at T=%S' % mobility,self.get_diffusion_coefficient(),temperature)
-        
-        return mobility
         
     #set output of the print() statement
     def __str__(self):

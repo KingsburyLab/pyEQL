@@ -4,7 +4,7 @@ and assembling database entries for use by pyEQL.
 
 By default, pyEQL searches all files in the /database subdirectory for parameters.
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -12,12 +12,21 @@ By default, pyEQL searches all files in the /database subdirectory for parameter
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 # for parameter creation functions
 import pyEQL.parameter as pm
@@ -220,16 +229,33 @@ class Paramsdb:
         else:
             return False
         
-    def print_database(self):
+    def print_database(self,solute=None):
         ''' Function to generate a human-friendly summary of all the database parameters
         that are actually used in the simulation
+        
+        Parameters
+        ----------
+        solute : str, optional
+                The chemical formula for a species. If this argument of supplied, the output
+                will contain only the database entries for this species. Otherwise,
+                all database entries will be printed.
       
         '''
-        for key in self.parameters_database.keys():
-            print('Parameters for species %s:' % key)
-            print('--------------------------')
-            for item in self.parameters_database[key]:
-                print(item)
+        if solute is not None:
+            try:
+                key = solute
+                print('Parameters for species %s:' % key)
+                print('--------------------------\n')
+                for item in self.parameters_database[key]:
+                    print(item)
+            except KeyError:
+                print('Species %s not found in database.' % solute)
+        else:
+            for key in self.parameters_database.keys():
+                print('Parameters for species %s:' % key)
+                print('--------------------------\n')
+                for item in self.parameters_database[key]:
+                    print(item)
 
 def _parse_line(line):
     '''

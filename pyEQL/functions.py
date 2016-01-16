@@ -1,7 +1,7 @@
 '''
 pyEQL functions that take Solution objects as inputs or return Solution objects
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
@@ -22,12 +22,21 @@ from pyEQL import unit
 # logging system
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
+
+# add a handler for console output, since pyEQL is meant to be used interactively
+ch = logging.StreamHandler()
+
+# create formatter for the log
+formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+
+# add formatter to the handler
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def gibbs_mix(Solution1, Solution2):
     '''
@@ -366,3 +375,72 @@ def mix(Solution1, Solution2):
             Blend.add_solute(item,mix_species[item])
             
     return Blend
+
+
+def autogenerate(solution=""):
+    '''
+    This method provides a quick way to create Solution objects representing
+    commonly-encountered solutions, such as seawater and freshwater. 
+    
+    Parameters
+    ----------
+    solution : str
+                String representing the desired solution
+                Valid entries are 'seawater' and ''
+    Returns
+    -------
+    Solution : a pyEQL Solution object
+    
+    Notes
+    -----
+    The following sections explain the different solution options:
+    
+    - '' - empty solution, equivalent to pyEQL.Solution()
+    - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+    - 'seawater' - Standard Seawater. See Table 4 of the Reference for Composition [#]_
+
+    References
+    ----------
+    .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
+           the Reference-Composition Salinity Scale." Deep-sea Research. Part I 55(1), 2008, 50-72.
+
+    '''
+    
+    if solution == "":
+        temperature='25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = []
+    elif solution == 'seawater':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 8.1
+        solutes = [
+        ['Na+','10.78145 g/kg'],
+        ['Mg+2','1.28372 g/kg'],
+        ['Ca+2','0.41208 g/kg'],
+        ['K+','0.39910 g/kg'],
+        ['Sr+2','0.00795 g/kg'],
+        ['Cl-','19.35271 g/kg'],
+        ['SO4-2','2.71235 g/kg'],
+        ['HCO3-','0.10481 g/kg'],
+        ['Br-','0.06728 g/kg'],
+        ['CO3-2','0.01434 g/kg'],
+        ['B(OH)4','0.00795 g/kg'],
+        ['F-','0.00130 g/kg'],
+        ['OH-','0.00014 g/kg'],
+        ['B(OH)3','0.01944 g/kg'],
+        ['CO2','0.00042 g/kg'],
+        ]
+    elif solution == 'rainwater':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 6
+        solutes = [
+        ['HCO3-','10^-5.5 mol/L'],
+        ['CO3-2','10^-9 mol/L']
+        ]
+        
+    sol = pyEQL.Solution(solutes,temperature=temperature,pressure=pressure,pH=pH)
+    
+    return sol

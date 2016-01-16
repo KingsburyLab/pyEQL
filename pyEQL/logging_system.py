@@ -1,10 +1,11 @@
 # logging system
 ''' Create a logging system using Python's built-in module. 
-Add the null handler to avoid errors in case the calling application doesn't configure any handlers.
 
-NOTE: make sure to set the disable_existing_loggers option in the log configuration
-options of the calling application in order to avoid disabling the pyEQL module's log
- 
+Each module within pyEQL has its own logger, with a StreamHandler attached to it that
+directs formatted messages to standard output. This is intended to facilitate the use
+of pyEQL as an interactive console program, at the expense of some flexibility when
+using it as a true library in another application.
+
 The default logging levels are mapped to pyEQL events as follows:
  
 DEBUG       -   detailed messages about function execution including methods used, data sources,
@@ -14,7 +15,7 @@ WARNING     -   assumptions or limitations of module output
 ERROR       -   Module could not complete a task due to invalid input or other problem
 CRITICAL    -   not used
 
-:copyright: 2013-2015 by Ryan S. Kingsbury
+:copyright: 2013-2016 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 '''
