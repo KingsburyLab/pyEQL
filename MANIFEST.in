@@ -1,0 +1,5 @@
+include README COPYING CHANGELOG LICENSE README.md README.rst README.txt CHANGES pyeql-logo.png pyeql-logo.svg
+recursive-include pyEQL/tests *
+recursive-include pyEQL/docs *
+prune pyEQL/docs/build
+global-exclude *.pyc *~ .DS_Store *__pycache__* *.pyo

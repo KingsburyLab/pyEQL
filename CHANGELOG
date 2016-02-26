@@ -1,7 +1,13 @@
 pyEQL Changelog
 ===============
 
-0.3.0 (2015-01-15)
+0.3.1 (2016-02-24)
+------------------
+
+ - Fix packaging problems preventing installation from PyPi
+ - Fix character encoding issue in Erying_viscosity database file
+ 
+0.3.0 (2016-01-15)
 ------------------
 
  - Add method to calculate the total concentration of an element in a solution

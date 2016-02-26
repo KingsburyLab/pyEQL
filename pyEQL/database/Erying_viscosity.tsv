@@ -1,7 +1,7 @@
 Name:	erying_viscosity_coefficients			
 Description:	ao, a1,bo,b1 parameters for the viscosity equation presented in Vasquez-Castillo (2013)			
 Unit:	None			
-Reference:	Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension of the McAllister model to correlate kinematic viscosity of electrolyte solutions. Fluid Phase Equilib. 2013, 358, 44–49.			
+Reference:	Vasquez-Castillo, G.; Iglesias-Silva, G. A.; Hall, K. R. An extension of the McAllister model to correlate kinematic viscosity of electrolyte solutions. Fluid Phase Equilib. 2013, 358, 44-49.			
 Temperature:				
 Pressure:				
 Ionic Strength:				
