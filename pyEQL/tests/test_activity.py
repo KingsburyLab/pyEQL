@@ -39,7 +39,265 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         a1 = self.s1.get_activity_coefficient('Na+')
         a2 = self.s1.get_activity_coefficient('Cl-')
         self.assertEqual(a1,a2)
+    
+    def test_activity_crc_HCl(self):
+        '''        
+        calculate the activity coefficient of HCl at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        cation = 'H+'
+        nu_cation = 1
+        anion = 'Cl-'
+        nu_anion = 1
         
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.965,0.952,0.929,0.905,0.876,0.832,0.797,0.768,0.759,0.811,1.009,2.380]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i] * nu_cation) + 'mol/kg'
+                conc_a = str(conc_list[i]* nu_anion) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute(cation,conc_c)
+                sol.add_solute(anion,conc_a)
+                act_cat = sol.get_activity_coefficient(cation)
+                act_an = sol.get_activity_coefficient(anion)
+                result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,1)    
+
+    def test_activity_crc_CsI(self):
+        '''        
+        calculate the activity coefficient of CsI at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        cation = 'Cs+'
+        nu_cation = 1
+        anion = 'I-'
+        nu_anion = 1
+        
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.965,0.951,0.925,0.898,0.863,0.804,0.749,0.688,0.601,0.534,0.470]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i] * nu_cation) + 'mol/kg'
+                conc_a = str(conc_list[i]* nu_anion) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute(cation,conc_c)
+                sol.add_solute(anion,conc_a)
+                act_cat = sol.get_activity_coefficient(cation)
+                act_an = sol.get_activity_coefficient(anion)
+                result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,2)    
+                    
+    def test_activity_crc_bacl2(self):
+        '''        
+        calculate the activity coefficient of BaCl2 at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.887,0.849,0.782,0.721,0.653,0.559,0.492,0.436,0.391,0.393]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i]) + 'mol/kg'
+                conc_a = str(conc_list[i]*2) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute('Ba+2',conc_c)
+                sol.add_solute('Cl-',conc_a)
+                act_cat = sol.get_activity_coefficient('Ba+2')
+                act_an = sol.get_activity_coefficient('Cl-')
+                result=(act_cat ** 1 * act_an ** 2) ** (1/3)
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,2)
+    
+    def test_activity_crc_licl(self):
+        '''        
+        calculate the activity coefficient of LiCl at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.965,0.952,0.928,0.904,0.874,0.827,0.789,0.756,0.739,0.775,0.924,2.0]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i]) + 'mol/kg'
+                conc_a = str(conc_list[i]) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute('Li+',conc_c)
+                sol.add_solute('Cl-',conc_a)
+                act_cat = sol.get_activity_coefficient('Li+')
+                act_an = sol.get_activity_coefficient('Cl-')
+                result=(act_cat ** 1 * act_an ** 1) ** (1/2)
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,1)    
+
+    def test_activity_crc_rbcl(self):
+        '''        
+        calculate the activity coefficient of RbCl at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.965,0.951,0.926,0.900,0.867,0.811,0.761,0.707,0.633,0.583,0.546,0.544]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i]) + 'mol/kg'
+                conc_a = str(conc_list[i]) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute('Rb+',conc_c)
+                sol.add_solute('Cl-',conc_a)
+                result=sol.get_activity_coefficient('Rb+')
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,2)
+
+    def test_activity_crc_MgCl2(self):
+        '''        
+        calculate the activity coefficient of MgCl2 at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        cation = 'Mg+2'
+        nu_cation = 1
+        anion = 'Cl-'
+        nu_anion = 2
+        
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.889,0.852,0.790,0.734,0.672,0.590,0.535,0.493,0.485,0.577,1.065,14.40]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i] * nu_cation) + 'mol/kg'
+                conc_a = str(conc_list[i]* nu_anion) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute(cation,conc_c)
+                sol.add_solute(anion,conc_a)
+                act_cat = sol.get_activity_coefficient(cation)
+                act_an = sol.get_activity_coefficient(anion)
+                result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,1)
+
+    def test_activity_crc_KBr(self):
+        '''        
+        calculate the activity coefficient of KBr at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        cation = 'K+'
+        nu_cation = 1
+        anion = 'Br-'
+        nu_anion = 1
+        
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.965,0.952,0.927,0.902,0.870,0.817,0.771,0.722,0.658,0.617,0.593,0.626]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i] * nu_cation) + 'mol/kg'
+                conc_a = str(conc_list[i]* nu_anion) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute(cation,conc_c)
+                sol.add_solute(anion,conc_a)
+                act_cat = sol.get_activity_coefficient(cation)
+                act_an = sol.get_activity_coefficient(anion)
+                result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,2)
+                    
+    def test_activity_crc_k2so4(self):
+        '''        
+        calculate the activity coefficient of K2SO4 at each concentration and compare
+        to experimental data
+                    
+        Experimental activity coefficient values at 25 degC are found in 
+        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        in: W.M. Haynes (Ed.), 92nd ed., 2011.
+    
+        '''
+        # list of concentrations to test, mol/kg
+        conc_list = [0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5]
+    
+        # list of published experimental activity coefficients
+        pub_activity_coeff = [0.885,0.844,0.772,0.704,0.625,0.511,0.424,0.343,0.251]
+    
+        for i in range(len(conc_list)):
+            with self.subTest(conc=conc_list[i]):
+                conc_c = str(conc_list[i]*2) + 'mol/kg'
+                conc_a = str(conc_list[i]) + 'mol/kg'
+                sol = pyEQL.Solution()
+                sol.add_solute('K+',conc_c)
+                sol.add_solute('SO4-2',conc_a)
+                act_cat = sol.get_activity_coefficient('K+')
+                act_an = sol.get_activity_coefficient('SO4-2')
+                result=(act_cat ** 2 * act_an ** 1) ** (1/3)
+                expected = pub_activity_coeff[i]
+                
+                self.assertAlmostEqual(result,expected,1)
+                        
     def test_activity_pitzer_nacl_1(self):
         '''        
         calculate the activity coefficient at each concentration and compare
