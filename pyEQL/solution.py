@@ -382,6 +382,54 @@ class Solution:
         '''
         return self.get_mass() / self.get_volume()
     
+    def get_dielectric_constant(self):
+        '''
+        Returns the dielectric constant of the solution.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: the dielectric constant of the solution, dimensionless.
+        
+        Notes
+        -----
+        Implements the following equation as given by [#]_
+        
+        .. math:: \\epsilon = \\epsilon_solvent \\over 1 + \\sum_i \\alpha_i x_i
+        
+        where \\alpha_i is a coefficient specific to the solvent and ion, and x_i 
+        is the mole fraction of the ion in solution.
+        
+        
+        References
+        ----------  
+        .. [#] [1] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier, 
+        An empirical equation for the dielectric constant in aqueous and nonaqueous 
+        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123. 
+        doi:10.1016/j.fluid.2014.05.037.
+        '''
+        di_water = h2o.water_dielectric_constant(self.get_temperature())
+        
+        denominator = 1
+        for item in self.components:
+            # ignore water
+            if item != 'H2O':
+                # skip over solutes that don't have parameters
+                try:
+                    fraction = self.get_mole_fraction(item)
+                    coefficient= self.get_solute(item).get_parameter('dielectric_parameter_water')
+                    denominator += coefficient * fraction
+                except TypeError:
+                    logger.warning('No dielectric parameters found for species %s.' % item)
+                    continue        
+        
+        dielectric_constant = di_water / denominator
+        
+        return dielectric_constant
+    
     def get_viscosity_relative(self):
         '''
         Return the viscosity of the solution relative to that of water
@@ -1381,10 +1429,6 @@ class Solution:
         
             \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
         
-        NOTE: The influence of ionic strength on the dielectric constant is not
-        currently accounted for. The dielectric constant of pure water is used
-        in the calculation.        
-        
         Parameters
         ----------
         None
@@ -1401,17 +1445,14 @@ class Solution:
         See Also
         --------
         get_ionic_strength()
-        h2o.water_dielectric_constant()
+        get_dielectric_constant()
         
         '''
         temperature = self.get_temperature()
-        # TODO - make dielectric constant dependent on ionic strength
+        
         # to preserve dimensionality, convert the ionic strength into mol/L units
         ionic_strength= self.get_ionic_strength().magnitude*unit('mol/L')
-        dielectric_constant = h2o.water_dielectric_constant()
-        
-        logger.warning('Debye length is being calculated using the dielectric constant for pure water. The influence \
-        of ionic strength is not yet accounted for')
+        dielectric_constant = self.get_dielectric_constant()
         
         debye_length = (dielectric_constant * unit.epsilon_0 * unit.k * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength)) ** 0.5
         
@@ -1428,11 +1469,7 @@ class Solution:
             \\lambda_B = e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)
         
         It representes the distance at which electrostatic interactions between
-        particles become comparable in magnitude to the thermal energy.
-        
-        NOTE: The influence of ionic strength on the dielectric constant is not
-        currently accounted for. The dielectric constant of pure water is used
-        in the calculation.        
+        particles become comparable in magnitude to the thermal energy.       
         
         Parameters
         ----------
@@ -1455,15 +1492,11 @@ class Solution:
 
         See Also
         --------
-        h2o.water_dielectric_constant()
+        get_dielectric_constant()
         
         '''
-        # TODO - make dielectric constant dependent on ionic strength
         temperature = self.get_temperature()
-        dielectric_constant = h2o.water_dielectric_constant()
-        
-        logger.warning('Bjerrum length is being calculated using the dielectric constant for pure water. The influence \
-        of ionic strength is not yet accounted for')
+        dielectric_constant = self.get_dielectric_constant()
         
         bjerrum_length = unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
          * temperature)
