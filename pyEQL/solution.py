@@ -1084,7 +1084,7 @@ class Solution:
                 # this is necessary for solutions inside e.g. an ion exchange
                 # membrane, where the cation and anion concentrations may be
                 # unequal
-                molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+                molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
                 
                 activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
                 molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
