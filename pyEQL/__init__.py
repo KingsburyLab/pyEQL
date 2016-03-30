@@ -16,3 +16,11 @@ paramsDB = database.Paramsdb()
 from pyEQL.parameter import unit
 from pyEQL.functions import *
 from pyEQL.solution import Solution
+
+# enable easy testing
+def test():
+    """Run all tests.
+    :return: a :class:`unittest.TestResult` object
+    """
+    from .tests import run
+    return run()
