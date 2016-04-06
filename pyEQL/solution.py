@@ -666,7 +666,7 @@ class Solution:
         # TODO - tie this into parameter() and solvent() objects
         partial_molar_volume_water = 1.82e-5 *unit('m ** 3/mol')
         
-        osmotic_pressure = - unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
+        osmotic_pressure = -1 * unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
         logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
         return osmotic_pressure.to('Pa')
 
