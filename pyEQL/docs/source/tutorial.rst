@@ -94,7 +94,7 @@ the magnitude, units, or dimensionality can be retrieved via attributes:
     >>> test_qty.dimensionality
     <UnitsContainer({'[length]': -3.0, '[mass]': 1.0})>
 
-See the `pint documentation <http://pint.readthedocs.org/>`_ for more details on creating and manipulating Quantity objects.
+See the `pint documentation <http://pint.readthedocs.io/>`_ for more details on creating and manipulating Quantity objects.
 
 
 Using pyEQL in your projects
@@ -110,4 +110,4 @@ In order to directly create Quantity objects, you need to explicitly import the 
     >>> test_qty = pyEQL.unit('1 kg/m**3')
     1.0 kilogram/meter3 
 
-.. warning:: if you use pyEQL in conjunction with another module that also uses pint for units-aware calculations, you must convert all Quantity objects to strings before passing them to the other module, as pint cannot perform mathematical operations on units that belong to different "registries."  See the `pint documentation <http://pint.readthedocs.org/>`_ for more details.
+.. warning:: if you use pyEQL in conjunction with another module that also uses pint for units-aware calculations, you must convert all Quantity objects to strings before passing them to the other module, as pint cannot perform mathematical operations on units that belong to different "registries."  See the `pint documentation <http://pint.readthedocs.io/>`_ for more details.
