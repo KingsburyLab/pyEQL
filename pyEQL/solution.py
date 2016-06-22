@@ -697,11 +697,15 @@ class Solution:
         TODO
         
         '''
-        if activity is True:
-            return -1 * math.log10(self.get_activity(solute))
-        elif activity is False:
-            return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
-
+        try:
+            if activity is True:
+                return -1 * math.log10(self.get_activity(solute))
+            elif activity is False:
+                return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
+        # if the solute has zero concentration, the log will generate a ValueError
+        except ValueError:
+            return 0
+            
     def get_amount(self,solute,units):
         '''
         Return the amount of 'solute' in the parent solution
@@ -1775,11 +1779,15 @@ class Solution:
         
         # loop through all the components and add their potential energy
         for item in self.components:
-            if activity_correction is True:
-                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
-            else:
-                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
-    
+            try:
+                if activity_correction is True:
+                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
+                else:
+                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
+            # If we have a solute with zero concentration, we will get a ValueError
+            except ValueError:
+                continue
+                
         return E.to('J')
 
     def get_lattice_distance(self,solute):
