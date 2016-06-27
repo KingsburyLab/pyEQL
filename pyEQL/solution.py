@@ -448,18 +448,18 @@ class Solution:
         #if self.get_ionic_strength().magnitude > 0.2:
          #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
         
-#        viscosity_rel = 1
-#        for item in self.components:
-#            # ignore water
-#            if item != 'H2O':
-#                # skip over solutes that don't have parameters
-#                try:
-#                    conc = self.get_amount(item,'mol/kg').magnitude
-#                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
-#                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-#                    coefficients[2] * conc ** 2
-#                except TypeError:
-#                    continue
+        #        viscosity_rel = 1
+        #        for item in self.components:
+        #            # ignore water
+        #            if item != 'H2O':
+        #                # skip over solutes that don't have parameters
+        #                try:
+        #                    conc = self.get_amount(item,'mol/kg').magnitude
+        #                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+        #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+        #                    coefficients[2] * conc ** 2
+        #                except TypeError:
+        #                    continue
         viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())    
         
         return viscosity_rel
