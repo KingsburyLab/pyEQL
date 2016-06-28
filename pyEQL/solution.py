@@ -1220,11 +1220,11 @@ class Solution:
             concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
             Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
             
-            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
+            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,Salt.formula))
             return osmotic_coefficient
 
         else:
-            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
+            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % Salt.formula)
             return unit('1 dimensionless')
     
     def get_water_activity(self):

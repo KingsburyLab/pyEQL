@@ -10,6 +10,7 @@ pyEQL Changelog
  - Fix bug causing activity corrections for non 1:1 salts to be calculated incorrectly (#15)
  - Fix bug causing 'bad operand type' error when calculating osmotic pressure on some systems
  - Fix bug causing ValueError exceptions when a solute has zero concentration
+ - Make output of get_osmotic_coefficient more verbose when Pitzer parameters are not found
 
 0.3.1 (2016-02-24)
 ------------------
