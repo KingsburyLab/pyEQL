@@ -40,7 +40,7 @@ logger.addHandler(ch)
 
 def gibbs_mix(Solution1, Solution2):
     '''
-    Return the Gibbs energy change associated with mixing two solutions
+    Return the Gibbs energy change associated with mixing two solutions.
 
     Parameters
     ----------
@@ -49,8 +49,8 @@ def gibbs_mix(Solution1, Solution2):
         
     Returns
     -------
-    float
-        The change in Gibbs eneryg associated with complete mixing of the
+    Quantity
+        The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
     
     Notes
@@ -72,8 +72,8 @@ def gibbs_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-           A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -85,10 +85,9 @@ def gibbs_mix(Solution1, Solution2):
     term_list = {concentrate:0, dilute:0, blend:0}
     temperature = blend.get_temperature()
 
-    # calculte the entropy change and number of moles solute for each solution
+    # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
         for solute in solution.components:
-            #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_activity(solute))
 
@@ -105,7 +104,7 @@ def entropy_mix(Solution1, Solution2):
         
     Returns
     -------
-    float
+    Quantity
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
     
@@ -128,8 +127,8 @@ def entropy_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-           A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -143,9 +142,7 @@ def entropy_mix(Solution1, Solution2):
 
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
-        
         for solute in solution.components:
-            #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_amount(solute,'fraction'))
 
@@ -206,7 +203,7 @@ def donnan_eql(solution,fixed_charge):
     References
     ----------
     
-    .. [#] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
+    .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
            Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     
@@ -322,6 +319,16 @@ def mix(Solution1, Solution2):
     Returns a new Solution object that results from the mixing of Solution1
     and Solution2
     
+    Parameters
+    ----------
+    Solution1, Solution2 : Solution objects
+        The two solutions to be mixed.
+        
+    Returns
+    -------
+    Solution
+        A Solution object representing the mixed solution.
+    
     '''
     # check to see if the two solutions have the same solvent
     if not Solution1.solvent_name == Solution2.solvent_name:
@@ -386,10 +393,12 @@ def autogenerate(solution=""):
     ----------
     solution : str
                 String representing the desired solution
-                Valid entries are 'seawater' and ''
+                Valid entries are 'seawater' and 
+                
     Returns
     -------
-    Solution : a pyEQL Solution object
+    Solution
+        A pyEQL Solution object.
     
     Notes
     -----
@@ -402,7 +411,7 @@ def autogenerate(solution=""):
     References
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
-           the Reference-Composition Salinity Scale." Deep-sea Research. Part I 55(1), 2008, 50-72.
+           the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
 
     '''
     
