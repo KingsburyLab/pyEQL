@@ -1853,7 +1853,7 @@ class Solution:
         if name == 'diffusion_coefficient':
             if base_value is not None:
                 # correct for temperature and viscosity
-                # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
+                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 
                 # where :math:`\mu` is the dynamic viscosity
                 # assume that the base viscosity is that of pure water
                 return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
@@ -1905,13 +1905,11 @@ class Solution:
         The chemical potential energy (related to the Gibbs mixing energy) is
         calculated as follows: [#]_
             
-        .. math::
-        
-            E = R T \sum_i n_i  \ln a_i
+        .. math::      E = R T \sum_i n_i  \ln a_i
             
         or 
-            
-            E = R T \sum_i n_i \ln x_i
+        
+        .. math::      E = R T \sum_i n_i \ln x_i
         
         Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
         :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of

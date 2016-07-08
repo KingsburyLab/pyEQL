@@ -46,7 +46,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -81,7 +81,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -116,7 +116,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -146,7 +146,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -176,7 +176,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -204,7 +204,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -239,7 +239,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -274,7 +274,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        CRC Handbook of Chemistry and Physics, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
         in: W.M. Haynes (Ed.), 92nd ed., 2011.
     
         '''
@@ -304,7 +304,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
         to experimental data
                     
         Experimental activity coefficient values at 25 degC are found in 
-        J. Phys. Chem. Reference Data Vol 13 (1), 1984, p.53.
+        *J. Phys. Chem. Reference Data* Vol 13 (1), 1984, p.53.
     
         '''
         # list of concentrations to test, mol/kg
@@ -333,17 +333,17 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                     
         Experimental osmotic coefficients for NaCl are found in:
         Pitzer and Pelper, 1984. "Thermodyamic Properties of Aqueous Sodium Chloride Solutions"
-        J. Phys. Chem. Ref. Data 13(1).
+        *J. Phys. Chem. Ref. Data* 13(1).
         
         Osmotic coefficients were converted into water activity according to the equation
         found in 
         Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, 
         Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently 
-        neglected property." //Chemical Society Review// 34, 440-458.
+        neglected property." *Chemical Society Review* 34, 440-458.
         
-        $$ ln a_w = - \Phi M_w \sum_i m_i    $$
+        .. math:: ln a_w = - \Phi M_w \sum_i m_i 
                 
-        Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
+        Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
     
         '''
