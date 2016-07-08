@@ -644,6 +644,11 @@ class Solution:
         Where :math:`\\Pi` is the osmotic pressure, :math:`V_w` is the partial
         molar volume of water (18.2 cm**3/mol), and :math:`a_w` is the water
         activity.
+        
+        See Also
+        --------
+        get_water_activity
+        get_salt
                 
         References
         ----------
@@ -1006,7 +1011,20 @@ class Solution:
     
     def get_salt(self):
         '''
-        Match ions in the solution to a parent salt.
+        Determine the predominant salt in a solution of ions.
+        
+        Many empirical equations for solution properties such as activity coefficient,
+        partial molar volume, or viscosity are based on the concentration of 
+        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
+        containing Na+, Cl-, and Mg+2), it is generally not possible to direclty model
+        these quantities. pyEQL works around this problem by treating such solutions
+        as single salt solutions.
+        
+        The get_salt() method examines the ionic composition of a solution and returns
+        an object that identifies the single most predominant salt in the solution, defined
+        by the cation and anion with the highest mole fraction. The Salt object contains 
+        information about the stoichiometry of the salt to enable its effective concentration
+        to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
         
         Parameters
         ----------
@@ -1016,11 +1034,36 @@ class Solution:
         -------
         Salt
             Salt object containing information about the parent salt.
-            
+        
         See Also
         --------
-        salt_ion_match.py
+        get_activity
+        get_activity_coefficient
+        get_water_activity
+        get_osmotic_coefficient
+        get_osmotic_pressure
+        _get_solute_volume
+        get_viscosity_kinematic
         
+        Examples
+        --------
+        >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
+        >>> s1.get_salt()
+        <pyEQL.salt_ion_match.Salt object at 0x7fe6d3542048>
+        >>> s1.get_salt().formula
+        'NaCl'
+        >>> s1.get_salt().nu_cation
+        1
+        >>> s1.get_salt().z_anion
+        -1
+        
+        >>> s2 = pyEQL.Solution([['Na+','0.1 mol/kg'],['Mg+2','0.2 mol/kg'],['Cl-','0.5 mol/kg']])
+        >>> s2.get_salt().formula
+        'MgCl2'
+        >>> s2.get_salt().nu_anion
+        2
+        >>> s2.get_salt().z_cation
+        2
         '''
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
@@ -1028,7 +1071,19 @@ class Solution:
       
 ## Activity-related methods
     def get_activity_coefficient(self,solute):
-        '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
+        '''Return the activity coefficient of a solute in solution. 
+
+        Whenever the appropriate parameters are available, the Pitzer model [#]_ is used. 
+        If no Pitzer parameters are available, then the appropriate equations are selected
+        according to the following logic: [#]_
+        
+        I <= 0.0005: Debye-Huckel equation
+        0.005 < I <= 0.1:  Guntelberg approximation
+        0.1 < I <= 0.5: Davies equation
+        I > 0.5: Raises a warning and returns activity coefficient = 1
+        
+        The ionic strength, activity coefficients, and activities are all
+        calculated based on the molal (mol/kg) concentration scale.
         
         Parameters
         ----------
@@ -1041,16 +1096,58 @@ class Solution:
         
         See Also
         --------
-        get_activity_coefficient_debyehuckel
-        get_activity_coefficient_guntelberg
-        get_activity_coefficient_davies
-        get_activity_coefficient_pitzer
+        get_ionic_strength
+        get_salt
+        activity.get_activity_coefficient_debyehuckel
+        activity.get_activity_coefficient_guntelberg
+        activity.get_activity_coefficient_davies
+        activity.get_activity_coefficient_pitzer
+                
+        Notes
+        -----
+        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
+        Pitzer parameters for the predominant salt (identified using the get_salt() method)
+        are used in conjunction with the ionic strength calculated from the complete ionic
+        composition to calculate the activity coefficients *for ions in the predominant salt*.
         
+        For other ions (not in the predominant salt), the regular logic will apply. If the
+        ionic strength of a complex mixture is lower than 0.5 m, the corresponding equations will
+        be used to estimate the activity coefficient based on ionic strenght. However, if the ionic
+        strength is higher than 0.5m, this method will return an activity coefficient of 1 for any 
+        ions not in the predominant salt. pyEQL will raise a WARNING when this occurs.
+        
+        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
+        concentration" of the predominant salt by averaging the equivalent salt concentration of 
+        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
+        model to be applied to situations in which the ionic concentrations are unequal, or in which 
+        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
+        
+        This behavior is best illustrated with an example. In the solution below, the predominant
+        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
+        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
+        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
+        strength is too high to use other methods.
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+               A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+               
+        .. [#] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed, 
+               pp 165. Wiley Interscience, 1996.
+        
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
+        >>> s1.get_salt().formula
+        'MgCl2'
+        >>> soln.get_activity_coefficient('Mg+2')
+        <Quantity(0.4711660119505297, 'dimensionless')>
+        >>> soln.get_activity_coefficient('Na+')
+        (pyEQL.solution) - WARNING - Ionic strength too high to estimate activity for species Na+. 
+        Specify parameters for Pitzer model. Returning unit activity coefficient
+        <Quantity(1, 'dimensionless')>        
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
@@ -1120,7 +1217,7 @@ class Solution:
                 
     def get_activity(self,solute):
         '''
-        Return the thermodynamic activity of the solute in solution
+        Return the thermodynamic activity of the solute in solution on the molal scale.
        
         Parameters
         ----------
@@ -1133,22 +1230,23 @@ class Solution:
         -------
         The thermodynamic activity of the solute in question (dimensionless)
         
+        See Also
+        --------
+        get_activity_coefficient
+        get_ionic_strength
+        get_salt
+        
         Notes
         -----
         The thermodynamic activity is independent of the concentration scale used. However,
         the concentration and the activity coefficient must use corresponding scales. [#]_ [#]_
-        In this module, ionic strength, activity coefficients, and activities are all
+        The ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale.
         
         References
         ----------
         .. [#] http://adsorption.org/awm/utils/Activity.htm
         .. [#] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
-        
-        See Also
-        --------
-        get_activity_coefficient
-        get_ionic_strength
         
         '''
         # switch to the water activity function if the species is H2O
@@ -1163,24 +1261,71 @@ class Solution:
 
     def get_osmotic_coefficient(self):
         '''
-        Calculate the osmotic coefficient
+        Return the osmotic coefficient of an aqueous solution.
+        
+        Osmotic coefficient is calculated using the Pitzer model.[#]_ If appropriate parameters for 
+        the model are not available, then pyEQL raises a WARNING and returns an osmotic 
+        coefficient of 1.
 
         Returns
         -------
         Quantity : 
             The osmotic coefficient
-            
+        
+        See Also
+        --------
+        get_water_activity
+        get_ionic_strength
+        get_salt    
+        
         Notes
         -----
-        For ionic strengths below 0.5 mol/kg, the osmotic coefficient is assumed to equal 1.0.
-        1.0 will also be returned at higher ionic strengths if appropriate Pitzer
-        parameters are not supplied.
+        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
+        Pitzer parameters for the predominant salt (identified using the get_salt() method)
+        are used in conjunction with the ionic strength calculated from the complete ionic
+        composition to calculate the osmotic coefficient.
         
+        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
+        concentration" of the predominant salt by averaging the equivalent salt concentration of 
+        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
+        model to be applied to situations in which the ionic concentrations are unequal, or in which 
+        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
+        
+        This behavior is best illustrated with an example. In the solution below, the predominant
+        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
+        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
+        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
+        strength is too high to use other methods
+        
+        In the third example below, the predominant salt is MgCl2. Therefore, the Pitzer parameters
+        for MgCl2 are used to calculate the osmotic coefficient. The effective concentration of 
+        MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 0.8 / 2 (for Cl-), or 0.3 m. Compare 
+        the result to the second example, in which only MgCl2 is present and the salt concentration
+        is also 0.3m. The slightly higher ionic strength due to the presence of the sodium ions
+        changes the value of the osmotic coefficient.
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+               A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.9235996615888572, 'dimensionless')>
+        
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.891154788474231, 'dimensionless')>
+                
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
+        >>> s1.get_salt().formula
+        'MgCl2'
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.8974036010550355, 'dimensionless')>
+        
         '''
         temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
@@ -1229,23 +1374,18 @@ class Solution:
     
     def get_water_activity(self):
         '''
-        Return the water activity
+        Return the water activity.
         
         Returns
         -------
-        float : 
+        Quantity : 
             The thermodynamic activity of water in the solution.
-            
-        Examples
-        --------
-        If 'soln' is a 0.5 mol/kg NaCl solution at 25 degC:
-        >>> soln.get_water_activity()
-        0.9835...
         
-        If 'soln' is a 5.11 mol/kg NaHCO2 (sodium formate) solution at 25 degC:
-        (literature value from Cabot specialty fluids is 0.82)
-        >>> soln.get_water_activity()
-        0.8631...
+        See Also
+        --------
+        get_osmotic_coefficient
+        get_ionic_strength
+        get_salt
         
         Notes
         -----
@@ -1253,7 +1393,7 @@ class Solution:
         
         .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
-        Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
+        Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
         
         If appropriate Pitzer model parameters are not available, the
@@ -1261,9 +1401,14 @@ class Solution:
         
         References
         ----------
-        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
-           //Chemical Society Review// 34, 440-458.
-        
+        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of 
+        water in aqueous systems: A frequently neglected property." *Chemical Society Review* 34, 440-458.
+                
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.3 mol/kg'],['Cl-','0.3 mol/kg']])
+        >>> s1.get_water_activity()
+        <Quantity(0.9900944932888518, 'dimensionless')>
         '''
         '''
         pseudo code
@@ -1301,12 +1446,13 @@ class Solution:
         
         Returns
         -------
-        float : 
+        Quantity : 
             The ionic strength of the parent solution, mol/kg.
         
-        Examples
+        See Also
         --------
-        TODO
+        get_activity
+        get_water_activity        
         
         Notes
         -----
@@ -1314,8 +1460,17 @@ class Solution:
         
         .. math:: I = \sum_i m_i z_i^2
         
-        Where m_i is the molal concentration and z_i is the charge on species i.
+        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
         
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.get_ionic_strength()
+        <Quantity(0.20000010029672785, 'mole / kilogram')>
+        
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
+        >>> s1.get_ionic_strength()
+        <Quantity(1.0000001004383303, 'mole / kilogram')>
         '''
         self.ionic_strength=0
         for solute in self.components.keys():
