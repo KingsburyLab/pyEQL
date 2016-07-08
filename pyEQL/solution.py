@@ -400,7 +400,7 @@ class Solution:
         
         .. math:: \\epsilon = \\epsilon_solvent \\over 1 + \\sum_i \\alpha_i x_i
         
-        where \\alpha_i is a coefficient specific to the solvent and ion, and x_i 
+        where :math:`\\alpha_i` is a coefficient specific to the solvent and ion, and :math:`x_i`
         is the mole fraction of the ion in solution.
         
         
@@ -438,7 +438,7 @@ class Solution:
         
         .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
         
-        Where m is the molal concentration and B is an empirical parameter.
+        Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
         
         See 
         <http://downloads.olisystems.com/ResourceCD/TransportProperties/Viscosity-Aqueous.pdf>
@@ -624,7 +624,7 @@ class Solution:
     
     def get_osmotic_pressure(self):
         ''' 
-        Return the osmotic pressure of the solution relative to pure water
+        Return the osmotic pressure of the solution relative to pure water.
         
         Parameters
         ----------
@@ -634,7 +634,13 @@ class Solution:
         -------
         Quantity
                 The osmotic pressure of the solution relative to pure water in Pa
-                
+                        
+        See Also
+        --------
+        get_water_activity
+        get_osmotic_coefficient
+        get_salt
+        
         Notes
         -----
         Osmotic pressure is calculated based on the water activity [#]_ [#]_ :
@@ -644,11 +650,7 @@ class Solution:
         Where :math:`\\Pi` is the osmotic pressure, :math:`V_w` is the partial
         molar volume of water (18.2 cm**3/mol), and :math:`a_w` is the water
         activity.
-        
-        See Also
-        --------
-        get_water_activity
-        get_salt
+
                 
         References
         ----------
@@ -658,15 +660,13 @@ class Solution:
         
         Examples
         --------
-        If 'soln' is pure water, return 0
-        >>> soln.get_osmotic_pressure()
+        >>> s1=pyEQL.Solution()
+        >>> s1.get_osmotic_pressure()
         0.0
         
-        If 'soln' is 0.5 mol/kg NaCl
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
         >>> soln.get_osmotic_pressure()
-        2262808... pascal
-        
-        
+        <Quantity(906516.7318131207, 'pascal')>        
         '''
         # TODO - tie this into parameter() and solvent() objects
         partial_molar_volume_water = 1.82e-5 *unit('m ** 3/mol')
@@ -1098,10 +1098,10 @@ class Solution:
         --------
         get_ionic_strength
         get_salt
-        activity.get_activity_coefficient_debyehuckel
-        activity.get_activity_coefficient_guntelberg
-        activity.get_activity_coefficient_davies
-        activity.get_activity_coefficient_pitzer
+        activity_correction.get_activity_coefficient_debyehuckel
+        activity_correction.get_activity_coefficient_guntelberg
+        activity_correction.get_activity_coefficient_davies
+        activity_correction.get_activity_coefficient_pitzer
                 
         Notes
         -----
@@ -1497,7 +1497,7 @@ class Solution:
 
         .. math:: CB = F \sum_i n_i z_i
 
-        Where n_i is the number of moles, z_i is the charge on species i, and F is the Faraday constant.
+        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
 
         '''
         self.charge_balance=0
@@ -1521,7 +1521,8 @@ class Solution:
 
         .. math:: Alk = F \sum_i z_i C_B - \sum_i z_i C_A
 
-        Where C_B and C_A are conservative cations and anions, respectively (i.e. ions that do not participate in acid-base reactions), and z_i is their charge.
+        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively 
+        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
         In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions
         are all the anions of strong acids.
 
@@ -1688,7 +1689,7 @@ class Solution:
             
             t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
-        Where C is the concentration in mol/L.
+        Where :math:`C` is the concentration in mol/L.
         
         If `activity_correction` is True, the contribution of each ion to the
         transport number is corrected with an activity factor. See the documentation
@@ -1853,7 +1854,7 @@ class Solution:
             if base_value is not None:
                 # correct for temperature and viscosity
                 # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
-                # where $\mu$ is the dynamic viscosity
+                # where :math:`\mu` is the dynamic viscosity
                 # assume that the base viscosity is that of pure water
                 return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
             else:
@@ -1912,8 +1913,8 @@ class Solution:
             
             E = R T \sum_i n_i \ln x_i
         
-        Where n is the number of moles of substance, T is the temperature in kelvin,
-        R the ideal gas constant, x the mole fraction, and a the activity of
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
         each component.
         
         Note that dissociated ions must be counted as separate components,
@@ -1922,7 +1923,7 @@ class Solution:
         
         References
         ----------
-        .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.// Elsevier, 2007, pp. 23-37.
+        .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
         
         Examples
         --------

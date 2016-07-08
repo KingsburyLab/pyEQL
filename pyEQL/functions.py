@@ -61,8 +61,8 @@ def gibbs_mix(Solution1, Solution2):
     .. math::
         \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
     
-    Where n is the number of moles of substance, T is the temperature in kelvin,
-    and  subscripts b, c, and refer to the concentrated, dilute, and blended
+    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
     Solutions, respectively. 
     
     Note that dissociated ions must be counted as separate components,
@@ -116,8 +116,8 @@ def entropy_mix(Solution1, Solution2):
     .. math::
         \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
     
-    Where n is the number of moles of substance, T is the temperature in kelvin,
-    and  subscripts b, c, and refer to the concentrated, dilute, and blended
+    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
     Solutions, respectively. 
     
     Note that dissociated ions must be counted as separate components,
@@ -177,18 +177,18 @@ def donnan_eql(solution,fixed_charge):
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
     
-    Where subscripts + and - indicate the cation and anion, respectively, 
+    Where subscripts :math:`+` and :math:`-`` indicate the cation and anion, respectively, 
     the overbar indicates the membrane phase,
-    a represents activity, z represents charge, nu represents the stoichiometric
-    coefficient, V represents the partial molar volume of the salt, and 
-    delta pi is the difference in osmotic pressure between the membrane and the
+    :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
+    coefficient, :math:`V` represents the partial molar volume of the salt, and 
+    :math:``\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
     solution phase.
     
     In addition, electroneutrality must prevail within the membrane phase:
     
     .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
     
-    Where C represents concentration and X is the fixed charge concentration
+    Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
     in the membrane or ion exchange phase.
     
     This function solves these two equations simultaneously to arrive at the 
