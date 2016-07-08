@@ -7,6 +7,7 @@ pyEQL Changelog
  - Add ability to calculate dielectric constant based on solution composition for salts
  - Add database entries for the viscosity 'B' parameter for 63 more inorganic ions
  - Improve entry point for running automated tests (#16, thanks Hernan Grecco)
+ - Significantly expand documentation of activity correction methods
  - Fix bug causing activity corrections for non 1:1 salts to be calculated incorrectly (#15)
  - Fix bug causing 'bad operand type' error when calculating osmotic pressure on some systems
  - Fix bug causing ValueError exceptions when a solute has zero concentration
