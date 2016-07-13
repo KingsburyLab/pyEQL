@@ -1697,7 +1697,9 @@ class Solution:
             
             t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
-        Where :math:`C` is the concentration in mol/L.
+        Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
+        coefficient, and :math:`z_i` is the charge, and the summation extends 
+        over all species in the solution.
         
         If `activity_correction` is True, the contribution of each ion to the
         transport number is corrected with an activity factor. See the documentation
@@ -1705,11 +1707,10 @@ class Solution:
         
         References
         ----------
-        .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
+        .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific 
+        ion effects on membrane potential and the permselectivity of ion exchange membranes."" 
+        *Phys. Chem. Chem. Phys.* 2014, 16, 21673–21681.
         
-        See Also
-        --------
-        get_conductivity()
         '''
         denominator= 0
         numerator = 0
