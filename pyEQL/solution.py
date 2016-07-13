@@ -1587,7 +1587,12 @@ class Solution:
         
         .. math::
         
-            \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
+            \\kappa^{-1} = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
+        
+        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r` 
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the 
+        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the 
+        elementary charge, and :math:`N_A` is Avogadro's number.
         
         Parameters
         ----------
