@@ -1622,14 +1622,17 @@ class Solution:
         '''
         Return the Bjerrum length of a solution
         
-        Bjerrum length is calculated as [#]_
+        Bjerrum length representes the distance at which electrostatic 
+        interactions between particles become comparable in magnitude 
+        to the thermal energy.:math:`\\lambda_B` is calculated as [#]_
         
         .. math::
         
-            \\lambda_B = e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)
+            \\lambda_B = {e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)}
         
-        It representes the distance at which electrostatic interactions between
-        particles become comparable in magnitude to the thermal energy.       
+        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the 
+        Boltzmann constant, and :math:`T` is the temperature.
         
         Parameters
         ----------
