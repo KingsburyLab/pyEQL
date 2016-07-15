@@ -289,8 +289,7 @@ class Solution:
 
         See Also
         --------
-        get_amount()        
-        
+        get_amount()
         '''
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
@@ -510,7 +509,7 @@ class Solution:
                 
         See Also
         --------
-        get_density_dynamic
+        get_viscosity_dynamic
         get_viscosity_relative
         '''
         # identify the main salt in the solution
@@ -733,7 +732,7 @@ class Solution:
         --------
         add_amount
         set_amount
-        get_amount_total
+        get_total_amount
         '''
         try:
             if units == 'fraction':
@@ -1042,7 +1041,6 @@ class Solution:
         get_water_activity
         get_osmotic_coefficient
         get_osmotic_pressure
-        _get_solute_volume
         get_viscosity_kinematic
         
         Examples

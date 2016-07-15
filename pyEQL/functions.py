@@ -177,11 +177,11 @@ def donnan_eql(solution,fixed_charge):
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
     
-    Where subscripts :math:`+` and :math:`-`` indicate the cation and anion, respectively, 
+    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively, 
     the overbar indicates the membrane phase,
     :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
     coefficient, :math:`V` represents the partial molar volume of the salt, and 
-    :math:``\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
+    :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
     solution phase.
     
     In addition, electroneutrality must prevail within the membrane phase:
