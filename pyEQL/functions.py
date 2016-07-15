@@ -387,13 +387,14 @@ def mix(Solution1, Solution2):
 def autogenerate(solution=""):
     '''
     This method provides a quick way to create Solution objects representing
-    commonly-encountered solutions, such as seawater and freshwater. 
+    commonly-encountered solutions, such as seawater, rainwater, and wastewater. 
     
     Parameters
     ----------
     solution : str
                 String representing the desired solution
-                Valid entries are 'seawater' and 
+                Valid entries are 'seawater', 'rainwater',
+                'wastewater',and 'urine' 
                 
     Returns
     -------
@@ -407,11 +408,16 @@ def autogenerate(solution=""):
     - '' - empty solution, equivalent to pyEQL.Solution()
     - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
     - 'seawater' - Standard Seawater. See Table 4 of the Reference for Composition [#]_
+    - 'wastewater' - medium strength domestic wastewater. See Table 3-18 of [#]_
+    - 'urine' - typical human urine. See Table 3-15 of [#]_
 
     References
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
            the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+    
+    .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+            McGraw-Hill, 2013.
 
     '''
     
@@ -449,6 +455,40 @@ def autogenerate(solution=""):
         ['HCO3-','10^-5.5 mol/L'],
         ['CO3-2','10^-9 mol/L']
         ]
+    elif solution == 'wastewater':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = [
+        ['NH3','24.3 mg/L'],
+        ['PO4-3','7.6 mg/L'],
+        ['C6H12O6','410 mg/L'],
+        ['K+','16 mg/L'],
+        ['Cl-','59 mg/L'],
+        ['SO4-2','26 mg/L']
+        ]
+        logger.warning('Total organic carbon in wastewater is approximated as glucose')
+    elif solution == 'urine':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = [
+        ['CON2H4','20,000 mg/L'],
+        ['C4H7N3O','1,000 mg/L'],
+        ['C5H4N4O3','300 mg/L'],
+        ['NH4+','500 mg/L'],
+        ['HCO3-','300 mg/L'],
+        ['NH4+','500 mg/L'],
+        ['Mg+2','100 mg/L'],
+        ['PO4-3','1200 mg/L'],
+        ['Na+','6000 mg/L'],
+        ['K+','1500 mg/L'],
+        ['Cl-','1900 mg/L'],
+        ['SO4-2','1800 mg/L']
+        ]
+    else:
+        logger.error('Invalid solution entered - %s' % solution)
+        return None
         
     sol = pyEQL.Solution(solutes,temperature=temperature,pressure=pressure,pH=pH)
     
