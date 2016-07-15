@@ -40,7 +40,7 @@ logger.addHandler(ch)
 
 def gibbs_mix(Solution1, Solution2):
     '''
-    Return the Gibbs energy change associated with mixing two solutions
+    Return the Gibbs energy change associated with mixing two solutions.
 
     Parameters
     ----------
@@ -49,8 +49,8 @@ def gibbs_mix(Solution1, Solution2):
         
     Returns
     -------
-    float
-        The change in Gibbs eneryg associated with complete mixing of the
+    Quantity
+        The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
     
     Notes
@@ -61,8 +61,8 @@ def gibbs_mix(Solution1, Solution2):
     .. math::
         \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
     
-    Where n is the number of moles of substance, T is the temperature in kelvin,
-    and  subscripts b, c, and refer to the concentrated, dilute, and blended
+    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
     Solutions, respectively. 
     
     Note that dissociated ions must be counted as separate components,
@@ -72,8 +72,8 @@ def gibbs_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-           A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -85,10 +85,9 @@ def gibbs_mix(Solution1, Solution2):
     term_list = {concentrate:0, dilute:0, blend:0}
     temperature = blend.get_temperature()
 
-    # calculte the entropy change and number of moles solute for each solution
+    # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
         for solute in solution.components:
-            #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_activity(solute))
 
@@ -105,7 +104,7 @@ def entropy_mix(Solution1, Solution2):
         
     Returns
     -------
-    float
+    Quantity
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
     
@@ -117,8 +116,8 @@ def entropy_mix(Solution1, Solution2):
     .. math::
         \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
     
-    Where n is the number of moles of substance, T is the temperature in kelvin,
-    and  subscripts b, c, and refer to the concentrated, dilute, and blended
+    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
     Solutions, respectively. 
     
     Note that dissociated ions must be counted as separate components,
@@ -128,8 +127,8 @@ def entropy_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: 
-           A differential approach.// Elsevier, 2007, pp. 23-37.
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+           A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
     --------
@@ -143,9 +142,7 @@ def entropy_mix(Solution1, Solution2):
 
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
-        
         for solute in solution.components:
-            #print(solution.list_concentrations())
             if not solution.get_amount(solute,'fraction') == 0:
                 term_list[solution] += solution.get_amount(solute,'mol') * math.log(solution.get_amount(solute,'fraction'))
 
@@ -180,18 +177,18 @@ def donnan_eql(solution,fixed_charge):
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
     
-    Where subscripts + and - indicate the cation and anion, respectively, 
+    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively, 
     the overbar indicates the membrane phase,
-    a represents activity, z represents charge, nu represents the stoichiometric
-    coefficient, V represents the partial molar volume of the salt, and 
-    delta pi is the difference in osmotic pressure between the membrane and the
+    :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
+    coefficient, :math:`V` represents the partial molar volume of the salt, and 
+    :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
     solution phase.
     
     In addition, electroneutrality must prevail within the membrane phase:
     
     .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
     
-    Where C represents concentration and X is the fixed charge concentration
+    Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
     in the membrane or ion exchange phase.
     
     This function solves these two equations simultaneously to arrive at the 
@@ -206,7 +203,7 @@ def donnan_eql(solution,fixed_charge):
     References
     ----------
     
-    .. [#] Strathmann, Heiner, ed. //Membrane Science and Technology// vol. 9, 2004. \
+    .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
            Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     
@@ -322,6 +319,16 @@ def mix(Solution1, Solution2):
     Returns a new Solution object that results from the mixing of Solution1
     and Solution2
     
+    Parameters
+    ----------
+    Solution1, Solution2 : Solution objects
+        The two solutions to be mixed.
+        
+    Returns
+    -------
+    Solution
+        A Solution object representing the mixed solution.
+    
     '''
     # check to see if the two solutions have the same solvent
     if not Solution1.solvent_name == Solution2.solvent_name:
@@ -380,16 +387,19 @@ def mix(Solution1, Solution2):
 def autogenerate(solution=""):
     '''
     This method provides a quick way to create Solution objects representing
-    commonly-encountered solutions, such as seawater and freshwater. 
+    commonly-encountered solutions, such as seawater, rainwater, and wastewater. 
     
     Parameters
     ----------
     solution : str
                 String representing the desired solution
-                Valid entries are 'seawater' and ''
+                Valid entries are 'seawater', 'rainwater',
+                'wastewater',and 'urine' 
+                
     Returns
     -------
-    Solution : a pyEQL Solution object
+    Solution
+        A pyEQL Solution object.
     
     Notes
     -----
@@ -398,11 +408,16 @@ def autogenerate(solution=""):
     - '' - empty solution, equivalent to pyEQL.Solution()
     - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
     - 'seawater' - Standard Seawater. See Table 4 of the Reference for Composition [#]_
+    - 'wastewater' - medium strength domestic wastewater. See Table 3-18 of [#]_
+    - 'urine' - typical human urine. See Table 3-15 of [#]_
 
     References
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
-           the Reference-Composition Salinity Scale." Deep-sea Research. Part I 55(1), 2008, 50-72.
+           the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+    
+    .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+            McGraw-Hill, 2013.
 
     '''
     
@@ -440,6 +455,40 @@ def autogenerate(solution=""):
         ['HCO3-','10^-5.5 mol/L'],
         ['CO3-2','10^-9 mol/L']
         ]
+    elif solution == 'wastewater':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = [
+        ['NH3','24.3 mg/L'],
+        ['PO4-3','7.6 mg/L'],
+        ['C6H12O6','410 mg/L'],
+        ['K+','16 mg/L'],
+        ['Cl-','59 mg/L'],
+        ['SO4-2','26 mg/L']
+        ]
+        logger.warning('Total organic carbon in wastewater is approximated as glucose')
+    elif solution == 'urine':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = [
+        ['CON2H4','20,000 mg/L'],
+        ['C4H7N3O','1,000 mg/L'],
+        ['C5H4N4O3','300 mg/L'],
+        ['NH4+','500 mg/L'],
+        ['HCO3-','300 mg/L'],
+        ['NH4+','500 mg/L'],
+        ['Mg+2','100 mg/L'],
+        ['PO4-3','1200 mg/L'],
+        ['Na+','6000 mg/L'],
+        ['K+','1500 mg/L'],
+        ['Cl-','1900 mg/L'],
+        ['SO4-2','1800 mg/L']
+        ]
+    else:
+        logger.error('Invalid solution entered - %s' % solution)
+        return None
         
     sol = pyEQL.Solution(solutes,temperature=temperature,pressure=pressure,pH=pH)
     

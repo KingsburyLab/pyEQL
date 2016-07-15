@@ -38,7 +38,7 @@ Key Features
 
 Documentation
 -------------
-Detailed documentation is available at <https://pyeql.readthedocs.org/>
+Detailed documentation is available at <https://pyeql.readthedocs.io/>
 
 Dependencies
 ------------

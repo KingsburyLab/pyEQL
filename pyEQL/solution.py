@@ -244,6 +244,9 @@ class Solution:
             String representing the temperature, e.g. '25 degC'
         '''
         self.temperature = unit(temperature)
+        
+        # recalculate the volume
+        self._update_volume()
     
     def get_pressure(self):
         '''
@@ -265,6 +268,9 @@ class Solution:
             String representing the temperature, e.g. '25 degC'
         '''
         self.pressure = unit(pressure)
+        
+        # recalculate the volume
+        self._update_volume()
     
     def get_solvent_mass(self):
         '''
@@ -283,8 +289,7 @@ class Solution:
 
         See Also
         --------
-        get_amount()        
-        
+        get_amount()
         '''
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
@@ -376,6 +381,54 @@ class Solution:
         '''
         return self.get_mass() / self.get_volume()
     
+    def get_dielectric_constant(self):
+        '''
+        Returns the dielectric constant of the solution.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        Quantity: the dielectric constant of the solution, dimensionless.
+        
+        Notes
+        -----
+        Implements the following equation as given by [#]_
+        
+        .. math:: \\epsilon = \\epsilon_solvent \\over 1 + \\sum_i \\alpha_i x_i
+        
+        where :math:`\\alpha_i` is a coefficient specific to the solvent and ion, and :math:`x_i`
+        is the mole fraction of the ion in solution.
+        
+        
+        References
+        ----------  
+        .. [#] [1] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier, 
+        An empirical equation for the dielectric constant in aqueous and nonaqueous 
+        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123. 
+        doi:10.1016/j.fluid.2014.05.037.
+        '''
+        di_water = h2o.water_dielectric_constant(self.get_temperature())
+        
+        denominator = 1
+        for item in self.components:
+            # ignore water
+            if item != 'H2O':
+                # skip over solutes that don't have parameters
+                try:
+                    fraction = self.get_mole_fraction(item)
+                    coefficient= self.get_solute(item).get_parameter('dielectric_parameter_water')
+                    denominator += coefficient * fraction
+                except TypeError:
+                    logger.warning('No dielectric parameters found for species %s.' % item)
+                    continue        
+        
+        dielectric_constant = di_water / denominator
+        
+        return dielectric_constant
+    
     def get_viscosity_relative(self):
         '''
         Return the viscosity of the solution relative to that of water
@@ -384,7 +437,7 @@ class Solution:
         
         .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
         
-        Where m is the molal concentration and B is an empirical parameter.
+        Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
         
         See 
         <http://downloads.olisystems.com/ResourceCD/TransportProperties/Viscosity-Aqueous.pdf>
@@ -394,18 +447,18 @@ class Solution:
         #if self.get_ionic_strength().magnitude > 0.2:
          #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
         
-#        viscosity_rel = 1
-#        for item in self.components:
-#            # ignore water
-#            if item != 'H2O':
-#                # skip over solutes that don't have parameters
-#                try:
-#                    conc = self.get_amount(item,'mol/kg').magnitude
-#                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
-#                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-#                    coefficients[2] * conc ** 2
-#                except TypeError:
-#                    continue
+        #        viscosity_rel = 1
+        #        for item in self.components:
+        #            # ignore water
+        #            if item != 'H2O':
+        #                # skip over solutes that don't have parameters
+        #                try:
+        #                    conc = self.get_amount(item,'mol/kg').magnitude
+        #                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+        #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+        #                    coefficients[2] * conc ** 2
+        #                except TypeError:
+        #                    continue
         viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())    
         
         return viscosity_rel
@@ -456,7 +509,7 @@ class Solution:
                 
         See Also
         --------
-        get_density_dynamic
+        get_viscosity_dynamic
         get_viscosity_relative
         '''
         # identify the main salt in the solution
@@ -570,7 +623,7 @@ class Solution:
     
     def get_osmotic_pressure(self):
         ''' 
-        Return the osmotic pressure of the solution relative to pure water
+        Return the osmotic pressure of the solution relative to pure water.
         
         Parameters
         ----------
@@ -580,7 +633,13 @@ class Solution:
         -------
         Quantity
                 The osmotic pressure of the solution relative to pure water in Pa
-                
+                        
+        See Also
+        --------
+        get_water_activity
+        get_osmotic_coefficient
+        get_salt
+        
         Notes
         -----
         Osmotic pressure is calculated based on the water activity [#]_ [#]_ :
@@ -590,6 +649,7 @@ class Solution:
         Where :math:`\\Pi` is the osmotic pressure, :math:`V_w` is the partial
         molar volume of water (18.2 cm**3/mol), and :math:`a_w` is the water
         activity.
+
                 
         References
         ----------
@@ -599,20 +659,18 @@ class Solution:
         
         Examples
         --------
-        If 'soln' is pure water, return 0
-        >>> soln.get_osmotic_pressure()
+        >>> s1=pyEQL.Solution()
+        >>> s1.get_osmotic_pressure()
         0.0
         
-        If 'soln' is 0.5 mol/kg NaCl
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
         >>> soln.get_osmotic_pressure()
-        2262808... pascal
-        
-        
+        <Quantity(906516.7318131207, 'pascal')>        
         '''
         # TODO - tie this into parameter() and solvent() objects
         partial_molar_volume_water = 1.82e-5 *unit('m ** 3/mol')
         
-        osmotic_pressure = - unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
+        osmotic_pressure = -1 * unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
         logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
         return osmotic_pressure.to('Pa')
 
@@ -643,11 +701,15 @@ class Solution:
         TODO
         
         '''
-        if activity is True:
-            return -1 * math.log10(self.get_activity(solute))
-        elif activity is False:
-            return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
-
+        try:
+            if activity is True:
+                return -1 * math.log10(self.get_activity(solute))
+            elif activity is False:
+                return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
+        # if the solute has zero concentration, the log will generate a ValueError
+        except ValueError:
+            return 0
+            
     def get_amount(self,solute,units):
         '''
         Return the amount of 'solute' in the parent solution
@@ -670,7 +732,7 @@ class Solution:
         --------
         add_amount
         set_amount
-        get_amount_total
+        get_total_amount
         '''
         try:
             if units == 'fraction':
@@ -948,7 +1010,20 @@ class Solution:
     
     def get_salt(self):
         '''
-        Match ions in the solution to a parent salt.
+        Determine the predominant salt in a solution of ions.
+        
+        Many empirical equations for solution properties such as activity coefficient,
+        partial molar volume, or viscosity are based on the concentration of 
+        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
+        containing Na+, Cl-, and Mg+2), it is generally not possible to direclty model
+        these quantities. pyEQL works around this problem by treating such solutions
+        as single salt solutions.
+        
+        The get_salt() method examines the ionic composition of a solution and returns
+        an object that identifies the single most predominant salt in the solution, defined
+        by the cation and anion with the highest mole fraction. The Salt object contains 
+        information about the stoichiometry of the salt to enable its effective concentration
+        to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
         
         Parameters
         ----------
@@ -958,11 +1033,35 @@ class Solution:
         -------
         Salt
             Salt object containing information about the parent salt.
-            
+        
         See Also
         --------
-        salt_ion_match.py
+        get_activity
+        get_activity_coefficient
+        get_water_activity
+        get_osmotic_coefficient
+        get_osmotic_pressure
+        get_viscosity_kinematic
         
+        Examples
+        --------
+        >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
+        >>> s1.get_salt()
+        <pyEQL.salt_ion_match.Salt object at 0x7fe6d3542048>
+        >>> s1.get_salt().formula
+        'NaCl'
+        >>> s1.get_salt().nu_cation
+        1
+        >>> s1.get_salt().z_anion
+        -1
+        
+        >>> s2 = pyEQL.Solution([['Na+','0.1 mol/kg'],['Mg+2','0.2 mol/kg'],['Cl-','0.5 mol/kg']])
+        >>> s2.get_salt().formula
+        'MgCl2'
+        >>> s2.get_salt().nu_anion
+        2
+        >>> s2.get_salt().z_cation
+        2
         '''
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
@@ -970,7 +1069,19 @@ class Solution:
       
 ## Activity-related methods
     def get_activity_coefficient(self,solute):
-        '''Routine to determine the activity coefficient of a solute in solution. The correct function is chosen based on the ionic strength of the parent solution.
+        '''Return the activity coefficient of a solute in solution. 
+
+        Whenever the appropriate parameters are available, the Pitzer model [#]_ is used. 
+        If no Pitzer parameters are available, then the appropriate equations are selected
+        according to the following logic: [#]_
+        
+        I <= 0.0005: Debye-Huckel equation
+        0.005 < I <= 0.1:  Guntelberg approximation
+        0.1 < I <= 0.5: Davies equation
+        I > 0.5: Raises a warning and returns activity coefficient = 1
+        
+        The ionic strength, activity coefficients, and activities are all
+        calculated based on the molal (mol/kg) concentration scale.
         
         Parameters
         ----------
@@ -983,16 +1094,58 @@ class Solution:
         
         See Also
         --------
-        get_activity_coefficient_debyehuckel
-        get_activity_coefficient_guntelberg
-        get_activity_coefficient_davies
-        get_activity_coefficient_pitzer
+        get_ionic_strength
+        get_salt
+        activity_correction.get_activity_coefficient_debyehuckel
+        activity_correction.get_activity_coefficient_guntelberg
+        activity_correction.get_activity_coefficient_davies
+        activity_correction.get_activity_coefficient_pitzer
+                
+        Notes
+        -----
+        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
+        Pitzer parameters for the predominant salt (identified using the get_salt() method)
+        are used in conjunction with the ionic strength calculated from the complete ionic
+        composition to calculate the activity coefficients *for ions in the predominant salt*.
         
+        For other ions (not in the predominant salt), the regular logic will apply. If the
+        ionic strength of a complex mixture is lower than 0.5 m, the corresponding equations will
+        be used to estimate the activity coefficient based on ionic strenght. However, if the ionic
+        strength is higher than 0.5m, this method will return an activity coefficient of 1 for any 
+        ions not in the predominant salt. pyEQL will raise a WARNING when this occurs.
+        
+        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
+        concentration" of the predominant salt by averaging the equivalent salt concentration of 
+        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
+        model to be applied to situations in which the ionic concentrations are unequal, or in which 
+        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
+        
+        This behavior is best illustrated with an example. In the solution below, the predominant
+        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
+        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
+        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
+        strength is too high to use other methods.
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+               A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+               
+        .. [#] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed, 
+               pp 165. Wiley Interscience, 1996.
+        
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
+        >>> s1.get_salt().formula
+        'MgCl2'
+        >>> soln.get_activity_coefficient('Mg+2')
+        <Quantity(0.4711660119505297, 'dimensionless')>
+        >>> soln.get_activity_coefficient('Na+')
+        (pyEQL.solution) - WARNING - Ionic strength too high to estimate activity for species Na+. 
+        Specify parameters for Pitzer model. Returning unit activity coefficient
+        <Quantity(1, 'dimensionless')>        
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
@@ -1030,7 +1183,7 @@ class Solution:
                 # this is necessary for solutions inside e.g. an ion exchange
                 # membrane, where the cation and anion concentrations may be
                 # unequal
-                molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
+                molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
                 
                 activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
                 molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
@@ -1062,7 +1215,7 @@ class Solution:
                 
     def get_activity(self,solute):
         '''
-        Return the thermodynamic activity of the solute in solution
+        Return the thermodynamic activity of the solute in solution on the molal scale.
        
         Parameters
         ----------
@@ -1075,22 +1228,23 @@ class Solution:
         -------
         The thermodynamic activity of the solute in question (dimensionless)
         
+        See Also
+        --------
+        get_activity_coefficient
+        get_ionic_strength
+        get_salt
+        
         Notes
         -----
         The thermodynamic activity is independent of the concentration scale used. However,
         the concentration and the activity coefficient must use corresponding scales. [#]_ [#]_
-        In this module, ionic strength, activity coefficients, and activities are all
+        The ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale.
         
         References
         ----------
         .. [#] http://adsorption.org/awm/utils/Activity.htm
         .. [#] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
-        
-        See Also
-        --------
-        get_activity_coefficient
-        get_ionic_strength
         
         '''
         # switch to the water activity function if the species is H2O
@@ -1105,24 +1259,71 @@ class Solution:
 
     def get_osmotic_coefficient(self):
         '''
-        Calculate the osmotic coefficient
+        Return the osmotic coefficient of an aqueous solution.
+        
+        Osmotic coefficient is calculated using the Pitzer model.[#]_ If appropriate parameters for 
+        the model are not available, then pyEQL raises a WARNING and returns an osmotic 
+        coefficient of 1.
 
         Returns
         -------
         Quantity : 
             The osmotic coefficient
-            
+        
+        See Also
+        --------
+        get_water_activity
+        get_ionic_strength
+        get_salt    
+        
         Notes
         -----
-        For ionic strengths below 0.5 mol/kg, the osmotic coefficient is assumed to equal 1.0.
-        1.0 will also be returned at higher ionic strengths if appropriate Pitzer
-        parameters are not supplied.
+        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
+        Pitzer parameters for the predominant salt (identified using the get_salt() method)
+        are used in conjunction with the ionic strength calculated from the complete ionic
+        composition to calculate the osmotic coefficient.
         
+        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
+        concentration" of the predominant salt by averaging the equivalent salt concentration of 
+        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
+        model to be applied to situations in which the ionic concentrations are unequal, or in which 
+        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
+        
+        This behavior is best illustrated with an example. In the solution below, the predominant
+        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
+        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
+        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
+        strength is too high to use other methods
+        
+        In the third example below, the predominant salt is MgCl2. Therefore, the Pitzer parameters
+        for MgCl2 are used to calculate the osmotic coefficient. The effective concentration of 
+        MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 0.8 / 2 (for Cl-), or 0.3 m. Compare 
+        the result to the second example, in which only MgCl2 is present and the salt concentration
+        is also 0.3m. The slightly higher ionic strength due to the presence of the sodium ions
+        changes the value of the osmotic coefficient.
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
+               A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.9235996615888572, 'dimensionless')>
+        
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.891154788474231, 'dimensionless')>
+                
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
+        >>> s1.get_salt().formula
+        'MgCl2'
+        >>> s1.get_osmotic_coefficient()
+        <Quantity(0.8974036010550355, 'dimensionless')>
+        
         '''
         temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
@@ -1162,32 +1363,27 @@ class Solution:
             concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
             Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
             
-            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,salt))
+            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,Salt.formula))
             return osmotic_coefficient
 
         else:
-            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for solute are not specified. Returning unit osmotic coefficient')
+            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % Salt.formula)
             return unit('1 dimensionless')
     
     def get_water_activity(self):
         '''
-        Return the water activity
+        Return the water activity.
         
         Returns
         -------
-        float : 
+        Quantity : 
             The thermodynamic activity of water in the solution.
-            
-        Examples
-        --------
-        If 'soln' is a 0.5 mol/kg NaCl solution at 25 degC:
-        >>> soln.get_water_activity()
-        0.9835...
         
-        If 'soln' is a 5.11 mol/kg NaHCO2 (sodium formate) solution at 25 degC:
-        (literature value from Cabot specialty fluids is 0.82)
-        >>> soln.get_water_activity()
-        0.8631...
+        See Also
+        --------
+        get_osmotic_coefficient
+        get_ionic_strength
+        get_salt
         
         Notes
         -----
@@ -1195,7 +1391,7 @@ class Solution:
         
         .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
         
-        Where M_w is the molar mass of water (0.018015 kg/mol) and m_i is the molal concentration
+        Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
         
         If appropriate Pitzer model parameters are not available, the
@@ -1203,9 +1399,14 @@ class Solution:
         
         References
         ----------
-        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently neglected property."
-           //Chemical Society Review// 34, 440-458.
-        
+        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of 
+        water in aqueous systems: A frequently neglected property." *Chemical Society Review* 34, 440-458.
+                
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.3 mol/kg'],['Cl-','0.3 mol/kg']])
+        >>> s1.get_water_activity()
+        <Quantity(0.9900944932888518, 'dimensionless')>
         '''
         '''
         pseudo code
@@ -1243,12 +1444,13 @@ class Solution:
         
         Returns
         -------
-        float : 
+        Quantity : 
             The ionic strength of the parent solution, mol/kg.
         
-        Examples
+        See Also
         --------
-        TODO
+        get_activity
+        get_water_activity        
         
         Notes
         -----
@@ -1256,8 +1458,17 @@ class Solution:
         
         .. math:: I = \sum_i m_i z_i^2
         
-        Where m_i is the molal concentration and z_i is the charge on species i.
+        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
         
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.get_ionic_strength()
+        <Quantity(0.20000010029672785, 'mole / kilogram')>
+        
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
+        >>> s1.get_ionic_strength()
+        <Quantity(1.0000001004383303, 'mole / kilogram')>
         '''
         self.ionic_strength=0
         for solute in self.components.keys():
@@ -1284,7 +1495,7 @@ class Solution:
 
         .. math:: CB = F \sum_i n_i z_i
 
-        Where n_i is the number of moles, z_i is the charge on species i, and F is the Faraday constant.
+        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
 
         '''
         self.charge_balance=0
@@ -1308,7 +1519,8 @@ class Solution:
 
         .. math:: Alk = F \sum_i z_i C_B - \sum_i z_i C_A
 
-        Where C_B and C_A are conservative cations and anions, respectively (i.e. ions that do not participate in acid-base reactions), and z_i is their charge.
+        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively 
+        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
         In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions
         are all the anions of strong acids.
 
@@ -1373,11 +1585,12 @@ class Solution:
         
         .. math::
         
-            \\kappa^-1 = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
+            \\kappa^{-1} = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
         
-        NOTE: The influence of ionic strength on the dielectric constant is not
-        currently accounted for. The dielectric constant of pure water is used
-        in the calculation.        
+        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r` 
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the 
+        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the 
+        elementary charge, and :math:`N_A` is Avogadro's number.
         
         Parameters
         ----------
@@ -1395,17 +1608,14 @@ class Solution:
         See Also
         --------
         get_ionic_strength()
-        h2o.water_dielectric_constant()
+        get_dielectric_constant()
         
         '''
         temperature = self.get_temperature()
-        # TODO - make dielectric constant dependent on ionic strength
+        
         # to preserve dimensionality, convert the ionic strength into mol/L units
         ionic_strength= self.get_ionic_strength().magnitude*unit('mol/L')
-        dielectric_constant = h2o.water_dielectric_constant()
-        
-        logger.warning('Debye length is being calculated using the dielectric constant for pure water. The influence \
-        of ionic strength is not yet accounted for')
+        dielectric_constant = self.get_dielectric_constant()
         
         debye_length = (dielectric_constant * unit.epsilon_0 * unit.k * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength)) ** 0.5
         
@@ -1415,18 +1625,17 @@ class Solution:
         '''
         Return the Bjerrum length of a solution
         
-        Bjerrum length is calculated as [#]_
+        Bjerrum length representes the distance at which electrostatic 
+        interactions between particles become comparable in magnitude 
+        to the thermal energy.:math:`\\lambda_B` is calculated as [#]_
         
         .. math::
         
-            \\lambda_B = e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)
+            \\lambda_B = {e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)}
         
-        It representes the distance at which electrostatic interactions between
-        particles become comparable in magnitude to the thermal energy.
-        
-        NOTE: The influence of ionic strength on the dielectric constant is not
-        currently accounted for. The dielectric constant of pure water is used
-        in the calculation.        
+        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the 
+        Boltzmann constant, and :math:`T` is the temperature.
         
         Parameters
         ----------
@@ -1449,15 +1658,11 @@ class Solution:
 
         See Also
         --------
-        h2o.water_dielectric_constant()
+        get_dielectric_constant()
         
         '''
-        # TODO - make dielectric constant dependent on ionic strength
         temperature = self.get_temperature()
-        dielectric_constant = h2o.water_dielectric_constant()
-        
-        logger.warning('Bjerrum length is being calculated using the dielectric constant for pure water. The influence \
-        of ionic strength is not yet accounted for')
+        dielectric_constant = self.get_dielectric_constant()
         
         bjerrum_length = unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
          * temperature)
@@ -1490,7 +1695,9 @@ class Solution:
             
             t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
         
-        Where C is the concentration in mol/L.
+        Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
+        coefficient, and :math:`z_i` is the charge, and the summation extends 
+        over all species in the solution.
         
         If `activity_correction` is True, the contribution of each ion to the
         transport number is corrected with an activity factor. See the documentation
@@ -1498,11 +1705,10 @@ class Solution:
         
         References
         ----------
-        .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. Specific ion effects on membrane potential and the permselectivity of ion exchange membranes. Phys. Chem. Chem. Phys. 2014, 16, 21673–21681.
+        .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific 
+        ion effects on membrane potential and the permselectivity of ion exchange membranes."" 
+        *Phys. Chem. Chem. Phys.* 2014, 16, 21673–21681.
         
-        See Also
-        --------
-        get_conductivity()
         '''
         denominator= 0
         numerator = 0
@@ -1654,8 +1860,8 @@ class Solution:
         if name == 'diffusion_coefficient':
             if base_value is not None:
                 # correct for temperature and viscosity
-                # $$ D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 $$
-                # where $\mu$ is the dynamic viscosity
+                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 
+                # where :math:`\mu` is the dynamic viscosity
                 # assume that the base viscosity is that of pure water
                 return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
             else:
@@ -1706,16 +1912,14 @@ class Solution:
         The chemical potential energy (related to the Gibbs mixing energy) is
         calculated as follows: [#]_
             
-        .. math::
-        
-            E = R T \sum_i n_i  \ln a_i
+        .. math::      E = R T \sum_i n_i  \ln a_i
             
         or 
-            
-            E = R T \sum_i n_i \ln x_i
         
-        Where n is the number of moles of substance, T is the temperature in kelvin,
-        R the ideal gas constant, x the mole fraction, and a the activity of
+        .. math::      E = R T \sum_i n_i \ln x_i
+        
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
         each component.
         
         Note that dissociated ions must be counted as separate components,
@@ -1724,7 +1928,7 @@ class Solution:
         
         References
         ----------
-        .. [#] Koga, Yoshikata, 2007. //Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.// Elsevier, 2007, pp. 23-37.
+        .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
         
         Examples
         --------
@@ -1736,11 +1940,15 @@ class Solution:
         
         # loop through all the components and add their potential energy
         for item in self.components:
-            if activity_correction is True:
-                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
-            else:
-                E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
-    
+            try:
+                if activity_correction is True:
+                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
+                else:
+                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
+            # If we have a solute with zero concentration, we will get a ValueError
+            except ValueError:
+                continue
+                
         return E.to('J')
 
     def get_lattice_distance(self,solute):
@@ -1793,7 +2001,7 @@ class Solution:
         
         '''        
         # calculate the volume of the pure solvent
-        solvent_vol = self.get_solvent_mass() / h2o.water_density(self.get_temperature())
+        solvent_vol = self.get_solvent_mass() / h2o.water_density(self.get_temperature(),self.get_pressure())
         
         return solvent_vol.to('L')
         

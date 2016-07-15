@@ -1,0 +1,75 @@
+Name	jones_dole_B
+Description	'B' Parameter in the Jones-Dole equation for relative viscosity
+Unit	dm ** 3 / mol
+Reference	"H.D.B. Jenkins, Y. Marcus, Viscosity B Coefficients of Ions in Solution, Chem. Rev. 95 (1995) 2695–2724."
+Temperature	298 K
+Pressure	1 atm
+Ionic Strength	0
+Uncertainty	
+Uncertainty Type	
+Comment	"Includes only the selected values summarized from review of other literature"
+	
+Key	Value
+H+	0.068
+Li+	0.146
+Na+	0.085
+K+	-0.009
+Rb+	-0.033
+Cs+	-0.047
+Ag+	0.090
+Tl+	-0.036
+NH4+	-0.008
+Mg+2	0.385
+Ca+2	0.284
+Sr+2	0.261
+Ba+2	0.261
+Mn+2	0.388
+Fe+2	0.412
+Co+2	0.372
+Ni+2	0.379
+Cu+2	0.376
+Zn+2	0.369
+Cd+2	0.321
+Pb+2	0.228
+Al+3	0.744
+Fe+3	0.690
+Cr+3	0.737
+La+3	0.576
+Ce+3	0.570
+Pr+3	0.581
+Nd+3	0.576
+Sm+3	0.599
+Eu+3	0.618
+Gd+3	0.640
+Tb+3	0.647
+Dy+3	0.656
+Ho+3	0.667
+Er+3	0.657
+Tm+3	0.672
+Yb+3	0.665
+Lu+3	0.675
+Th+4	0.852
+F-	0.107
+Cl-	-0.005
+Br-	-0.033
+I-	-0.073
+OH-	0.122
+CN-	-0.024
+N3-	-0.018
+SCN-	0.022
+ClO3-	-0.022
+BrO3-	0.009
+IO3-	0.140
+NO3-	-0.043
+CLO4-	-0.058
+MnO4-	-0.057
+ReO4-	-0.055
+Ag(CN)2-	-0.038
+Au(CN)2-	-0.040
+CO3-2	0.294
+SO3-2	0.282
+SO4-2	0.206
+CrO4-2	0.165
+Fe(CN)6-3	0.129
+Co(CN)6-3	0.146
+Fe(CN)6-4	0.342

@@ -57,10 +57,10 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     .. math:: \\rho_W = 999.65 + 0.20438 T - 6.1744e-2 T ^ {1.5}
     
-    Where T is the temperature in Celsius.
+    Where :math:`T` is the temperature in Celsius.
     
     
-    .. [#] Sohnel, O and Novotny, P. //Densities of Aqueous Solutions of Inorganic Substances.// Elsevier Science, Amsterdam, 1985.
+    .. [#] Sohnel, O and Novotny, P. *Densities of Aqueous Solutions of Inorganic Substances.* Elsevier Science, Amsterdam, 1985.
     
     Examples
     --------
@@ -134,7 +134,7 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     References
     ----------
     .. [#] Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." 
-        J. Phys. Chem. Ref. Data 13(1), 1984.http://www.nist.gov/data/PDFfiles/jpcrd243.pdf
+        *J. Phys. Chem. Ref. Data* 13(1), 1984.http://www.nist.gov/data/PDFfiles/jpcrd243.pdf
     
     Examples
     --------
@@ -255,8 +255,8 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     
     References
     ----------
-    .. [#] "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of 
-            Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.
+    .. [#] "Permittivity (Dielectric Constant) of Liquids." *CRC Handbook of 
+            Chemistry and Physics*, 92nd ed, pp 6-187 - 6-208.
     
     Examples
     --------
