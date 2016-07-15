@@ -11,10 +11,10 @@ following parameters for some common electrolytes:
  - Diffusion coefficients for 104 ions
  - Pitzer model activity correction coefficients for 157 salts
  - Pitzer model partial molar volume coefficients for 120 salts
- - Partial molar volumes for 10 ions (see note)
- - Viscosity model coefficients for 6 salts (see note)
-
-.. note:: Due to copyright restrictions, pyEQL's built-in databases contain only a small selection of partial molar volumes and viscosity coefficients for some common ions like H+, Na+, Cl-, and OH-. We are working on securing permission to distribute a more complete dataset. In the mean time, see the references in the example databases for good data sources. Alternatively, you can provide your own parameters in a custom database (see below). pyEQL does already contain a fairly large collection of Pitzer parameters for both activity correction and partial molar volume; and this will be expanded in the future.
+ - Jones-Dole "B" coefficients for 83 ions
+ - Hydrated and ionic radii for 23 ions
+ - Dielectric constant model parameters for 18 ions
+ - Partial molar volumes for 10 ions
 
 Basics
 ======
@@ -105,8 +105,11 @@ names:
  - 'pitzer_parameters_volume'- coefficients for the Pitzer model for partial molar volume
  - 'erying_viscosity_coefficients' - coefficients for an Erying-type viscosity correction model
  - 'partial_molar_volume'- the partial molar volume (used if Pitzer parameters are not available)
+ - 'hydrated_radius' - hydrated radius
+ - 'ionic_radius' - ionic radius
+ - 'jones_dole_B' - Jones-Dole "B" coefficient
 
-If you wish to supply these paramaters for a custom solute not included in the built-in
+If you wish to supply these parameters for a custom solute not included in the built-in
 database, make sure to format the name exactly the same way.
 
 You can also specify a custom parameter name, and retrieve it using the get_parameter()
