@@ -1,8 +1,8 @@
 pyEQL Changelog
 ===============
 
-0.4-dev (in progress)
----------------------
+0.4.0 (2016-07-14)
+------------------
  
  - Add ability to calculate dielectric constant based on solution composition for salts
  - Add database entries for the viscosity 'B' parameter for 63 more inorganic ions
