@@ -1108,8 +1108,8 @@ class Solution:
         return salt.generate_salt_list(self,unit='mol/kg')
 
 ## Activity-related methods
-    def get_activity_coefficient(self,solute):
-        '''Return the activity coefficient of a solute in solution. 
+    def get_activity_coefficient(self,solute,scale='molal'):
+        '''Return the activity coefficient of a solute in solution.
 
         Whenever the appropriate parameters are available, the Pitzer model [#]_ is used. 
         If no Pitzer parameters are available, then the appropriate equations are selected
@@ -1121,17 +1121,34 @@ class Solution:
         I > 0.5: Raises a warning and returns activity coefficient = 1
         
         The ionic strength, activity coefficients, and activities are all
-        calculated based on the molal (mol/kg) concentration scale.
-        
+        calculated based on the molal (mol/kg) concentration scale. If a different
+        scale is given as input, then the molal-scale activity coefficient :math:`\\gamma_\\pm` is
+        converted according to [#]_
+
+        .. math:: f_\\pm = \\gamma_\\pm * (1 + M_w \\sum_i \\nu_i \\m_i)
+
+        .. math:: y_\\pm = m \\rho_w / C \\gamma_\\pm
+
+        where :math:`f_\\pm` is the rational activity coefficient, :math:`M_w` is
+        the molecular weight of water, the summation represents the total molality of
+        all solute  species, :math:`y_\\pm` is the molar activity coefficient,
+        :math:`\\rho_w` is the density of pure water, :math:`m` and :math:`C` are
+        the molal and molar concentrations of the chosen salt (not individual solute),
+         respectively.
+
         Parameters
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        
+        scale : str, optional
+                    The concentration scale for the returned activity coefficient.
+                    Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
+                    By default, the molal scale activity coefficient is returned.
+
         Returns
         -------
-        The molal (mol/kg) scale mean ion activity coefficient of the solute in question
-        
+        The mean ion activity coefficient of the solute in question on  the selected scale.
+
         See Also
         --------
         get_ionic_strength
@@ -1174,7 +1191,10 @@ class Solution:
                
         .. [#] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed, 
                pp 165. Wiley Interscience, 1996.
-        
+
+        .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
+               Edition; Butterworths: London, 1968, p.32.
+
         Examples
         --------
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
@@ -1239,28 +1259,40 @@ class Solution:
             Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
 
             logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-            return activity_coefficient
+            molal= activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
-        if self.get_ionic_strength().magnitude <= 0.005:
+        elif self.get_ionic_strength().magnitude <= 0.005:
             logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
-            return ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-            
+            molal= ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif self.get_ionic_strength().magnitude <= 0.1:
             logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
-            return ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-            
+            molal= ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
         # use the Davies equation for 0.1 < I < 0.5
         elif self.get_ionic_strength().magnitude <= 0.5:
             logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
-            return ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-              
+            molal= ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
         else:
             logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient' % solute)
-            
-            return unit('1 dimensionless')
-                
+
+            molal= unit('1 dimensionless')
+
+        # if necessary, convert the activity coefficient to another scale, and return the result
+        if scale == 'molal':
+            return molal
+        elif scale == 'molar':
+            print('WARNING: need to revise to use salt rather than ion concentrations')
+            return (molal * h2o.water_density(self.get_temperature()) * self.get_amount(solute,'mol/kg') / self.get_amount(solute,'mol/L')).to('dimensionless')
+        elif scale == 'rational':
+            return molal*(1+unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass())
+        else:
+            logger.warning('Invalid scale argument. Returning molal-scale activity coefficient')
+            return molal
+
     def get_activity(self,solute):
         '''
         Return the thermodynamic activity of the solute in solution on the molal scale.
@@ -1305,7 +1337,7 @@ class Solution:
         
         return activity
 
-    def get_osmotic_coefficient(self):
+    def get_osmotic_coefficient(self, scale='molal'):
         '''
         Return the osmotic coefficient of an aqueous solution.
         
@@ -1313,6 +1345,21 @@ class Solution:
         the model are not available, then pyEQL raises a WARNING and returns an osmotic 
         coefficient of 1.
 
+        If the 'rational' scale is given as input, then the molal-scale osmotic
+        coefficient :math:`\\phi` is converted according to [#]_
+
+        .. math:: g = - \\phi * M_w \\sum_i \\nu_i \\m_i) / \\ln x_w
+
+        where :math:`g` is the rational osmotic coefficient, :math:`M_w` is
+        the molecular weight of water, the summation represents the total molality of
+        all solute  species, and :math:`x_w` is the mole fraction of water.
+
+        Parameters
+        ----------
+        scale : str, optional
+                    The concentration scale for the returned osmotic coefficient.
+                    Valid options are "molal" and "rational" (i.e., mole fraction).
+                    By default, the molal scale osmotic coefficient is returned.
         Returns
         -------
         Quantity : 
@@ -1357,7 +1404,11 @@ class Solution:
                *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
         .. [#] (1) Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed 
                 electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34–47.
-                
+
+        .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
+               Edition; Butterworths: London, 1968, p.32.
+
+
         Examples
         --------
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
@@ -1433,7 +1484,16 @@ class Solution:
                 logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % item.formula)
                 effective_osmotic_sum += concentration * unit('1 dimensionless')
 
-        return effective_osmotic_sum / molality_sum
+        molal_phi= effective_osmotic_sum / molality_sum
+
+        if scale == 'molal':
+            return molal_phi
+        elif scale == 'rational':
+            solvent= self.get_solvent().formula
+            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_mole_fraction(solvent))
+        else:
+            logger.warning('Invalid scale argument. Returning molal-scale osmotic coefficient')
+            return molal_phi
 
     def get_water_activity(self):
         '''
