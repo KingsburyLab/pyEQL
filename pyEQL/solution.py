@@ -1189,49 +1189,57 @@ class Solution:
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
-        
-        # identify the predominant salt in the solution
-        Salt = self.get_salt()
-        
-        if solute in (Salt.anion,Salt.cation):
-        
-            # search the database for pitzer parameters for 'salt'
-            db.search_parameters(Salt.formula)
-        
-            # use the Pitzer model for higher ionic strenght, if the parameters are available
-            
-            # search for Pitzer parameters
-            if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
-                
-                param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
-    
-                # determine alpha1 and alpha2 based on the type of salt
-                # see the May reference for the rules used to determine
-                # alpha1 and alpha2 based on charge
-                if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
-                    if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
-                        alpha1 = 2
-                        alpha2 = 50
-                    else:
-                        alpha1 = 1.4
-                        alpha2 = 12
-                else:
-                    alpha1 = 2
-                    alpha2 = 0
-                
-                # determine the average molality of the salt
-                # this is necessary for solutions inside e.g. an ion exchange
-                # membrane, where the cation and anion concentrations may be
-                # unequal
-                molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
-                
-                activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-                
-                logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-                return activity_coefficient
 
+        # identify the predominant salt that this ion is a member of
+        salt_list = pyEQL.salt_ion_match.generate_salt_list(self,unit='mol/kg')
+        amt = pyEQL.unit('0 mol/kg')
+        for item in salt_list:
+            if solute == item.cation or solute == item.anion:
+                if salt_list[item] > amt:
+                    Salt = item
+                else:
+                    continue
+        #print(Salt.formula)
+
+        # search the database for pitzer parameters for 'salt'
+        db.search_parameters(Salt.formula)
+
+        # use the Pitzer model for higher ionic strenght, if the parameters are available
+
+        # search for Pitzer parameters
+        if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
+
+            param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+
+            # determine alpha1 and alpha2 based on the type of salt
+            # see the May reference for the rules used to determine
+            # alpha1 and alpha2 based on charge
+            if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
+                if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
+                    alpha1 = 2
+                    alpha2 = 50
+                else:
+                    alpha1 = 1.4
+                    alpha2 = 12
+            else:
+                alpha1 = 2
+                alpha2 = 0
+
+            # determine the average molality of the salt
+            # this is necessary for solutions inside e.g. an ion exchange
+            # membrane, where the cation and anion concentrations may be
+            # unequal
+            #molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+
+            # determine the effective molality of the salt in the solution
+            molality = Salt.get_effective_molality(self.get_ionic_strength())
+
+            activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
+            molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+
+            logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
+            return activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         if self.get_ionic_strength().magnitude <= 0.005:
@@ -1347,7 +1355,9 @@ class Solution:
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
                *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
-
+        .. [#] (1) Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed 
+                electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34–47.
+                
         Examples
         --------
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
@@ -1367,49 +1377,64 @@ class Solution:
         '''
         temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
-        
-        import pyEQL.salt_ion_match as salt
-        
-        # identify the predominant salt in the solution
-        Salt = self.get_salt()
-        
-        # determine alpha1 and alpha2 based on the type of salt
-        # see the May reference for the rules used to determine
-        # alpha1 and alpha2 based on charge
-        if Salt.z_cation >= 2 and Salt.z_anion <= -2:
-            if Salt.z_cation >=3 or Salt.z_anion <= -3:
-                alpha1 = 2
-                alpha2 = 50
-            else:
-                alpha1 = 1.4
-                alpha2 = 12
-        else:
-            alpha1 = 2
-            alpha2 = 0
-        
-        # set the concentration as the average concentration of the cation and
-        # anion in the salt, accounting for stoichiometry
-        concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
-        self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
-        
-        # search the database for pitzer parameters for 'salt'
-        db.search_parameters(Salt.formula)
-        
-        if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
-            
-            param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
-            
-            osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
-            concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-            
-            logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,Salt.formula))
-            return osmotic_coefficient
 
-        else:
-            logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % Salt.formula)
-            return unit('1 dimensionless')
-    
+        effective_osmotic_sum = 0
+        molality_sum = 0
+
+        import pyEQL.salt_ion_match as salt
+
+        # organize the composition into a dictionary of salts
+        salt_list = self.get_salt_list()
+
+        # loop through all the salts in the solution, calculate the osmotic
+        # coefficint for reach, and average them into an effective osmotic
+        # coefficient
+        for item in salt_list:
+
+            # determine alpha1 and alpha2 based on the type of salt
+            # see the May reference for the rules used to determine
+            # alpha1 and alpha2 based on charge
+            if item.z_cation >= 2 and item.z_anion <= -2:
+                if item.z_cation >=3 or item.z_anion <= -3:
+                    alpha1 = 2
+                    alpha2 = 50
+                else:
+                    alpha1 = 1.4
+                    alpha2 = 12
+            else:
+                alpha1 = 2
+                alpha2 = 0
+
+            # set the concentration as the average concentration of the cation and
+            # anion in the salt, accounting for stoichiometry
+            #concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
+            #self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+
+            # get the effective molality of the salt
+            concentration = item.get_effective_molality(ionic_strength)
+
+            molality_sum += concentration
+
+            # search the database for pitzer parameters for 'salt'
+            db.search_parameters(item.formula)
+
+            if db.has_parameter(item.formula,'pitzer_parameters_activity'):
+
+                param = db.get_parameter(item.formula,'pitzer_parameters_activity')
+
+                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
+                concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+                item.z_cation,item.z_anion,item.nu_cation,item.nu_anion,temperature)
+
+                logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,item.formula))
+                effective_osmotic_sum += concentration * osmotic_coefficient
+
+            else:
+                logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % item.formula)
+                effective_osmotic_sum += concentration * unit('1 dimensionless')
+
+        return effective_osmotic_sum / molality_sum
+
     def get_water_activity(self):
         '''
         Return the water activity.
