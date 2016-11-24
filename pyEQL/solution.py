@@ -1066,7 +1066,47 @@ class Solution:
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
         return salt.identify_salt(self)
-      
+
+    def get_salt_list(self):
+        '''
+        Determine the predominant salt in a solution of ions.
+
+        Many empirical equations for solution properties such as activity coefficient,
+        partial molar volume, or viscosity are based on the concentration of
+        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
+        containing Na+, Cl-, and Mg+2), it is generally not possible to direclty model
+        these quantities.
+
+        The get_salt_list() method examines the ionic composition of a solution and
+        simplifies it into a list of salts. The method retuns a dictionary of
+        Salt objects where the keys are the salt formulas (e.g., 'NaCl'). The
+        Salt object contains information about the stoichiometry of the salt to
+        enable its effective concentration to be calculated
+        (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        dict
+            A dictionary of Salt objects, keyed to the salt formula
+
+        See Also
+        --------
+        get_activity
+        get_activity_coefficient
+        get_water_activity
+        get_osmotic_coefficient
+        get_osmotic_pressure
+        get_viscosity_kinematic
+
+        '''
+        # identify the predominant salt in the solution
+        import pyEQL.salt_ion_match as salt
+        return salt.generate_salt_list(self,unit='mol/kg')
+
 ## Activity-related methods
     def get_activity_coefficient(self,solute):
         '''Return the activity coefficient of a solute in solution. 
