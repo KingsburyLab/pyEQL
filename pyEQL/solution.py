@@ -2178,8 +2178,8 @@ class Solution:
         
         '''
         return list(self.components.keys())
-    
-    def list_concentrations(self,unit='mol/kg',decimals=4):
+
+    def list_concentrations(self,unit='mol/kg',decimals=4,type='all'):
         '''
         List the concentration of each species in a solution.        
         
@@ -2189,18 +2189,51 @@ class Solution:
             String representing the desired concentration unit.
         decimals: int
             The number of decimal places to display. Defaults to 4.
-            
+        type     : str
+            The type of component to be sorted. Defaults to 'all' for all
+            solutes. Other valid arguments are 'cations' and 'anions' which
+            return lists of cations and anions, respectively.
+
         Returns
         -------
         dict        
             Dictionary containing a list of the species in solution paired with their amount in the specified units
             
         '''
-        print('Component Concentrations:\n')
-        print('========================\n')
-        for i in self.components.keys():
-            print(i+':'+'\t {0:0.{decimals}f~}'.format(self.get_amount(i,unit),decimals=decimals))    
-        
+        result_list=[]
+        # populate a list with component names
+
+        if type == 'all':
+            print('Component Concentrations:\n')
+            print('========================\n')
+            for item in self.components:
+                amount=self.get_amount(item,unit)
+                result_list.append([item,amount])
+                print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
+        elif type == 'cations':
+            print('Cation Concentrations:\n')
+            print('========================\n')
+            for item in self.components:
+                if self.components[item].get_formal_charge() > 0:
+                    amount=self.get_amount(item,unit)
+                    result_list.append([item,amount])
+                    print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
+        elif type == 'anions':
+            print('Anion Concentrations:\n')
+            print('========================\n')
+            for item in self.components:
+                if self.components[item].get_formal_charge() < 0:
+                    amount=self.get_amount(item,unit)
+                    result_list.append([item,amount])
+                    print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
+
+        return result_list
+
+    def list_salts(self,unit='mol/kg',decimals=4):
+        list = pyEQL.salt_ion_match.generate_salt_list(self,unit)
+        for item in list:
+            print(item.formula+'\t {:0.{decimals}f}'.format(list[item],decimals=decimals))
+
     def list_activities(self,decimals=4):
         '''
         List the activity of each species in a solution.        
