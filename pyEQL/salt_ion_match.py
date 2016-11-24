@@ -103,14 +103,42 @@ class Salt:
         
         self.formula = salt_formula
 
-def _sort_components(Solution):
+    def get_effective_molality(self,ionic_strength):
+        ''' Calculate the effective molality according to [#]_
+
+        .. math:: 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
+
+        Parameters
+        ----------
+        ionic_strength: Quantity
+                        The ionic strength of the parent solution, mol/kg
+
+        Returns
+        -------
+        Quantity: the effective molality of the salt in the parent solution
+
+        References
+        ----------
+        .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of
+        composition and nonideal solution behavior on desalination calculations
+        for mixed electrolyte solutions with comparison to seawater.
+        Desalination 2013, 318, 34–47.
+        '''
+        m_effective = 2 * ionic_strength / (self.nu_cation * self.z_cation ** 2 + self.nu_anion * self.z_anion ** 2)
+
+        return m_effective.to('mol/kg')
+
+def _sort_components(Solution,type='all'):
     '''
-    Sort the components of a solution in descending order (by mole fraction).
-    
+    Sort the components of a solution in descending order (by mol).
+
     Parameters:
     ----------
     Solution : Solution object
-    
+    type     : The type of component to be sorted. Defaults to 'all' for all
+                solutes. Other valid arguments are 'cations' and 'anions' which
+                return sorted lists of cations and anions, respectively.
+
     Returns:
     -------
     A list whose keys are the component names (formulas) and whose
@@ -122,11 +150,18 @@ def _sort_components(Solution):
         
     # populate a list with component names
     for item in Solution.components:
-        formula_list.append(item)
-        
+        if type == 'all':
+            formula_list.append(item)
+        elif type == 'cations':
+            if Solution.get_solute(item).get_formal_charge() > 0:
+                formula_list.append(item)
+        elif type == 'anions':
+            if Solution.get_solute(item).get_formal_charge() < 0:
+                formula_list.append(item)
+
     # populate a dictionary with formula:concentration pairs
     mol_list={}
-    for item in Solution.components.keys():
+    for item in formula_list:
         mol_list.update({item:Solution.get_amount(item,'mol')})
     
     return sorted(formula_list,key=mol_list.__getitem__,reverse=True)
