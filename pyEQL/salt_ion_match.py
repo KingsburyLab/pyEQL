@@ -206,7 +206,88 @@ def identify_salt(Solution):
             
     # assemble the salt
     return Salt(cation,anion)
+
+def generate_salt_list(Solution,unit='mol/kg'):
+    '''
+    Generate a list of salts that represents the ionic composition of a
+    solution.
+
+    Returns:
+    -------
+    dict
+        A dictionary of Salt objects, keyed to the formula of the salt.
+
+    '''
+    salt_list={}
+
+    # sort the cations and anions by moles
+    cation_list = _sort_components(Solution,type='cations')
+    anion_list = _sort_components(Solution,type='anions')
+
+    # iterate through the lists of ions
+    # create salts by matching the equivalent concentrations of cations
+    # and anions along the way
+    len_cat = len(cation_list)
+    len_an = len(anion_list)
+
+    # start with the first cation and anion
+    index_cat=0
+    index_an = 0
     
+    # calculate the equivalent concentrations of each ion
+    c1 = Solution.get_amount(cation_list[index_cat],unit) * chem.get_formal_charge(cation_list[index_cat])
+    a1 = Solution.get_amount(anion_list[index_an],unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+
+    while index_cat < len_cat and index_an < len_an:
+        # if the cation concentration is greater, then we'll have leftover cations
+        if c1 > a1:
+            # create the salt
+            x = Salt(cation_list[index_cat],anion_list[index_an])
+            # there will be leftover cation, so use the anion amount
+            amount = a1 / x.nu_anion
+            # add it to the list
+            salt_list.update({x:amount})
+            # adjust the amounts of the respective ions
+            c1 = c1 - a1
+            # move to the next anion
+            index_an += 1
+            try:
+                a1 = Solution.get_amount(anion_list[index_an],unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+            except IndexError:
+                continue
+        if c1 < a1:
+            # create the salt
+            x = Salt(cation_list[index_cat],anion_list[index_an])
+            # there will be leftover anion, so use the cation amount
+            amount = c1 / x.nu_cation
+            # add it to the list
+            salt_list.update({x:amount})
+            # calculate the leftover cation amount
+            a1 = a1 - c1
+            # move to the next cation
+            index_cat += 1
+            try:
+                c1 = Solution.get_amount(cation_list[index_cat],unit) * chem.get_formal_charge(cation_list[index_cat])
+            except IndexError:
+                continue
+        if c1 == a1:
+            # create the salt
+            x = Salt(cation_list[index_cat],anion_list[index_an])
+            # there will be nothing leftover, so it doesn't matter which ion you use
+            amount = c1 / x.nu_cation
+            # add it to the list
+            salt_list.update({x:amount})
+            # move to the next cation and anion
+            index_an += 1
+            index_cat += 1
+            try:
+                c1 = Solution.get_amount(cation_list[index_cat],unit) * chem.get_formal_charge(cation_list[index_cat])
+                a1 = Solution.get_amount(anion_list[index_an],unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+            except IndexError:
+                continue
+
+    return salt_list
+
 def _trim_formal_charge(formula):
     '''
     remove the formal charge from a chemical formula
