@@ -1442,6 +1442,10 @@ class Solution:
         # coefficient
         for item in salt_list:
 
+            # ignore HOH in the salt list
+            if item.formula == 'HOH':
+                continue
+
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
@@ -1462,7 +1466,7 @@ class Solution:
             #self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = item.get_effective_molality(ionic_strength)
+            concentration = salt_list[item]
 
             molality_sum += concentration
 
@@ -1491,6 +1495,9 @@ class Solution:
         elif scale == 'rational':
             solvent= self.get_solvent().formula
             return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_mole_fraction(solvent))
+        elif scale == 'fugacity':
+            solvent= self.get_solvent().formula
+            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_mole_fraction(solvent)))
         else:
             logger.warning('Invalid scale argument. Returning molal-scale osmotic coefficient')
             return molal_phi
