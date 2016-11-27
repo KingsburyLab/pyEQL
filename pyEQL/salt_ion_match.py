@@ -244,7 +244,7 @@ def generate_salt_list(Solution,unit='mol/kg'):
             # create the salt
             x = Salt(cation_list[index_cat],anion_list[index_an])
             # there will be leftover cation, so use the anion amount
-            amount = a1 / x.nu_anion
+            amount = a1 / x.z_anion
             # add it to the list
             salt_list.update({x:amount})
             # adjust the amounts of the respective ions
@@ -259,7 +259,7 @@ def generate_salt_list(Solution,unit='mol/kg'):
             # create the salt
             x = Salt(cation_list[index_cat],anion_list[index_an])
             # there will be leftover anion, so use the cation amount
-            amount = c1 / x.nu_cation
+            amount = c1 / x.z_cation
             # add it to the list
             salt_list.update({x:amount})
             # calculate the leftover cation amount
@@ -274,7 +274,7 @@ def generate_salt_list(Solution,unit='mol/kg'):
             # create the salt
             x = Salt(cation_list[index_cat],anion_list[index_an])
             # there will be nothing leftover, so it doesn't matter which ion you use
-            amount = c1 / x.nu_cation
+            amount = c1 / x.z_cation
             # add it to the list
             salt_list.update({x:amount})
             # move to the next cation and anion
