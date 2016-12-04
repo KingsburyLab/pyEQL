@@ -12,7 +12,7 @@ Solution class methods. Currently included methods are:
 import pyEQL
 import unittest
 
-class test_hardness(unittest.TestCase):
+class test_hardness(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test the get_hardness() method
     ------------------------------   

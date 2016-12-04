@@ -10,7 +10,7 @@ import pyEQL
 import unittest
 
 
-class Test_empty_solution(unittest.TestCase):
+class Test_empty_solution(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution that contains no solutes other than water
     
@@ -61,7 +61,7 @@ class Test_empty_solution(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_salt_mono(unittest.TestCase):
+class Test_single_salt_mono(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single monovalent salt
     ------------------------------------------------
@@ -113,7 +113,7 @@ class Test_single_salt_mono(unittest.TestCase):
         
         self.assertEqual(result,expected)
         
-class Test_single_salt_di(unittest.TestCase):
+class Test_single_salt_di(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single divalent salt
     ------------------------------------------------
@@ -165,7 +165,7 @@ class Test_single_salt_di(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_salt_di2(unittest.TestCase):
+class Test_single_salt_di2(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single divalent salt
     
@@ -217,7 +217,7 @@ class Test_single_salt_di2(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_ion(unittest.TestCase):
+class Test_single_ion(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution containing only a single ion
     
@@ -269,7 +269,7 @@ class Test_single_ion(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_salt_asymmetric(unittest.TestCase):
+class Test_salt_asymmetric(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution where the cation and anion concentrations
     are not equal    

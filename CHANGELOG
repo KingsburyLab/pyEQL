@@ -3,6 +3,7 @@ pyEQL Changelog
 
 0.5-dev (in progress)
 ---------------------
+ - Enhance automatic test suite to compare results with experimental data based on relative error
 
 0.4.0 (2016-07-14)
 ------------------
