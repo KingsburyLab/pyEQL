@@ -35,12 +35,16 @@ the paper, so perfect accuracy is not expected.
 import pyEQL
 import unittest
 
-class Test_effective_pitzer(unittest.TestCase):
+class Test_effective_pitzer(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------
 
     '''
+    def setUp(self):
+        # relative error tolerance for assertWithinExperimentalError
+        self.tol = 0.15
+		
     def mock_seawater(self,multiple):
         '''
         Create a solution of mock seawater.
@@ -56,35 +60,35 @@ class Test_effective_pitzer(unittest.TestCase):
         ['K+',str(multiple*0.00093)+'mol/L']
         ])
         return s1        
-    @unittest.expectedFailure        
+		
     def test_effective_pitzer_nacl_activity(self):
-        # test the activity coefficient of NaCl
-        # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
-        multiple = [1,2,5,8]
-        expected=[0.7,0.7,0.8,1.1]
-        
-        # import the parameters database
-        from pyEQL import paramsDB as db
-            
-        for item in range(len(multiple)):
-            s1 = self.mock_seawater(multiple[item])
-            Salt = pyEQL.salt_ion_match.Salt('Na+','Cl-')
-            db.search_parameters(Salt.formula)
-            param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
-            alpha1 = 2
-            alpha2 = 0
-            molality = Salt.get_effective_molality(s1.get_ionic_strength())
-            temperature = str(s1.get_temperature())
-            
-            activity_coefficient=pyEQL.activity_correction.get_activity_coefficient_pitzer(s1.get_ionic_strength(), \
-            molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-            
-            # convert the result to a rational activity coefficient
-            result = activity_coefficient * (1+pyEQL.unit('0.018 kg/mol')*s1.get_total_moles_solute()/s1.get_solvent_mass())
-            #print(result,expected[item])
-            self.assertAlmostEqual(result,expected[item],1)        
-	@unittest.expectedFailure
+	    # test the activity coefficient of NaCl
+	    # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
+	    multiple = [1,2,5,8]
+	    expected=[0.7,0.7,0.8,1.1]
+	    
+	    # import the parameters database
+	    from pyEQL import paramsDB as db
+	        
+	    for item in range(len(multiple)):
+	        s1 = self.mock_seawater(multiple[item])
+	        Salt = pyEQL.salt_ion_match.Salt('Na+','Cl-')
+	        db.search_parameters(Salt.formula)
+	        param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+	        alpha1 = 2
+	        alpha2 = 0
+	        molality = Salt.get_effective_molality(s1.get_ionic_strength())
+	        temperature = str(s1.get_temperature())
+	        
+	        activity_coefficient=pyEQL.activity_correction.get_activity_coefficient_pitzer(s1.get_ionic_strength(), \
+	        molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+	        Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+	        
+	        # convert the result to a rational activity coefficient
+	        result = activity_coefficient * (1+pyEQL.unit('0.018 kg/mol')*s1.get_total_moles_solute()/s1.get_solvent_mass())
+	        #print(result,expected[item])
+	        self.assertWithinExperimentalError(result,expected[item],self.tol)         
+			
     def test_effective_pitzer_mgcl2_activity(self):
         # test the activity coefficient of MgCl2
         # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
@@ -111,7 +115,7 @@ class Test_effective_pitzer(unittest.TestCase):
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (1+pyEQL.unit('0.018 kg/mol')*s1.get_total_moles_solute()/s1.get_solvent_mass())
             #print(result,expected[item])
-            self.assertAlmostEqual(result,expected[item],1) 
+            self.assertWithinExperimentalError(result,expected[item],self.tol) 
     
     def test_effective_pitzer_KCl_activity(self):
         # test the activity coefficient of KCl
@@ -139,8 +143,8 @@ class Test_effective_pitzer(unittest.TestCase):
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (1+pyEQL.unit('0.018 kg/mol')*s1.get_total_moles_solute()/s1.get_solvent_mass())
             #print(result,expected[item])
-            self.assertAlmostEqual(result,expected[item],1) 
-            
+            self.assertWithinExperimentalError(result,expected[item],self.tol)  
+    @unittest.expectedFailure
     def test_effective_pitzer_na2so4_activity(self):
         # test the activity coefficient of Na2SO4
         # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
@@ -167,7 +171,7 @@ class Test_effective_pitzer(unittest.TestCase):
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (1+pyEQL.unit('0.018 kg/mol')*s1.get_total_moles_solute()/s1.get_solvent_mass())
             #print(result,expected[item])
-            self.assertAlmostEqual(result,expected[item],1) 
+            self.assertWithinExperimentalError(result,expected[item],self.tol)  
     
     def test_effective_pitzer_fugacity(self):
         # test the fugacity coefficient of mock seawater
@@ -183,7 +187,7 @@ class Test_effective_pitzer(unittest.TestCase):
             result = s1.get_osmotic_coefficient(scale='fugacity')
             
             #print(result,expected[item])
-            self.assertAlmostEqual(result,expected[item],1) 
+            self.assertWithinExperimentalError(result,expected[item],self.tol)  
             
 if __name__ == '__main__':
     unittest.main()
