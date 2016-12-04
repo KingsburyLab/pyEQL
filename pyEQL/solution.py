@@ -1219,7 +1219,7 @@ class Solution:
                     Salt = item
                 else:
                     continue
-        #print(Salt.formula)
+        
 
         # search the database for pitzer parameters for 'salt'
         db.search_parameters(Salt.formula)
@@ -1228,7 +1228,7 @@ class Solution:
 
         # search for Pitzer parameters
         if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
-
+            print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
             param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
 
             # determine alpha1 and alpha2 based on the type of salt
