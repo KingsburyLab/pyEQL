@@ -239,12 +239,12 @@ def generate_salt_list(Solution,unit='mol/kg'):
     a1 = Solution.get_amount(anion_list[index_an],unit) * abs(chem.get_formal_charge(anion_list[index_an]))
 
     while index_cat < len_cat and index_an < len_an:
-        # if the cation concentration is greater, then we'll have leftover cations
+        # if the cation concentration is greater, there will be leftover cations
         if c1 > a1:
             # create the salt
             x = Salt(cation_list[index_cat],anion_list[index_an])
             # there will be leftover cation, so use the anion amount
-            amount = a1 / x.z_anion
+            amount = a1 / abs(x.z_anion)
             # add it to the list
             salt_list.update({x:amount})
             # adjust the amounts of the respective ions
@@ -255,6 +255,7 @@ def generate_salt_list(Solution,unit='mol/kg'):
                 a1 = Solution.get_amount(anion_list[index_an],unit) * abs(chem.get_formal_charge(anion_list[index_an]))
             except IndexError:
                 continue
+        # if the anion concentration is greater, there will be leftover anions
         if c1 < a1:
             # create the salt
             x = Salt(cation_list[index_cat],anion_list[index_an])
