@@ -19,7 +19,9 @@ class Test_density_nacl(unittest.TestCase,pyEQL.CustomAssertions):
     test Pitzer model for density of NaCl
     ------------------------------------------------
     '''
-    
+    def setUp(self):
+        # relative error tolerance for assertWithinExperimentalError
+        self.tol = 0.01
         
     def test_density_pitzer_nacl_1(self):
         '''        
@@ -46,7 +48,7 @@ class Test_density_nacl(unittest.TestCase,pyEQL.CustomAssertions):
                 result=sol.get_density().to('g/mL').magnitude
                 expected = pub_density[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_density_pitzer_nacl_phreeqc_1(self):
         '''        
@@ -74,7 +76,7 @@ class Test_density_nacl(unittest.TestCase,pyEQL.CustomAssertions):
                 result=sol.get_density().to('g/mL').magnitude
                 expected = phreeqc_pitzer_density[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
  
 
 if __name__ == '__main__':

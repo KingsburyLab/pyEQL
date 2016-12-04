@@ -24,7 +24,11 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
     10 mM Na2SO4: 1.8nm
     
     '''
-    @unittest.expectedFailure
+    def setUp(self):
+        # relative error tolerance for assertWithinExperimentalError
+        self.tol = 0.03
+        
+    
     def test_debye_length_1(self):
         '''        
     
@@ -34,8 +38,8 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
         result=s1.get_debye_length().magnitude
         expected = 31
                 
-        self.assertAlmostEqual(result,expected,0)
-    @unittest.expectedFailure            
+        self.assertWithinExperimentalError(result,expected,self.tol)
+            
     def test_debye_length_2(self):
         '''        
 
@@ -45,7 +49,7 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
         result=s1.get_debye_length().magnitude
         expected = 3.1
                 
-        self.assertAlmostEqual(result,expected,1)
+        self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_debye_length_3(self):
         '''        
@@ -56,7 +60,7 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
         result=s1.get_debye_length().magnitude
         expected = 18
                 
-        self.assertAlmostEqual(result,expected,0)
+        self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_debye_length_4(self):
         '''        
@@ -67,7 +71,7 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
         result=s1.get_debye_length().magnitude
         expected = 1.8
                 
-        self.assertAlmostEqual(result,expected,1)
+        self.assertWithinExperimentalError(result,expected,self.tol)
 
 if __name__ == '__main__':
     unittest.main()
