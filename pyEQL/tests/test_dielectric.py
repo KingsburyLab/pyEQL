@@ -10,7 +10,7 @@ computations of pyEQL
 import pyEQL
 import unittest
 
-class Test_dielectric(unittest.TestCase):
+class Test_dielectric(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test the Dielectric Constant calculations of various solutions
     ------------------------------------------------

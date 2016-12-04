@@ -14,7 +14,7 @@ by USGS(PHREEQC)
 import pyEQL
 import unittest
 
-class Test_activity_pitzer_nacl(unittest.TestCase):
+class Test_activity_pitzer_nacl(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test Pitzer model for activity of NaCl
     ------------------------------------------------

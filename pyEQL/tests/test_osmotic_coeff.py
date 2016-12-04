@@ -12,7 +12,7 @@ data rather than the theoretical result of the respective functions.
 import pyEQL
 import unittest
 
-class Test_osmotic_pitzer(unittest.TestCase):
+class Test_osmotic_pitzer(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------

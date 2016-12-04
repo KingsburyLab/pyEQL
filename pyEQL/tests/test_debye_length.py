@@ -10,7 +10,7 @@ computations of pyEQL
 import pyEQL
 import unittest
 
-class Test_debye_length(unittest.TestCase):
+class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test the Debye Length calculations of various solutions
     ------------------------------------------------

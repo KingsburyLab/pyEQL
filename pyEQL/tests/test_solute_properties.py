@@ -16,7 +16,7 @@ in the testing are:
 import pyEQL
 import unittest
 
-class Test_transport_number(unittest.TestCase):
+class Test_transport_number(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test get_transport_number
     ------------------------------------------------
@@ -52,7 +52,7 @@ class Test_transport_number(unittest.TestCase):
         self.assertAlmostEqual(total_t.magnitude,1)
     
 
-class Test_molar_conductivity(unittest.TestCase):
+class Test_molar_conductivity(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test get_molar_conductivity
     
@@ -158,7 +158,7 @@ class Test_molar_conductivity(unittest.TestCase):
         
         self.assertAlmostEqual(result,0,self.places)
 
-class Test_mobility(unittest.TestCase):
+class Test_mobility(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test get_mobility
     
