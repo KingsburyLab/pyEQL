@@ -29,7 +29,7 @@ class CustomAssertions:
         '''
         rel_error = abs(result-expected)/expected
         if not rel_error < tol:
-            raise AssertionError('Result {:} differs from expected value by {.2f}%'.format(result,rel_error*100))
+            raise AssertionError('Result {:} differs from expected value by {:.2f}%'.format(result,rel_error*100))
 
 # enable easy testing
 def test():
