@@ -21,6 +21,9 @@ class Test_osmotic_pitzer(unittest.TestCase,pyEQL.CustomAssertions):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','0.1 mol/L'],['Cl-','0.1 mol/L']])
         
+        # relative error tolerance for assertWithinExperimentalError
+        self.tol = 0.05
+        
     def test_osmotic_pitzer_coeff_units(self):
         # the osmotic coefficient should be dimensionless
         result = self.s1.get_osmotic_coefficient().dimensionality
@@ -58,7 +61,7 @@ class Test_osmotic_pitzer(unittest.TestCase,pyEQL.CustomAssertions):
                 result=sol.get_osmotic_coefficient()
                 expected = pub_osmotic_coeff[i]
                 
-                self.assertWithinExperimentalError(result,expected,0.05)
+                self.assertWithinExperimentalError(result,expected,self.tol)
     
     def test_osmotic_pitzer_coppersulfate(self):
         '''        
@@ -87,7 +90,7 @@ class Test_osmotic_pitzer(unittest.TestCase,pyEQL.CustomAssertions):
                 result=sol.get_osmotic_coefficient()
                 expected = pub_osmotic_coeff[i]
                 
-                self.assertWithinExperimentalError(result,expected)        
+                self.assertWithinExperimentalError(result,expected,self.tol)        
 
 if __name__ == '__main__':
     unittest.main()

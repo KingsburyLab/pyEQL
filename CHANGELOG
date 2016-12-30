@@ -3,7 +3,14 @@ pyEQL Changelog
 
 0.5-dev (in progress)
 ---------------------
+ 
+ - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
+ - Add support for calculation of activity and osmotic coefficients on different scales
+ - Add the ability to filter list_concentrations() to show only cations or anions
  - Enhance automatic test suite to compare results with experimental data based on relative error
+ - Add test suites for the effective Pitzer model and a multicomponent salt solution
+ - Fix bug causing get_activity_coefficient to fail if the solute concentration was zero
+ - Fix bug in which get_mole_fraction returned a float rather than a Quantity 
 
 0.4.0 (2016-07-14)
 ------------------
