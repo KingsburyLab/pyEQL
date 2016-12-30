@@ -989,7 +989,7 @@ class Solution:
         TODO
         
         '''
-        return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute())).magnitude
+        return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute()))
     
     def get_moles_solvent(self):
         '''
