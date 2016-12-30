@@ -1213,89 +1213,98 @@ class Solution:
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
-
-        # identify the predominant salt that this ion is a member of
-        salt_list = pyEQL.salt_ion_match.generate_salt_list(self,unit='mol/kg')
-        amt = pyEQL.unit('0 mol/kg')
-        for item in salt_list:
-            if solute == item.cation or solute == item.anion:
-                if salt_list[item] > amt:
-                    Salt = item
-                else:
-                    continue
         
+        # return zero activity if the concentration of the solute is zero
+        if self.get_amount(solute,'mol').magnitude == 0:
+            return unit('1 dimensionless')
+        else:
+            
+            # identify the predominant salt that this ion is a member of
+            Salt = None
+            salt_list = pyEQL.salt_ion_match.generate_salt_list(self,unit='mol/kg')
+            for item in salt_list:
+                if solute == item.cation or solute == item.anion:
+                        Salt = item       
+            
+            # show an error if no salt can be found that contains the solute
+            if Salt is None:
+                logger.warning('No salts found that contain solute %s. Returning unit activity coefficient.' % solute)
+                return unit('1 dimensionless')
 
-        # search the database for pitzer parameters for 'salt'
-        db.search_parameters(Salt.formula)
+            # search the database for pitzer parameters for 'Salt'
+            db.search_parameters(Salt.formula)
 
-        # use the Pitzer model for higher ionic strenght, if the parameters are available
+            # use the Pitzer model for higher ionic strength, if the parameters are available
 
-        # search for Pitzer parameters
-        if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
-            print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
-            param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+            # search for Pitzer parameters
+            if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
+                if verbose is True:
+                    print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
+                    
+                param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
 
-            # determine alpha1 and alpha2 based on the type of salt
-            # see the May reference for the rules used to determine
-            # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
-                if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
-                    alpha1 = 2
-                    alpha2 = 50
+                # determine alpha1 and alpha2 based on the type of salt
+                # see the May reference for the rules used to determine
+                # alpha1 and alpha2 based on charge
+                if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
+                    if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
+                        alpha1 = 2
+                        alpha2 = 50
+                    else:
+                        alpha1 = 1.4
+                        alpha2 = 12
                 else:
-                    alpha1 = 1.4
-                    alpha2 = 12
+                    alpha1 = 2
+                    alpha2 = 0
+
+                # determine the average molality of the salt
+                # this is necessary for solutions inside e.g. an ion exchange
+                # membrane, where the cation and anion concentrations may be
+                # unequal
+                #molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+
+                # determine the effective molality of the salt in the solution
+                molality = Salt.get_effective_molality(self.get_ionic_strength())
+
+                activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
+                molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
+                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+
+                logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
+                molal= activity_coefficient
+
+            # for very low ionic strength, use the Debye-Huckel limiting law
+            elif self.get_ionic_strength().magnitude <= 0.005:
+                logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
+                molal= ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
+            # use the Guntelberg approximation for 0.005 < I < 0.1
+            elif self.get_ionic_strength().magnitude <= 0.1:
+                logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
+                molal= ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
+            # use the Davies equation for 0.1 < I < 0.5
+            elif self.get_ionic_strength().magnitude <= 0.5:
+                logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
+                molal= ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+
             else:
-                alpha1 = 2
-                alpha2 = 0
+                logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient' % solute)
 
-            # determine the average molality of the salt
-            # this is necessary for solutions inside e.g. an ion exchange
-            # membrane, where the cation and anion concentrations may be
-            # unequal
-            #molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+                molal= unit('1 dimensionless')
 
-            # determine the effective molality of the salt in the solution
-            molality = Salt.get_effective_molality(self.get_ionic_strength())
-
-            activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-            molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-            Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-
-            logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-            molal= activity_coefficient
-
-        # for very low ionic strength, use the Debye-Huckel limiting law
-        elif self.get_ionic_strength().magnitude <= 0.005:
-            logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
-            molal= ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-
-        # use the Guntelberg approximation for 0.005 < I < 0.1
-        elif self.get_ionic_strength().magnitude <= 0.1:
-            logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
-            molal= ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-
-        # use the Davies equation for 0.1 < I < 0.5
-        elif self.get_ionic_strength().magnitude <= 0.5:
-            logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
-            molal= ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
-
-        else:
-            logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient' % solute)
-
-            molal= unit('1 dimensionless')
-
-        # if necessary, convert the activity coefficient to another scale, and return the result
-        if scale == 'molal':
-            return molal
-        elif scale == 'molar':
-            print('WARNING: need to revise to use salt rather than ion concentrations')
-            return (molal * h2o.water_density(self.get_temperature()) * self.get_amount(solute,'mol/kg') / self.get_amount(solute,'mol/L')).to('dimensionless')
-        elif scale == 'rational':
-            return molal*(1+unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass())
-        else:
-            logger.warning('Invalid scale argument. Returning molal-scale activity coefficient')
-            return molal
+            # if necessary, convert the activity coefficient to another scale, and return the result
+            if scale == 'molal':
+                return molal
+            elif scale == 'molar':
+                total_molality = self.get_total_moles_solute()/self.get_solvent_mass()
+                total_molarity = self.get_total_moles_solute() / self.get_volume()
+                return (molal * h2o.water_density(self.get_temperature()) * total_molality / total_molarity).to('dimensionless')
+            elif scale == 'rational':
+                return molal*(1+unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass())
+            else:
+                logger.warning('Invalid scale argument. Returning molal-scale activity coefficient')
+                return molal
 
     def get_activity(self,solute,scale='molal',verbose=False):
         '''
