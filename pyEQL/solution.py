@@ -1108,7 +1108,7 @@ class Solution:
         return salt.generate_salt_list(self,unit='mol/kg')
 
 ## Activity-related methods
-    def get_activity_coefficient(self,solute,scale='molal'):
+    def get_activity_coefficient(self,solute,scale='molal',verbose=False):
         '''Return the activity coefficient of a solute in solution.
 
         Whenever the appropriate parameters are available, the Pitzer model [#]_ is used. 
@@ -1144,6 +1144,10 @@ class Solution:
                     The concentration scale for the returned activity coefficient.
                     Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                     By default, the molal scale activity coefficient is returned.
+        verbose : bool, optional
+                    If True, pyEQL will print a message indicating the parent salt
+                    that is being used for activity calculations. This option is
+                    useful when modeling multicomponent solutions. False by default.
 
         Returns
         -------
@@ -1293,7 +1297,7 @@ class Solution:
             logger.warning('Invalid scale argument. Returning molal-scale activity coefficient')
             return molal
 
-    def get_activity(self,solute):
+    def get_activity(self,solute,scale='molal',verbose=False):
         '''
         Return the thermodynamic activity of the solute in solution on the molal scale.
        
@@ -1301,8 +1305,13 @@ class Solution:
         ----------
         solute : str 
                     String representing the name of the solute of interest
-        temperature :    Quantity, optional
-                     The temperature of the solution. Defaults to 25 degrees C if omitted
+        scale : str, optional
+                    Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
+                    By default, the molal scale activity is returned.
+        verbose : bool, optional
+                    If True, pyEQL will print a message indicating the parent salt
+                    that is being used for activity calculations. This option is
+                    useful when modeling multicomponent solutions. False by default.
         
         Returns
         -------
@@ -1316,24 +1325,34 @@ class Solution:
         
         Notes
         -----
-        The thermodynamic activity is independent of the concentration scale used. However,
-        the concentration and the activity coefficient must use corresponding scales. [#]_ [#]_
-        The ionic strength, activity coefficients, and activities are all
+        The thermodynamic activity depends on the concentration scale used [#]. 
+        By default, the ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale.
         
         References
         ----------
-        .. [#] http://adsorption.org/awm/utils/Activity.htm
-        .. [#] http://en.wikipedia.org/wiki/Thermodynamic_activity#Activity_coefficient
+        .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
+               Edition; Butterworths: London, 1968, p.32.
         
         '''
         # switch to the water activity function if the species is H2O
         if solute == 'H2O' or solute == 'water':
             activity = self.get_water_activity()
-        # TODO fix this for multivalent salts e.g. MgCl2
         else:
-            activity = self.get_activity_coefficient(solute) * self.get_amount(solute,'mol/kg').magnitude
-            logger.info('Calculated activity of solute %s as %s' % (solute,activity))
+            # determine the concentration units to use based on the desired scale
+            if scale == 'molal':
+                unit = 'mol/kg'
+            elif scale == 'molar':
+                unit = 'mol/L'
+            elif scale == 'rational':
+                unit = 'fraction'
+            else:
+                logger.error('Invalid scale argument. Returning molal-scale activity.')
+                unit = 'mol/kg'
+                scale = 'molal'
+            
+            activity = self.get_activity_coefficient(solute,scale=scale,verbose=verbose) * self.get_amount(solute,unit).magnitude
+            logger.info('Calculated %s scale activity of solute %s as %s' % (scale,solute,activity))
         
         return activity
 
