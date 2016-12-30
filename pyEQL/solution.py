@@ -1306,6 +1306,7 @@ class Solution:
         solute : str 
                     String representing the name of the solute of interest
         scale : str, optional
+                    The concentration scale for the returned activity.
                     Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                     By default, the molal scale activity is returned.
         verbose : bool, optional
@@ -1377,8 +1378,8 @@ class Solution:
         ----------
         scale : str, optional
                     The concentration scale for the returned osmotic coefficient.
-                    Valid options are "molal" and "rational" (i.e., mole fraction).
-                    By default, the molal scale osmotic coefficient is returned.
+                    Valid options are "molal", "rational" (i.e., mole fraction),
+                    and "fugacity".  By default, the molal scale osmotic coefficient is returned.
         Returns
         -------
         Quantity : 
