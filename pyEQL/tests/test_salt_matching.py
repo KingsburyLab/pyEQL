@@ -279,7 +279,7 @@ class Test_salt_asymmetric(unittest.TestCase,pyEQL.CustomAssertions):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','1 mol/kg'],['Cl-','4 mol/kg']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
