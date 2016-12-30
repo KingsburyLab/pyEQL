@@ -1164,28 +1164,13 @@ class Solution:
                 
         Notes
         -----
-        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
-        Pitzer parameters for the predominant salt (identified using the get_salt() method)
-        are used in conjunction with the ionic strength calculated from the complete ionic
-        composition to calculate the activity coefficients *for ions in the predominant salt*.
+        For multicomponent mixtures, pyEQL implements the "effective Pitzer model"
+        presented by Mistry et al. [#]_. In this model, the activity coefficient
+        of a salt in a multicomponent mixture is calculated using an "effective 
+        molality," which is the molality that would result in a single-salt 
+        mixture with the same total ionic strength as the multicomponent solution.
         
-        For other ions (not in the predominant salt), the regular logic will apply. If the
-        ionic strength of a complex mixture is lower than 0.5 m, the corresponding equations will
-        be used to estimate the activity coefficient based on ionic strenght. However, if the ionic
-        strength is higher than 0.5m, this method will return an activity coefficient of 1 for any 
-        ions not in the predominant salt. pyEQL will raise a WARNING when this occurs.
-        
-        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
-        concentration" of the predominant salt by averaging the equivalent salt concentration of 
-        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
-        model to be applied to situations in which the ionic concentrations are unequal, or in which 
-        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
-        
-        This behavior is best illustrated with an example. In the solution below, the predominant
-        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
-        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
-        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
-        strength is too high to use other methods.
+        .. math:: m_effective = 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
 
         References
         ----------
@@ -1198,18 +1183,7 @@ class Solution:
 
         .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
                Edition; Butterworths: London, 1968, p.32.
-
-        Examples
-        --------
-        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
-        >>> s1.get_salt().formula
-        'MgCl2'
-        >>> soln.get_activity_coefficient('Mg+2')
-        <Quantity(0.4711660119505297, 'dimensionless')>
-        >>> soln.get_activity_coefficient('Na+')
-        (pyEQL.solution) - WARNING - Ionic strength too high to estimate activity for species Na+. 
-        Specify parameters for Pitzer model. Returning unit activity coefficient
-        <Quantity(1, 'dimensionless')>        
+       
         '''
         ion = self.components[solute]
         temperature = str(self.get_temperature())
@@ -1402,41 +1376,36 @@ class Solution:
         
         Notes
         -----
-        For multicomponent mixtures (i.e., solutions containing more than one cation and anion), the
-        Pitzer parameters for the predominant salt (identified using the get_salt() method)
-        are used in conjunction with the ionic strength calculated from the complete ionic
-        composition to calculate the osmotic coefficient.
+        For multicomponent mixtures, pyEQL adopts the "effective Pitzer model" 
+        presented by Mistry et al. [#]_. In this approach, the osmotic coefficient of
+        each individual salt is calculated using the normal Pitzer model based
+        on its respective concentration. Then, an effective osmotic coefficient
+        is calculated as the concentration-weighted average of the individual 
+        osmotic coefficients. 
         
-        In using the Pitzer model for ions in the predominant salt, pyEQL calculates the "effective 
-        concentration" of the predominant salt by averaging the equivalent salt concentration of 
-        each ion, accounting for stoichiometry. This approximation is necessary to allow the Pitzer 
-        model to be applied to situations in which the ionic concentrations are unequal, or in which 
-        there is a common ion between more than one salt (e.g., NaCl and MgCl2).
+        For example, in a mixture of 0.5 M NaCl and 0.5 M KBr, one would calculate
+        the osmotic coefficient for each salt using a concentration of 0.5 M and
+        an ionic strength of 1 M. Then, one would average the two resulting
+        osmotic coefficients to obtain an effective osmotic coefficient for the
+        mixture.   
         
-        This behavior is best illustrated with an example. In the solution below, the predominant
-        salt is MgCl2. Therefore, the activity coefficient of Mg+2 is calculatd with the Pitzer
-        model. The effective concentration of MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 
-        0.8 / 2 (for Cl-), or 0.3 m. However, the activity coefficient for Na+ is 1 becaue the ionic 
-        strength is too high to use other methods
-        
-        In the third example below, the predominant salt is MgCl2. Therefore, the Pitzer parameters
-        for MgCl2 are used to calculate the osmotic coefficient. The effective concentration of 
-        MgCl2 would be the average of 0.2 m / 1 (for Mg+2) and 0.8 / 2 (for Cl-), or 0.3 m. Compare 
-        the result to the second example, in which only MgCl2 is present and the salt concentration
-        is also 0.3m. The slightly higher ionic strength due to the presence of the sodium ions
-        changes the value of the osmotic coefficient.
+        (Note: in the paper referenced below, the effective
+        osmotic coefficient is determined by weighting using the "effective molality"
+        rather than the true molality. Subsequent checking and correspondence with
+        the author confirmed that the weight factor should be the true molality, and
+        that is what is implemented in pyEQL.)     
 
         References
         ----------
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
                *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
-        .. [#] (1) Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed 
-                electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34–47.
 
         .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
                Edition; Butterworths: London, 1968, p.32.
 
+        .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed 
+                electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34–47.
 
         Examples
         --------
@@ -1447,12 +1416,6 @@ class Solution:
         >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
         >>> s1.get_osmotic_coefficient()
         <Quantity(0.891154788474231, 'dimensionless')>
-                
-        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Mg+2','0.3 mol/kg'],['Cl-','0.8 mol/kg']])
-        >>> s1.get_salt().formula
-        'MgCl2'
-        >>> s1.get_osmotic_coefficient()
-        <Quantity(0.8974036010550355, 'dimensionless')>
         
         '''
         temperature = str(self.get_temperature())
