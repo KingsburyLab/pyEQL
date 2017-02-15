@@ -972,7 +972,41 @@ class Solution:
                 return None
             else:
                 self._update_volume()
-            
+    
+    def get_osmolarity(self,activity_correction=False):
+        '''Return the osmolarity of the solution in Osm/L
+        
+        Parameters
+        ----------
+        activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the 
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point 
+                depression. Defaults to FALSE if omitted.
+        '''
+        if activity_correction is True:
+            factor = self.get_osmotic_coefficient()
+        else:
+            factor = 1
+        return factor * self.get_total_moles_solute() / self.get_volume().to('L')
+    
+    def get_osmolality(self,activity_correction=False):
+        '''Return the osmolality of the solution in Osm/kg
+        
+        Parameters
+        ----------
+        activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the 
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point 
+                depression. Defaults to FALSE if omitted.
+        '''
+        if activity_correction is True:
+            factor = self.get_osmotic_coefficient()
+        else:
+            factor = 1
+        return factor * self.get_total_moles_solute() / self.get_solvent_mass().to('kg')
+        
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
         tot_mol = 0
