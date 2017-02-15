@@ -418,7 +418,7 @@ class Solution:
             if item != 'H2O':
                 # skip over solutes that don't have parameters
                 try:
-                    fraction = self.get_mole_fraction(item)
+                    fraction = self.get_amount(item,'fraction')
                     coefficient= self.get_solute(item).get_parameter('dielectric_parameter_water')
                     denominator += coefficient * fraction
                 except TypeError:
@@ -981,35 +981,17 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
     
-    #TODO - figure out how best to integrate with pint / units
     def get_mole_fraction(self,solute):
         '''
         Return the mole fraction of 'solute' in the solution
         
-        Parameters
-        ----------
-        solute : str 
-                 String representing the name of the solute of interest
-    
-        Returns
-        -------
-        float
-            The mole fraction of 'solute' in the parent Solution object
-    
-        See Also
-        --------
-        get_solvent_mass()
-        
         Notes
         -----
-        This function assumes water is the solvent with MW = 18
- 
-        Examples
-        --------
-        TODO
-        
+        This function is DEPRECATED and will raise a warning when called.
+        Use get_amount() instead and specify 'fraction' as the unit type.
         '''
-        return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute()))
+        logger.warning('get_mole_fraction is DEPRECATED! Use get_amount() instead.')
+        return self.get_amount(solute,'fraction')
     
     def get_moles_solvent(self):
         '''
@@ -1506,10 +1488,10 @@ class Solution:
             return molal_phi
         elif scale == 'rational':
             solvent= self.get_solvent().formula
-            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_mole_fraction(solvent))
+            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_amount(solvent,'fraction'))
         elif scale == 'fugacity':
             solvent= self.get_solvent().formula
-            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_mole_fraction(solvent)))
+            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_amount(solvent,'fraction')))
         else:
             logger.warning('Invalid scale argument. Returning molal-scale osmotic coefficient')
             return molal_phi
@@ -1566,7 +1548,7 @@ class Solution:
         
         if osmotic_coefficient == 1:
             logger.warning('Pitzer parameters not found. Water activity set equal to mole fraction')
-            return self.get_mole_fraction('H2O')
+            return self.get_amount('H2O','fraction')
         else:
             concentration_sum = unit('0 mol/kg')
             for item in self.components:                
