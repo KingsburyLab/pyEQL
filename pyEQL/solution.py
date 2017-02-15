@@ -712,7 +712,15 @@ class Solution:
             
     def get_amount(self,solute,units):
         '''
-        Return the amount of 'solute' in the parent solution
+        Return the amount of 'solute' in the parent solution.
+        
+        The amount of a solute can be given in a variety of unit types.
+        1. substance per volume (e.g., 'mol/L')
+        1. substance per mass of solvent (e.g., 'mol/kg')
+        1. mass of substance (e.g., 'kg')
+        1. moles of substance ('mol')
+        1. mole fraction ('fraction')
+        1. percent by weight (%)
        
         Parameters
         ----------
@@ -722,6 +730,7 @@ class Solution:
                     Units desired for the output. Examples of valid units are 
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
                     Use 'fraction' to return the mole fraction.
+                    Use '%' to return the mass percent
 
         Returns
         -------
@@ -733,23 +742,34 @@ class Solution:
         add_amount
         set_amount
         get_total_amount
+        get_osmolarity
+        get_osmolality
+        get_solvent_mass
+        get_mass
+        get_total_moles_solute
         '''
+        # retrieve the number of moles of solute and its molecular weight
         try:
-            if units == 'fraction':
-                return self.get_mole_fraction(solute)
-            else:
-                moles = self.get_solute(solute).get_moles()
-                mw = self.get_solute(solute).get_molecular_weight()
+            moles = self.get_solute(solute).get_moles()
+            mw = self.get_solute(solute).get_molecular_weight()
         # if the solute is not present in the solution, we'll get a KeyError
         # In that case, the amount is zero
         except KeyError:
-            return 0 * unit(units)
+            try:
+                return 0 * unit(units)
+            except:
+                logger.error('Unsupported unit specified for get_amount')
+                return 0
             
         # with pint unit conversions enabled, we just pass the unit to pint
         # the logic tests here ensure that only the required arguments are 
         # passed to pint for the unit conversion. This avoids unecessary 
         # function calls.
-        if unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
+        if units == 'fraction':
+            return moles / (self.get_moles_solvent() + self.get_total_moles_solute() )
+        elif units == '%':
+            return moles.to('kg','chem',mw=mw) / self.get_mass().to('kg') * 100
+        elif unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             return moles.to(units,'chem',mw=mw,volume=self.get_volume())
         elif unit(units).dimensionality in ('[substance]/[mass]','[mass]/[mass]'):
             return moles.to(units,'chem',mw=mw,solvent_mass=self.get_solvent_mass())
