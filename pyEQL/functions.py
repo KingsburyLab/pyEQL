@@ -407,9 +407,11 @@ def autogenerate(solution=""):
     
     - '' - empty solution, equivalent to pyEQL.Solution()
     - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-    - 'seawater' - Standard Seawater. See Table 4 of the Reference for Composition [#]_
-    - 'wastewater' - medium strength domestic wastewater. See Table 3-18 of [#]_
+    - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [#]_
+    - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [#]_
     - 'urine' - typical human urine. See Table 3-15 of [#]_
+    - 'normal saline' or 'NS' - normal saline solution used in medicine [#]_
+    - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [#]_
 
     References
     ----------
@@ -418,6 +420,10 @@ def autogenerate(solution=""):
     
     .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
             McGraw-Hill, 2013.
+    
+    .. [#] https://en.wikipedia.org/wiki/Saline_(medicine)
+    
+    .. [#] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
     '''
     
@@ -426,7 +432,7 @@ def autogenerate(solution=""):
         pressure = '1 atm'
         pH = 7
         solutes = []
-    elif solution == 'seawater':
+    elif solution == 'seawater' or solution == 'SW':
         temperature = '25 degC'
         pressure = '1 atm'
         pH = 8.1
@@ -455,7 +461,7 @@ def autogenerate(solution=""):
         ['HCO3-','10^-5.5 mol/L'],
         ['CO3-2','10^-9 mol/L']
         ]
-    elif solution == 'wastewater':
+    elif solution == 'wastewater' or solution == 'WW':
         temperature = '25 degC'
         pressure = '1 atm'
         pH = 7
@@ -485,6 +491,25 @@ def autogenerate(solution=""):
         ['K+','1500 mg/L'],
         ['Cl-','1900 mg/L'],
         ['SO4-2','1800 mg/L']
+        ]
+    elif solution == 'normal saline' or solution == 'NS':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 7
+        solutes = [
+        ['Na+','154 mmol/L'],
+        ['Cl-','154 mmol/L']
+        ]
+    elif solution == 'Ringers lactate' or solution == 'RL':
+        temperature = '25 degC'
+        pressure = '1 atm'
+        pH = 6.5
+        solutes = [
+        ['Na+','130 mmol/L'],
+        ['Cl-','109 mmol/L'],
+        ['K+','4 mmol/L'],
+        ['Ca+2','1.5 mmol/L'],
+        ['C3H5O3-','28 mmol/L']
         ]
     else:
         logger.error('Invalid solution entered - %s' % solution)

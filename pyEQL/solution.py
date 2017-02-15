@@ -418,7 +418,7 @@ class Solution:
             if item != 'H2O':
                 # skip over solutes that don't have parameters
                 try:
-                    fraction = self.get_mole_fraction(item)
+                    fraction = self.get_amount(item,'fraction')
                     coefficient= self.get_solute(item).get_parameter('dielectric_parameter_water')
                     denominator += coefficient * fraction
                 except TypeError:
@@ -712,7 +712,15 @@ class Solution:
             
     def get_amount(self,solute,units):
         '''
-        Return the amount of 'solute' in the parent solution
+        Return the amount of 'solute' in the parent solution.
+        
+        The amount of a solute can be given in a variety of unit types.
+        1. substance per volume (e.g., 'mol/L')
+        1. substance per mass of solvent (e.g., 'mol/kg')
+        1. mass of substance (e.g., 'kg')
+        1. moles of substance ('mol')
+        1. mole fraction ('fraction')
+        1. percent by weight (%)
        
         Parameters
         ----------
@@ -722,6 +730,7 @@ class Solution:
                     Units desired for the output. Examples of valid units are 
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
                     Use 'fraction' to return the mole fraction.
+                    Use '%' to return the mass percent
 
         Returns
         -------
@@ -733,23 +742,34 @@ class Solution:
         add_amount
         set_amount
         get_total_amount
+        get_osmolarity
+        get_osmolality
+        get_solvent_mass
+        get_mass
+        get_total_moles_solute
         '''
+        # retrieve the number of moles of solute and its molecular weight
         try:
-            if units == 'fraction':
-                return self.get_mole_fraction(solute)
-            else:
-                moles = self.get_solute(solute).get_moles()
-                mw = self.get_solute(solute).get_molecular_weight()
+            moles = self.get_solute(solute).get_moles()
+            mw = self.get_solute(solute).get_molecular_weight()
         # if the solute is not present in the solution, we'll get a KeyError
         # In that case, the amount is zero
         except KeyError:
-            return 0 * unit(units)
+            try:
+                return 0 * unit(units)
+            except:
+                logger.error('Unsupported unit specified for get_amount')
+                return 0
             
         # with pint unit conversions enabled, we just pass the unit to pint
         # the logic tests here ensure that only the required arguments are 
         # passed to pint for the unit conversion. This avoids unecessary 
         # function calls.
-        if unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
+        if units == 'fraction':
+            return moles / (self.get_moles_solvent() + self.get_total_moles_solute() )
+        elif units == '%':
+            return moles.to('kg','chem',mw=mw) / self.get_mass().to('kg') * 100
+        elif unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
             return moles.to(units,'chem',mw=mw,volume=self.get_volume())
         elif unit(units).dimensionality in ('[substance]/[mass]','[mass]/[mass]'):
             return moles.to(units,'chem',mw=mw,solvent_mass=self.get_solvent_mass())
@@ -952,7 +972,41 @@ class Solution:
                 return None
             else:
                 self._update_volume()
-            
+    
+    def get_osmolarity(self,activity_correction=False):
+        '''Return the osmolarity of the solution in Osm/L
+        
+        Parameters
+        ----------
+        activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the 
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point 
+                depression. Defaults to FALSE if omitted.
+        '''
+        if activity_correction is True:
+            factor = self.get_osmotic_coefficient()
+        else:
+            factor = 1
+        return factor * self.get_total_moles_solute() / self.get_volume().to('L')
+    
+    def get_osmolality(self,activity_correction=False):
+        '''Return the osmolality of the solution in Osm/kg
+        
+        Parameters
+        ----------
+        activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the 
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point 
+                depression. Defaults to FALSE if omitted.
+        '''
+        if activity_correction is True:
+            factor = self.get_osmotic_coefficient()
+        else:
+            factor = 1
+        return factor * self.get_total_moles_solute() / self.get_solvent_mass().to('kg')
+        
     def get_total_moles_solute(self):
         '''Return the total moles of all solute in the solution'''
         tot_mol = 0
@@ -961,35 +1015,17 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
     
-    #TODO - figure out how best to integrate with pint / units
     def get_mole_fraction(self,solute):
         '''
         Return the mole fraction of 'solute' in the solution
         
-        Parameters
-        ----------
-        solute : str 
-                 String representing the name of the solute of interest
-    
-        Returns
-        -------
-        float
-            The mole fraction of 'solute' in the parent Solution object
-    
-        See Also
-        --------
-        get_solvent_mass()
-        
         Notes
         -----
-        This function assumes water is the solvent with MW = 18
- 
-        Examples
-        --------
-        TODO
-        
+        This function is DEPRECATED and will raise a warning when called.
+        Use get_amount() instead and specify 'fraction' as the unit type.
         '''
-        return (self.get_amount(solute,'moles') / (self.get_moles_solvent() + self.get_total_moles_solute()))
+        logger.warning('get_mole_fraction is DEPRECATED! Use get_amount() instead.')
+        return self.get_amount(solute,'fraction')
     
     def get_moles_solvent(self):
         '''
@@ -1486,10 +1522,10 @@ class Solution:
             return molal_phi
         elif scale == 'rational':
             solvent= self.get_solvent().formula
-            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_mole_fraction(solvent))
+            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_amount(solvent,'fraction'))
         elif scale == 'fugacity':
             solvent= self.get_solvent().formula
-            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_mole_fraction(solvent)))
+            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_amount(solvent,'fraction')))
         else:
             logger.warning('Invalid scale argument. Returning molal-scale osmotic coefficient')
             return molal_phi
@@ -1546,7 +1582,7 @@ class Solution:
         
         if osmotic_coefficient == 1:
             logger.warning('Pitzer parameters not found. Water activity set equal to mole fraction')
-            return self.get_mole_fraction('H2O')
+            return self.get_amount('H2O','fraction')
         else:
             concentration_sum = unit('0 mol/kg')
             for item in self.components:                

@@ -6,11 +6,15 @@ pyEQL Changelog
  
  - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
  - Add support for calculation of activity and osmotic coefficients on different scales
+ - Add support for calculating % by weight to get_amount()
+ - Added methods for calculating the osmolarity or osmolality of a Solution
  - Add the ability to filter list_concentrations() to show only cations or anions
+ - Add two medical solutions - normal saline and Ringer's lacate - to the autogenerate method
+ - Add shorthand abbreviations for 'seawater' and 'wastewater' in the autogenerate method
  - Enhance automatic test suite to compare results with experimental data based on relative error
  - Add test suites for the effective Pitzer model and a multicomponent salt solution
+ - DEPRECATED get_mole_fraction. Use get_amount() instead
  - Fix bug causing get_activity_coefficient to fail if the solute concentration was zero
- - Fix bug in which get_mole_fraction returned a float rather than a Quantity 
 
 0.4.0 (2016-07-14)
 ------------------
