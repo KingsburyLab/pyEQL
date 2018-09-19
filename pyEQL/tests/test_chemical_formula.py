@@ -5,10 +5,11 @@ chemical_formula.py test suite
 This file contains tests for the chemical formula interpreter module of pyEQL.
 '''
 
+import pyEQL
 from pyEQL import chemical_formula as cf
 import unittest
 
-class Test_check_formula(unittest.TestCase):
+class Test_check_formula(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     tests for the _check_formula() function
     ---------------------------------------
@@ -74,7 +75,7 @@ class Test_check_formula(unittest.TestCase):
 #        for element in random.sample(self.seq, 5):
 #            self.assertTrue(element in self.seq)
 
-class Test_is_valid_formula(unittest.TestCase):
+class Test_is_valid_formula(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     tests for is_valid_formula()
     ----------------------------
@@ -239,7 +240,7 @@ class Test_is_valid_formula(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_consolidate_formula(unittest.TestCase):
+class Test_consolidate_formula(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     tests for _consolidate_formula()
     --------------------------------

@@ -10,7 +10,7 @@ import pyEQL
 import unittest
 
 
-class Test_empty_solution(unittest.TestCase):
+class Test_empty_solution(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution that contains no solutes other than water
     
@@ -19,7 +19,7 @@ class Test_empty_solution(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution()
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
@@ -61,7 +61,7 @@ class Test_empty_solution(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_salt_mono(unittest.TestCase):
+class Test_single_salt_mono(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single monovalent salt
     ------------------------------------------------
@@ -71,7 +71,7 @@ class Test_single_salt_mono(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','2 mol/L'],['Cl-','2 mol/L']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
@@ -113,7 +113,7 @@ class Test_single_salt_mono(unittest.TestCase):
         
         self.assertEqual(result,expected)
         
-class Test_single_salt_di(unittest.TestCase):
+class Test_single_salt_di(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single divalent salt
     ------------------------------------------------
@@ -123,7 +123,7 @@ class Test_single_salt_di(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','4 mol/L'],['SO4-2','2 mol/L']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
@@ -165,7 +165,7 @@ class Test_single_salt_di(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_salt_di2(unittest.TestCase):
+class Test_single_salt_di2(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution with a single divalent salt
     
@@ -175,7 +175,7 @@ class Test_single_salt_di2(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Fe+3','1 mol/L'],['Cl-','3 mol/L']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
@@ -217,7 +217,7 @@ class Test_single_salt_di2(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_single_ion(unittest.TestCase):
+class Test_single_ion(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution containing only a single ion
     
@@ -227,7 +227,7 @@ class Test_single_ion(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Fe+3','1 mol/L']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt
@@ -269,7 +269,7 @@ class Test_single_ion(unittest.TestCase):
         
         self.assertEqual(result,expected)
 
-class Test_salt_asymmetric(unittest.TestCase):
+class Test_salt_asymmetric(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test matching a solution where the cation and anion concentrations
     are not equal    
@@ -279,7 +279,7 @@ class Test_salt_asymmetric(unittest.TestCase):
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','1 mol/kg'],['Cl-','4 mol/kg']])
     
-    # The return type shoudl be a salt object
+    # The return type should be a salt object
     def test_salt_type(self):
         result = self.s1.get_salt()
         expected = pyEQL.salt_ion_match.Salt

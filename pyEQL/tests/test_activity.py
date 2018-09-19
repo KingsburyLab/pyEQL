@@ -14,7 +14,7 @@ by USGS(PHREEQC)
 import pyEQL
 import unittest
 
-class Test_activity_pitzer_nacl(unittest.TestCase):
+class Test_activity_pitzer_nacl(unittest.TestCase,pyEQL.CustomAssertions):
     '''
     test Pitzer model for activity of NaCl
     ------------------------------------------------
@@ -22,7 +22,9 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
     
     def setUp(self):
         self.s1 = pyEQL.Solution([['Na+','0.1 mol/L'],['Cl-','0.1 mol/L']])
-        # list of molal concentrations for published activity coefficients
+        
+        # relative error tolerance for assertWithinExperimentalError
+        self.tol = 0.05
 
     def test_activity_pitzer_coeff_units(self):
         # the activity coefficient should be dimensionless
@@ -73,7 +75,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,1)    
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_activity_crc_CsI(self):
         '''        
@@ -108,7 +110,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)    
+                self.assertWithinExperimentalError(result,expected,self.tol)  
                     
     def test_activity_crc_bacl2(self):
         '''        
@@ -138,7 +140,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** 1 * act_an ** 2) ** (1/3)
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
     
     def test_activity_crc_licl(self):
         '''        
@@ -168,7 +170,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** 1 * act_an ** 1) ** (1/2)
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,1)    
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_activity_crc_rbcl(self):
         '''        
@@ -196,7 +198,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=sol.get_activity_coefficient('Rb+')
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_activity_crc_MgCl2(self):
         '''        
@@ -231,7 +233,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,1)
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
     def test_activity_crc_KBr(self):
         '''        
@@ -266,7 +268,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** nu_cation * act_an ** nu_anion) ** (1/(nu_cation+nu_anion))
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
                     
     def test_activity_crc_k2so4(self):
         '''        
@@ -296,7 +298,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=(act_cat ** 2 * act_an ** 1) ** (1/3)
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,1)
+                self.assertWithinExperimentalError(result,expected,self.tol)
                         
     def test_activity_pitzer_nacl_1(self):
         '''        
@@ -322,7 +324,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=sol.get_activity_coefficient('Na+')
                 expected = pub_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
                 
     # The pitzer model diverges a bit from experimental data at high concentration
     @unittest.expectedFailure
@@ -362,7 +364,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=sol.get_water_activity()
                 expected = pub_water_activity[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
         
     def test_activity_pitzer_phreeqc_nacl_2(self):
         '''        
@@ -390,7 +392,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=sol.get_activity_coefficient('Na+')
                 expected = phreeqc_pitzer_activity_coeff[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
     
             
     def test_water_activity_phreeqc_pitzer_nacl_2(self):
@@ -419,7 +421,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 result=sol.get_water_activity()
                 expected = phreeqc_pitzer_water_activity[i]
                 
-                self.assertAlmostEqual(result,expected,2)
+                self.assertWithinExperimentalError(result,expected,self.tol)
 
 
 if __name__ == '__main__':
