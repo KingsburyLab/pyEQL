@@ -1,7 +1,7 @@
 pyEQL Changelog
 ===============
 
-0.5-dev (in progress)
+0.5.0 (2018-09-19)
 ---------------------
  
  - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
