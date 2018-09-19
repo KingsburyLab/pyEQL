@@ -1,8 +1,11 @@
 pyEQL Changelog
 ===============
 
+0.6.0 (in progress)
+-------------------
+
 0.5.0 (2018-09-19)
----------------------
+------------------
  
  - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
  - Add support for calculation of activity and osmotic coefficients on different scales
