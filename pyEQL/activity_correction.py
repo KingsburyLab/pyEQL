@@ -63,7 +63,7 @@ def _debye_parameter_B(temperature='25 degC'):
     
     '''
     # TODO - fix this and resolve units
-    param_B = ( 8 * math.pi * unit.avogadro_number * unit.elementary_charge ** 2 
+    param_B = ( 8 * math.pi * unit.avogadro_constant * unit.elementary_charge ** 2 
     / (h2o.water_density(unit(temperature)) * unit.epsilon_0 * h2o.water_dielectric_constant(unit(temperature)) * unit.boltzmann_constant * unit(temperature)) )** 0.5
     return param_B.to_base_units()
     
@@ -109,7 +109,7 @@ def _debye_parameter_activity(temperature='25 degC'):
     
     '''
     
-    debyeparam = unit.elementary_charge ** 3 * ( 2 * math.pi * unit.avogadro_number * h2o.water_density(unit(temperature))) ** 0.5 \
+    debyeparam = unit.elementary_charge ** 3 * ( 2 * math.pi * unit.avogadro_constant * h2o.water_density(unit(temperature))) ** 0.5 \
     / ( 4 * math.pi * unit.epsilon_0 * h2o.water_dielectric_constant(unit(temperature)) * unit.boltzmann_constant * unit(temperature)) ** 1.5
     
     logger.info('Computed Debye-Huckel Limiting Law Constant A^{\\gamma} = %s at %s' % (debyeparam,temperature))
