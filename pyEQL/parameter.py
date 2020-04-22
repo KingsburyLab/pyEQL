@@ -12,12 +12,16 @@ used throughout pyEQL.
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
+# per the pint documentation, it's important that pint and its associated Unit
+# Registry are only imported once.
+from pint import UnitRegistry
 
 # add a filter to emit only unique log messages to the handler
-import pyEQL.logging_system
+from pyEQL.logging_system import Unique
 
-unique = pyEQL.logging_system.Unique()
+logger = logging.getLogger(__name__)
+
+unique = Unique()
 logger.addFilter(unique)
 
 # add a handler for console output, since pyEQL is meant to be used interactively
@@ -31,9 +35,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 ## Units handling
-# per the pint documentation, it's important that pint and its associated Unit
-# Registry are only imported once.
-from pint import UnitRegistry
+
 
 # here we assign the identifier 'unit' to the UnitRegistry
 unit = UnitRegistry()
@@ -67,12 +69,12 @@ class Parameter:
     """
     Class for storing and retrieving measured parameter values together with their
     units, context, and reference information.
-    
+
     Some pyEQL functions search for specific parameter names, such as:
     diffusion_coefficient
-    
 
-    
+
+
     """
 
     def __init__(self, name, magnitude, units="", **kwargs):
@@ -81,32 +83,32 @@ class Parameter:
         ----------
         name : str
                     A short name (akin to a variable name) for the parameter
-                    
+
         magnitude : float, int, str, tuple or list of floats, ints, or strs
                     The value of the parameter. In most cases this will only be a single numerical value.
                     However, in some cases it may be desirable to store a group of parameters (such as coefficients
                     for an equation) together in a tuple or list.
-                    
-                    Numeric values can be input as strings (or lists of strings) and they will be converted to 
-                    floats. 
-                    
+
+                    Numeric values can be input as strings (or lists of strings) and they will be converted to
+                    floats.
+
                     Non-numeric values are permissible as well. When specifying non-numeric values, the units
                     argument must either be 'dimensionless' or left blank.
-                    
+
                     Lists of non-numeric strings are not permitted.
-                    
+
         units : str, optional
                     A string representing the units of measure for the parameter value
                     given in 'magnitude.' See the pint documentation for proper syntax. In general
                     common abbreviations or unit names can be used, but pythonic math syntax
                     must be followed. e.g. 'meters ** 2 / second' and 'm **2 /s' are valid but
                     'm2/s' is not.
-                    
+
                     If a parameter has no units, leave blank or enter 'dimensionless'
-                    
+
                     Note that if a parameter DOES have units but they are not specified, all
                     calculations involving this parameter will return incorrect units.
-                    
+
         Optional Keyword Arguments
         --------------------------
         reference : str, optional
@@ -121,12 +123,12 @@ class Parameter:
         temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
-                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'
         pressure : str, optional
                     The pressure at which 'magnitude' was measured in Pascals
                     Specify the pressure as a string containing the magnitude and a
                     unit. e.g. '101 kPa'.
-                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+                    Typical valid units are 'Pa', 'atm', or 'torr'.
         ionic_strength : str, optional
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
                     the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg'
@@ -136,14 +138,14 @@ class Parameter:
         comments : str, optional
                     A string containing additional notes pertaining to the context,
                     conditions, or assumptions that may restrict the use of 'value'
-                    
+
         Notes
         -----
-        In general, parameter values are assumed to be entered in fundamental 
-        SI units (m, kg, s, etc.). The 'units' field is required to call attention 
+        In general, parameter values are assumed to be entered in fundamental
+        SI units (m, kg, s, etc.). The 'units' field is required to call attention
         to this fact and provide a levelof error-checking in calculations involving
         the parameter.
-        
+
         Examples
         --------
         # TODO fix this example
@@ -153,7 +155,7 @@ class Parameter:
         <BLANKLINE>
         -------------------------------------------
         Value: (1.334e-09,) m2/s at 25 degrees C.
-        Notes: 
+        Notes:
         Reference: CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79
         <BLANKLINE>
         """
@@ -243,11 +245,11 @@ class Parameter:
     def get_name(self):
         """
         Return the name of the parameter.
-        
+
         Parameters
         ----------
         None
-        
+
         Returns
         -------
         str
@@ -258,27 +260,27 @@ class Parameter:
     def get_value(self, temperature=None, pressure=None, ionic_strength=None):
         """
         Return the value of a parameter at the specified conditions.
-        
+
         Parameters
-        ----------        
+        ----------
         temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
-                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'
         pressure : str, optional
                     The pressure at which 'magnitude' was measured in Pascals
                     Specify the pressure as a string containing the magnitude and a
                     unit. e.g. '101 kPa'.
-                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+                    Typical valid units are 'Pa', 'atm', or 'torr'.
         ionic_strength : str, optional
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
-                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
-        
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg'
+
         Returns
         -------
         Quantity
             The value of the parameter at the specified conditions.
-            
+
         """
         # if the user does not specify conditions, return the value at base_temperature,
         # base_pressure, and/or base_ionic_strength
@@ -357,27 +359,27 @@ class Parameter:
     def get_magnitude(self, temperature=None, pressure=None, ionic_strength=None):
         """
         Return the magnitude of a parameter at the specified conditions.
-        
+
         Parameters
-        ----------        
+        ----------
         temperature : str, optional
                     The temperature at which 'magnitude' was measured in degrees Celsius.
                     Specify the temperature as a string containing the magnitude and
-                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'                    
+                    a unit, e.g. '25 degC', '32 degF', '298 kelvin', and '500 degR'
         pressure : str, optional
                     The pressure at which 'magnitude' was measured in Pascals
                     Specify the pressure as a string containing the magnitude and a
                     unit. e.g. '101 kPa'.
-                    Typical valid units are 'Pa', 'atm', or 'torr'.                   
+                    Typical valid units are 'Pa', 'atm', or 'torr'.
         ionic_strength : str, optional
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
-                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg' 
-        
+                    the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg'
+
         Returns
         -------
         Number
             The magnitude of the parameter at the specified conditions.
-            
+
         """
         return self.get_value(temperature, pressure, ionic_strength).magnitude
 

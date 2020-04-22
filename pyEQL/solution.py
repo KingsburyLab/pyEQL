@@ -14,6 +14,7 @@ import math
 import pyEQL.activity_correction as ac
 import pyEQL.water_properties as h2o
 import pyEQL.solute as sol
+import pyEQL
 
 # the pint unit registry
 from pyEQL import unit
@@ -27,9 +28,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
-import pyEQL.logging_system
+from pyEQL.logging_system import Unique
 
-unique = pyEQL.logging_system.Unique()
+unique = Unique()
 logger.addFilter(unique)
 
 # add a handler for console output, since pyEQL is meant to be used interactively
