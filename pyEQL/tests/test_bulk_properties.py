@@ -16,7 +16,7 @@ import unittest
 class test_hardness(unittest.TestCase, pyEQL.CustomAssertions):
     """
     test the get_hardness() method
-    ------------------------------   
+    ------------------------------
     """
 
     # an empty solution should have zero hardness

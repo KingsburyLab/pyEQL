@@ -11,6 +11,7 @@ used throughout pyEQL.
 
 # logging system
 import logging
+import os
 
 # per the pint documentation, it's important that pint and its associated Unit
 # Registry are only imported once.
@@ -20,7 +21,6 @@ from pint import UnitRegistry
 from pyEQL.logging_system import Unique
 
 logger = logging.getLogger(__name__)
-
 unique = Unique()
 logger.addFilter(unique)
 
@@ -34,8 +34,7 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-## Units handling
-
+# Units handling
 
 # here we assign the identifier 'unit' to the UnitRegistry
 unit = UnitRegistry()
@@ -45,8 +44,6 @@ unit = UnitRegistry()
 unit.autoconvert_offset_to_baseunit = True
 
 # append custom unit definitions and contexts
-import os
-
 directory = os.path.dirname(__file__)
 unit.load_definitions(directory + "/pint_custom_units.txt")
 # activate the "chemistry" context globally
@@ -115,7 +112,8 @@ class Parameter:
                     A string containing reference information documenting the source of
                     the parameter.
         uncertainty : tuple of floats or ints, optional
-                    The uncertainty of the parameter value as a percentage (0-100). If only one value is supplied in the tuple,
+                    The uncertainty of the parameter value as a percentage (0-100). If only one value is supplied in 
+                    the tuple,
                     the same uncertainty will be used for positive and negative. If two values are supplied, the first
                     is the positive uncertainty and the second is the negative.
         uncertainty_type: str, optional
@@ -149,7 +147,8 @@ class Parameter:
         Examples
         --------
         # TODO fix this example
-        >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
+        >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and
+            Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
         >>> print(sodium_diffusion)
         Parameter diffusion coefficient
         <BLANKLINE>
@@ -430,7 +429,7 @@ class Parameter:
 
 
 # TODO - turn doctest back on when the nosigint error is gone
-## Tests
+# Tests
 # if __name__ == "__main__":
 #   import doctest
 #  doctest.testmod()

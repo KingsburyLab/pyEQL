@@ -1269,7 +1269,7 @@ class Solution:
         all solute  species, :math:`y_\\pm` is the molar activity coefficient,
         :math:`\\rho_w` is the density of pure water, :math:`m` and :math:`C` are
         the molal and molar concentrations of the chosen salt (not individual solute),
-         respectively.
+        respectively.
 
         Parameters
         ----------

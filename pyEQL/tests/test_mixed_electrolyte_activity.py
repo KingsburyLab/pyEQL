@@ -25,9 +25,9 @@ class Test_nano3_kno3_activity(unittest.TestCase, pyEQL.CustomAssertions):
     """
     test mean activity coefficients in a NaNO3 + KNO3 mixture
     ---------------------------------------------------------
-	Note that the values given in Table 3 of Rodil et al. are single-ion
-	activity coefficients that must be averaged (geometrically) to obtained
-	the mean values below
+    Note that the values given in Table 3 of Rodil et al. are single-ion
+    activity coefficients that must be averaged (geometrically) to obtained
+    the mean values below
 
     """
 

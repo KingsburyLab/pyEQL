@@ -22,6 +22,8 @@ CRITICAL    -   not used
 import logging
 
 # define a log filter to emit only unique log messages
+
+
 class Unique(logging.Filter):
     """Messages are allowed through just once.
     The 'message' includes substitutions, but is not formatted by the 

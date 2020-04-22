@@ -389,14 +389,16 @@ def mix(Solution1, Solution2):
     # check to see if the solutions have the same temperature and pressure
     if not p1 == p2:
         logger.info(
-            "mix() function called between two solutions of different pressure. Pressures will be averaged (weighted by volume)"
+            "mix() function called between two solutions of different pressure. Pressures will be averaged "
+            "(weighted by volume)"
         )
 
     blend_pressure = str((p1 * v1 + p2 * v2) / (v1 + v2))
 
     if not t1 == t2:
         logger.info(
-            "mix() function called between two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
+            "mix() function called between two solutions of different temperature. Temperatures will be averaged "
+            "(weighted by volume)"
         )
 
     blend_temperature = str((t1 * v1 + t2 * v2) / (v1 + v2))

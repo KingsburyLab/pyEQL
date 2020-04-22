@@ -12,11 +12,16 @@ By default, pyEQL searches all files in the /database subdirectory for parameter
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+# for parameter creation functions
+import pyEQL.parameter as pm
+
+# for file input/output functions
+import os
+
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -30,14 +35,7 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# for parameter creation functions
-import pyEQL.parameter as pm
-
-# for file input/output functions
-import os
-
-
-## Database Management Functions
+# Database Management Functions
 
 
 class Paramsdb:
@@ -70,15 +68,15 @@ class Paramsdb:
 
     def search_parameters(self, formula):
         """Each time a new solute species is created in a solution, this function:
-        
+
         1) searches to see whether a list of parameters for the species has already been
         compiled from the database
         2) searches all files in the specified database directory(ies) for the species
-        3) creates a Parameter object for each value found 
+        3) creates a Parameter object for each value found
         4) compiles these objects into a set
         5) adds the set to a dictionary indexed by species name (formula)
         6) points the new solute object to the dictionary
-        
+
         formula : str
                 String representing the chemical formula of the species.
         """
@@ -228,7 +226,7 @@ class Paramsdb:
                     found = True
                     return item
 
-            if found == False:
+            if not found:
                 logger.error(
                     "Parameter %s for species %s not found in database"
                     % (name, formula)
@@ -256,14 +254,14 @@ class Paramsdb:
     def print_database(self, solute=None):
         """ Function to generate a human-friendly summary of all the database parameters
         that are actually used in the simulation
-        
+
         Parameters
         ----------
         solute : str, optional
                 The chemical formula for a species. If this argument of supplied, the output
                 will contain only the database entries for this species. Otherwise,
                 all database entries will be printed.
-      
+
         """
         if solute is not None:
             try:
@@ -285,12 +283,12 @@ class Paramsdb:
 def _parse_line(line):
     """
     Function to parse lines in a tab-seprated value file format.
-    
+
     This function accepts a string (a line read from a tab-separated
     input file). It removes the newline character and splits the string
     at each tab stop, returning a list of the remaining substrings in which each
     list entry corresponds to the contents of one cell in the file.
-    
+
     """
     # remove the newline character
     line = line.replace("\n", "")

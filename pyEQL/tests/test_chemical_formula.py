@@ -14,7 +14,7 @@ class Test_check_formula(unittest.TestCase, pyEQL.CustomAssertions):
     """
     tests for the _check_formula() function
     ---------------------------------------
-    This function is the core of the library and enforces the rules for 
+    This function is the core of the library and enforces the rules for
     chemical formula formatting.
     """
 

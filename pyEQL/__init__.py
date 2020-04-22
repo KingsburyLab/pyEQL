@@ -12,7 +12,7 @@ and performing chemical thermodynamics computations.
 # initialize the parameters database
 from pyEQL.database import Paramsdb
 
-paramsDB = database.Paramsdb()
+paramsDB = Paramsdb()
 
 from pyEQL.parameter import unit
 from pyEQL.functions import *
@@ -22,6 +22,8 @@ from pyEQL.solution import Solution
 # data when running units tests.
 # See https://stackoverflow.com/questions/6655724/how-to-write-a-custom-assertfoo-method-in-python
 # for the method I'm using here.
+
+
 class CustomAssertions:
     def assertWithinExperimentalError(self, result, expected, tol=0.05):
         """

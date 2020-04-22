@@ -235,7 +235,7 @@ class Element(object):
         if self.eleconfig.startswith("["):
             base = self.eleconfig.split(" ", 1)[0][1:-1]
             adict.update(ELEMENTS[base].eleconfig_dict)
-        for e in self.eleconfig.split()[bool(adict) :]:
+        for e in self.eleconfig.split()[bool(adict):]:
             adict[(int(e[0]), e[1])] = int(e[2:]) if len(e) > 2 else 1
         return adict
 

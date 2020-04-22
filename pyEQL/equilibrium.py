@@ -9,7 +9,7 @@ NOTE: these methods are not currently used but are here for the future.
 
 """
 
-## Dependencies
+# Dependencies
 # import libraries for scientific functions
 import math
 
@@ -19,11 +19,10 @@ from pyEQL import unit
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -42,21 +41,21 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit("298.15 K")):
     """
     Calculate a parameter for th e Pitzer model based on temperature-dependent
     coefficients c1,c2,c3,c4,and c5.
-    
+
     Parameters
     ----------
     c1, c2, c3, c4, c5: float
-                Temperature-dependent coefficients for the pitzer parameter of 
+                Temperature-dependent coefficients for the pitzer parameter of
                 interest.
     temp: Quantity
                 The temperature at which the Pitzer parameter is to be calculated
     temp_ref: Quantity, optional
                 The reference temperature on which the parameters are based.
                 298.15 K if omitted.
-    
+
     As described in the PHREEQC documentation
-    
-    
+
+
     """
     pitzer_param = (
         c1
@@ -74,9 +73,9 @@ def adjust_temp_vanthoff(
     equilibrium_constant, enthalpy, temperature, reference_temperature=25 * unit("degC")
 ):
     """(float,float,number, optional number) -> float
-    
+
     Adjust a reaction equilibrium constant from one temperature to another.
-    
+
     Parameters
     ----------
     equilibrium_constant : float
@@ -88,36 +87,36 @@ def adjust_temp_vanthoff(
                   the desired reaction temperature in degrees Celsius
     reference_temperature : Quantity, optional
                       the temperature at which equilibrium_constant is valid. (25 degrees C if omitted).
-   
+
     Returns
     -------
     float
         adjusted reaction equilibrium constant
-    
+
     Notes
     -----
-    This function implements the Van't Hoff equation to adjust measured 
-    equilibrium constants to other temperatures. 
-    
+    This function implements the Van't Hoff equation to adjust measured
+    equilibrium constants to other temperatures.
+
     .. math::
         ln(K2 / K1) = {\delta H \over R} ( {1 \over T_1} - {1 \over T_2} )
-    
+
     This implementation assumes that the enthalpy is independent of temperature
     over the range of interest.[1]
-    
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53. 
+
+    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53.
         Wiley Interscience, 1996.
-    
+
     Examples
     --------
     >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC'),25*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
-    
+
     If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
-    
+
     >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
-    
+
     """
     output = equilibrium_constant * math.exp(
         enthalpy
@@ -126,7 +125,8 @@ def adjust_temp_vanthoff(
     )
 
     logger.info(
-        "Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output"
+        "Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. "
+        "Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output"
     )
 
     logger.warning(
@@ -142,9 +142,9 @@ def adjust_temp_arrhenius(
     reference_temperature=25 * unit("degC"),
 ):
     """(float,float,number, optional number) -> float
-    
+
     Adjust a reaction equilibrium constant from one temperature to another.
-    
+
     Parameters
     ----------
     rate_constant : Quantity
@@ -156,7 +156,7 @@ def adjust_temp_arrhenius(
     reference_temperature : Quantity, optional
                       the temperature at which equilibrium_constant is valid
                       Defaults to 25 degrees C if omitted.
-   
+
     Returns
     -------
     Quantity
@@ -165,23 +165,24 @@ def adjust_temp_arrhenius(
     See Also
     --------
     kelvin
-    
+
     Notes
     -----
     This function implements the Arrhenius equation to adjust measured rate
     constants to other temperatures. [1]
-    
+
     .. math::
         ln(K2 / K1) = {E_a \over R} ( {1 \over T_1} - {1 \over T_2} )
-    
-    .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
+
+    .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/\
+           Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
     TODO - add better reference
-    
+
     Examples
     --------
     >>> adjust_temp_arrhenius(7,900*unit('kJ/mol'),37*unit('degC'),97*unit('degC')) #doctest: +ELLIPSIS
     1.8867225...e-24
-    
+
     """
     output = rate_constant * math.exp(
         activation_energy
@@ -190,7 +191,8 @@ def adjust_temp_arrhenius(
     )
 
     logger.info(
-        "Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output"
+        "Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. "
+        "Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output"
     )
 
     return output
@@ -198,9 +200,9 @@ def adjust_temp_arrhenius(
 
 def alpha(n, pH, pKa_list):
     """(int,number,list of numbers)
-    Returns the acid-base distribution coefficient (alpha) of an acid in the 
+    Returns the acid-base distribution coefficient (alpha) of an acid in the
     n-deprotonated form at a given pH.
-    
+
     Parameters
     ----------
     n : int
@@ -213,48 +215,48 @@ def alpha(n, pH, pKa_list):
     pKa_list : list of floats or ints
                The pKa values (negative log of equilibrium constants) for the acid
                of interest. There must be a minimum of n pKa values in the list.
-    
+
     Returns
     -------
     float
         The fraction of total acid present in the specified form.
-    
+
     Notes
     -----
     The acid-base distribution coefficient is calculated as follows:[1]
-        
+
     .. math::
         \alpha_n = {term_n \over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
-    
+
     Where :math: '\term_n' refers to the nth term in the denominator, starting from 0
-    
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
+
+    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
         pp 127-130. Wiley Interscience, 1996.
-    
+
     Examples
     --------
     >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
     0.999...
-    
+
     The sum of all alpha values should equal 1
-    
+
     >>> alpha(0,8,[6.35,10.33]) #doctest: +ELLIPSIS
     0.021...
     >>> alpha(1,8,[6.35,10.33]) #doctest: +ELLIPSIS
     0.979...
     >>> alpha(2,8,[6.35,10.33]) #doctest: +ELLIPSIS
     2.043...e-09
-    
+
     If pH is equal to one of the pKa values the function should return 0.5.
-    
+
     >>> alpha(1,6.35,[6.35,10.33])
     0.5
-    
+
 #     The function will return an error if the number ofpKa's is less than n.
-#     
+#
 #     >>> alpha(2,8,[])
 #     ERROR: insufficient number of pKa values given
-#     0.5   
+#     0.5
 
     """
     # generate an error if no pKa values are specified

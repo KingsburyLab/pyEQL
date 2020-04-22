@@ -13,11 +13,10 @@ The correct case must be used when specifying elements.
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -31,9 +30,10 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-## Formula validation and processing functions. These internal routines
-## parse chemical formulas into a format that can be easily processed
-## by user-facing functions.
+
+# Formula validation and processing functions. These internal routines
+# parse chemical formulas into a format that can be easily processed
+# by user-facing functions.
 def _invalid_formula(reason):
     raise ValueError("Invalid chemical formula specified - %s" % reason)
     return None
@@ -41,18 +41,18 @@ def _invalid_formula(reason):
 
 def _check_formula(formula):
     """
-    Parse a chemical formula into a list that separates atomic symbols, 
-    numbers, and parentheses, and check the formula for compliance with 
-    formatting rules. 
-    
+    Parse a chemical formula into a list that separates atomic symbols,
+    numbers, and parentheses, and check the formula for compliance with
+    formatting rules.
+
     Similar to Python's default list() function for strings.
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -61,8 +61,8 @@ def _check_formula(formula):
            a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
-        
-        
+
+
     Examples
     --------
     >>> _check_formula('Fe2(SO4)3')
@@ -212,15 +212,15 @@ def _check_formula(formula):
 def _remove_parentheses(formula):
     """
     Remove parentheses from a formula and distribute the associated numbers
-    as appropriate. 
-    
+    as appropriate.
+
     NOTE: does not support nested parentheses as these violate
     the formatting rules for chemical formulas
-    
+
     >>> _remove_parentheses('(Fe2)(SO4)3')
     ['Fe', '2', 'S', '3', 'O', '12']
 
-    
+
     See Also
     --------
     _check_formula
@@ -270,7 +270,7 @@ def _consolidate_formula(formula):
     """
     Consolidate a formula into its simplest form, containing only one
     instance of each element and no parentheses
-    
+
     Examples
     --------
     >>> _consolidate_formula('CH3(CH2)6CH3')
@@ -279,7 +279,7 @@ def _consolidate_formula(formula):
     ['Fe', 2, 'S', 4, 'O', 16]
     >>> _consolidate_formula('Fe(OH)2+')
     ['Fe', 1, 'O', 2, 'H', 2, '+1']
-    
+
     """
     # perform validity check and return a list of the chemical formula's components
     input_list = _remove_parentheses(formula)
@@ -318,22 +318,22 @@ def _consolidate_formula(formula):
     return output_list
 
 
-## Truth Functions
+# Truth Functions
 def is_valid_element(formula):
     """
     Check whether a string is a valid atomic symbol
-    
+
     Parameters
     ----------
     :formula: str
-            String representing an atomic symbol. First letter must be 
+            String representing an atomic symbol. First letter must be
             uppercase, second letter must be lowercase.
-    
+
     Returns
     -------
     bool
-            True if the string is a valid atomic symbol. False otherwise.     
-    
+            True if the string is a valid atomic symbol. False otherwise.
+
     Examples
     --------
     >>> is_valid_element('Cu')
@@ -351,13 +351,13 @@ def is_valid_element(formula):
 def is_valid_formula(formula):
     """
     Check that a molecular formula is formatted correctly
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -366,12 +366,12 @@ def is_valid_formula(formula):
            a series of charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
-    
+
     Returns
     -------
     bool
             True if the formula is valid. False otherwise.
-            
+
     Examples
     --------
     >>> is_valid_formula('Fe2(SO4)3')
@@ -383,7 +383,7 @@ def is_valid_formula(formula):
     >>> is_valid_formula('Na+-')
     False
     >>> is_valid_formula('C10h12')
-    False 
+    False
     """
 
     try:
@@ -396,13 +396,13 @@ def is_valid_formula(formula):
 def contains(formula, element):
     """
     Check whether a formula contains a given element.
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -412,14 +412,14 @@ def contains(formula, element):
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
     element: str
-        String representing the element to check for. Must be a valid element 
+        String representing the element to check for. Must be a valid element
         name.
-    
+
     Returns
     -------
     bool
             True if the formula contains the element. False otherwise.
-            
+
     Examples
     --------
     >>> contains('Fe2(SO4)3','Fe')
@@ -434,21 +434,21 @@ def contains(formula, element):
             return False
 
 
-## Information Retrieval Functions
+# Information Retrieval Functions
 def get_element_numbers(formula):
     """
     Return the atomic numbers of the elements in a chemical formula
-    
+
     Parameters
     ----------
     formula: str
             String representing a chemical formula
-    
+
     Examples
     --------
     >>> get_element_numbers('FeSO4')
     [26, 16, 8]
-    
+
 
     """
     # perform validity check and return a list of the chemical formula's components
@@ -464,17 +464,17 @@ def get_element_numbers(formula):
 def get_element_names(formula):
     """
     Return the names of the elements in a chemical formula
-    
+
     Parameters
     ----------
     formula: str
             String representing a chemical formula
-    
+
     Examples
     --------
     >>> get_element_names('FeSO4')
     ['Iron', 'Sulfur', 'Oxygen']
-    
+
 
     """
     # perform validity check and return a list of the chemical formula's components
@@ -493,11 +493,11 @@ def hill_order(formula):
     in the Hill order (Carbon, Hydrgen, then other elements
     in alphabetical order). If no Carbon is present, then
     all elements are listed in alphabetical order.
-    
+
     NOTE: this function does NOT (yet) honor exceptions to the Hill Order
     for acids, hydroxides, oxides, and ionic compounds. It follows the
     rule above no matter what.
-    
+
     Examples
     --------
     >>> hill_order('CH2(CH3)4COOH')
@@ -505,16 +505,16 @@ def hill_order(formula):
 
     >>> hill_order('NaCl')
     'ClNa'
-    
+
     >>> hill_order('NaHCO2') == hill_order('HCOONa')
     True
-    
+
     >>> hill_order('Fe+2') == hill_order('Fe+3')
     False
 
     """
-    ### TODO - add exceptions for oxides (end in O2), acids (start with H),
-    ## ions (cation first), and hydroxides (ends in OH)
+    # TODO - add exceptions for oxides (end in O2), acids (start with H),
+    # ions (cation first), and hydroxides (ends in OH)
     temp_list = _consolidate_formula(formula)
     hill = ""
 
@@ -562,16 +562,16 @@ def hill_order(formula):
 
 def get_elements(formula):
     """
-    Return a list of strings representing the elements in a 
+    Return a list of strings representing the elements in a
     molecular formula, with no duplicates.
-    
+
     Examples
     --------
     >>> get_elements('FeSO4')
     ['Fe', 'S', 'O']
     >>> get_elements('CH3(CH2)4(CO)3')
     ['C', 'H', 'O']
-    
+
     See Also
     --------
     _check_formula
@@ -590,7 +590,7 @@ def get_elements(formula):
 def get_formal_charge(formula):
     """
     Return the formal charge on a molecule based on its formula
-    
+
     Examples
     --------
     >>> get_formal_charge('Na+')
@@ -599,11 +599,11 @@ def get_formal_charge(formula):
     -3
     >>> get_formal_charge('Fe+++')
     3
-    
+
     See Also
     --------
     _check_formula
-    
+
     """
     # perform validity check and return a parsed list of the chemical formula
     input_list = _check_formula(formula)
@@ -612,13 +612,13 @@ def get_formal_charge(formula):
         index = input_list.index("+")
         try:
             formal_charge = 1 * int(input_list[index + 1])
-        except:
+        except IndexError:
             formal_charge = 1
     elif "-" in input_list:
         index = input_list.index("-")
         try:
             formal_charge = -1 * int(input_list[index + 1])
-        except:
+        except IndexError:
             formal_charge = -1
     elif "+" in input_list[-1]:
         formal_charge = int(1 * input_list[-1].count("+"))
@@ -633,13 +633,13 @@ def get_formal_charge(formula):
 def get_element_mole_ratio(formula, element):
     """
     compute the  moles of a specific element per mole of formula
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -649,14 +649,14 @@ def get_element_mole_ratio(formula, element):
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
     element: str
-        String representing the element to check for. Must be a valid element 
+        String representing the element to check for. Must be a valid element
         name.
-    
+
     Returns
     -------
     number
             The number of moles of element per mole of formula, mol/mol.
-    
+
     >>> get_element_mole_ratio('NaCl','Na')
     1
     >>> get_element_mole_ratio('H2O','H')
@@ -665,14 +665,14 @@ def get_element_mole_ratio(formula, element):
     0
     >>> get_element_mole_ratio('CH3CH2CH3','C')
     3
-    
+
     See Also
     --------
     contains
     consolidate_formula
     get_element_weight
     get_element_weight_fraction
-    
+
     """
     # perform validity check and return a parsed list of the chemical formula
     if contains(formula, element):
@@ -689,13 +689,13 @@ def get_element_mole_ratio(formula, element):
 def get_element_weight(formula, element):
     """
     compute the  weight of a specific element in a formula
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -705,14 +705,14 @@ def get_element_weight(formula, element):
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
     element: str
-        String representing the element to check for. Must be a valid element 
+        String representing the element to check for. Must be a valid element
         name.
-    
+
     Returns
     -------
     number
             The weight of the specified element within the formula, g/mol.
-    
+
     >>> get_element_weight('NaCl','Na')
     22.98977
     >>> get_element_weight('H2O','H')
@@ -721,14 +721,14 @@ def get_element_weight(formula, element):
     0.0
     >>> get_element_weight('CH3CH2CH3','C')
     36.0321
-    
+
     See Also
     --------
     contains
     _consolidate_formula
     elements
     get_element_mole_ratio
-    
+
     """
     # find the number of moles of element per mole of formula
     moles = get_element_mole_ratio(formula, element)
@@ -750,13 +750,13 @@ def get_element_weight(formula, element):
 def get_element_weight_fraction(formula, element):
     """
     compute the  weight fraction of a specific element in a formula
-    
+
     Parameters
     ----------
     formula: str
         String representing a molecular formula. e.g. 'H2O' or 'FeOH+'
         Valid molecular formulas must meet the following criteria:
-        
+
         #. Are composed of valid atomic symbols that start with capital letters
         #. Contain no non-alphanumeric characters other than '(', ')',
            '+', or '-'
@@ -766,14 +766,14 @@ def get_element_weight_fraction(formula, element):
         #. Formula must contain matching numbers of '(' and ')'
         #. Open parentheses must precede closed parentheses
     element: str
-        String representing the element to check for. Must be a valid element 
+        String representing the element to check for. Must be a valid element
         name.
-    
+
     Returns
     -------
     number
             The weight fraction of the specified element within the formula.
-    
+
     >>> get_element_weight_fraction('NaCl','Na')
     0.39337...
     >>> get_element_weight_fraction('H2O','H')
@@ -782,14 +782,14 @@ def get_element_weight_fraction(formula, element):
     0.0
     >>> get_element_weight_fraction('CH3CH2CH3','C')
     0.8171355...
-    
+
     See Also
     --------
     get_element_weight
     contains
     _consolidate_formula
     elements
-    
+
     """
     # calculate the element weight in the formula
     wt = get_element_weight(formula, element)
@@ -803,19 +803,19 @@ def get_element_weight_fraction(formula, element):
 def get_molecular_weight(formula):
     """
     compute the molecular weight of a formula
-    
+
     >>> get_molecular_weight('Na+')
     22.98977
     >>> get_molecular_weight('H2O')
     18.01528
     >>> get_molecular_weight('CH3CH2CH3')
     44.09562
-    
+
     See Also
     --------
     _consolidate_formula
     elements
-    
+
     """
     # import elements.py - used to retreive various molecular data
     from pyEQL.elements import ELEMENTS
@@ -839,14 +839,13 @@ def get_molecular_weight(formula):
 
     return mw
 
-
-## Output functions
+# Output functions
 
 
 def print_latex(formula):
     """
     Print a LaTeX - formatted version of the formula
-    
+
     Examples
     ---------
     >>> print_latex('Fe2SO4')
@@ -855,7 +854,7 @@ def print_latex(formula):
     CH_3CH_2CH_3
     >>> print_latex('Fe2(OH)2+2')
     Fe_2(OH)_2^+^2
-    
+
     """
     output = ""
     for i in range(len(formula)):

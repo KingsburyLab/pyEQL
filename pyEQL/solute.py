@@ -17,12 +17,12 @@ from pyEQL import unit
 
 # logging system
 import logging
-
-logger = logging.getLogger(__name__)
-
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
+# import the parameters database
+from pyEQL import paramsDB as db
 
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -35,9 +35,6 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-
-# import the parameters database
-from pyEQL import paramsDB as db
 
 
 class Solute:
@@ -53,7 +50,8 @@ class Solute:
         ----------
         formula : str
                     Chemical formula for the solute. 
-                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net
+                    charge (e.g. 'SO4-2').
         amount : str
                     The amount of substance in the specified unit system. The string should contain both a quantity and
                     a pint-compatible representation of a unit. e.g. '5 mol/kg' or '0.1 g/L'
@@ -62,7 +60,10 @@ class Solute:
         solvent_mass : pint Quantity
                     The mass of solvent in the parent solution.
         parameters : dictionary, optional
-                    Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
+                    Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify 
+                    parameters as key:value pairs separated by commas within curly braces, e.g. 
+                    {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access 
+                    the parameter, the value is its value.
         """
         # import the chemical formula interpreter module
         import pyEQL.chemical_formula as chem

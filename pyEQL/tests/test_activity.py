@@ -44,14 +44,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
         self.assertEqual(a1, a2)
 
     def test_activity_crc_HCl(self):
-        """        
+        """
         calculate the activity coefficient of HCl at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         cation = "H+"
         nu_cation = 1
@@ -94,14 +94,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_CsI(self):
-        """        
+        """
         calculate the activity coefficient of CsI at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         cation = "Cs+"
         nu_cation = 1
@@ -143,14 +143,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_bacl2(self):
-        """        
+        """
         calculate the activity coefficient of BaCl2 at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1]
@@ -184,14 +184,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_licl(self):
-        """        
+        """
         calculate the activity coefficient of LiCl at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
@@ -227,14 +227,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_rbcl(self):
-        """        
+        """
         calculate the activity coefficient of RbCl at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
@@ -268,14 +268,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_MgCl2(self):
-        """        
+        """
         calculate the activity coefficient of MgCl2 at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         cation = "Mg+2"
         nu_cation = 1
@@ -318,14 +318,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_KBr(self):
-        """        
+        """
         calculate the activity coefficient of KBr at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         cation = "K+"
         nu_cation = 1
@@ -368,14 +368,14 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_crc_k2so4(self):
-        """        
+        """
         calculate the activity coefficient of K2SO4 at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
-        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of Concentration, 
-        in: W.M. Haynes (Ed.), 92nd ed., 2011.
-    
+
+        Experimental activity coefficient values at 25 degC are found in
+        *CRC Handbook of Chemistry and Physics*, Mean Activity Coefficients of Electrolytes as a Function of
+        Concentration, in: W.M. Haynes (Ed.), 92nd ed., 2011.
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]
@@ -408,13 +408,13 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_pitzer_nacl_1(self):
-        """        
+        """
         calculate the activity coefficient at each concentration and compare
         to experimental data
-                    
-        Experimental activity coefficient values at 25 degC are found in 
+
+        Experimental activity coefficient values at 25 degC are found in
         *J. Phys. Chem. Reference Data* Vol 13 (1), 1984, p.53.
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 6]
@@ -447,25 +447,25 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
     # The pitzer model diverges a bit from experimental data at high concentration
     @unittest.expectedFailure
     def test_water_activity_pitzer_nacl_1(self):
-        """        
+        """
         calculate the water activity at each concentration and compare
         to experimental data
-                    
+
         Experimental osmotic coefficients for NaCl are found in:
         Pitzer and Pelper, 1984. "Thermodyamic Properties of Aqueous Sodium Chloride Solutions"
         *J. Phys. Chem. Ref. Data* 13(1).
-        
+
         Osmotic coefficients were converted into water activity according to the equation
-        found in 
-        Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, 
-        Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently 
+        found in
+        Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis,
+        Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently
         neglected property." *Chemical Society Review* 34, 440-458.
-        
-        .. math:: ln a_w = - \Phi M_w \sum_i m_i 
-                
+
+        .. math:: ln a_w = - \Phi M_w \sum_i m_i
+
         Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 6]
@@ -496,15 +496,15 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_activity_pitzer_phreeqc_nacl_2(self):
-        """        
+        """
         calculate the activity coefficient at each concentration and compare
         to the output of the PHREEQC model
-                    
+
         PHREEQC version 3.1.4 was used to calculate density, conductivity, water
-        activity, and NaCl activity coefficient for NaCl solutions up to 6m. 
+        activity, and NaCl activity coefficient for NaCl solutions up to 6m.
         The Pitzer model (pitzer.dat) database was used.
         <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/>
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 6]
@@ -535,15 +535,15 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_water_activity_phreeqc_pitzer_nacl_2(self):
-        """        
+        """
         calculate the water activity at each concentration and compare
         to the output of the PHREEQC model
-                    
+
         PHREEQC version 3.1.4 was used to calculate density, conductivity, water
-        activity, and NaCl activity coefficient for NaCl solutions up to 6m. 
+        activity, and NaCl activity coefficient for NaCl solutions up to 6m.
         The Pitzer model (pitzer.dat) database was used.
         <http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/>
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 6]
