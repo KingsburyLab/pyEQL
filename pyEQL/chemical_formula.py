@@ -223,7 +223,7 @@ def _remove_parentheses(formula):
     
     See Also
     --------
-    _check_formula()
+    _check_formula
     """
 
     # perform validity check and return a list of the chemical formula's components
@@ -574,7 +574,7 @@ def get_elements(formula):
     
     See Also
     --------
-    _check_formula()
+    _check_formula
     """
     # perform validity check and return a parsed list of the chemical formula
     input_list = _consolidate_formula(formula)
@@ -602,7 +602,7 @@ def get_formal_charge(formula):
     
     See Also
     --------
-    _check_formula()
+    _check_formula
     
     """
     # perform validity check and return a parsed list of the chemical formula
@@ -724,8 +724,8 @@ def get_element_weight(formula, element):
     
     See Also
     --------
-    contains()
-    _consolidate_formula()
+    contains
+    _consolidate_formula
     elements
     get_element_mole_ratio
     
@@ -813,7 +813,7 @@ def get_molecular_weight(formula):
     
     See Also
     --------
-    _consolidate_formula()
+    _consolidate_formula
     elements
     
     """

@@ -313,7 +313,7 @@ class Solution:
 
         See Also
         --------
-        get_amount()
+        get_amount
         """
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
@@ -639,9 +639,9 @@ class Solution:
 
         See Also
         --------
-        get_ionic_strength()
-        get_molar_conductivity()
-        get_activity_coefficient()
+        get_ionic_strength
+        get_molar_conductivity
+        get_activity_coefficient
 
         """
         EC = 0 * unit("S/m")
@@ -925,7 +925,7 @@ class Solution:
 
         See Also
         --------
-        Solute.add_moles()
+        Solute.add_moles
         """
 
         # if units are given on a per-volume basis,
@@ -1018,7 +1018,7 @@ class Solution:
 
         See Also
         --------
-        Solute.set_moles()
+        Solute.set_moles
         """
         # raise an error if a negative amount is specified
         if unit(amount).magnitude < 0:
@@ -1983,8 +1983,8 @@ class Solution:
 
         See Also
         --------
-        get_ionic_strength()
-        get_dielectric_constant()
+        get_ionic_strength
+        get_dielectric_constant
 
         """
         temperature = self.get_temperature()
@@ -2040,7 +2040,7 @@ class Solution:
 
         See Also
         --------
-        get_dielectric_constant()
+        get_dielectric_constant
 
         """
         temperature = self.get_temperature()

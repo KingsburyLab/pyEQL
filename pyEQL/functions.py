@@ -230,7 +230,7 @@ def donnan_eql(solution, fixed_charge):
 
     See Also
     --------
-    get_salt()
+    get_salt
 
     """
     # identify the salt
