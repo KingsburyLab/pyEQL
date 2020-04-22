@@ -429,9 +429,9 @@ class Solution:
 
         References
         ----------
-        .. [#] [1] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier,
-        An empirical equation for the dielectric constant in aqueous and nonaqueous
-        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123.
+        .. [#] [1] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier, \
+        An empirical equation for the dielectric constant in aqueous and nonaqueous \
+        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123. \
         doi:10.1016/j.fluid.2014.05.037.
         """
         di_water = h2o.water_dielectric_constant(self.get_temperature())
@@ -533,8 +533,8 @@ class Solution:
 
         References
         ----------
-        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
-               of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
+        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension \
+               of the McAllister model to correlate kinematic viscosity of electrolyte solutions. \
                Fluid Phase Equilib. 2013, 358, 44–49.
 
         See Also
@@ -706,7 +706,7 @@ class Solution:
 
         References
         ----------
-        .. [#] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification.
+        .. [#] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification. \
                Royal Society of Chemistry, 2004, p. 10.
 
         .. [#] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
@@ -1747,7 +1747,7 @@ class Solution:
 
         References
         ----------
-        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of
+        .. [#] Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of \
         water in aqueous systems: A frequently neglected property." *Chemical Society Review* 34, 440-458.
 
         Examples
@@ -2051,7 +2051,8 @@ class Solution:
         return bjerrum_length.to("nm")
 
     def get_transport_number(self, solute, activity_correction=False):
-        """Calculate the transport number of the solute in the solution
+        """
+        Calculate the transport number of the solute in the solution
 
         Parameters
         ----------
@@ -2088,8 +2089,8 @@ class Solution:
         References
         ----------
         .. [#] Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
-        ion effects on membrane potential and the permselectivity of ion exchange membranes.""
-        *Phys. Chem. Chem. Phys.* 2014, 16, 21673–21681.
+               ion effects on membrane potential and the permselectivity of ion exchange membranes.""
+               *Phys. Chem. Chem. Phys.* 2014, 16, 21673–21681.
 
         """
         denominator = 0
@@ -2348,7 +2349,7 @@ class Solution:
         References
         ----------
         .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential
-        approach.* Elsevier, 2007, pp. 23-37.
+               approach.* Elsevier, 2007, pp. 23-37.
 
         Examples
         --------

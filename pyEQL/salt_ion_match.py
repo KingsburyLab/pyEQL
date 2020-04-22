@@ -123,9 +123,9 @@ class Salt:
 
         References
         ----------
-        .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of
-        composition and nonideal solution behavior on desalination calculations
-        for mixed electrolyte solutions with comparison to seawater.
+        .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of \
+        composition and nonideal solution behavior on desalination calculations \
+        for mixed electrolyte solutions with comparison to seawater. \
         Desalination 2013, 318, 34–47.
         """
         m_effective = (

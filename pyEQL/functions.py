@@ -75,7 +75,7 @@ def gibbs_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: \
            A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
@@ -137,7 +137,7 @@ def entropy_mix(Solution1, Solution2):
     References
     ----------
     
-    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: 
+    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: \
            A differential approach.* Elsevier, 2007, pp. 23-37.
     
     Examples
@@ -459,10 +459,10 @@ def autogenerate(solution=""):
 
     References
     ----------
-    .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of 
+    .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of \
            the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
     
-    .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+    .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed. \
             McGraw-Hill, 2013.
     
     .. [#] https://en.wikipedia.org/wiki/Saline_(medicine)

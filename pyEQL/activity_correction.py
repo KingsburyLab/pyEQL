@@ -165,7 +165,8 @@ def _debye_parameter_osmotic(temperature="25 degC"):
     
     References
     ----------
-    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
+    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous \
+     Electrolytes at 25 C. 1. Single Salt Parameters,"
        *J. Chemical Engineering Data* 33, pp.177-184.
     
     .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
@@ -296,8 +297,7 @@ def get_activity_coefficient_debyehuckel(
     
     References
     ----------
-    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-           pp 103. Wiley Interscience, 1996.
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 103. Wiley Interscience, 1996.
     
     """
     # check if this method is valid for the given ionic strength
@@ -349,8 +349,7 @@ def get_activity_coefficient_guntelberg(
     
     References
     ----------
-    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-           pp 103. Wiley Interscience, 1996.
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 103. Wiley Interscience, 1996.
     
     """
     # check if this method is valid for the given ionic strength
@@ -403,8 +402,7 @@ def get_activity_coefficient_davies(
     
     References
     ----------
-    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
-           pp 103. Wiley Interscience, 1996.
+    .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 103. Wiley Interscience, 1996.
     
     """
     # check if this method is valid for the given ionic strength
@@ -504,7 +502,8 @@ def get_activity_coefficient_pitzer(
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
     
-    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
+    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C.
+    1. Single salt parameters. 
     Journal of Chemical and Engineering Data, (2), 177–184. 
     
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
@@ -704,8 +703,8 @@ def _pitzer_f1(x):
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
     
-    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
-    Journal of Chemical and Engineering Data, (2), 177–184. 
+    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C.
+    1. Single salt parameters. Journal of Chemical and Engineering Data, (2), 177–184. 
     
     """
     # return 0 if the input is 0
@@ -727,8 +726,8 @@ def _pitzer_f2(x):
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
     
-    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
-    Journal of Chemical and Engineering Data, (2), 177–184. 
+    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C.
+    1. Single salt parameters. Journal of Chemical and Engineering Data, (2), 177–184. 
     
     """
     # return 0 if the input is 0
@@ -765,8 +764,8 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
     Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
     
-    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C.
+    1. Single salt parameters. Journal of Chemical and Engineering Data, (2), 177–184.
     
     See Also
     --------
