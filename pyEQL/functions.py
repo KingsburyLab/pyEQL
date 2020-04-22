@@ -61,7 +61,9 @@ def gibbs_mix(Solution1, Solution2):
 
     The Gibbs energy of mixing is calculated as follows: [#]_
 
-    .. math:: \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
+    .. math:: 
+    
+        \\Delta_{mix} G = \\sum_i (n_c + n_d) R T \\ln a_b - \\sum_i n_c R T \\ln a_c - \\sum_i n_d R T \\ln a_d
 
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
@@ -123,7 +125,8 @@ def entropy_mix(Solution1, Solution2):
     The ideal entropy of mixing is calculated as follows:[#]_
 
     .. math::
-        \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
+
+        \\Delta_{mix} S = \\sum_i (n_c + n_d) R T \\ln x_b - \\sum_i n_c R T \\ln x_c - \\sum_i n_d R T \ln x_d
 
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended

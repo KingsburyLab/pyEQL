@@ -2077,7 +2077,7 @@ class Solution:
 
         .. math::
 
-            t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
+            t_i = {D_i z_i^2 C_i \\over \\sum D_i z_i^2 C_i}
 
         Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
         coefficient, and :math:`z_i` is the charge, and the summation extends
@@ -2204,7 +2204,7 @@ class Solution:
 
         .. math::
 
-            \mu_i = {F |z_i| D_i \over RT}
+            \\mu_i = {F |z_i| D_i \\over RT}
 
         References
         ----------
@@ -2264,8 +2264,8 @@ class Solution:
         if name == "diffusion_coefficient":
             if base_value is not None:
                 # correct for temperature and viscosity
-                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-                # where :math:`\mu` is the dynamic viscosity
+                # .. math:: D_1 \\over D_2 = T_1 \\over T_2 * \\mu_2 \\over \\mu_1
+                # where :math:`\\mu` is the dynamic viscosity
                 # assume that the base viscosity is that of pure water
                 return (
                     base_value
@@ -2333,11 +2333,11 @@ class Solution:
         The chemical potential energy (related to the Gibbs mixing energy) is
         calculated as follows: [#]_
 
-        .. math::      E = R T \sum_i n_i  \ln a_i
+        .. math::      E = R T \\sum_i n_i  \\ln a_i
 
         or
 
-        .. math::      E = R T \sum_i n_i \ln x_i
+        .. math::      E = R T \\sum_i n_i \\ln x_i
 
         Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
         :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
@@ -2410,7 +2410,7 @@ class Solution:
         -----
         The lattice distance is related to the molar concentration as follows:
 
-        .. math:: d = ( C_i N_A ) ^ {-{1\over3}}
+        .. math:: d = ( C_i N_A ) ^ {-{1\\over3}}
 
         """
         # calculate the volume per particle as the reciprocal of the molar concentration

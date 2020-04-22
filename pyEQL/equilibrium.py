@@ -99,7 +99,8 @@ def adjust_temp_vanthoff(
     equilibrium constants to other temperatures.
 
     .. math::
-        ln(K2 / K1) = {\delta H \over R} ( {1 \over T_1} - {1 \over T_2} )
+
+        ln(K2 / K1) = {\\delta H \\over R} ( {1 \\over T_1} - {1 \\over T_2} )
 
     This implementation assumes that the enthalpy is independent of temperature
     over the range of interest.[1]
@@ -172,7 +173,8 @@ def adjust_temp_arrhenius(
     constants to other temperatures. [1]
 
     .. math::
-        ln(K2 / K1) = {E_a \over R} ( {1 \over T_1} - {1 \over T_2} )
+
+        ln(K2 / K1) = {E_a \\over R} ( {1 \\over T_1} - {1 \\over T_2} )
 
     .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/\
            Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
@@ -226,9 +228,10 @@ def alpha(n, pH, pKa_list):
     The acid-base distribution coefficient is calculated as follows:[1]
 
     .. math::
-        \alpha_n = {term_n \over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
 
-    Where :math: '\term_n' refers to the nth term in the denominator, starting from 0
+        \\alpha_n = {term_n \\over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
+
+    Where :math: '\\term_n' refers to the nth term in the denominator, starting from 0
 
     .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
         pp 127-130. Wiley Interscience, 1996.

@@ -461,7 +461,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase, pyEQL.CustomAssertions):
         Joao Carlos R., 2005. "Activity of water in aqueous systems: A frequently
         neglected property." *Chemical Society Review* 34, 440-458.
 
-        .. math:: ln a_w = - \Phi M_w \sum_i m_i
+        .. math:: ln a_w = - \\Phi M_w \\sum_i m_i
 
         Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
