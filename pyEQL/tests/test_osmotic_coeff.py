@@ -37,16 +37,16 @@ class Test_osmotic_pitzer(unittest.TestCase, pyEQL.CustomAssertions):
         self.assertGreaterEqual(result, 0)
 
     def test_osmotic_pitzer_ammoniumnitrate(self):
-        """        
+        """
         calculate the osmotic coefficient at each concentration and compare
         to experimental data for ammonium nitrate
-        
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
         Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.25, 0.5, 0.75, 1, 1.5, 2]
@@ -66,16 +66,16 @@ class Test_osmotic_pitzer(unittest.TestCase, pyEQL.CustomAssertions):
                 self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_osmotic_pitzer_coppersulfate(self):
-        """        
+        """
         calculate the osmotic coefficient at each concentration and compare
         to experimental data for copper sulate
-        
+
         References
         ----------
-        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+        May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+        A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
         Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
-    
+
         """
         # list of concentrations to test, mol/kg
         conc_list = [0.25, 0.5, 0.75, 1]

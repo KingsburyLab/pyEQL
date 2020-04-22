@@ -6,7 +6,7 @@ pyEQL functions that take Solution objects as inputs or return Solution objects
 
 """
 
-## Dependencies
+# Dependencies
 # import libraries for scientific functions
 import math
 
@@ -19,13 +19,13 @@ from pyEQL import paramsDB as db
 # the pint unit registry
 from pyEQL import unit
 
+# add a filter to emit only unique log messages to the handler
+from pyEQL.logging_system import Unique
+
 # logging system
 import logging
 
 logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
-from pyEQL.logging_system import Unique
 
 unique = Unique()
 logger.addFilter(unique)
@@ -49,38 +49,38 @@ def gibbs_mix(Solution1, Solution2):
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-        
+
     Returns
     -------
     Quantity
         The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
-    
+
     Notes
     -----
-    
+
     The Gibbs energy of mixing is calculated as follows: [#]_
-        
+
     .. math::
         \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
-    
+
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
-    Solutions, respectively. 
-    
+    Solutions, respectively.
+
     Note that dissociated ions must be counted as separate components,
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
-    
+
     References
     ----------
-    
+
     .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: \
            A differential approach.* Elsevier, 2007, pp. 23-37.
-    
+
     Examples
     --------
- 
+
     """
     concentrate = Solution1
     dilute = Solution2
@@ -111,38 +111,38 @@ def entropy_mix(Solution1, Solution2):
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-        
+
     Returns
     -------
     Quantity
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
-    
+
     Notes
     -----
-    
+
     The ideal entropy of mixing is calculated as follows:[#]_
-        
+
     .. math::
         \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
-    
+
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
-    Solutions, respectively. 
-    
+    Solutions, respectively.
+
     Note that dissociated ions must be counted as separate components,
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
-    
+
     References
     ----------
-    
+
     .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: \
            A differential approach.* Elsevier, 2007, pp. 23-37.
-    
+
     Examples
     --------
- 
+
     """
     concentrate = Solution1
     dilute = Solution2
@@ -168,70 +168,70 @@ def entropy_mix(Solution1, Solution2):
 def donnan_eql(solution, fixed_charge):
     """
     Return a solution object in equilibrium with fixed_charge
-    
+
     Parameters
     ----------
     Solution : Solution object
         The external solution to be brought into equilibrium with the fixed
         charges
     fixed_charge : str quantity
-        String representing the concentration of fixed charges, including sign. 
+        String representing the concentration of fixed charges, including sign.
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
-        
+
     Returns
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
-    
+
     Notes
     -----
-    
-    The general equation representing the equilibrium between an external 
+
+    The general equation representing the equilibrium between an external
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[#]_
-    
+
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
-    
-    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively, 
+
+    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
     the overbar indicates the membrane phase,
     :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
-    coefficient, :math:`V` represents the partial molar volume of the salt, and 
+    coefficient, :math:`V` represents the partial molar volume of the salt, and
     :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
     solution phase.
-    
+
     In addition, electroneutrality must prevail within the membrane phase:
-    
+
     .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
-    
+
     Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
     in the membrane or ion exchange phase.
-    
-    This function solves these two equations simultaneously to arrive at the 
+
+    This function solves these two equations simultaneously to arrive at the
     concentrations of the cation and anion in the membrane phase. It returns
     a solution equal to the input solution except that the concentrations of
-    the predominant cation and anion have been adjusted according to this 
+    the predominant cation and anion have been adjusted according to this
     equilibrium.
-    
+
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
-    
+
     References
     ----------
-    
+
     .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
            Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
-    
+
     Examples
     --------
     TODO
-    
+
     See Also
     --------
     get_salt()
-    
+
     """
     # identify the salt
     salt = solution.get_salt()
@@ -353,21 +353,21 @@ def donnan_eql(solution, fixed_charge):
 
 def mix(Solution1, Solution2):
     """
-    Mix two solutions together    
-    
+    Mix two solutions together
+
     Returns a new Solution object that results from the mixing of Solution1
     and Solution2
-    
+
     Parameters
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
-        
+
     Returns
     -------
     Solution
         A Solution object representing the mixed solution.
-    
+
     """
     # check to see if the two solutions have the same solvent
     if not Solution1.solvent_name == Solution2.solvent_name:
@@ -431,24 +431,24 @@ def mix(Solution1, Solution2):
 def autogenerate(solution=""):
     """
     This method provides a quick way to create Solution objects representing
-    commonly-encountered solutions, such as seawater, rainwater, and wastewater. 
-    
+    commonly-encountered solutions, such as seawater, rainwater, and wastewater.
+
     Parameters
     ----------
     solution : str
                 String representing the desired solution
                 Valid entries are 'seawater', 'rainwater',
-                'wastewater',and 'urine' 
-                
+                'wastewater',and 'urine'
+
     Returns
     -------
     Solution
         A pyEQL Solution object.
-    
+
     Notes
     -----
     The following sections explain the different solution options:
-    
+
     - '' - empty solution, equivalent to pyEQL.Solution()
     - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
     - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [#]_
@@ -461,12 +461,12 @@ def autogenerate(solution=""):
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of \
            the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
-    
+
     .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed. \
             McGraw-Hill, 2013.
-    
+
     .. [#] https://en.wikipedia.org/wiki/Saline_(medicine)
-    
+
     .. [#] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
     """

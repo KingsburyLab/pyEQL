@@ -191,7 +191,7 @@ class Solution:
             # add the new solute
             new_solute = sol.Solute(
                 formula, amount, self.get_volume(), self.get_solvent_mass(), parameters
-                )
+            )
             self.components.update({new_solute.get_name(): new_solute})
 
             # calculate the volume occupied by all the solutes
@@ -1437,8 +1437,7 @@ class Solution:
             else:
                 logger.warning(
                     "Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model."
-                    "Returning unit activity coefficient"
-                    % solute
+                    "Returning unit activity coefficient" % solute
                 )
 
                 molal = unit("1 dimensionless")
@@ -1685,9 +1684,11 @@ class Solution:
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
             else:
-                logger.warning("Cannot calculate osmotic coefficient because Pitzer parameters for salt %s "
-                               "are not specified. Returning unit osmotic coefficient" % item.formula
-                               )
+                logger.warning(
+                    "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s "
+                    "are not specified. Returning unit osmotic coefficient"
+                    % item.formula
+                )
                 effective_osmotic_sum += concentration * unit("1 dimensionless")
 
         molal_phi = effective_osmotic_sum / molality_sum
@@ -1772,7 +1773,7 @@ class Solution:
             logger.warning(
                 "Pitzer parameters not found. Water activity set equal to mole fraction"
             )
-            return self.get_amount("H2O", "fraction").to('dimensionless')
+            return self.get_amount("H2O", "fraction").to("dimensionless")
         else:
             concentration_sum = unit("0 mol/kg")
             for item in self.components:
