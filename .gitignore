@@ -5,3 +5,4 @@ __pycache__
 spyder_session*
 /docs/build/*
 *desktop.ini
+.vscode/settings.json
