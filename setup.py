@@ -13,7 +13,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version="0.5",
+    version="0.5.2",
     description="A Python library for solution chemistry",
     long_description=long_description,
     # The project's main homepage.
@@ -68,5 +68,5 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-    entry_points={"console_scripts": ["pyEQL=pyEQL:main",],},
+    entry_points={"console_scripts": ["pyEQL=pyEQL:main", ], },
 )
