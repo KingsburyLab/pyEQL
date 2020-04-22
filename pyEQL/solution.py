@@ -1,7 +1,7 @@
 """
 pyEQL Solution Class
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2020 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """

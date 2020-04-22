@@ -1,7 +1,7 @@
 """
 pyEQL functions that take Solution objects as inputs or return Solution objects
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2020 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -61,8 +61,7 @@ def gibbs_mix(Solution1, Solution2):
 
     The Gibbs energy of mixing is calculated as follows: [#]_
 
-    .. math::
-        \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
+    .. math:: \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
 
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended

@@ -15,7 +15,7 @@ WARNING     -   assumptions or limitations of module output
 ERROR       -   Module could not complete a task due to invalid input or other problem
 CRITICAL    -   not used
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2020 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
