@@ -1772,7 +1772,7 @@ class Solution:
             logger.warning(
                 "Pitzer parameters not found. Water activity set equal to mole fraction"
             )
-            return self.get_amount("H2O", "fraction")
+            return self.get_amount("H2O", "fraction").to('dimensionless')
         else:
             concentration_sum = unit("0 mol/kg")
             for item in self.components:
