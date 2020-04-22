@@ -1,4 +1,4 @@
-'''
+"""
 pyEQL water properties library
 
 This file contains functions for retrieving various physical properties
@@ -7,17 +7,19 @@ of water substance
 :copyright: 2013-2018 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
-'''
+"""
 import math
 
 from pyEQL import unit
 
 # logging system
 import logging
+
 logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
+
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
@@ -25,16 +27,17 @@ logger.addFilter(unique)
 ch = logging.StreamHandler()
 
 # create formatter for the log
-formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
+
+def water_density(temperature=25 * unit("degC"), pressure=1 * unit("atm")):
     # TODO add pressure??
     # TODO more up to date equation??
-    '''    
+    """    
     Return the density of water in kg/m3 at the specified temperature and pressure.
     
     Parameters
@@ -67,17 +70,27 @@ def water_density(temperature=25*unit('degC'),pressure=1*unit('atm')):
     >>> water_density(25*unit('degC')) #doctest: +ELLIPSIS
     <Quantity(997.0415, 'kilogram / meter ** 3')>
     
-    '''
+    """
     # calculate the magnitude
-    density = 999.65 + 0.20438 * temperature.to('degC').magnitude - 6.1744e-2 * temperature.to('degC').magnitude ** 1.5
+    density = (
+        999.65
+        + 0.20438 * temperature.to("degC").magnitude
+        - 6.1744e-2 * temperature.to("degC").magnitude ** 1.5
+    )
     # assign the proper units
-    density = density  * unit('kg/m**3')
-    logger.info('Computed density of water as %s at T= %s and P = %s' % (density,temperature,pressure))
-    logger.debug('Computed density of water using empirical relation in Sohnel and Novotny, "Densities of Aqueous Solutions of Inorganic Substances," 1985' )
-    return density.to('kg/m**3')
-    
-def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
-    '''    
+    density = density * unit("kg/m**3")
+    logger.info(
+        "Computed density of water as %s at T= %s and P = %s"
+        % (density, temperature, pressure)
+    )
+    logger.debug(
+        'Computed density of water using empirical relation in Sohnel and Novotny, "Densities of Aqueous Solutions of Inorganic Substances," 1985'
+    )
+    return density.to("kg/m**3")
+
+
+def water_specific_weight(temperature=25 * unit("degC"), pressure=1 * unit("atm")):
+    """    
     Return the specific weight of water in N/m3 at the specified temperature and pressure.
     
     Parameters
@@ -102,13 +115,17 @@ def water_specific_weight(temperature=25*unit('degC'),pressure=1*unit('atm')):
     --------
     water_density
     
-    '''
-    spweight = water_density(temperature,pressure) * unit.g_n
-    logger.info('Computed specific weight of water as %s at T=%s and P = %s' % (spweight,temperature,pressure))
-    return spweight.to('N/m ** 3')
+    """
+    spweight = water_density(temperature, pressure) * unit.g_n
+    logger.info(
+        "Computed specific weight of water as %s at T=%s and P = %s"
+        % (spweight, temperature, pressure)
+    )
+    return spweight.to("N/m ** 3")
 
-def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
-    '''
+
+def water_viscosity_dynamic(temperature=25 * unit("degC"), pressure=1 * unit("atm")):
+    """
     Return the dynamic (absolute) viscosity of water in N-s/m2 = Pa-s = kg/m-s
     at the specified temperature.
     
@@ -147,56 +164,74 @@ def water_viscosity_dynamic(temperature=25*unit('degC'),pressure=1*unit('atm')):
     
     #TODO - check these again after I implement pressure-dependent density function
     
-    '''
+    """
     # generate warnings if temp or pressure are outside valid range of equation
-    if temperature < 273 * unit('K') or temperature > 1073 * unit('K'):
-        logger.error('Specified temperature (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % temperature)
+    if temperature < 273 * unit("K") or temperature > 1073 * unit("K"):
+        logger.error(
+            "Specified temperature (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate."
+            % temperature
+        )
         return None
-        
-    if pressure < 0 * unit('Pa') or pressure > 100000000 * unit ('Pa'):
-        logger.error('Specified pressure (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate.' % pressure)
+
+    if pressure < 0 * unit("Pa") or pressure > 100000000 * unit("Pa"):
+        logger.error(
+            "Specified pressure (%s) exceeds valid range of NIST equation for viscosity of water. Cannot extrapolate."
+            % pressure
+        )
         return None
-    
+
     # calculate dimensionless temperature and pressure
-    T_star = 647.27 #K
-    P_star = 22115000 #Pa
-    rho_star = 317.763 #kg/m3
-    
-    T_bar = temperature.to('K').magnitude / T_star
-    P_bar = pressure.to('Pa').magnitude / P_star
-    rho_bar = water_density(temperature,pressure).magnitude / rho_star
-    
+    T_star = 647.27  # K
+    P_star = 22115000  # Pa
+    rho_star = 317.763  # kg/m3
+
+    T_bar = temperature.to("K").magnitude / T_star
+    P_bar = pressure.to("Pa").magnitude / P_star
+    rho_bar = water_density(temperature, pressure).magnitude / rho_star
+
     # calculate the first function, mu_o
-    mu_star = 1e-6 #Pa-s
-    a = [0.0181583,0.0177624,0.0105287,-0.0036477]
+    mu_star = 1e-6  # Pa-s
+    a = [0.0181583, 0.0177624, 0.0105287, -0.0036477]
     sum_o = 0
     mu_temp = 0
     for index in range(len(a)):
         sum_o += a[index] * T_bar ** -index
-    
+
     mu_o = mu_star * math.sqrt(T_bar) / sum_o
-    
+
     # calculate the second fucntion, mu_1
-    b=[[0.501938,0.235622,-0.274637,0.145831,-0.0270448],[0.162888,0.789393,-0.743539,0.263129,-0.0253093],[-0.130356,0.673665,-0.959456,0.347247,-0.0267758],[0.907919,1.207552,-0.687343,0.213486,-0.0822904],[-0.551119,0.0670665,-0.497089,0.100754,0.0602253],[0.146543,-0.0843370,0.195286,-0.032932,-0.0202595]]
+    b = [
+        [0.501938, 0.235622, -0.274637, 0.145831, -0.0270448],
+        [0.162888, 0.789393, -0.743539, 0.263129, -0.0253093],
+        [-0.130356, 0.673665, -0.959456, 0.347247, -0.0267758],
+        [0.907919, 1.207552, -0.687343, 0.213486, -0.0822904],
+        [-0.551119, 0.0670665, -0.497089, 0.100754, 0.0602253],
+        [0.146543, -0.0843370, 0.195286, -0.032932, -0.0202595],
+    ]
     mu_1 = 0
-    
+
     for i in range(len(b)):
         for j in range(len(b[i])):
-            mu_temp += rho_bar * b[i][j] * (1/T_bar -1 ) ** i * (rho_bar -1) ** j
-    
+            mu_temp += rho_bar * b[i][j] * (1 / T_bar - 1) ** i * (rho_bar - 1) ** j
+
     mu_1 = math.exp(mu_temp)
     # multiply the functions to return the viscosity
-    viscosity = mu_o * mu_1 *unit('kg/m/s')
-    
-    logger.info('Computed dynamic (absolute) viscosity of water as %s at T=%s and P = %s'  % (viscosity,temperature,pressure)) 
-    
-    logger.debug('Computed dynamic (absolute) viscosity of water using empirical NIST equation described in Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." J. Phys. Chem. Ref. Data 13(1), 1984.')
-    
-    return viscosity.to('kg/m/s')
+    viscosity = mu_o * mu_1 * unit("kg/m/s")
+
+    logger.info(
+        "Computed dynamic (absolute) viscosity of water as %s at T=%s and P = %s"
+        % (viscosity, temperature, pressure)
+    )
+
+    logger.debug(
+        'Computed dynamic (absolute) viscosity of water using empirical NIST equation described in Sengers, J.V. "Representative Equations for the Viscosity of Water Substance." J. Phys. Chem. Ref. Data 13(1), 1984.'
+    )
+
+    return viscosity.to("kg/m/s")
 
 
-def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')):
-    '''
+def water_viscosity_kinematic(temperature=25 * unit("degC"), pressure=1 * unit("atm")):
+    """
     Return the kinematic viscosity of water in m2/s = Stokes
     at the specified temperature.
     
@@ -223,14 +258,19 @@ def water_viscosity_kinematic(temperature=25*unit('degC'),pressure=1*unit('atm')
     water_viscosity_dynamic
     water_density
     
-    '''
-    kviscosity = water_viscosity_dynamic(temperature,pressure) / water_density(temperature,pressure)
-    logger.info('Computed kinematic viscosity of water as %s at T=%s and P = %s ' % (kviscosity,temperature,pressure)) 
-    return kviscosity.to('m**2 / s')
-    
+    """
+    kviscosity = water_viscosity_dynamic(temperature, pressure) / water_density(
+        temperature, pressure
+    )
+    logger.info(
+        "Computed kinematic viscosity of water as %s at T=%s and P = %s "
+        % (kviscosity, temperature, pressure)
+    )
+    return kviscosity.to("m**2 / s")
 
-def water_dielectric_constant(temperature=25*unit('degC')):
-    '''    
+
+def water_dielectric_constant(temperature=25 * unit("degC")):
+    """    
     Return the dielectric constant of water at the specified temperature.
     
     Parameters
@@ -268,29 +308,41 @@ def water_dielectric_constant(temperature=25*unit('degC')):
     >>> water_dielectric_constant(-5*unit('degC'))
     
      
-    '''
+    """
     # do not return anything if 'temperature' is outside the range for which
     # this fit applies
-    if temperature < 273 * unit('K') or temperature > 372 * unit('K'):
-        logger.error('Specified temperature (%s) exceeds valid range of data. Cannot extrapolate.' % temperature.to('K'))
+    if temperature < 273 * unit("K") or temperature > 372 * unit("K"):
+        logger.error(
+            "Specified temperature (%s) exceeds valid range of data. Cannot extrapolate."
+            % temperature.to("K")
+        )
         return None
-    
-    # otherwise, calculate the dielectric constant using the quadratic fit    
+
+    # otherwise, calculate the dielectric constant using the quadratic fit
     a = 0.24921e3
     b = -0.79069e0
     c = 0.72997e-3
-    dielectric = a + b * temperature.to('K').magnitude + c * temperature.to('K').magnitude ** 2
-    
-    logger.info('Computed dielectric constant of water as %s at %s' % (dielectric,temperature))
-    
-    logger.debug('Computed dielectric constant of water using empirical equation given in "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.')
-    
+    dielectric = (
+        a + b * temperature.to("K").magnitude + c * temperature.to("K").magnitude ** 2
+    )
+
+    logger.info(
+        "Computed dielectric constant of water as %s at %s" % (dielectric, temperature)
+    )
+
+    logger.debug(
+        'Computed dielectric constant of water using empirical equation given in "Permittivity (Dielectric Constant) of Liquids." CRC Handbook of Chemistry and Physics, 92nd ed, pp 6-187 - 6-208.'
+    )
+
     return dielectric
-    
+
+
 def water_conductivity(temperature):
     pass
 
-# TODO - turn doctest back on when the nosigint error is gone        
+
+# TODO - turn doctest back on when the nosigint error is gone
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

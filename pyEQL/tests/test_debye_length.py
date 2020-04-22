@@ -1,17 +1,18 @@
-'''
+"""
 pyEQL debye length test suite
 ============================================
 
 This file contains tests that check the Debye Length
 computations of pyEQL
 
-'''
+"""
 
 import pyEQL
 import unittest
 
-class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
-    '''
+
+class Test_debye_length(unittest.TestCase, pyEQL.CustomAssertions):
+    """
     test the Debye Length calculations of various solutions
     ------------------------------------------------
     
@@ -23,55 +24,56 @@ class Test_debye_length(unittest.TestCase,pyEQL.CustomAssertions):
     0.1 mM Na2SO4: 18nm
     10 mM Na2SO4: 1.8nm
     
-    '''
+    """
+
     def setUp(self):
         # relative error tolerance for assertWithinExperimentalError
         self.tol = 0.03
-        
-    
+
     def test_debye_length_1(self):
-        '''        
+        """        
     
-        '''
-        s1=pyEQL.Solution([['Na+','0.1 mmol/L'],['Cl-','0.1 mmol/L']])
+        """
+        s1 = pyEQL.Solution([["Na+", "0.1 mmol/L"], ["Cl-", "0.1 mmol/L"]])
 
-        result=s1.get_debye_length().magnitude
+        result = s1.get_debye_length().magnitude
         expected = 31
-                
-        self.assertWithinExperimentalError(result,expected,self.tol)
-            
+
+        self.assertWithinExperimentalError(result, expected, self.tol)
+
     def test_debye_length_2(self):
-        '''        
+        """        
 
-        '''
-        s1=pyEQL.Solution([['Na+','10 mmol/L'],['Cl-','10 mmol/L']])
+        """
+        s1 = pyEQL.Solution([["Na+", "10 mmol/L"], ["Cl-", "10 mmol/L"]])
 
-        result=s1.get_debye_length().magnitude
+        result = s1.get_debye_length().magnitude
         expected = 3.1
-                
-        self.assertWithinExperimentalError(result,expected,self.tol)
+
+        self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_debye_length_3(self):
-        '''        
+        """        
 
-        '''
-        s1=pyEQL.Solution([['Na+','0.2 mmol/L'],['SO4-2','0.1 mmol/L']])
+        """
+        s1 = pyEQL.Solution([["Na+", "0.2 mmol/L"], ["SO4-2", "0.1 mmol/L"]])
 
-        result=s1.get_debye_length().magnitude
+        result = s1.get_debye_length().magnitude
         expected = 18
-                
-        self.assertWithinExperimentalError(result,expected,self.tol)
+
+        self.assertWithinExperimentalError(result, expected, self.tol)
 
     def test_debye_length_4(self):
-        '''        
+        """        
 
-        '''
-        s1=pyEQL.Solution([['Na+','20 mmol/L'],['SO4-2','10 mmol/L']])
+        """
+        s1 = pyEQL.Solution([["Na+", "20 mmol/L"], ["SO4-2", "10 mmol/L"]])
 
-        result=s1.get_debye_length().magnitude
+        result = s1.get_debye_length().magnitude
         expected = 1.8
-                
-        self.assertWithinExperimentalError(result,expected,self.tol)
 
-if __name__ == '__main__':
+        self.assertWithinExperimentalError(result, expected, self.tol)
+
+
+if __name__ == "__main__":
     unittest.main()

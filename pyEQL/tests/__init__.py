@@ -2,12 +2,13 @@ import unittest
 import os
 import logging
 
+
 def testsuite():
     """A testsuite that includes all the pyEQL tests.
     """
     # turn off log warning messages during tests
     logging.disable(logging.WARNING)
-    
+
     # include all files in the directory of this script
     suite = unittest.TestLoader().discover(os.path.dirname(__file__))
 
@@ -20,7 +21,7 @@ def main():
     try:
         unittest.main()
     except Exception as e:
-        print('Error: %s' % e)
+        print("Error: %s" % e)
 
 
 def run():

@@ -1,10 +1,10 @@
-'''
+"""
 pyEQL Solution Class
 
 :copyright: 2013-2018 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
-'''
+"""
 
 ## Dependencies
 # import libraries for scientific functions
@@ -23,10 +23,12 @@ from pyEQL import paramsDB as db
 
 # logging system
 import logging
+
 logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
+
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
@@ -34,14 +36,15 @@ logger.addFilter(unique)
 ch = logging.StreamHandler()
 
 # create formatter for the log
-formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+
 class Solution:
-    '''
+    """
     Class representing the properties of a solution. Instances of this class 
     contain information about the solutes, solvent, and bulk properties.
     
@@ -82,70 +85,77 @@ class Solution:
     --------
     add_solute
     
-    '''
+    """
 
-    def __init__(self,solutes=[],**kwargs):
-        
+    def __init__(self, solutes=[], **kwargs):
+
         # initialize the volume
-        if 'volume' in kwargs:
+        if "volume" in kwargs:
             volume_set = True
-            self.volume = unit(kwargs['volume'])
+            self.volume = unit(kwargs["volume"])
         else:
             volume_set = False
-            self.volume = unit('1 L')
-            
+            self.volume = unit("1 L")
+
         # set the temperature
-        if 'temperature' in kwargs:
-            self.temperature = unit(kwargs['temperature'])
+        if "temperature" in kwargs:
+            self.temperature = unit(kwargs["temperature"])
         else:
-            self.temperature = unit('25 degC')
-            
+            self.temperature = unit("25 degC")
+
         # set the pressure
-        if 'pressure' in kwargs:
-            self.pressure = unit(kwargs['pressure'])
+        if "pressure" in kwargs:
+            self.pressure = unit(kwargs["pressure"])
         else:
-            self.pressure = unit('1 atm')
-                        
+            self.pressure = unit("1 atm")
+
         # create an empty dictionary of components
-        self.components={}
+        self.components = {}
 
         # initialize the volume recalculation flag
-        self.volume_update_required = False        
-        
+        self.volume_update_required = False
+
         # define the solvent
-        if 'solvent' in kwargs:
-            self.solvent_name=kwargs['solvent'][0]
+        if "solvent" in kwargs:
+            self.solvent_name = kwargs["solvent"][0]
             # warn if the solvent is anything besides water
-            if not kwargs['solvent'][0] == 'H2O' or kwargs['solvent'][0] == 'water' :
-                logger.error('Non-aqueous solvent detected. These are not yet supported!')
-            
+            if not kwargs["solvent"][0] == "H2O" or kwargs["solvent"][0] == "water":
+                logger.error(
+                    "Non-aqueous solvent detected. These are not yet supported!"
+                )
+
             # raise an error if the solvent volume has also been given
             if volume_set is True:
-                logger.error('Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass.')
-            
+                logger.error(
+                    "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
+                )
+
             # add the solvent and the mass
-            self.add_solvent(self.solvent_name,kwargs['solvent'][1])
+            self.add_solvent(self.solvent_name, kwargs["solvent"][1])
         else:
-            self.solvent_name = 'H2O'
-            
+            self.solvent_name = "H2O"
+
             # calculate the solvent (water) mass based on the density and the solution volume
-            self.add_solvent(self.solvent_name,str(self.volume * h2o.water_density(self.temperature)))
+            self.add_solvent(
+                self.solvent_name,
+                str(self.volume * h2o.water_density(self.temperature)),
+            )
 
         # set the pH with H+ and OH-
-        if 'pH' in kwargs:
-            pH = kwargs['pH']
+        if "pH" in kwargs:
+            pH = kwargs["pH"]
         else:
             pH = 7
 
-        self.add_solute('H+',str(10 ** (-1 * pH))+'mol/L')
-        self.add_solute('OH-',str(10 ** (-1 * (14-pH)))+'mol/L')        
-        
+        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
+        self.add_solute("OH-", str(10 ** (-1 * (14 - pH))) + "mol/L")
+
         # populate the other solutes
         for item in solutes:
-            self.add_solute(*item)        
+            self.add_solute(*item)
 
-    def add_solute(self,formula,amount,parameters={}):
-        '''Primary method for adding substances to a pyEQL solution
+    def add_solute(self, formula, amount, parameters={}):
+        """Primary method for adding substances to a pyEQL solution
         
         Parameters
         ----------
@@ -158,70 +168,77 @@ class Solution:
         parameters : dictionary, optional
                     Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
                         
-        '''   
-        
-        # if units are given on a per-volume basis, 
+        """
+
+        # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration  
-        if unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
-            
+        # original volume and result in the desired concentration
+        if unit(amount).dimensionality in (
+            "[substance]/[length]**3",
+            "[mass]/[length]**3",
+        ):
+
             # store the original volume for later
             orig_volume = self.get_volume()
-            
+
             # add the new solute
-            new_solute = sol.Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
-            self.components.update({new_solute.get_name():new_solute})            
-            
+            new_solute = sol.Solute(
+                formula, amount, self.get_volume(), self.get_solvent_mass(), parameters
+            )
+            self.components.update({new_solute.get_name(): new_solute})
+
             # calculate the volume occupied by all the solutes
             solute_vol = self._get_solute_volume()
-            
+
             # determine the volume of solvent that will preserve the original volume
             target_vol = orig_volume - solute_vol
-            
+
             # adjust the amount of solvent
             target_mass = target_vol * h2o.water_density(self.get_temperature())
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
-            
+
         else:
-            
+
             # add the new solute
-            new_solute = sol.Solute(formula,amount,self.get_volume(),self.get_solvent_mass(),parameters)
-            self.components.update({new_solute.get_name():new_solute})            
-            
+            new_solute = sol.Solute(
+                formula, amount, self.get_volume(), self.get_solvent_mass(), parameters
+            )
+            self.components.update({new_solute.get_name(): new_solute})
+
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit('0 kg'):
-                logger.error('All solvent has been depleted from the solution')
+            if self.get_solvent_mass() <= unit("0 kg"):
+                logger.error("All solvent has been depleted from the solution")
                 return None
             else:
                 # set the volume recalculation flag
                 self.volume_update_required = True
-        
-    def add_solvent(self,formula,amount):
-        '''
+
+    def add_solvent(self, formula, amount):
+        """
         Same as add_solute but omits the need to pass solvent mass to pint
-        '''
-        new_solvent = sol.Solute(formula,amount,self.get_volume(),amount)
-        self.components.update({new_solvent.get_name():new_solvent})
-                        
-    def get_solute(self,i):
-        '''
+        """
+        new_solvent = sol.Solute(formula, amount, self.get_volume(), amount)
+        self.components.update({new_solvent.get_name(): new_solvent})
+
+    def get_solute(self, i):
+        """
         Return the specified solute object.
         
-        '''
+        """
         return self.components[i]
-    
+
     def get_solvent(self):
-        '''
+        """
         Return the solvent object.
         
-        '''
+        """
         return self.components[self.solvent_name]
-    
+
     def get_temperature(self):
-        '''
+        """
         Return the temperature of the solution.
         
         Parameters
@@ -231,49 +248,49 @@ class Solution:
         Returns
         -------
         Quantity: The temperature of the solution, in Kelvin.
-        '''
-        return self.temperature.to('K')
-    
-    def set_temperature(self,temperature):
-        '''
+        """
+        return self.temperature.to("K")
+
+    def set_temperature(self, temperature):
+        """
         Set the solution temperature.
         
         Parameters
         ----------
         temperature : str
             String representing the temperature, e.g. '25 degC'
-        '''
+        """
         self.temperature = unit(temperature)
-        
+
         # recalculate the volume
         self._update_volume()
-    
+
     def get_pressure(self):
-        '''
+        """
         Return the hydrostatic pressure of the solution.
         
         Returns
         -------
         Quantity: The hydrostatic pressure of the solution, in atm.
-        '''
-        return self.pressure.to('atm')
-        
-    def set_pressure(self,pressure):
-        '''
+        """
+        return self.pressure.to("atm")
+
+    def set_pressure(self, pressure):
+        """
         Set the hydrostatic pressure of the solution.
         
         Parameters
         ----------
         pressure : str
             String representing the temperature, e.g. '25 degC'
-        '''
+        """
         self.pressure = unit(pressure)
-        
+
         # recalculate the volume
         self._update_volume()
-    
+
     def get_solvent_mass(self):
-        '''
+        """
         Return the mass of the solvent.
         
         This method is used whenever mol/kg (or similar) concentrations
@@ -290,15 +307,15 @@ class Solution:
         See Also
         --------
         get_amount()
-        '''
+        """
         # return the total mass (kg) of the solvent
         solvent = self.get_solvent()
         mw = solvent.get_molecular_weight()
-    
-        return solvent.get_moles().to('kg','chem',mw=mw)
-            
+
+        return solvent.get_moles().to("kg", "chem", mw=mw)
+
     def get_volume(self):
-        '''
+        """
         Return the volume of the solution.
         
         Parameters
@@ -308,17 +325,17 @@ class Solution:
         Returns
         -------
         Quantity: the volume of the solution, in L
-        '''
-        
+        """
+
         # if the composition has changed, recalculate the volume first
         if self.volume_update_required is True:
             self._update_volume()
             self.volume_update_required = False
-            
-        return self.volume.to('L')
-        
-    def set_volume(self,volume):
-        '''Change the total solution volume to volume, while preserving
+
+        return self.volume.to("L")
+
+    def set_volume(self, volume):
+        """Change the total solution volume to volume, while preserving
         all component concentrations
         
         Parameters
@@ -339,19 +356,19 @@ class Solution:
         >>> mysol.list_concentrations()
         {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
 
-        '''
-        # figure out the factor to multiply the old concentrations by 
-        scale_factor = unit(volume)/self.get_volume()
-        
-        # scale down the amount of all the solutes according to the factor        
+        """
+        # figure out the factor to multiply the old concentrations by
+        scale_factor = unit(volume) / self.get_volume()
+
+        # scale down the amount of all the solutes according to the factor
         for item in self.components:
             self.get_solute(item).moles = self.get_solute(item).moles * scale_factor
-        
+
         # update the solution volume
         self.volume = unit(volume)
-        
+
     def get_mass(self):
-        '''
+        """
         Return the total mass of the solution.
         
         The mass is calculated each time this method is called.
@@ -363,14 +380,14 @@ class Solution:
         -------
         Quantity: the mass of the solution, in kg        
         
-        '''
+        """
         total_mass = 0
         for item in self.components:
-            total_mass+= self.get_amount(item,'kg')
-        return total_mass.to('kg')
-        
+            total_mass += self.get_amount(item, "kg")
+        return total_mass.to("kg")
+
     def get_density(self):
-        '''
+        """
         Return the density of the solution.
         
         Density is calculated from the mass and volume each time this method is called.
@@ -378,11 +395,11 @@ class Solution:
         Returns
         -------
         Quantity: The density of the solution.
-        '''
+        """
         return self.get_mass() / self.get_volume()
-    
+
     def get_dielectric_constant(self):
-        '''
+        """
         Returns the dielectric constant of the solution.
         
         Parameters
@@ -409,28 +426,32 @@ class Solution:
         An empirical equation for the dielectric constant in aqueous and nonaqueous 
         electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123. 
         doi:10.1016/j.fluid.2014.05.037.
-        '''
+        """
         di_water = h2o.water_dielectric_constant(self.get_temperature())
-        
+
         denominator = 1
         for item in self.components:
             # ignore water
-            if item != 'H2O':
+            if item != "H2O":
                 # skip over solutes that don't have parameters
                 try:
-                    fraction = self.get_amount(item,'fraction')
-                    coefficient= self.get_solute(item).get_parameter('dielectric_parameter_water')
+                    fraction = self.get_amount(item, "fraction")
+                    coefficient = self.get_solute(item).get_parameter(
+                        "dielectric_parameter_water"
+                    )
                     denominator += coefficient * fraction
                 except TypeError:
-                    logger.warning('No dielectric parameters found for species %s.' % item)
-                    continue        
-        
+                    logger.warning(
+                        "No dielectric parameters found for species %s." % item
+                    )
+                    continue
+
         dielectric_constant = di_water / denominator
-        
+
         return dielectric_constant
-    
+
     def get_viscosity_relative(self):
-        '''
+        """
         Return the viscosity of the solution relative to that of water
         
         This is calculated using a simplified form of the Jones-Dole equation:
@@ -443,10 +464,10 @@ class Solution:
         <http://downloads.olisystems.com/ResourceCD/TransportProperties/Viscosity-Aqueous.pdf>
         <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
         <http://apple.csgi.unifi.it/~fratini/chen/pdf/14.pdf>
-        '''
-        #if self.get_ionic_strength().magnitude > 0.2:
-         #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
-        
+        """
+        # if self.get_ionic_strength().magnitude > 0.2:
+        #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+
         #        viscosity_rel = 1
         #        for item in self.components:
         #            # ignore water
@@ -459,12 +480,14 @@ class Solution:
         #                    coefficients[2] * conc ** 2
         #                except TypeError:
         #                    continue
-        viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(self.get_temperature(),self.get_pressure())    
-        
+        viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(
+            self.get_temperature(), self.get_pressure()
+        )
+
         return viscosity_rel
-        
+
     def get_viscosity_dynamic(self):
-        '''
+        """
         Return the dynamic (absolute) viscosity of the solution.
         
         Calculated from the kinematic viscosity
@@ -473,11 +496,11 @@ class Solution:
         --------
         get_viscosity_kinematic
         get_viscosity_relative
-        '''
-        return self.get_viscosity_kinematic() * self.get_density()    
-    
+        """
+        return self.get_viscosity_kinematic() * self.get_density()
+
     def get_viscosity_kinematic(self):
-        '''
+        """
         Return the kinematic viscosity of the solution.
         
         Notes
@@ -511,53 +534,66 @@ class Solution:
         --------
         get_viscosity_dynamic
         get_viscosity_relative
-        '''
+        """
         # identify the main salt in the solution
         salt = self.get_salt()
         cation = salt.cation
-        
+
         # search the database for parameters for 'salt'
         db.search_parameters(salt.formula)
-        
-        a0=a1=b0=b1 = 0
+
+        a0 = a1 = b0 = b1 = 0
 
         # retrieve the parameters for the delta G equations
-        if db.has_parameter(salt.formula,'erying_viscosity_coefficients'):
-            params = db.get_parameter(salt.formula,'erying_viscosity_coefficients')
-        
+        if db.has_parameter(salt.formula, "erying_viscosity_coefficients"):
+            params = db.get_parameter(salt.formula, "erying_viscosity_coefficients")
+
             a0 = params.get_value()[0]
             a1 = params.get_value()[1]
             b0 = params.get_value()[2]
             b1 = params.get_value()[3]
         else:
             # proceed with the coefficients equal to zero and log a warning
-            logger.warning('Viscosity coefficients for %s not found. Viscosity will be approximate.' % salt.formula)
+            logger.warning(
+                "Viscosity coefficients for %s not found. Viscosity will be approximate."
+                % salt.formula
+            )
 
         # compute the delta G parameters
-        temperature = self.get_temperature().to('degC')
+        temperature = self.get_temperature().to("degC")
         G_123 = a0 + a1 * (temperature.magnitude) ** 0.75
         G_23 = b0 + b1 * (temperature.magnitude) ** 0.5
-        
+
         # get the kinematic viscosity of water
-        nu_w = h2o.water_viscosity_kinematic(temperature,self.get_pressure()).to('m**2 / s').magnitude
-        
+        nu_w = (
+            h2o.water_viscosity_kinematic(temperature, self.get_pressure())
+            .to("m**2 / s")
+            .magnitude
+        )
+
         # compute the effective molar mass of the solution
-        MW= self.get_mass() / (self.get_moles_solvent() + self.get_total_moles_solute())
-        
+        MW = self.get_mass() / (
+            self.get_moles_solvent() + self.get_total_moles_solute()
+        )
+
         # get the MW of water
         MW_w = self.get_solvent().get_molecular_weight()
-        
-        # calculate the cation mole fraction
-        x_cat = self.get_amount(cation,'fraction')
-        
-        # calculate the kinematic viscosity
-        nu = math.log(nu_w * MW_w / MW) + 15 * x_cat ** 2 + x_cat ** 3 * G_123 + \
-        3 * x_cat * G_23 * (1-0.05*x_cat)
 
-        return math.exp(nu) * unit('m**2 / s')
-        
+        # calculate the cation mole fraction
+        x_cat = self.get_amount(cation, "fraction")
+
+        # calculate the kinematic viscosity
+        nu = (
+            math.log(nu_w * MW_w / MW)
+            + 15 * x_cat ** 2
+            + x_cat ** 3 * G_123
+            + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
+        )
+
+        return math.exp(nu) * unit("m**2 / s")
+
     def get_conductivity(self):
-        '''
+        """
         Compute the electrical conductivity of the solution.
         
         Parameters
@@ -599,30 +635,39 @@ class Solution:
         get_molar_conductivity()
         get_activity_coefficient()
         
-        '''
-        EC = 0 * unit('S/m')
+        """
+        EC = 0 * unit("S/m")
         temperature = self.get_temperature()
-        
+
         for item in self.components:
             z = abs(self.get_solute(item).get_formal_charge())
-            # ignore uncharged species            
+            # ignore uncharged species
             if not z == 0:
-                # determine the value of the exponent alpha 
+                # determine the value of the exponent alpha
                 if self.get_ionic_strength().magnitude < 0.36 * z:
                     alpha = 0.6 / z ** 0.5
                 else:
                     alpha = self.get_ionic_strength().magnitude ** 0.5 / z
-                
-                diffusion_coefficient = self.get_property(item,'diffusion_coefficient')
-        
-                molar_cond = diffusion_coefficient * (unit.e * unit.N_A) ** 2 * self.get_solute(item).get_formal_charge() ** 2 / (unit.R * temperature)
-                           
-                EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item,'mol/L')
-                             
-        return EC.to('S/m')
-    
+
+                diffusion_coefficient = self.get_property(item, "diffusion_coefficient")
+
+                molar_cond = (
+                    diffusion_coefficient
+                    * (unit.e * unit.N_A) ** 2
+                    * self.get_solute(item).get_formal_charge() ** 2
+                    / (unit.R * temperature)
+                )
+
+                EC += (
+                    molar_cond
+                    * self.get_activity_coefficient(item) ** alpha
+                    * self.get_amount(item, "mol/L")
+                )
+
+        return EC.to("S/m")
+
     def get_osmotic_pressure(self):
-        ''' 
+        """ 
         Return the osmotic pressure of the solution relative to pure water.
         
         Parameters
@@ -666,18 +711,27 @@ class Solution:
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
         >>> soln.get_osmotic_pressure()
         <Quantity(906516.7318131207, 'pascal')>        
-        '''
+        """
         # TODO - tie this into parameter() and solvent() objects
-        partial_molar_volume_water = 1.82e-5 *unit('m ** 3/mol')
-        
-        osmotic_pressure = -1 * unit.R * self.get_temperature() / partial_molar_volume_water * math.log (self.get_water_activity())
-        logger.info('Computed osmotic pressure of solution as %s Pa at T= %s degrees C' % (osmotic_pressure,self.get_temperature()))
-        return osmotic_pressure.to('Pa')
+        partial_molar_volume_water = 1.82e-5 * unit("m ** 3/mol")
 
-## Concentration  Methods        
-    
-    def p(self,solute,activity=True):
-        '''
+        osmotic_pressure = (
+            -1
+            * unit.R
+            * self.get_temperature()
+            / partial_molar_volume_water
+            * math.log(self.get_water_activity())
+        )
+        logger.info(
+            "Computed osmotic pressure of solution as %s Pa at T= %s degrees C"
+            % (osmotic_pressure, self.get_temperature())
+        )
+        return osmotic_pressure.to("Pa")
+
+    ## Concentration  Methods
+
+    def p(self, solute, activity=True):
+        """
         Return the negative log of the activity of solute.
         
         Generally used for expressing concentration of hydrogen ions (pH)
@@ -700,18 +754,18 @@ class Solution:
         --------
         TODO
         
-        '''
+        """
         try:
             if activity is True:
                 return -1 * math.log10(self.get_activity(solute))
             elif activity is False:
-                return -1 * math.log10(self.get_amount(solute,'mol/L').magnitude)
+                return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
         # if the solute has zero concentration, the log will generate a ValueError
         except ValueError:
             return 0
-            
-    def get_amount(self,solute,units):
-        '''
+
+    def get_amount(self, solute, units):
+        """
         Return the amount of 'solute' in the parent solution.
         
         The amount of a solute can be given in a variety of unit types.
@@ -747,7 +801,7 @@ class Solution:
         get_solvent_mass
         get_mass
         get_total_moles_solute
-        '''
+        """
         # retrieve the number of moles of solute and its molecular weight
         try:
             moles = self.get_solute(solute).get_moles()
@@ -758,31 +812,34 @@ class Solution:
             try:
                 return 0 * unit(units)
             except:
-                logger.error('Unsupported unit specified for get_amount')
+                logger.error("Unsupported unit specified for get_amount")
                 return 0
-            
+
         # with pint unit conversions enabled, we just pass the unit to pint
-        # the logic tests here ensure that only the required arguments are 
-        # passed to pint for the unit conversion. This avoids unecessary 
+        # the logic tests here ensure that only the required arguments are
+        # passed to pint for the unit conversion. This avoids unecessary
         # function calls.
-        if units == 'fraction':
-            return moles / (self.get_moles_solvent() + self.get_total_moles_solute() )
-        elif units == '%':
-            return moles.to('kg','chem',mw=mw) / self.get_mass().to('kg') * 100
-        elif unit(units).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
-            return moles.to(units,'chem',mw=mw,volume=self.get_volume())
-        elif unit(units).dimensionality in ('[substance]/[mass]','[mass]/[mass]'):
-            return moles.to(units,'chem',mw=mw,solvent_mass=self.get_solvent_mass())
-        elif unit(units).dimensionality == '[mass]':
-            return moles.to(units,'chem',mw=mw)
-        elif unit(units).dimensionality == '[substance]':
+        if units == "fraction":
+            return moles / (self.get_moles_solvent() + self.get_total_moles_solute())
+        elif units == "%":
+            return moles.to("kg", "chem", mw=mw) / self.get_mass().to("kg") * 100
+        elif unit(units).dimensionality in (
+            "[substance]/[length]**3",
+            "[mass]/[length]**3",
+        ):
+            return moles.to(units, "chem", mw=mw, volume=self.get_volume())
+        elif unit(units).dimensionality in ("[substance]/[mass]", "[mass]/[mass]"):
+            return moles.to(units, "chem", mw=mw, solvent_mass=self.get_solvent_mass())
+        elif unit(units).dimensionality == "[mass]":
+            return moles.to(units, "chem", mw=mw)
+        elif unit(units).dimensionality == "[substance]":
             return moles.to(units)
         else:
-            logger.error('Unsupported unit specified for get_amount')
+            logger.error("Unsupported unit specified for get_amount")
             return None
 
-    def get_total_amount(self,element,units):
-        '''
+    def get_total_amount(self, element, units):
+        """
         Return the total amount of 'element' (across all solutes) in the solution.
        
         Parameters
@@ -806,30 +863,38 @@ class Solution:
         See Also
         --------
         get_amount
-        '''
+        """
         import pyEQL.chemical_formula as ch
-        
+
         TOT = 0 * unit(units)
-        
+
         # loop through all the solutes, process each one containing element
         for item in self.components:
             # check whether the solute contains the element
-            if ch.contains(item,element):
+            if ch.contains(item, element):
                 # start with the amount of the solute in the desired units
-                amt = self.get_amount(item,units)
+                amt = self.get_amount(item, units)
 
                 # convert the solute amount into the amount of element by
                 # either the mole / mole or weight ratio
-                if unit(units).dimensionality in ('[substance]','[substance]/[length]**3','[substance]/[mass]'):
-                    TOT += amt * ch.get_element_mole_ratio(item,element)
+                if unit(units).dimensionality in (
+                    "[substance]",
+                    "[substance]/[length]**3",
+                    "[substance]/[mass]",
+                ):
+                    TOT += amt * ch.get_element_mole_ratio(item, element)
 
-                elif unit(units).dimensionality in ('[mass]','[mass]/[length]**3','[mass]/[mass]'):
-                    TOT += amt * ch.get_element_weight_fraction(item,element)
-            
+                elif unit(units).dimensionality in (
+                    "[mass]",
+                    "[mass]/[length]**3",
+                    "[mass]/[mass]",
+                ):
+                    TOT += amt * ch.get_element_weight_fraction(item, element)
+
         return TOT
 
-    def add_amount(self,solute,amount):
-        '''
+    def add_amount(self, solute, amount):
+        """
         Add the amount of 'solute' to the parent solution.
        
         Parameters
@@ -852,59 +917,72 @@ class Solution:
         See Also
         --------
         Solute.add_moles()
-        '''
-        
-        # if units are given on a per-volume basis, 
+        """
+
+        # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration  
-        if unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
-            
+        # original volume and result in the desired concentration
+        if unit(amount).dimensionality in (
+            "[substance]/[length]**3",
+            "[mass]/[length]**3",
+        ):
+
             # store the original volume for later
             orig_volume = self.get_volume()
-            
+
             # change the amount of the solute present to match the desired amount
-            self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())            
-            
+            self.get_solute(solute).add_moles(
+                amount, self.get_volume(), self.get_solvent_mass()
+            )
+
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
-            if self.get_amount(solute,'mol').magnitude < 0:
-                logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
-                self.set_amount(solute,'0 mol')
-            
+            if self.get_amount(solute, "mol").magnitude < 0:
+                logger.warning(
+                    "Attempted to set a negative concentration for solute %s. Concentration set to 0"
+                    % solute
+                )
+                self.set_amount(solute, "0 mol")
+
             # calculate the volume occupied by all the solutes
             solute_vol = self._get_solute_volume()
-            
+
             # determine the volume of solvent that will preserve the original volume
             target_vol = orig_volume - solute_vol
-            
+
             # adjust the amount of solvent
             target_mass = target_vol * h2o.water_density(self.get_temperature())
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
-            
+
         else:
 
             # change the amount of the solute present
-            self.get_solute(solute).add_moles(amount,self.get_volume(),self.get_solvent_mass())
-        
+            self.get_solute(solute).add_moles(
+                amount, self.get_volume(), self.get_solvent_mass()
+            )
+
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
-            if self.get_amount(solute,'mol').magnitude < 0:
-                logger.warning('Attempted to set a negative concentration for solute %s. Concentration set to 0' % solute)
-                self.set_amount(solute,'0 mol')
-            
+            if self.get_amount(solute, "mol").magnitude < 0:
+                logger.warning(
+                    "Attempted to set a negative concentration for solute %s. Concentration set to 0"
+                    % solute
+                )
+                self.set_amount(solute, "0 mol")
+
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit('0 kg'):
-                logger.error('All solvent has been depleted from the solution')
+            if self.get_solvent_mass() <= unit("0 kg"):
+                logger.error("All solvent has been depleted from the solution")
                 return None
             else:
                 # set the volume recalculation flag
                 self.volume_update_required = True
 
-    def set_amount(self,solute,amount):
-        '''
+    def set_amount(self, solute, amount):
+        """
         Set the amount of 'solute' in the parent solution.
        
         Parameters
@@ -932,49 +1010,59 @@ class Solution:
         See Also
         --------
         Solute.set_moles()
-        '''
+        """
         # raise an error if a negative amount is specified
         if unit(amount).magnitude < 0:
-            logger.error('Negative amount specified for solute %s. Concentration not changed.' % solute)
-        
-        # if units are given on a per-volume basis, 
+            logger.error(
+                "Negative amount specified for solute %s. Concentration not changed."
+                % solute
+            )
+
+        # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration  
-        elif unit(amount).dimensionality in ('[substance]/[length]**3','[mass]/[length]**3'):
-            
+        # original volume and result in the desired concentration
+        elif unit(amount).dimensionality in (
+            "[substance]/[length]**3",
+            "[mass]/[length]**3",
+        ):
+
             # store the original volume for later
             orig_volume = self.get_volume()
-            
+
             # change the amount of the solute present to match the desired amount
-            self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())            
+            self.get_solute(solute).set_moles(
+                amount, self.get_volume(), self.get_solvent_mass()
+            )
 
             # calculate the volume occupied by all the solutes
             solute_vol = self._get_solute_volume()
-            
+
             # determine the volume of solvent that will preserve the original volume
             target_vol = orig_volume - solute_vol
-            
+
             # adjust the amount of solvent
             target_mass = target_vol * h2o.water_density(self.get_temperature())
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
-            
+
         else:
-            
+
             # change the amount of the solute present
-            self.get_solute(solute).set_moles(amount,self.get_volume(),self.get_solvent_mass())
+            self.get_solute(solute).set_moles(
+                amount, self.get_volume(), self.get_solvent_mass()
+            )
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit('0 kg'):
-                logger.error('All solvent has been depleted from the solution')
+            if self.get_solvent_mass() <= unit("0 kg"):
+                logger.error("All solvent has been depleted from the solution")
                 return None
             else:
                 self._update_volume()
-    
-    def get_osmolarity(self,activity_correction=False):
-        '''Return the osmolarity of the solution in Osm/L
+
+    def get_osmolarity(self, activity_correction=False):
+        """Return the osmolarity of the solution in Osm/L
         
         Parameters
         ----------
@@ -983,15 +1071,15 @@ class Solution:
                 osmolarity. This correction is appropriate when trying to predict
                 the osmolarity that would be measured from e.g. freezing point 
                 depression. Defaults to FALSE if omitted.
-        '''
+        """
         if activity_correction is True:
             factor = self.get_osmotic_coefficient()
         else:
             factor = 1
-        return factor * self.get_total_moles_solute() / self.get_volume().to('L')
-    
-    def get_osmolality(self,activity_correction=False):
-        '''Return the osmolality of the solution in Osm/kg
+        return factor * self.get_total_moles_solute() / self.get_volume().to("L")
+
+    def get_osmolality(self, activity_correction=False):
+        """Return the osmolality of the solution in Osm/kg
         
         Parameters
         ----------
@@ -1000,35 +1088,35 @@ class Solution:
                 osmolarity. This correction is appropriate when trying to predict
                 the osmolarity that would be measured from e.g. freezing point 
                 depression. Defaults to FALSE if omitted.
-        '''
+        """
         if activity_correction is True:
             factor = self.get_osmotic_coefficient()
         else:
             factor = 1
-        return factor * self.get_total_moles_solute() / self.get_solvent_mass().to('kg')
-        
+        return factor * self.get_total_moles_solute() / self.get_solvent_mass().to("kg")
+
     def get_total_moles_solute(self):
-        '''Return the total moles of all solute in the solution'''
+        """Return the total moles of all solute in the solution"""
         tot_mol = 0
         for item in self.components:
             if item != self.solvent_name:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
-    
-    def get_mole_fraction(self,solute):
-        '''
+
+    def get_mole_fraction(self, solute):
+        """
         Return the mole fraction of 'solute' in the solution
         
         Notes
         -----
         This function is DEPRECATED and will raise a warning when called.
         Use get_amount() instead and specify 'fraction' as the unit type.
-        '''
-        logger.warning('get_mole_fraction is DEPRECATED! Use get_amount() instead.')
-        return self.get_amount(solute,'fraction')
-    
+        """
+        logger.warning("get_mole_fraction is DEPRECATED! Use get_amount() instead.")
+        return self.get_amount(solute, "fraction")
+
     def get_moles_solvent(self):
-        '''
+        """
         Return the moles of solvent present in the solution
         
         Parameters
@@ -1040,12 +1128,12 @@ class Solution:
         Quantity
             The moles of solvent in the solution.
         
-        '''
-        
-        return self.get_amount(self.solvent_name,'mol')
-    
+        """
+
+        return self.get_amount(self.solvent_name, "mol")
+
     def get_salt(self):
-        '''
+        """
         Determine the predominant salt in a solution of ions.
         
         Many empirical equations for solution properties such as activity coefficient,
@@ -1098,13 +1186,14 @@ class Solution:
         2
         >>> s2.get_salt().z_cation
         2
-        '''
+        """
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
+
         return salt.identify_salt(self)
 
     def get_salt_list(self):
-        '''
+        """
         Determine the predominant salt in a solution of ions.
 
         Many empirical equations for solution properties such as activity coefficient,
@@ -1138,14 +1227,15 @@ class Solution:
         get_osmotic_pressure
         get_viscosity_kinematic
 
-        '''
+        """
         # identify the predominant salt in the solution
         import pyEQL.salt_ion_match as salt
-        return salt.generate_salt_list(self,unit='mol/kg')
 
-## Activity-related methods
-    def get_activity_coefficient(self,solute,scale='molal',verbose=False):
-        '''Return the activity coefficient of a solute in solution.
+        return salt.generate_salt_list(self, unit="mol/kg")
+
+    ## Activity-related methods
+    def get_activity_coefficient(self, solute, scale="molal", verbose=False):
+        """Return the activity coefficient of a solute in solution.
 
         Whenever the appropriate parameters are available, the Pitzer model [#]_ is used. 
         If no Pitzer parameters are available, then the appropriate equations are selected
@@ -1220,26 +1310,29 @@ class Solution:
         .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
                Edition; Butterworths: London, 1968, p.32.
        
-        '''
+        """
         ion = self.components[solute]
         temperature = str(self.get_temperature())
-        
+
         # return zero activity if the concentration of the solute is zero
-        if self.get_amount(solute,'mol').magnitude == 0:
-            return unit('1 dimensionless')
+        if self.get_amount(solute, "mol").magnitude == 0:
+            return unit("1 dimensionless")
         else:
-            
+
             # identify the predominant salt that this ion is a member of
             Salt = None
-            salt_list = pyEQL.salt_ion_match.generate_salt_list(self,unit='mol/kg')
+            salt_list = pyEQL.salt_ion_match.generate_salt_list(self, unit="mol/kg")
             for item in salt_list:
                 if solute == item.cation or solute == item.anion:
-                        Salt = item       
-            
+                    Salt = item
+
             # show an error if no salt can be found that contains the solute
             if Salt is None:
-                logger.warning('No salts found that contain solute %s. Returning unit activity coefficient.' % solute)
-                return unit('1 dimensionless')
+                logger.warning(
+                    "No salts found that contain solute %s. Returning unit activity coefficient."
+                    % solute
+                )
+                return unit("1 dimensionless")
 
             # search the database for pitzer parameters for 'Salt'
             db.search_parameters(Salt.formula)
@@ -1247,17 +1340,20 @@ class Solution:
             # use the Pitzer model for higher ionic strength, if the parameters are available
 
             # search for Pitzer parameters
-            if db.has_parameter(Salt.formula,'pitzer_parameters_activity'):
+            if db.has_parameter(Salt.formula, "pitzer_parameters_activity"):
                 if verbose is True:
-                    print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
-                    
-                param = db.get_parameter(Salt.formula,'pitzer_parameters_activity')
+                    print(
+                        "Calculating activity coefficient based on parent salt %s"
+                        % Salt.formula
+                    )
+
+                param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
 
                 # determine alpha1 and alpha2 based on the type of salt
                 # see the May reference for the rules used to determine
                 # alpha1 and alpha2 based on charge
                 if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
-                    if Salt.nu_cation >=3 or Salt.nu_anion <= -3:
+                    if Salt.nu_cation >= 3 or Salt.nu_anion <= -3:
                         alpha1 = 2
                         alpha2 = 50
                     else:
@@ -1271,53 +1367,98 @@ class Solution:
                 # this is necessary for solutions inside e.g. an ion exchange
                 # membrane, where the cation and anion concentrations may be
                 # unequal
-                #molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+                # molality = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
                 # determine the effective molality of the salt in the solution
                 molality = Salt.get_effective_molality(self.get_ionic_strength())
 
-                activity_coefficient=ac.get_activity_coefficient_pitzer(self.get_ionic_strength(), \
-                molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-                Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
+                activity_coefficient = ac.get_activity_coefficient_pitzer(
+                    self.get_ionic_strength(),
+                    molality,
+                    alpha1,
+                    alpha2,
+                    param.get_value()[0],
+                    param.get_value()[1],
+                    param.get_value()[2],
+                    param.get_value()[3],
+                    Salt.z_cation,
+                    Salt.z_anion,
+                    Salt.nu_cation,
+                    Salt.nu_anion,
+                    temperature,
+                )
 
-                logger.info('Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model' % (solute,activity_coefficient,Salt))
-                molal= activity_coefficient
+                logger.info(
+                    "Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model"
+                    % (solute, activity_coefficient, Salt)
+                )
+                molal = activity_coefficient
 
             # for very low ionic strength, use the Debye-Huckel limiting law
             elif self.get_ionic_strength().magnitude <= 0.005:
-                logger.info('Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient.' % self.get_ionic_strength())
-                molal= ac.get_activity_coefficient_debyehuckel(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+                logger.info(
+                    "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient."
+                    % self.get_ionic_strength()
+                )
+                molal = ac.get_activity_coefficient_debyehuckel(
+                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                )
 
             # use the Guntelberg approximation for 0.005 < I < 0.1
             elif self.get_ionic_strength().magnitude <= 0.1:
-                logger.info('Ionic strength = %s. Using Guntelberg to calculate activity coefficient.' % self.get_ionic_strength())
-                molal= ac.get_activity_coefficient_guntelberg(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+                logger.info(
+                    "Ionic strength = %s. Using Guntelberg to calculate activity coefficient."
+                    % self.get_ionic_strength()
+                )
+                molal = ac.get_activity_coefficient_guntelberg(
+                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                )
 
             # use the Davies equation for 0.1 < I < 0.5
             elif self.get_ionic_strength().magnitude <= 0.5:
-                logger.info('Ionic strength = %s. Using Davies equation to calculate activity coefficient.' % self.get_ionic_strength())
-                molal= ac.get_activity_coefficient_davies(self.get_ionic_strength(),ion.get_formal_charge(),temperature)
+                logger.info(
+                    "Ionic strength = %s. Using Davies equation to calculate activity coefficient."
+                    % self.get_ionic_strength()
+                )
+                molal = ac.get_activity_coefficient_davies(
+                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                )
 
             else:
-                logger.warning('Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient' % solute)
+                logger.warning(
+                    "Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient"
+                    % solute
+                )
 
-                molal= unit('1 dimensionless')
+                molal = unit("1 dimensionless")
 
             # if necessary, convert the activity coefficient to another scale, and return the result
-            if scale == 'molal':
+            if scale == "molal":
                 return molal
-            elif scale == 'molar':
-                total_molality = self.get_total_moles_solute()/self.get_solvent_mass()
+            elif scale == "molar":
+                total_molality = self.get_total_moles_solute() / self.get_solvent_mass()
                 total_molarity = self.get_total_moles_solute() / self.get_volume()
-                return (molal * h2o.water_density(self.get_temperature()) * total_molality / total_molarity).to('dimensionless')
-            elif scale == 'rational':
-                return molal*(1+unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass())
+                return (
+                    molal
+                    * h2o.water_density(self.get_temperature())
+                    * total_molality
+                    / total_molarity
+                ).to("dimensionless")
+            elif scale == "rational":
+                return molal * (
+                    1
+                    + unit("0.018 kg/mol")
+                    * self.get_total_moles_solute()
+                    / self.get_solvent_mass()
+                )
             else:
-                logger.warning('Invalid scale argument. Returning molal-scale activity coefficient')
+                logger.warning(
+                    "Invalid scale argument. Returning molal-scale activity coefficient"
+                )
                 return molal
 
-    def get_activity(self,solute,scale='molal',verbose=False):
-        '''
+    def get_activity(self, solute, scale="molal", verbose=False):
+        """
         Return the thermodynamic activity of the solute in solution on the molal scale.
        
         Parameters
@@ -1354,30 +1495,36 @@ class Solution:
         .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
                Edition; Butterworths: London, 1968, p.32.
         
-        '''
+        """
         # switch to the water activity function if the species is H2O
-        if solute == 'H2O' or solute == 'water':
+        if solute == "H2O" or solute == "water":
             activity = self.get_water_activity()
         else:
             # determine the concentration units to use based on the desired scale
-            if scale == 'molal':
-                unit = 'mol/kg'
-            elif scale == 'molar':
-                unit = 'mol/L'
-            elif scale == 'rational':
-                unit = 'fraction'
+            if scale == "molal":
+                unit = "mol/kg"
+            elif scale == "molar":
+                unit = "mol/L"
+            elif scale == "rational":
+                unit = "fraction"
             else:
-                logger.error('Invalid scale argument. Returning molal-scale activity.')
-                unit = 'mol/kg'
-                scale = 'molal'
-            
-            activity = self.get_activity_coefficient(solute,scale=scale,verbose=verbose) * self.get_amount(solute,unit).magnitude
-            logger.info('Calculated %s scale activity of solute %s as %s' % (scale,solute,activity))
-        
+                logger.error("Invalid scale argument. Returning molal-scale activity.")
+                unit = "mol/kg"
+                scale = "molal"
+
+            activity = (
+                self.get_activity_coefficient(solute, scale=scale, verbose=verbose)
+                * self.get_amount(solute, unit).magnitude
+            )
+            logger.info(
+                "Calculated %s scale activity of solute %s as %s"
+                % (scale, solute, activity)
+            )
+
         return activity
 
-    def get_osmotic_coefficient(self, scale='molal'):
-        '''
+    def get_osmotic_coefficient(self, scale="molal"):
+        """
         Return the osmotic coefficient of an aqueous solution.
         
         Osmotic coefficient is calculated using the Pitzer model.[#]_ If appropriate parameters for 
@@ -1453,7 +1600,7 @@ class Solution:
         >>> s1.get_osmotic_coefficient()
         <Quantity(0.891154788474231, 'dimensionless')>
         
-        '''
+        """
         temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
 
@@ -1471,14 +1618,14 @@ class Solution:
         for item in salt_list:
 
             # ignore HOH in the salt list
-            if item.formula == 'HOH':
+            if item.formula == "HOH":
                 continue
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
             if item.z_cation >= 2 and item.z_anion <= -2:
-                if item.z_cation >=3 or item.z_anion <= -3:
+                if item.z_cation >= 3 or item.z_anion <= -3:
                     alpha1 = 2
                     alpha2 = 50
                 else:
@@ -1490,8 +1637,8 @@ class Solution:
 
             # set the concentration as the average concentration of the cation and
             # anion in the salt, accounting for stoichiometry
-            #concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
-            #self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+            # concentration = (self.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation + \
+            # self.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
             concentration = salt_list[item]
@@ -1501,37 +1648,69 @@ class Solution:
             # search the database for pitzer parameters for 'salt'
             db.search_parameters(item.formula)
 
-            if db.has_parameter(item.formula,'pitzer_parameters_activity'):
+            if db.has_parameter(item.formula, "pitzer_parameters_activity"):
 
-                param = db.get_parameter(item.formula,'pitzer_parameters_activity')
+                param = db.get_parameter(item.formula, "pitzer_parameters_activity")
 
-                osmotic_coefficient=ac.get_osmotic_coefficient_pitzer(ionic_strength, \
-                concentration,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-                item.z_cation,item.z_anion,item.nu_cation,item.nu_anion,temperature)
+                osmotic_coefficient = ac.get_osmotic_coefficient_pitzer(
+                    ionic_strength,
+                    concentration,
+                    alpha1,
+                    alpha2,
+                    param.get_value()[0],
+                    param.get_value()[1],
+                    param.get_value()[2],
+                    param.get_value()[3],
+                    item.z_cation,
+                    item.z_anion,
+                    item.nu_cation,
+                    item.nu_anion,
+                    temperature,
+                )
 
-                logger.info('Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model' % (osmotic_coefficient,item.formula))
+                logger.info(
+                    "Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model"
+                    % (osmotic_coefficient, item.formula)
+                )
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
             else:
-                logger.warning('Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient' % item.formula)
-                effective_osmotic_sum += concentration * unit('1 dimensionless')
+                logger.warning(
+                    "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
+                    % item.formula
+                )
+                effective_osmotic_sum += concentration * unit("1 dimensionless")
 
-        molal_phi= effective_osmotic_sum / molality_sum
+        molal_phi = effective_osmotic_sum / molality_sum
 
-        if scale == 'molal':
+        if scale == "molal":
             return molal_phi
-        elif scale == 'rational':
-            solvent= self.get_solvent().formula
-            return - molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() / math.log(self.get_amount(solvent,'fraction'))
-        elif scale == 'fugacity':
-            solvent= self.get_solvent().formula
-            return math.exp(- molal_phi * unit('0.018 kg/mol')*self.get_total_moles_solute()/self.get_solvent_mass() - math.log(self.get_amount(solvent,'fraction')))
+        elif scale == "rational":
+            solvent = self.get_solvent().formula
+            return (
+                -molal_phi
+                * unit("0.018 kg/mol")
+                * self.get_total_moles_solute()
+                / self.get_solvent_mass()
+                / math.log(self.get_amount(solvent, "fraction"))
+            )
+        elif scale == "fugacity":
+            solvent = self.get_solvent().formula
+            return math.exp(
+                -molal_phi
+                * unit("0.018 kg/mol")
+                * self.get_total_moles_solute()
+                / self.get_solvent_mass()
+                - math.log(self.get_amount(solvent, "fraction"))
+            )
         else:
-            logger.warning('Invalid scale argument. Returning molal-scale osmotic coefficient')
+            logger.warning(
+                "Invalid scale argument. Returning molal-scale osmotic coefficient"
+            )
             return molal_phi
 
     def get_water_activity(self):
-        '''
+        """
         Return the water activity.
         
         Returns
@@ -1567,8 +1746,8 @@ class Solution:
         >>> s1 = pyEQL.Solution([['Na+','0.3 mol/kg'],['Cl-','0.3 mol/kg']])
         >>> s1.get_water_activity()
         <Quantity(0.9900944932888518, 'dimensionless')>
-        '''
-        '''
+        """
+        """
         pseudo code
         
         identify predominant salt for coefficients
@@ -1577,26 +1756,30 @@ class Solution:
         
         if not = > return mole fraction and log a warning message
         
-        '''
+        """
         osmotic_coefficient = self.get_osmotic_coefficient()
-        
+
         if osmotic_coefficient == 1:
-            logger.warning('Pitzer parameters not found. Water activity set equal to mole fraction')
-            return self.get_amount('H2O','fraction')
+            logger.warning(
+                "Pitzer parameters not found. Water activity set equal to mole fraction"
+            )
+            return self.get_amount("H2O", "fraction")
         else:
-            concentration_sum = unit('0 mol/kg')
-            for item in self.components:                
-                if item == 'H2O':
+            concentration_sum = unit("0 mol/kg")
+            for item in self.components:
+                if item == "H2O":
                     pass
                 else:
-                    concentration_sum += self.get_amount(item,'mol/kg')
-                    
-            logger.info('Calculated water activity using osmotic coefficient')  
-            
-            return math.exp(- osmotic_coefficient * 0.018015*unit('kg/mol') * concentration_sum) * unit('1 dimensionless')
-    
+                    concentration_sum += self.get_amount(item, "mol/kg")
+
+            logger.info("Calculated water activity using osmotic coefficient")
+
+            return math.exp(
+                -osmotic_coefficient * 0.018015 * unit("kg/mol") * concentration_sum
+            ) * unit("1 dimensionless")
+
     def get_ionic_strength(self):
-        '''
+        """
         Return the ionic strength of the solution.
         
         Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
@@ -1629,15 +1812,19 @@ class Solution:
         >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
         >>> s1.get_ionic_strength()
         <Quantity(1.0000001004383303, 'mole / kilogram')>
-        '''
-        self.ionic_strength=0
+        """
+        self.ionic_strength = 0
         for solute in self.components.keys():
-            self.ionic_strength += 0.5 * self.get_amount(solute,'mol/kg') * self.components[solute].get_formal_charge() ** 2
-       
+            self.ionic_strength += (
+                0.5
+                * self.get_amount(solute, "mol/kg")
+                * self.components[solute].get_formal_charge() ** 2
+            )
+
         return self.ionic_strength
-    
+
     def get_charge_balance(self):
-        '''
+        """
         Return the charge balance of the solution.
 
         Return the charge balance of the solution. The charge balance represents the net electric charge
@@ -1657,15 +1844,20 @@ class Solution:
 
         Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
 
-        '''
-        self.charge_balance=0
+        """
+        self.charge_balance = 0
         for solute in self.components.keys():
-            self.charge_balance += self.get_amount(solute,'mol') * self.components[solute].get_formal_charge() * unit.e * unit.N_A
+            self.charge_balance += (
+                self.get_amount(solute, "mol")
+                * self.components[solute].get_formal_charge()
+                * unit.e
+                * unit.N_A
+            )
 
         return self.charge_balance.magnitude
 
     def get_alkalinity(self):
-        '''
+        """
         Return the alkalinity or acid neutralizing capacity of a solution
         
         Returns
@@ -1688,26 +1880,39 @@ class Solution:
         ----------
         .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, 
                pp 165. Wiley Interscience, 1996.
-        '''
-        alkalinity = 0 * unit('mol/L')
-        equiv_wt_CaCO3 = 100.09 / 2 * unit('g/mol')
-        
-        base_cations=['Li+','Na+','K+','Rb+','Cs+','Fr+','Be+2','Mg+2','Ca+2','Sr+2','Ba+2','Ra+2']
-        acid_anions=['Cl-','Br-','I-','SO4-2','NO3-','ClO4-','ClO3-']
-        
+        """
+        alkalinity = 0 * unit("mol/L")
+        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
+
+        base_cations = [
+            "Li+",
+            "Na+",
+            "K+",
+            "Rb+",
+            "Cs+",
+            "Fr+",
+            "Be+2",
+            "Mg+2",
+            "Ca+2",
+            "Sr+2",
+            "Ba+2",
+            "Ra+2",
+        ]
+        acid_anions = ["Cl-", "Br-", "I-", "SO4-2", "NO3-", "ClO4-", "ClO3-"]
+
         for item in self.components:
             if item in base_cations:
                 z = self.get_solute(item).get_formal_charge()
-                alkalinity += self.get_amount(item,'mol/L') * z
+                alkalinity += self.get_amount(item, "mol/L") * z
             if item in acid_anions:
                 z = self.get_solute(item).get_formal_charge()
-                alkalinity -= self.get_amount(item,'mol/L') * z 
-        
+                alkalinity -= self.get_amount(item, "mol/L") * z
+
         # convert the alkalinity to mg/L as CaCO3
-        return (alkalinity*equiv_wt_CaCO3).to('mg/L')
+        return (alkalinity * equiv_wt_CaCO3).to("mg/L")
 
     def get_hardness(self):
-        '''
+        """
         Return the hardness of a solution.
         
         Hardness is defined as the sum of the equivalent concentrations
@@ -1725,20 +1930,20 @@ class Solution:
         Quantity
             The hardness of the solution in mg/L as CaCO3
         
-        '''
-        hardness = 0 * unit('mol/L')
-        equiv_wt_CaCO3 = 100.09 / 2 * unit('g/mol')
-        
+        """
+        hardness = 0 * unit("mol/L")
+        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
+
         for item in self.components:
             z = self.get_solute(item).get_formal_charge()
             if z > 1:
-                hardness += z * self.get_amount(item,'mol/L')
-        
+                hardness += z * self.get_amount(item, "mol/L")
+
         # convert the hardness to mg/L as CaCO3
-        return (hardness*equiv_wt_CaCO3).to('mg/L')
-        
+        return (hardness * equiv_wt_CaCO3).to("mg/L")
+
     def get_debye_length(self):
-        '''
+        """
         Return the Debye length of a solution
         
         Debye length is calculated as [#]_
@@ -1770,19 +1975,25 @@ class Solution:
         get_ionic_strength()
         get_dielectric_constant()
         
-        '''
+        """
         temperature = self.get_temperature()
-        
+
         # to preserve dimensionality, convert the ionic strength into mol/L units
-        ionic_strength= self.get_ionic_strength().magnitude*unit('mol/L')
+        ionic_strength = self.get_ionic_strength().magnitude * unit("mol/L")
         dielectric_constant = self.get_dielectric_constant()
-        
-        debye_length = (dielectric_constant * unit.epsilon_0 * unit.k * temperature / (2 * unit.N_A * unit.e ** 2 * ionic_strength)) ** 0.5
-        
-        return debye_length.to('nm')
+
+        debye_length = (
+            dielectric_constant
+            * unit.epsilon_0
+            * unit.k
+            * temperature
+            / (2 * unit.N_A * unit.e ** 2 * ionic_strength)
+        ) ** 0.5
+
+        return debye_length.to("nm")
 
     def get_bjerrum_length(self):
-        '''
+        """
         Return the Bjerrum length of a solution
         
         Bjerrum length representes the distance at which electrostatic 
@@ -1820,16 +2031,17 @@ class Solution:
         --------
         get_dielectric_constant()
         
-        '''
+        """
         temperature = self.get_temperature()
         dielectric_constant = self.get_dielectric_constant()
-        
-        bjerrum_length = unit.e ** 2 / (4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k
-         * temperature)
-        return bjerrum_length.to('nm')
-        
-    def get_transport_number(self,solute,activity_correction = False):
-        '''Calculate the transport number of the solute in the solution
+
+        bjerrum_length = unit.e ** 2 / (
+            4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k * temperature
+        )
+        return bjerrum_length.to("nm")
+
+    def get_transport_number(self, solute, activity_correction=False):
+        """Calculate the transport number of the solute in the solution
         
         Parameters
         ----------
@@ -1869,40 +2081,43 @@ class Solution:
         ion effects on membrane potential and the permselectivity of ion exchange membranes."" 
         *Phys. Chem. Chem. Phys.* 2014, 16, 21673–21681.
         
-        '''
-        denominator= 0
+        """
+        denominator = 0
         numerator = 0
-        
+
         for item in self.components:
 
             z = self.get_solute(item).get_formal_charge()
-            term = self.get_property(item,'diffusion_coefficient') * \
-            z ** 2 * self.get_amount(item,'mol/L')
-            
+            term = (
+                self.get_property(item, "diffusion_coefficient")
+                * z ** 2
+                * self.get_amount(item, "mol/L")
+            )
+
             if activity_correction == True:
                 gamma = self.get_activity_coefficient(item)
-                
+
                 if self.get_ionic_strength().magnitude < 0.36 * z:
                     alpha = 0.6 / z ** 0.5
                 else:
-                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z   
-                
+                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z
+
                 if item == solute:
                     numerator = term * gamma ** alpha
-            
-                denominator += term  * gamma ** alpha
-                        
+
+                denominator += term * gamma ** alpha
+
             else:
                 if item == solute:
                     numerator = term
-            
+
                 denominator += term
 
-        return (numerator / denominator).to('dimensionless')
-          
-    def get_molar_conductivity(self,solute):
+        return (numerator / denominator).to("dimensionless")
 
-        '''
+    def get_molar_conductivity(self, solute):
+
+        """
         Calculate the molar (equivalent) conductivity for a solute
         
         Parameters
@@ -1936,19 +2151,27 @@ class Solution:
         --------
         TODO
              
-        '''
+        """
         temperature = self.get_temperature()
-        
-        D = self.get_property(solute,'diffusion_coefficient')
-        
-        molar_cond = D * (unit.e * unit.N_A) ** 2 * self.get_solute(solute).get_formal_charge() ** 2 / (unit.R * temperature)
-        
-        logger.info('Computed molar conductivity as %s from D = %s at T=%s' % (molar_cond,str(D),temperature))
-        
-        return molar_cond.to('mS / cm / (mol/L)')
-            
-    def get_mobility(self,solute):
-        '''
+
+        D = self.get_property(solute, "diffusion_coefficient")
+
+        molar_cond = (
+            D
+            * (unit.e * unit.N_A) ** 2
+            * self.get_solute(solute).get_formal_charge() ** 2
+            / (unit.R * temperature)
+        )
+
+        logger.info(
+            "Computed molar conductivity as %s from D = %s at T=%s"
+            % (molar_cond, str(D), temperature)
+        )
+
+        return molar_cond.to("mS / cm / (mol/L)")
+
+    def get_mobility(self, solute):
+        """
         Calculate the ionic mobility of the solute
         
         Parameters
@@ -1975,19 +2198,28 @@ class Solution:
         ----------
         .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         
-        '''
+        """
         temperature = self.get_temperature()
-        
-        D = self.get_property(solute,'diffusion_coefficient')
-        
-        mobility = unit.N_A * unit.e * abs(self.get_solute(solute).get_formal_charge()) * D / (unit.R * temperature)
-        
-        logger.info('Computed ionic mobility as %s from D = %s at T=%s' % (mobility,str(D),temperature))
-        
-        return mobility.to('m**2/V/s')
-        
-    def get_property(self,solute,name):
-        '''Retrieve a thermodynamic property (such as diffusion coefficient)
+
+        D = self.get_property(solute, "diffusion_coefficient")
+
+        mobility = (
+            unit.N_A
+            * unit.e
+            * abs(self.get_solute(solute).get_formal_charge())
+            * D
+            / (unit.R * temperature)
+        )
+
+        logger.info(
+            "Computed ionic mobility as %s from D = %s at T=%s"
+            % (mobility, str(D), temperature)
+        )
+
+        return mobility.to("m**2/V/s")
+
+    def get_property(self, solute, name):
+        """Retrieve a thermodynamic property (such as diffusion coefficient)
         for solute, and adjust it from the reference conditions to the conditions
         of the solution
         
@@ -2003,54 +2235,71 @@ class Solution:
         -------
         Quantity: The desired parameter
         
-        '''
+        """
         # retrieve the base value and the conditions of measurement from the
         # database
-    
-        if db.has_parameter(solute,name):
+
+        if db.has_parameter(solute, name):
             base_value = self.get_solute(solute).get_parameter(name)
         else:
-            base_value = None                
-                
-        base_temperature = unit('25 degC')
-        base_pressure = unit ('1 atm')
-        
+            base_value = None
+
+        base_temperature = unit("25 degC")
+        base_pressure = unit("1 atm")
+
         # perform temperature-corrections or other adjustments for certain
-        # parameter types        
-        if name == 'diffusion_coefficient':
+        # parameter types
+        if name == "diffusion_coefficient":
             if base_value is not None:
                 # correct for temperature and viscosity
-                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1 
+                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
                 # where :math:`\mu` is the dynamic viscosity
                 # assume that the base viscosity is that of pure water
-                return base_value * self.get_temperature() / base_temperature * h2o.water_viscosity_dynamic(base_temperature,base_pressure) / self.get_viscosity_dynamic()
+                return (
+                    base_value
+                    * self.get_temperature()
+                    / base_temperature
+                    * h2o.water_viscosity_dynamic(base_temperature, base_pressure)
+                    / self.get_viscosity_dynamic()
+                )
             else:
-                logger.warning('Diffusion coefficient not found for species %s. Assuming zero.' % (solute))
-                return unit('0 m**2/s')
-            
+                logger.warning(
+                    "Diffusion coefficient not found for species %s. Assuming zero."
+                    % (solute)
+                )
+                return unit("0 m**2/s")
+
         # just return the base-value molar volume for now; find a way to adjust for
         # concentration later
-        if name == 'partial_molar_volume':
-            # calculate the partial molar volume for water since it isn't in the database            
-            if solute == 'H2O':
-                vol = self.get_solute('H2O').get_molecular_weight() / h2o.water_density(self.get_temperature())
-                return vol.to('cm **3 / mol')
+        if name == "partial_molar_volume":
+            # calculate the partial molar volume for water since it isn't in the database
+            if solute == "H2O":
+                vol = self.get_solute("H2O").get_molecular_weight() / h2o.water_density(
+                    self.get_temperature()
+                )
+                return vol.to("cm **3 / mol")
             else:
                 if base_value is not None:
                     return base_value
                     if self.get_temperature() != base_temperature:
-                        logger.warning('Partial molar volume for species %s not corrected for temperature' % solute)
+                        logger.warning(
+                            "Partial molar volume for species %s not corrected for temperature"
+                            % solute
+                        )
                 else:
-                    logger.warning('Partial molar volume not found for species %s. Assuming zero.' % solute)
-                    return unit ('0 cm **3 / mol')
-        
+                    logger.warning(
+                        "Partial molar volume not found for species %s. Assuming zero."
+                        % solute
+                    )
+                    return unit("0 cm **3 / mol")
+
         # for parameters not named above, just return the base value
         else:
-            logger.warning('%s has not been corrected for solution conditions' % name)
+            logger.warning("%s has not been corrected for solution conditions" % name)
             return base_value
-                
-    def get_chemical_potential_energy(self,activity_correction=True):
-        '''
+
+    def get_chemical_potential_energy(self, activity_correction=True):
+        """
         Return the total chemical potential energy of a solution (not including
         pressure or electric effects)
     
@@ -2093,26 +2342,36 @@ class Solution:
         Examples
         --------
      
-        '''
+        """
         temperature = self.get_temperature()
-        
-        E = unit('0 J')
-        
+
+        E = unit("0 J")
+
         # loop through all the components and add their potential energy
         for item in self.components:
             try:
                 if activity_correction is True:
-                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_activity(item))
+                    E += (
+                        unit.R
+                        * temperature.to("K")
+                        * self.get_amount(item, "mol")
+                        * math.log(self.get_activity(item))
+                    )
                 else:
-                    E += unit.R * temperature.to('K') * self.get_amount(item,'mol') * math.log(self.get_amount(item,'fraction'))
+                    E += (
+                        unit.R
+                        * temperature.to("K")
+                        * self.get_amount(item, "mol")
+                        * math.log(self.get_amount(item, "fraction"))
+                    )
             # If we have a solute with zero concentration, we will get a ValueError
             except ValueError:
                 continue
-                
-        return E.to('J')
 
-    def get_lattice_distance(self,solute):
-        '''
+        return E.to("J")
+
+    def get_lattice_distance(self, solute):
+        """
         Calculate the average distance between molecules
         
         Calculate the average distance between molecules of the given solute,
@@ -2140,65 +2399,70 @@ class Solution:
         
         .. math:: d = ( C_i N_A ) ^ {-{1\over3}}
         
-        '''
+        """
         # calculate the volume per particle as the reciprocal of the molar concentration
-        # (times avogadro's number). Take the cube root of the volume to get 
+        # (times avogadro's number). Take the cube root of the volume to get
         # the average distance between molecules
-        distance = (self.get_amount(solute,'mol/L') * unit.N_A) ** (-1/3)     
-        
-        return distance.to('nm')
-    
+        distance = (self.get_amount(solute, "mol/L") * unit.N_A) ** (-1 / 3)
+
+        return distance.to("nm")
+
     def _update_volume(self):
-        '''
+        """
         Recalculate the solution volume based on composition
         
-        '''    
+        """
         self.volume = self._get_solvent_volume() + self._get_solute_volume()
-        
+
     def _get_solvent_volume(self):
-        '''
+        """
         Return the volume of the pure solvent
         
-        '''        
+        """
         # calculate the volume of the pure solvent
-        solvent_vol = self.get_solvent_mass() / h2o.water_density(self.get_temperature(),self.get_pressure())
-        
-        return solvent_vol.to('L')
-        
+        solvent_vol = self.get_solvent_mass() / h2o.water_density(
+            self.get_temperature(), self.get_pressure()
+        )
+
+        return solvent_vol.to("L")
+
     def _get_solute_volume(self):
-        '''
+        """
         Return the volume of only the solutes
         
-        '''   
+        """
         temperature = str(self.get_temperature())
-        
+
         # identify the predominant salt in the solution
         Salt = self.get_salt()
-        
+
         # search the database for pitzer parameters for 'salt'
         db.search_parameters(Salt.formula)
-         
-        solute_vol = 0 * unit('L')
+
+        solute_vol = 0 * unit("L")
 
         # use the pitzer approach if parameters are available
-        
+
         pitzer_calc = False
 
-        if db.has_parameter(Salt.formula,'pitzer_parameters_volume'):
-            
-            param = db.get_parameter(Salt.formula,'pitzer_parameters_volume')
-            
+        if db.has_parameter(Salt.formula, "pitzer_parameters_volume"):
+
+            param = db.get_parameter(Salt.formula, "pitzer_parameters_volume")
+
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            molality = (self.get_amount(Salt.cation,'mol/kg')+self.get_amount(Salt.anion,'mol/kg'))/2
-            
+            molality = (
+                self.get_amount(Salt.cation, "mol/kg")
+                + self.get_amount(Salt.anion, "mol/kg")
+            ) / 2
+
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion >=2:
-                if Salt.nu_cation >=3 or Salt.nu_anion >=3:
+            if Salt.nu_cation >= 2 and Salt.nu_anion >= 2:
+                if Salt.nu_cation >= 3 or Salt.nu_anion >= 3:
                     alpha1 = 2
                     alpha2 = 50
                 else:
@@ -2207,75 +2471,110 @@ class Solution:
             else:
                 alpha1 = 2
                 alpha2 = 0
-                
-            apparent_vol = ac.get_apparent_volume_pitzer(self.get_ionic_strength(), \
-            molality,alpha1,alpha2,param.get_value()[0],param.get_value()[1],param.get_value()[2],param.get_value()[3], \
-            param.get_value()[4],Salt.z_cation,Salt.z_anion,Salt.nu_cation,Salt.nu_anion,temperature)
-            
-            solute_vol += apparent_vol * (self.get_amount(Salt.cation,'mol')/Salt.nu_cation \
-            +self.get_amount(Salt.anion,'mol')/Salt.nu_anion)/2
-            
+
+            apparent_vol = ac.get_apparent_volume_pitzer(
+                self.get_ionic_strength(),
+                molality,
+                alpha1,
+                alpha2,
+                param.get_value()[0],
+                param.get_value()[1],
+                param.get_value()[2],
+                param.get_value()[3],
+                param.get_value()[4],
+                Salt.z_cation,
+                Salt.z_anion,
+                Salt.nu_cation,
+                Salt.nu_anion,
+                temperature,
+            )
+
+            solute_vol += (
+                apparent_vol
+                * (
+                    self.get_amount(Salt.cation, "mol") / Salt.nu_cation
+                    + self.get_amount(Salt.anion, "mol") / Salt.nu_anion
+                )
+                / 2
+            )
+
             pitzer_calc = True
-            
-            logger.info('Updated solution volume using Pitzer model for solute %s' % Salt.formula)
-            
+
+            logger.info(
+                "Updated solution volume using Pitzer model for solute %s"
+                % Salt.formula
+            )
+
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
         for item in self.components:
-            
-            solute = self.get_solute(item)            
-            
+
+            solute = self.get_solute(item)
+
             # ignore water
-            if item in ['H2O','HOH']:
+            if item in ["H2O", "HOH"]:
                 continue
-            
+
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and item in [Salt.anion,Salt.cation]:
-                continue                
-            
-            if db.has_parameter(item,'partial_molar_volume'):
-                solute_vol += solute.get_parameter('partial_molar_volume') * solute.get_moles()
-                logger.info('Updated solution volume using direct partial molar volume for solute %s' % item)
-                
+            if pitzer_calc is True and item in [Salt.anion, Salt.cation]:
+                continue
+
+            if db.has_parameter(item, "partial_molar_volume"):
+                solute_vol += (
+                    solute.get_parameter("partial_molar_volume") * solute.get_moles()
+                )
+                logger.info(
+                    "Updated solution volume using direct partial molar volume for solute %s"
+                    % item
+                )
+
             else:
-                logger.warning('Partial molar volume data not available for solute %s. Solution volume will not be corrected.' % item)
-                
-        return solute_vol.to('L')
-            
+                logger.warning(
+                    "Partial molar volume data not available for solute %s. Solution volume will not be corrected."
+                    % item
+                )
+
+        return solute_vol.to("L")
+
     def copy(self):
-        '''Return a copy of the solution
+        """Return a copy of the solution
         
         TODO - clarify whether this is a deep or shallow copy
-        '''
-        # prepare to copy the bulk properties        
+        """
+        # prepare to copy the bulk properties
         new_temperature = str(self.get_temperature())
         new_pressure = str(self.pressure)
         new_solvent = self.solvent_name
         new_solvent_mass = str(self.get_solvent_mass())
-        
+
         # create a list of solutes
-        new_solutes = []        
+        new_solutes = []
         for item in self.components:
             # ignore the solvent
             if item == self.solvent_name:
                 pass
             else:
-                new_solutes.append([item,str(self.get_amount(item,'mol'))])
-        
+                new_solutes.append([item, str(self.get_amount(item, "mol"))])
+
         # create the new solution
-        return Solution(new_solutes,solvent=[new_solvent,new_solvent_mass],temperature=new_temperature,pressure=new_pressure)
+        return Solution(
+            new_solutes,
+            solvent=[new_solvent, new_solvent_mass],
+            temperature=new_temperature,
+            pressure=new_pressure,
+        )
 
     ## informational methods
-        
+
     def list_solutes(self):
-        '''
+        """
         List all the solutes in the solution.
         
-        '''
+        """
         return list(self.components.keys())
 
-    def list_concentrations(self,unit='mol/kg',decimals=4,type='all'):
-        '''
+    def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):
+        """
         List the concentration of each species in a solution.        
         
         Parameters
@@ -2294,43 +2593,58 @@ class Solution:
         dict        
             Dictionary containing a list of the species in solution paired with their amount in the specified units
             
-        '''
-        result_list=[]
+        """
+        result_list = []
         # populate a list with component names
 
-        if type == 'all':
-            print('Component Concentrations:\n')
-            print('========================\n')
+        if type == "all":
+            print("Component Concentrations:\n")
+            print("========================\n")
             for item in self.components:
-                amount=self.get_amount(item,unit)
-                result_list.append([item,amount])
-                print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
-        elif type == 'cations':
-            print('Cation Concentrations:\n')
-            print('========================\n')
+                amount = self.get_amount(item, unit)
+                result_list.append([item, amount])
+                print(
+                    item
+                    + ":"
+                    + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals)
+                )
+        elif type == "cations":
+            print("Cation Concentrations:\n")
+            print("========================\n")
             for item in self.components:
                 if self.components[item].get_formal_charge() > 0:
-                    amount=self.get_amount(item,unit)
-                    result_list.append([item,amount])
-                    print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
-        elif type == 'anions':
-            print('Anion Concentrations:\n')
-            print('========================\n')
+                    amount = self.get_amount(item, unit)
+                    result_list.append([item, amount])
+                    print(
+                        item
+                        + ":"
+                        + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals)
+                    )
+        elif type == "anions":
+            print("Anion Concentrations:\n")
+            print("========================\n")
             for item in self.components:
                 if self.components[item].get_formal_charge() < 0:
-                    amount=self.get_amount(item,unit)
-                    result_list.append([item,amount])
-                    print(item+':'+'\t {0:0.{decimals}f~}'.format(amount,decimals=decimals))
+                    amount = self.get_amount(item, unit)
+                    result_list.append([item, amount])
+                    print(
+                        item
+                        + ":"
+                        + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals)
+                    )
 
         return result_list
 
-    def list_salts(self,unit='mol/kg',decimals=4):
-        list = pyEQL.salt_ion_match.generate_salt_list(self,unit)
+    def list_salts(self, unit="mol/kg", decimals=4):
+        list = pyEQL.salt_ion_match.generate_salt_list(self, unit)
         for item in list:
-            print(item.formula+'\t {:0.{decimals}f}'.format(list[item],decimals=decimals))
+            print(
+                item.formula
+                + "\t {:0.{decimals}f}".format(list[item], decimals=decimals)
+            )
 
-    def list_activities(self,decimals=4):
-        '''
+    def list_activities(self, decimals=4):
+        """
         List the activity of each species in a solution.        
         
         Parameters
@@ -2343,16 +2657,22 @@ class Solution:
         dict        
             Dictionary containing a list of the species in solution paired with their activity
             
-        '''
-        print('Component Activities:\n')
-        print('=====================\n')
+        """
+        print("Component Activities:\n")
+        print("=====================\n")
         for i in self.components.keys():
-            print(i+':'+'\t {0.magnitude:0.{decimals}f}'.format(self.get_activity(i),decimals=decimals)) 
-     
+            print(
+                i
+                + ":"
+                + "\t {0.magnitude:0.{decimals}f}".format(
+                    self.get_activity(i), decimals=decimals
+                )
+            )
+
     def __str__(self):
-        #set output of the print() statement for the solution
-        str1 =  'Volume: {0:.3f~}\n'.format(self.get_volume())
-        str2 =  'Pressure: {0:.3f~}\n'.format(self.get_pressure())
-        str3 =  'Temperature: {0:.3f~}\n'.format(self.get_temperature())
-        str4 =  'Components: {0:}\n'.format(self.list_solutes())
-        return str1+str2+str3+str4
+        # set output of the print() statement for the solution
+        str1 = "Volume: {0:.3f~}\n".format(self.get_volume())
+        str2 = "Pressure: {0:.3f~}\n".format(self.get_pressure())
+        str3 = "Temperature: {0:.3f~}\n".format(self.get_temperature())
+        str4 = "Components: {0:}\n".format(self.list_solutes())
+        return str1 + str2 + str3 + str4

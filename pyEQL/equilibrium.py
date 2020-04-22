@@ -1,4 +1,4 @@
-'''
+"""
 pyEQL methods for chemical equilibrium calculations (e.g. acid/base, reactions,
 redox, complexation, etc.)
 
@@ -7,7 +7,7 @@ NOTE: these methods are not currently used but are here for the future.
 :copyright: 2013-2018 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
-'''
+"""
 
 ## Dependencies
 # import libraries for scientific functions
@@ -18,10 +18,12 @@ from pyEQL import unit
 
 # logging system
 import logging
+
 logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
 import pyEQL.logging_system
+
 unique = pyEQL.logging_system.Unique()
 logger.addFilter(unique)
 
@@ -29,14 +31,15 @@ logger.addFilter(unique)
 ch = logging.StreamHandler()
 
 # create formatter for the log
-formatter = logging.Formatter('(%(name)s) - %(levelname)s - %(message)s')
+formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
-    '''
+
+def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit("298.15 K")):
+    """
     Calculate a parameter for th e Pitzer model based on temperature-dependent
     coefficients c1,c2,c3,c4,and c5.
     
@@ -54,14 +57,23 @@ def adjust_temp_pitzer(c1,c2,c3,c4,c5,temp,temp_ref=unit('298.15 K')):
     As described in the PHREEQC documentation
     
     
-    '''
-    pitzer_param = c1 + c2 * (1/temp + 1/temp_ref) + c2 * math.log(temp/temp_ref) \
-    + c3 * (temp - temp_ref) + c4 * (temp ** 2 - temp_ref ** 2) + c5 * (temp ** -2 - temp_ref ** -2)
-    
+    """
+    pitzer_param = (
+        c1
+        + c2 * (1 / temp + 1 / temp_ref)
+        + c2 * math.log(temp / temp_ref)
+        + c3 * (temp - temp_ref)
+        + c4 * (temp ** 2 - temp_ref ** 2)
+        + c5 * (temp ** -2 - temp_ref ** -2)
+    )
+
     return pitzer_param
 
-def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_temperature = 25*unit('degC')):
-    '''(float,float,number, optional number) -> float
+
+def adjust_temp_vanthoff(
+    equilibrium_constant, enthalpy, temperature, reference_temperature=25 * unit("degC")
+):
+    """(float,float,number, optional number) -> float
     
     Adjust a reaction equilibrium constant from one temperature to another.
     
@@ -106,16 +118,30 @@ def adjust_temp_vanthoff(equilibrium_constant,enthalpy,temperature,reference_tem
     >>> adjust_temp_vanthoff(0.15,-197.6*unit('kJ/mol'),42*unit('degC')) #doctest: +ELLIPSIS
     0.00203566...
     
-    '''
-    output = equilibrium_constant * math.exp( enthalpy / unit.R * ( 1 / reference_temperature.to('K') - 1 / temperature.to('K')))
-    
-    logger.info('Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output')
-    
-    logger.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
+    """
+    output = equilibrium_constant * math.exp(
+        enthalpy
+        / unit.R
+        * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+    )
+
+    logger.info(
+        "Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output"
+    )
+
+    logger.warning(
+        "Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest"
+    )
     return output
 
-def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_temperature = 25*unit('degC')):
-    '''(float,float,number, optional number) -> float
+
+def adjust_temp_arrhenius(
+    rate_constant,
+    activation_energy,
+    temperature,
+    reference_temperature=25 * unit("degC"),
+):
+    """(float,float,number, optional number) -> float
     
     Adjust a reaction equilibrium constant from one temperature to another.
     
@@ -156,15 +182,22 @@ def adjust_temp_arrhenius(rate_constant,activation_energy,temperature,reference_
     >>> adjust_temp_arrhenius(7,900*unit('kJ/mol'),37*unit('degC'),97*unit('degC')) #doctest: +ELLIPSIS
     1.8867225...e-24
     
-    '''
-    output = rate_constant * math.exp( activation_energy / unit.R * ( 1 / reference_temperature.to('K') - 1 / temperature.to('K')))
-    
-    logger.info('Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output')
-    
+    """
+    output = rate_constant * math.exp(
+        activation_energy
+        / unit.R
+        * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+    )
+
+    logger.info(
+        "Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output"
+    )
+
     return output
 
-def alpha(n,pH,pKa_list):
-    '''(int,number,list of numbers)
+
+def alpha(n, pH, pKa_list):
+    """(int,number,list of numbers)
     Returns the acid-base distribution coefficient (alpha) of an acid in the 
     n-deprotonated form at a given pH.
     
@@ -223,43 +256,47 @@ def alpha(n,pH,pKa_list):
 #     ERROR: insufficient number of pKa values given
 #     0.5   
 
-    '''
-    #generate an error if no pKa values are specified
+    """
+    # generate an error if no pKa values are specified
     if len(pKa_list) == 0:
-        logger.error('No pKa values given. Cannot calculate distribution coeffiicent.')
+        logger.error("No pKa values given. Cannot calculate distribution coeffiicent.")
         return None
-    
-    #generate an error if n > number of pKa values
+
+    # generate an error if n > number of pKa values
     if len(pKa_list) < n:
-        logger.error('Insufficient number of pKa values given. Cannot calculate distribution coeffiicent.')
+        logger.error(
+            "Insufficient number of pKa values given. Cannot calculate distribution coeffiicent."
+        )
         return None
-        
-    #convert pH to hydrogen ion concentration
+
+    # convert pH to hydrogen ion concentration
     Hplus = 10 ** -pH
-    
-    #determine how many protons the acid has
+
+    # determine how many protons the acid has
     num_protons = len(pKa_list)
-    
-    #build a list of terms where the term subscript corresponds to the list index
+
+    # build a list of terms where the term subscript corresponds to the list index
     terms_list = []
     k_term = 1
-    
-    #the 'item' index counts from 0 to the number of protons, inclusive
-    for item in range(0,num_protons+1):
-        #multiply the preceding k values together
+
+    # the 'item' index counts from 0 to the number of protons, inclusive
+    for item in range(0, num_protons + 1):
+        # multiply the preceding k values together
         for i in range(len(pKa_list[:item])):
             k_term *= 10 ** -pKa_list[i]
-        
-        #add the term to the list
+
+        # add the term to the list
         terms_list.append(k_term * Hplus ** (num_protons - item))
-    
-    #build the expression
+
+    # build the expression
     numerator = terms_list[n]
     denominator = 0
     for item in terms_list:
         denominator += item
-        
-    #return the desired distribution factor
+
+    # return the desired distribution factor
     alpha = numerator / denominator
-    logger.info('Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s % n,alpha,pKa_list,pH')
+    logger.info(
+        "Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s % n,alpha,pKa_list,pH"
+    )
     return alpha
