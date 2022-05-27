@@ -6,3 +6,4 @@ spyder_session*
 /docs/build/*
 *desktop.ini
 .vscode/settings.json
+.DS_store
