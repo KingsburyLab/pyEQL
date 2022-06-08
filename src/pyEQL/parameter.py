@@ -43,10 +43,9 @@ unit = UnitRegistry()
 unit.autoconvert_offset_to_baseunit = True
 
 # append custom unit definitions and contexts
-import os
-
-directory = os.path.dirname(__file__)
-unit.load_definitions(directory + "/pint_custom_units.txt")
+from pkg_resources import resource_filename
+fname = resource_filename("pyEQL", "pint_custom_units.txt")
+unit.load_definitions(fname)
 # activate the "chemistry" context globally
 unit.enable_contexts("chem")
 # set the default string formatting for pint quantities
