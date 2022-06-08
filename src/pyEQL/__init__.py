@@ -15,7 +15,7 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
-'''
+"""
 pyEQL
 =====
 
@@ -25,7 +25,7 @@ and performing chemical thermodynamics computations.
 :copyright: 2013-2018 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
-'''
+"""
 from pyEQL.database import Paramsdb
 
 # initialize the parameters database
