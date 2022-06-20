@@ -43,7 +43,9 @@ Detailed documentation is available at [](https://pyeql.readthedocs.io/)
 
 ### Dependencies
 
-- Python 3.8+
+- Python 3.8+. This project will attempt to adhere to NumPy's
+  [NEP 29](https://numpy.org/neps/nep-0029-deprecation_policy.html) deprecation policy
+  for older version of Python.
 - [pint](https://github.com/hgrecco/pint) - for units-awarecalculations
 - [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
 
