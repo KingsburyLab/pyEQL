@@ -26,45 +26,27 @@ class Test_empty_solution(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'HOH'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "HOH"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "HOH"
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "H+"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "H+"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "OH-"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "OH-"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 1
 
     # The anion coefficient should be 1
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_anion == 1
 
 
 class Test_single_salt_mono(unittest.TestCase):
@@ -80,45 +62,27 @@ class Test_single_salt_mono(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'NaCl'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "NaCl"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "NaCl"
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "Na+"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "Na+"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "Cl-"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "Cl-"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 1
 
     # The anion coefficient should be 1
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_anion == 1
 
 
 class Test_single_salt_di(unittest.TestCase):
@@ -134,45 +98,27 @@ class Test_single_salt_di(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'Na2SO4'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "Na2SO4"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "Na2SO4"
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "Na+"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "Na+"
 
     # The anion should be 'SO4-2'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "SO4-2"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "SO4-2"
 
     # The cation coefficient should be 2
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 2
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 2
 
     # The anion coefficient should be 1
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_anion == 1
 
 
 class Test_single_salt_di2(unittest.TestCase):
@@ -188,45 +134,27 @@ class Test_single_salt_di2(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'FeCl3'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "FeCl3"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "FeCl3"
 
     # The cation should be 'Fe+3+'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "Fe+3"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "Fe+3"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "Cl-"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "Cl-"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 1
 
     # The anion coefficient should be 3
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 3
-
-        assert result == expected
+        assert self.s1.get_salt().nu_anion == 3
 
 
 class Test_single_ion(unittest.TestCase):
@@ -242,45 +170,27 @@ class Test_single_ion(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'Fe(OH)3'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "Fe(OH)3"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "Fe(OH)3"
 
     # The cation should be 'Fe+3'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "Fe+3"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "Fe+3"
 
     # The anion should be 'OH-'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "OH-"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "OH-"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 1
 
     # The anion coefficient should be 3
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 3
-
-        assert result == expected
+        assert self.s1.get_salt().nu_anion == 3
 
 
 class Test_salt_asymmetric(unittest.TestCase):
@@ -296,46 +206,24 @@ class Test_salt_asymmetric(unittest.TestCase):
 
     # The return type should be a salt object
     def test_salt_type(self):
-        result = self.s1.get_salt()
-        expected = pyEQL.salt_ion_match.Salt
-
-        assert isinstance(result, expected)
+        assert isinstance(self.s1.get_salt(), pyEQL.salt_ion_match.Salt)
 
     # The salt should be 'NaCl'
     def test_salt_formula(self):
-        result = self.s1.get_salt().formula
-        expected = "NaCl"
-
-        assert result == expected
+        assert self.s1.get_salt().formula == "NaCl"
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        result = self.s1.get_salt().cation
-        expected = "Na+"
-
-        assert result == expected
+        assert self.s1.get_salt().cation == "Na+"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        result = self.s1.get_salt().anion
-        expected = "Cl-"
-
-        assert result == expected
+        assert self.s1.get_salt().anion == "Cl-"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
-        result = self.s1.get_salt().nu_cation
-        expected = 1
-
-        assert result == expected
+        assert self.s1.get_salt().nu_cation == 1
 
     # The anion coefficient should be 1
     def test_salt_nu_anion(self):
-        result = self.s1.get_salt().nu_anion
-        expected = 1
-
-        assert result == expected
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert self.s1.get_salt().nu_anion == 1
