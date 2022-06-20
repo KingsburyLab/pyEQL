@@ -21,12 +21,10 @@ import pyEQL.water_properties as h2o
 
 # the pint unit registry
 from pyEQL import unit
-
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 

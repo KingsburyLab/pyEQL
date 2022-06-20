@@ -13,12 +13,10 @@ import logging
 import math
 
 from pyEQL import unit
-
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+# add a filter to emit only unique log messages to the handler
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -181,11 +179,11 @@ def water_viscosity_dynamic(temperature=25 * unit("degC"), pressure=1 * unit("at
 
     # calculate dimensionless temperature and pressure
     T_star = 647.27  # K
-    P_star = 22115000  # Pa
+    # P_star = 22115000  # Pa
     rho_star = 317.763  # kg/m3
 
     T_bar = temperature.to("K").magnitude / T_star
-    P_bar = pressure.to("Pa").magnitude / P_star
+    # P_bar = pressure.to("Pa").magnitude / P_star
     rho_bar = water_density(temperature, pressure).magnitude / rho_star
 
     # calculate the first function, mu_o

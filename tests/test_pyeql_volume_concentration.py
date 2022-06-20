@@ -243,7 +243,7 @@ class Test_solute_addition(unittest.TestCase, CustomAssertions):
     Tests for add_amount() method
     """
 
-    ## substance / volume units
+    # substance / volume units
 
     # If the concentration of a solute is directly increased with a substance / volume
     # unit, the volume should not change
@@ -275,7 +275,7 @@ class Test_solute_addition(unittest.TestCase, CustomAssertions):
 
         self.assertEqual(result, expected)
 
-    ## substance / mass units
+    # substance / mass units
 
     # If the concentration of a solute is directly increased with a substance / mass
     # unit, the volume should increase
@@ -307,7 +307,7 @@ class Test_solute_addition(unittest.TestCase, CustomAssertions):
 
         self.assertEqual(result, expected)
 
-    ## substance units
+    # substance units
 
     # If the concentration of a solute is directly increased with a substance
     # unit, the volume should increase
@@ -339,7 +339,7 @@ class Test_solute_addition(unittest.TestCase, CustomAssertions):
 
         self.assertEqual(result, expected)
 
-    ## negative substance units
+    # negative substance units
     # If the concentration of a solute is directly decreased with a substance
     # unit, the volume should decrease
     def test_solute_addition_14b(self):

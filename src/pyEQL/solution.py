@@ -9,9 +9,10 @@ pyEQL Solution Class
 # logging system
 import logging
 
-## Dependencies
 # import libraries for scientific functions
 import math
+
+from pint import DimensionalityError
 
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
@@ -22,13 +23,12 @@ import pyEQL.water_properties as h2o
 # the pint unit registry
 from pyEQL import paramsDB as db
 from pyEQL import unit
-from pyEQL.salt_ion_match import generate_salt_list, identify_salt
-
-logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
+from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
+logger = logging.getLogger(__name__)
 unique = Unique()
 logger.addFilter(unique)
 
@@ -728,7 +728,7 @@ class Solution:
         )
         return osmotic_pressure.to("Pa")
 
-    ## Concentration  Methods
+    # Concentration  Methods
 
     def p(self, solute, activity=True):
         """
@@ -811,7 +811,7 @@ class Solution:
         except KeyError:
             try:
                 return 0 * unit(units)
-            except:
+            except DimensionalityError:
                 logger.error("Unsupported unit specified for get_amount")
                 return 0
 
@@ -1229,7 +1229,7 @@ class Solution:
         # identify the predominant salt in the solution
         return generate_salt_list(self, unit="mol/kg")
 
-    ## Activity-related methods
+    # Activity-related methods
     def get_activity_coefficient(self, solute, scale="molal", verbose=False):
         """Return the activity coefficient of a solute in solution.
 
@@ -2088,7 +2088,7 @@ class Solution:
                 * self.get_amount(item, "mol/L")
             )
 
-            if activity_correction == True:
+            if activity_correction is True:
                 gamma = self.get_activity_coefficient(item)
 
                 if self.get_ionic_strength().magnitude < 0.36 * z:
@@ -2558,8 +2558,7 @@ class Solution:
             pressure=new_pressure,
         )
 
-    ## informational methods
-
+    # informational methods
     def list_solutes(self):
         """
         List all the solutes in the solution.

@@ -12,11 +12,15 @@ By default, pyEQL searches all files in the /database subdirectory for parameter
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
+# for file input/output functions
+import os
 
-# add a filter to emit only unique log messages to the handler
+# for parameter creation functions
+import pyEQL.parameter as pm
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
@@ -30,15 +34,8 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# for file input/output functions
-import os
 
-# for parameter creation functions
-import pyEQL.parameter as pm
-
-## Database Management Functions
-
-
+# Database Management Functions
 class Paramsdb:
     """
     create a global dictionary to contain a dynamically-generated list of Parameters
@@ -229,7 +226,7 @@ class Paramsdb:
                     found = True
                     return item
 
-            if found == False:
+            if found is False:
                 logger.error(
                     "Parameter %s for species %s not found in database"
                     % (name, formula)

@@ -14,7 +14,7 @@ has a mass ratio of NaCl:MgCl2:Na2SO4:CaCl2:KCl
 of 24.53:5.20:4.09:1.16:0.695, and the total
 salinity is varied.
 
-	    MW	    g/L	    mol/L
+        MW	    g/L	    mol/L
 NaCl	58.44	24.53	0.419746749
 MgCl2	95.2	5.2	    0.054621849
 Na2SO4	142	    4.09	0.028802817

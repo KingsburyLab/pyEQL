@@ -14,11 +14,11 @@ species (e.g. Na+)
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
+import pyEQL.chemical_formula as chem
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
@@ -31,8 +31,6 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-
-import pyEQL.chemical_formula as chem
 
 
 class Salt:

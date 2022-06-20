@@ -12,12 +12,11 @@ used throughout pyEQL.
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
-from pyEQL.logging_system import Unique
 from pyEQL import unit
+from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
@@ -404,10 +403,3 @@ class Parameter:
             + "--------------------------------------------------------------------------------------"
             + "\n"
         )
-
-
-# TODO - turn doctest back on when the nosigint error is gone
-## Tests
-# if __name__ == "__main__":
-#   import doctest
-#  doctest.testmod()

@@ -13,11 +13,10 @@ The correct case must be used when specifying elements.
 # logging system
 import logging
 
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
@@ -31,9 +30,10 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-## Formula validation and processing functions. These internal routines
-## parse chemical formulas into a format that can be easily processed
-## by user-facing functions.
+
+# Formula validation and processing functions. These internal routines
+# parse chemical formulas into a format that can be easily processed
+# by user-facing functions.
 def _invalid_formula(reason):
     raise ValueError("Invalid chemical formula specified - %s" % reason)
     return None
@@ -318,7 +318,7 @@ def _consolidate_formula(formula):
     return output_list
 
 
-## Truth Functions
+# Truth Functions
 def is_valid_element(formula):
     """
     Check whether a string is a valid atomic symbol
@@ -389,7 +389,7 @@ def is_valid_formula(formula):
     try:
         _check_formula(formula)
         return True
-    except:
+    except:  # noqa
         return False
 
 
@@ -434,7 +434,7 @@ def contains(formula, element):
             return False
 
 
-## Information Retrieval Functions
+# Information Retrieval Functions
 def get_element_numbers(formula):
     """
     Return the atomic numbers of the elements in a chemical formula
@@ -513,8 +513,8 @@ def hill_order(formula):
     False
 
     """
-    ### TODO - add exceptions for oxides (end in O2), acids (start with H),
-    ## ions (cation first), and hydroxides (ends in OH)
+    # TODO - add exceptions for oxides (end in O2), acids (start with H),
+    # ions (cation first), and hydroxides (ends in OH)
     temp_list = _consolidate_formula(formula)
     hill = ""
 
@@ -612,13 +612,13 @@ def get_formal_charge(formula):
         index = input_list.index("+")
         try:
             formal_charge = 1 * int(input_list[index + 1])
-        except:
+        except:  # noqa
             formal_charge = 1
     elif "-" in input_list:
         index = input_list.index("-")
         try:
             formal_charge = -1 * int(input_list[index + 1])
-        except:
+        except:  # noqa
             formal_charge = -1
     elif "+" in input_list[-1]:
         formal_charge = int(1 * input_list[-1].count("+"))
@@ -840,7 +840,7 @@ def get_molecular_weight(formula):
     return mw
 
 
-## Output functions
+# Output functions
 
 
 def print_latex(formula):

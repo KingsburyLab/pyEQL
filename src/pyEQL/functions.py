@@ -9,7 +9,6 @@ pyEQL functions that take Solution objects as inputs or return Solution objects
 # logging system
 import logging
 
-## Dependencies
 # import libraries for scientific functions
 import math
 
@@ -20,12 +19,10 @@ import pyEQL
 # import the parameters database
 from pyEQL import paramsDB as db
 from pyEQL import unit
-
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 

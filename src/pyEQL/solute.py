@@ -15,14 +15,14 @@ that do depend on compsition are accessed via Solution class methods.
 # logging system
 import logging
 
+# import the parameters database
 # the pint unit registry
+from pyEQL import paramsDB as db
 from pyEQL import unit
-
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
@@ -35,9 +35,6 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-
-# import the parameters database
-from pyEQL import paramsDB as db
 
 
 class Solute:

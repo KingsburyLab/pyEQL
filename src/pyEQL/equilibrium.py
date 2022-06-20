@@ -12,18 +12,15 @@ NOTE: these methods are not currently used but are here for the future.
 # logging system
 import logging
 
-## Dependencies
 # import libraries for scientific functions
 import math
 
 # the pint unit registry
 from pyEQL import unit
-
-logger = logging.getLogger(__name__)
-
-# add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
 
+logger = logging.getLogger(__name__)
+# add a filter to emit only unique log messages to the handler
 unique = Unique()
 logger.addFilter(unique)
 
