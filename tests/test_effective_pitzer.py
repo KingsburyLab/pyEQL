@@ -32,24 +32,21 @@ the paper, so perfect accuracy is not expected.
 
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
+# relative tolerance between experimental and computed properties for this test file
+RTOL = 0.15
 
-class Test_effective_pitzer(unittest.TestCase):
+
+class Test_effective_pitzer:
     """
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------
 
     """
-
-    def setUp(self):
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.15
 
     def mock_seawater(self, multiple):
         """
@@ -123,7 +120,7 @@ class Test_effective_pitzer(unittest.TestCase):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_mgcl2_activity(self):
         # test the activity coefficient of MgCl2
@@ -170,7 +167,7 @@ class Test_effective_pitzer(unittest.TestCase):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_KCl_activity(self):
         # test the activity coefficient of KCl
@@ -217,7 +214,7 @@ class Test_effective_pitzer(unittest.TestCase):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     @pytest.mark.xfail
     def test_effective_pitzer_na2so4_activity(self):
@@ -265,7 +262,7 @@ class Test_effective_pitzer(unittest.TestCase):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_fugacity(self):
         # test the fugacity coefficient of mock seawater
@@ -281,7 +278,7 @@ class Test_effective_pitzer(unittest.TestCase):
             result = s1.get_osmotic_coefficient(scale="fugacity")
 
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
 
 if __name__ == "__main__":

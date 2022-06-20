@@ -9,36 +9,23 @@ NOTE: generally, these tests check the module output against experimental
 data rather than the theoretical result of the respective functions.
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
 
-class Test_osmotic_pitzer(unittest.TestCase):
+class Test_osmotic_pitzer:
     """
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------
 
     """
 
-    def setUp(self):
-        self.s1 = pyEQL.Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
-
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.05
-
-    def test_osmotic_pitzer_coeff_units(self):
-        # the osmotic coefficient should be dimensionless
-        result = self.s1.get_osmotic_coefficient().dimensionality
-        assert result == ""
-
-    def test_activity_pitzer_magnitude(self):
-        # the osmotic coefficient should be greater than zero
-        result = self.s1.get_osmotic_coefficient()
-        assert result >= 0
+    def test_dimensionality(self):
+        s1 = pyEQL.Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
+        assert s1.get_osmotic_coefficient().dimensionality == ""
+        assert s1.get_osmotic_coefficient() >= 0
 
     def test_osmotic_pitzer_ammoniumnitrate(self):
         """
@@ -58,16 +45,15 @@ class Test_osmotic_pitzer(unittest.TestCase):
         # list of published experimental osmotic coefficients
         pub_osmotic_coeff = [0.86, 0.855, 0.83, 0.825, 0.80, 0.78]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = pyEQL.Solution()
-                sol.add_solute("NH4+", conc)
-                sol.add_solute("NO3-", conc)
-                result = sol.get_osmotic_coefficient()
-                expected = pub_osmotic_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = pyEQL.Solution()
+            sol.add_solute("NH4+", conc)
+            sol.add_solute("NO3-", conc)
+            result = sol.get_osmotic_coefficient()
+            expected = pub_osmotic_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_osmotic_pitzer_coppersulfate(self):
         """
@@ -87,17 +73,12 @@ class Test_osmotic_pitzer(unittest.TestCase):
         # list of published experimental osmotic coefficients
         pub_osmotic_coeff = [0.5, 0.485, 0.48, 0.485, 0.5]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = pyEQL.Solution()
-                sol.add_solute("Cu+2", conc)
-                sol.add_solute("SO4-2", conc)
-                result = sol.get_osmotic_coefficient()
-                expected = pub_osmotic_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = pyEQL.Solution()
+            sol.add_solute("Cu+2", conc)
+            sol.add_solute("SO4-2", conc)
+            result = sol.get_osmotic_coefficient()
+            expected = pub_osmotic_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            assert np.isclose(result, expected, rtol=0.05)

@@ -7,15 +7,16 @@ computations of pyEQL
 
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
+# relative tolerance between experimental and computed properties for this test file
+RTOL = 0.03
 
-class Test_debye_length(unittest.TestCase):
+
+class Test_debye_length:
     """
     test the Debye Length calculations of various solutions
     ------------------------------------------------
@@ -30,10 +31,6 @@ class Test_debye_length(unittest.TestCase):
 
     """
 
-    def setUp(self):
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.03
-
     def test_debye_length_1(self):
         """ """
         s1 = pyEQL.Solution([["Na+", "0.1 mmol/L"], ["Cl-", "0.1 mmol/L"]])
@@ -41,7 +38,7 @@ class Test_debye_length(unittest.TestCase):
         result = s1.get_debye_length().magnitude
         expected = 31
 
-        assert np.isclose(result, expected, rtol=self.tol)
+        assert np.isclose(result, expected, rtol=RTOL)
 
     def test_debye_length_2(self):
         """ """
@@ -50,7 +47,7 @@ class Test_debye_length(unittest.TestCase):
         result = s1.get_debye_length().magnitude
         expected = 3.1
 
-        assert np.isclose(result, expected, rtol=self.tol)
+        assert np.isclose(result, expected, rtol=RTOL)
 
     def test_debye_length_3(self):
         """ """
@@ -59,7 +56,7 @@ class Test_debye_length(unittest.TestCase):
         result = s1.get_debye_length().magnitude
         expected = 18
 
-        assert np.isclose(result, expected, rtol=self.tol)
+        assert np.isclose(result, expected, rtol=RTOL)
 
     def test_debye_length_4(self):
         """ """
@@ -68,8 +65,4 @@ class Test_debye_length(unittest.TestCase):
         result = s1.get_debye_length().magnitude
         expected = 1.8
 
-        assert np.isclose(result, expected, rtol=self.tol)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert np.isclose(result, expected, rtol=RTOL)

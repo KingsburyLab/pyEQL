@@ -11,23 +11,17 @@ cases, the output is also tested against a well-established model published
 by USGS(PHREEQC)
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
 
-class Test_density_nacl(unittest.TestCase):
+class Test_density_nacl:
     """
     test Pitzer model for density of NaCl
     ------------------------------------------------
     """
-
-    def setUp(self):
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.01
 
     def test_density_pitzer_nacl_1(self):
         """
@@ -55,16 +49,15 @@ class Test_density_nacl(unittest.TestCase):
             1.1942,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = pyEQL.Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_density().to("g/mL").magnitude
-                expected = pub_density[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = pyEQL.Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_density().to("g/mL").magnitude
+            expected = pub_density[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.01)
 
     def test_density_pitzer_nacl_phreeqc_1(self):
         """
@@ -94,17 +87,12 @@ class Test_density_nacl(unittest.TestCase):
             1.19417,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = pyEQL.Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_density().to("g/mL").magnitude
-                expected = phreeqc_pitzer_density[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = pyEQL.Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_density().to("g/mL").magnitude
+            expected = phreeqc_pitzer_density[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            assert np.isclose(result, expected, rtol=0.01)

@@ -11,40 +11,30 @@ cases, the output is also tested against a well-established model published
 by USGS(PHREEQC)
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 from pyEQL.solution import Solution
 
 
-class Test_activity_pitzer_nacl(unittest.TestCase):
+class Test_activity_pitzer_nacl:
     """
     test Pitzer model for activity of NaCl
     ------------------------------------------------
     """
 
-    def setUp(self):
-        self.s1 = Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
+    def test_units_and_equality(self):
+        s1 = Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
 
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.05
-
-    def test_activity_pitzer_coeff_units(self):
         # the activity coefficient should be dimensionless
-        result = self.s1.get_activity_coefficient("Na+").dimensionality
-        assert result == ""
+        assert s1.get_activity_coefficient("Na+").dimensionality == ""
 
-    def test_activity_pitzer_units(self):
         # the activity should be dimensionless
-        result = self.s1.get_activity("Na+").dimensionality
-        assert result == ""
+        assert s1.get_activity("Na+").dimensionality == ""
 
-    def test_activity_pitzer_equality(self):
         # the activity coefficient of both the Na+ and Cl- should be the same
-        a1 = self.s1.get_activity_coefficient("Na+")
-        a2 = self.s1.get_activity_coefficient("Cl-")
+        a1 = s1.get_activity_coefficient("Na+")
+        a2 = s1.get_activity_coefficient("Cl-")
         assert a1 == a2
 
     def test_activity_crc_HCl(self):
@@ -81,21 +71,20 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             2.380,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i] * nu_cation) + "mol/kg"
-                conc_a = str(conc_list[i] * nu_anion) + "mol/kg"
-                sol = Solution()
-                sol.add_solute(cation, conc_c)
-                sol.add_solute(anion, conc_a)
-                act_cat = sol.get_activity_coefficient(cation)
-                act_an = sol.get_activity_coefficient(anion)
-                result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                    1 / (nu_cation + nu_anion)
-                )
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * nu_cation) + "mol/kg"
+            conc_a = str(conc * nu_anion) + "mol/kg"
+            sol = Solution()
+            sol.add_solute(cation, conc_c)
+            sol.add_solute(anion, conc_a)
+            act_cat = sol.get_activity_coefficient(cation)
+            act_an = sol.get_activity_coefficient(anion)
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (
+                1 / (nu_cation + nu_anion)
+            )
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_CsI(self):
         """
@@ -130,21 +119,20 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.470,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i] * nu_cation) + "mol/kg"
-                conc_a = str(conc_list[i] * nu_anion) + "mol/kg"
-                sol = Solution()
-                sol.add_solute(cation, conc_c)
-                sol.add_solute(anion, conc_a)
-                act_cat = sol.get_activity_coefficient(cation)
-                act_an = sol.get_activity_coefficient(anion)
-                result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                    1 / (nu_cation + nu_anion)
-                )
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * nu_cation) + "mol/kg"
+            conc_a = str(conc * nu_anion) + "mol/kg"
+            sol = Solution()
+            sol.add_solute(cation, conc_c)
+            sol.add_solute(anion, conc_a)
+            act_cat = sol.get_activity_coefficient(cation)
+            act_an = sol.get_activity_coefficient(anion)
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (
+                1 / (nu_cation + nu_anion)
+            )
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_bacl2(self):
         """
@@ -173,19 +161,18 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.393,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i]) + "mol/kg"
-                conc_a = str(conc_list[i] * 2) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Ba+2", conc_c)
-                sol.add_solute("Cl-", conc_a)
-                act_cat = sol.get_activity_coefficient("Ba+2")
-                act_an = sol.get_activity_coefficient("Cl-")
-                result = (act_cat**1 * act_an**2) ** (1 / 3)
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc) + "mol/kg"
+            conc_a = str(conc * 2) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Ba+2", conc_c)
+            sol.add_solute("Cl-", conc_a)
+            act_cat = sol.get_activity_coefficient("Ba+2")
+            act_an = sol.get_activity_coefficient("Cl-")
+            result = (act_cat**1 * act_an**2) ** (1 / 3)
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_licl(self):
         """
@@ -216,19 +203,18 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             2.0,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i]) + "mol/kg"
-                conc_a = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Li+", conc_c)
-                sol.add_solute("Cl-", conc_a)
-                act_cat = sol.get_activity_coefficient("Li+")
-                act_an = sol.get_activity_coefficient("Cl-")
-                result = (act_cat**1 * act_an**1) ** (1 / 2)
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc) + "mol/kg"
+            conc_a = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Li+", conc_c)
+            sol.add_solute("Cl-", conc_a)
+            act_cat = sol.get_activity_coefficient("Li+")
+            act_an = sol.get_activity_coefficient("Cl-")
+            result = (act_cat**1 * act_an**1) ** (1 / 2)
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_rbcl(self):
         """
@@ -259,17 +245,16 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.544,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i]) + "mol/kg"
-                conc_a = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Rb+", conc_c)
-                sol.add_solute("Cl-", conc_a)
-                result = sol.get_activity_coefficient("Rb+")
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc) + "mol/kg"
+            conc_a = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Rb+", conc_c)
+            sol.add_solute("Cl-", conc_a)
+            result = sol.get_activity_coefficient("Rb+")
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_MgCl2(self):
         """
@@ -305,21 +290,20 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             14.40,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i] * nu_cation) + "mol/kg"
-                conc_a = str(conc_list[i] * nu_anion) + "mol/kg"
-                sol = Solution()
-                sol.add_solute(cation, conc_c)
-                sol.add_solute(anion, conc_a)
-                act_cat = sol.get_activity_coefficient(cation)
-                act_an = sol.get_activity_coefficient(anion)
-                result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                    1 / (nu_cation + nu_anion)
-                )
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * nu_cation) + "mol/kg"
+            conc_a = str(conc * nu_anion) + "mol/kg"
+            sol = Solution()
+            sol.add_solute(cation, conc_c)
+            sol.add_solute(anion, conc_a)
+            act_cat = sol.get_activity_coefficient(cation)
+            act_an = sol.get_activity_coefficient(anion)
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (
+                1 / (nu_cation + nu_anion)
+            )
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_KBr(self):
         """
@@ -355,21 +339,20 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.626,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i] * nu_cation) + "mol/kg"
-                conc_a = str(conc_list[i] * nu_anion) + "mol/kg"
-                sol = Solution()
-                sol.add_solute(cation, conc_c)
-                sol.add_solute(anion, conc_a)
-                act_cat = sol.get_activity_coefficient(cation)
-                act_an = sol.get_activity_coefficient(anion)
-                result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                    1 / (nu_cation + nu_anion)
-                )
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * nu_cation) + "mol/kg"
+            conc_a = str(conc * nu_anion) + "mol/kg"
+            sol = Solution()
+            sol.add_solute(cation, conc_c)
+            sol.add_solute(anion, conc_a)
+            act_cat = sol.get_activity_coefficient(cation)
+            act_an = sol.get_activity_coefficient(anion)
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (
+                1 / (nu_cation + nu_anion)
+            )
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_crc_k2so4(self):
         """
@@ -397,19 +380,18 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.251,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc_c = str(conc_list[i] * 2) + "mol/kg"
-                conc_a = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("K+", conc_c)
-                sol.add_solute("SO4-2", conc_a)
-                act_cat = sol.get_activity_coefficient("K+")
-                act_an = sol.get_activity_coefficient("SO4-2")
-                result = (act_cat**2 * act_an**1) ** (1 / 3)
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * 2) + "mol/kg"
+            conc_a = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("K+", conc_c)
+            sol.add_solute("SO4-2", conc_a)
+            act_cat = sol.get_activity_coefficient("K+")
+            act_an = sol.get_activity_coefficient("SO4-2")
+            result = (act_cat**2 * act_an**1) ** (1 / 3)
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_pitzer_nacl_1(self):
         """
@@ -437,16 +419,15 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.987,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_activity_coefficient("Na+")
-                expected = pub_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_activity_coefficient("Na+")
+            expected = pub_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     # The pitzer model diverges a bit from experimental data at high concentration
     @pytest.mark.xfail
@@ -488,16 +469,15 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.8055,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_water_activity()
-                expected = pub_water_activity[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_water_activity()
+            expected = pub_water_activity[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_activity_pitzer_phreeqc_nacl_2(self):
         """
@@ -527,16 +507,15 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.9874,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_activity_coefficient("Na+")
-                expected = phreeqc_pitzer_activity_coeff[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_activity_coefficient("Na+")
+            expected = phreeqc_pitzer_activity_coeff[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
+            assert np.isclose(result, expected, rtol=0.05)
 
     def test_water_activity_phreeqc_pitzer_nacl_2(self):
         """
@@ -566,17 +545,12 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
             0.759,
         ]
 
-        for i in range(len(conc_list)):
-            with self.subTest(conc=conc_list[i]):
-                conc = str(conc_list[i]) + "mol/kg"
-                sol = Solution()
-                sol.add_solute("Na+", conc)
-                sol.add_solute("Cl-", conc)
-                result = sol.get_water_activity()
-                expected = phreeqc_pitzer_water_activity[i]
+        for i, conc in enumerate(conc_list):
+            conc = str(conc) + "mol/kg"
+            sol = Solution()
+            sol.add_solute("Na+", conc)
+            sol.add_solute("Cl-", conc)
+            result = sol.get_water_activity()
+            expected = phreeqc_pitzer_water_activity[i]
 
-                assert np.isclose(result, expected, rtol=self.tol)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            assert np.isclose(result, expected, rtol=0.05)

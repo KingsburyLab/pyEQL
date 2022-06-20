@@ -17,15 +17,16 @@ DOI: 10.1021/je9004432
 
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
+# relative tolerance between experimental and computed properties for this test file
+RTOL = 0.25
 
-class Test_nano3_kno3_activity(unittest.TestCase):
+
+class Test_nano3_kno3_activity:
     """
     test mean activity coefficients in a NaNO3 + KNO3 mixture
     ---------------------------------------------------------
@@ -34,10 +35,6 @@ class Test_nano3_kno3_activity(unittest.TestCase):
         the mean values below
 
     """
-
-    def setUp(self):
-        # relative error tolerance for assertWithinExperimentalError
-        self.tol = 0.25
 
     def test_activity_Na_XNa_75(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -56,7 +53,7 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     @pytest.mark.xfail
     def test_activity_K_XNa_75(self):
@@ -76,7 +73,7 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_Na_XNa_50(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -95,7 +92,7 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_50(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -114,7 +111,7 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_Na_XNa_25(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -133,7 +130,7 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_25(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -152,8 +149,4 @@ class Test_nano3_kno3_activity(unittest.TestCase):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            assert np.isclose(result, expected[item], self.tol)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            assert np.isclose(result, expected[item], RTOL)
