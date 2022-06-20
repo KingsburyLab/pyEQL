@@ -106,7 +106,7 @@ class Test_dielectric(unittest.TestCase):
 
         assert np.isclose(result, expected, rtol=self.tol)
 
-    @unittest.expectedFailure
+    @pytest.mark.xfail
     def test_dielectric_constant8(self):
         """
         12 mol/kg LiCl = 24

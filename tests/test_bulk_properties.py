@@ -29,7 +29,7 @@ class test_hardness(unittest.TestCase):
         result = s1.get_hardness().magnitude
         expected = 0
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # a solution with only monovalent ions should have zero hardness
     def test_hardness_1(self):
@@ -37,7 +37,7 @@ class test_hardness(unittest.TestCase):
         result = s1.get_hardness().magnitude
         expected = 0
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # a solution with only multivalent anions should have zero hardness
     def test_hardness_2(self):
@@ -45,7 +45,7 @@ class test_hardness(unittest.TestCase):
         result = s1.get_hardness().magnitude
         expected = 0
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # the hardness should return the equivalent concentration, not just the
     # molar concentration (e.g. multiply by the charge)
@@ -54,7 +54,7 @@ class test_hardness(unittest.TestCase):
         result = s1.get_hardness().magnitude
         expected = 15013.5
 
-        self.assertAlmostEqual(result, expected)
+        assert round(abs(result - expected), 7) == 0
 
     # the hardness should account for multiple cations but count only those
     # that are multivalent
@@ -75,7 +75,7 @@ class test_hardness(unittest.TestCase):
         result = s1.get_hardness().magnitude
         expected = 35031.5
 
-        self.assertAlmostEqual(result, expected)
+        assert round(abs(result - expected), 7) == 0
 
     # the hardness should return g/L units
     def test_hardness_5(self):
@@ -83,7 +83,7 @@ class test_hardness(unittest.TestCase):
         result = str(s1.get_hardness().dimensionality)
         expected = "[mass] / [length] ** 3"
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
 if __name__ == "__main__":

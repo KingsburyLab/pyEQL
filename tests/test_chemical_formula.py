@@ -27,49 +27,49 @@ class Test_check_formula(unittest.TestCase):
         result = cf._check_formula(input)
         expected = ["Fe", "2", "(", "S", "O", "4", ")", "3"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_2(self):
         input = "C7H16"
         result = cf._check_formula(input)
         expected = ["C", "7", "H", "16"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_3(self):
         input = "(NH3)2SO4"
         result = cf._check_formula(input)
         expected = ["(", "N", "H", "3", ")", "2", "S", "O", "4"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_4(self):
         input = "MgCl2"
         result = cf._check_formula(input)
         expected = ["Mg", "Cl", "2"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_5(self):
         input = "C100H202"
         result = cf._check_formula(input)
         expected = ["C", "100", "H", "202"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_6(self):
         input = "Fe+++"
         result = cf._check_formula(input)
         expected = ["Fe", "+++"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_check_formula_7(self):
         input = "V+4"
         result = cf._check_formula(input)
         expected = ["V", "+", "4"]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
 #    def test_choice(self):
@@ -95,7 +95,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula must start with a letter or an open parenthesis
     def test_is_valid_formula_2(self):
@@ -103,7 +103,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula cannot contain any non-alphanumeric characters beside '(', ')', '+', and '-'
     def test_is_valid_formula_3(self):
@@ -111,7 +111,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula cannot contain both '+' and '-'
     def test_is_valid_formula_4(self):
@@ -119,7 +119,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An ionic formula must end with either a number, a '+', or a '-'
     def test_is_valid_formula_5(self):
@@ -127,7 +127,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An ionic formula must end with either a number, a '+', or a '-'
     def test_is_valid_formula_6(self):
@@ -135,7 +135,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An ionic formula must end with either a number, a '+', or a '-'
     def test_is_valid_formula_7(self):
@@ -143,7 +143,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An ionic formula must end with either a number, a '+', or a '-'
     def test_is_valid_formula_8(self):
@@ -151,7 +151,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # Formulas must contain only valid atomic symbols that start with capital letters
     def test_is_valid_formula_9(self):
@@ -159,7 +159,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # Formulas must contain only valid atomic symbols that start with capital letters
     def test_is_valid_formula_9(self):
@@ -167,7 +167,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # Formulas must contain only valid atomic symbols that start with capital letters
     def test_is_valid_formula_10(self):
@@ -175,7 +175,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula with parentheses must have the same number of '(' and ')'
     def test_is_valid_formula_11(self):
@@ -183,7 +183,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula with parentheses must have the same number of '(' and ')'
     def test_is_valid_formula_12(self):
@@ -191,7 +191,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A formula cannot end with an open parenthesis
     def test_is_valid_formula_13(self):
@@ -199,7 +199,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An open parenthesis must always be followed by an atomic symbol
     def test_is_valid_formula_14(self):
@@ -207,7 +207,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An open parenthesis must always be followed by an atomic symbol
     def test_is_valid_formula_15(self):
@@ -215,7 +215,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A closed parenthesis may be followed by a number or used to designate a group
     def test_is_valid_formula_16(self):
@@ -223,7 +223,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # A closed parenthesis may be followed by a number or used to designate a group
     def test_is_valid_formula_17(self):
@@ -231,7 +231,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An open parenthesis must always precede the nearest closed parenthesis
     def test_is_valid_formula_17(self):
@@ -239,7 +239,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = True
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # An open parenthesis must always precede the nearest closed parenthesis
     def test_is_valid_formula_18(self):
@@ -247,7 +247,7 @@ class Test_is_valid_formula(unittest.TestCase):
         result = cf.is_valid_formula(input)
         expected = False
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
 class Test_consolidate_formula(unittest.TestCase):
@@ -262,21 +262,21 @@ class Test_consolidate_formula(unittest.TestCase):
         result = cf._consolidate_formula(input)
         expected = ["Fe", 2, "S", 4, "O", 16]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_is_valid_formula_2(self):
         input = "(NH4)3PO4"
         result = cf._consolidate_formula(input)
         expected = ["N", 3, "H", 12, "P", 1, "O", 4]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_is_valid_formula_3(self):
         input = "CH3(CH2)6CH3"
         result = cf._consolidate_formula(input)
         expected = ["C", 8, "H", 18]
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
 if __name__ == "__main__":

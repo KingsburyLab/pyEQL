@@ -33,12 +33,12 @@ class Test_osmotic_pitzer(unittest.TestCase):
     def test_osmotic_pitzer_coeff_units(self):
         # the osmotic coefficient should be dimensionless
         result = self.s1.get_osmotic_coefficient().dimensionality
-        self.assertEqual(result, "")
+        assert result == ""
 
     def test_activity_pitzer_magnitude(self):
         # the osmotic coefficient should be greater than zero
         result = self.s1.get_osmotic_coefficient()
-        self.assertGreaterEqual(result, 0)
+        assert result >= 0
 
     def test_osmotic_pitzer_ammoniumnitrate(self):
         """

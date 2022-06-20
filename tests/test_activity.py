@@ -34,18 +34,18 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
     def test_activity_pitzer_coeff_units(self):
         # the activity coefficient should be dimensionless
         result = self.s1.get_activity_coefficient("Na+").dimensionality
-        self.assertEqual(result, "")
+        assert result == ""
 
     def test_activity_pitzer_units(self):
         # the activity should be dimensionless
         result = self.s1.get_activity("Na+").dimensionality
-        self.assertEqual(result, "")
+        assert result == ""
 
     def test_activity_pitzer_equality(self):
         # the activity coefficient of both the Na+ and Cl- should be the same
         a1 = self.s1.get_activity_coefficient("Na+")
         a2 = self.s1.get_activity_coefficient("Cl-")
-        self.assertEqual(a1, a2)
+        assert a1 == a2
 
     def test_activity_crc_HCl(self):
         """
@@ -449,7 +449,7 @@ class Test_activity_pitzer_nacl(unittest.TestCase):
                 assert np.isclose(result, expected, rtol=self.tol)
 
     # The pitzer model diverges a bit from experimental data at high concentration
-    @unittest.expectedFailure
+    @pytest.mark.xfail
     def test_water_activity_pitzer_nacl_1(self):
         """
         calculate the water activity at each concentration and compare

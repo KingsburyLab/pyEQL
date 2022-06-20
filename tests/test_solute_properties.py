@@ -37,19 +37,19 @@ class Test_transport_number(unittest.TestCase):
     def test_transport_number_1(self):
         actual = self.s1.get_transport_number("K+")
 
-        self.assertTrue((0 <= actual) and (actual <= 1))
+        assert (0 <= actual) and (actual <= 1)
 
     # The transport number of water should be 0
     def test_transport_number_2(self):
         actual = self.s1.get_transport_number("H2O")
 
-        self.assertEqual(actual.magnitude, 0)
+        assert actual.magnitude == 0
 
     # The transport number of any uncharged species should be 0
     def test_transport_number_3(self):
         actual = self.s1.get_transport_number("FeO")
 
-        self.assertEqual(actual.magnitude, 0)
+        assert actual.magnitude == 0
 
     # The transport numbers should add up to 1
     def test_transport_number_4(self):
@@ -57,7 +57,7 @@ class Test_transport_number(unittest.TestCase):
         for item in self.s1.components:
             total_t += self.s1.get_transport_number(item)
 
-        self.assertAlmostEqual(total_t.magnitude, 1)
+        assert round(abs(total_t.magnitude - 1), 7) == 0
 
 
 class Test_molar_conductivity(unittest.TestCase):
@@ -159,7 +159,7 @@ class Test_molar_conductivity(unittest.TestCase):
         result = self.s1.get_molar_conductivity("FeCl3").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("0 m**2 * S / mol").magnitude
 
-        self.assertAlmostEqual(result, expected, 5)
+        assert round(abs(result - expected), 5) == 0
 
     # molar conductivity of water should be zero
     def test_molar_conductivity_water(self):
@@ -167,7 +167,7 @@ class Test_molar_conductivity(unittest.TestCase):
         result = self.s1.get_molar_conductivity("H2O").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("0 m**2 * S / mol").magnitude
 
-        self.assertAlmostEqual(result, expected, 5)
+        assert round(abs(result - expected), 5) == 0
 
 
 class Test_mobility(unittest.TestCase):

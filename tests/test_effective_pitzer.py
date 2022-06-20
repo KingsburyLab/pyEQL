@@ -219,7 +219,7 @@ class Test_effective_pitzer(unittest.TestCase):
             # print(result,expected[item])
             assert np.isclose(result, expected[item], self.tol)
 
-    @unittest.expectedFailure
+    @pytest.mark.xfail
     def test_effective_pitzer_na2so4_activity(self):
         # test the activity coefficient of Na2SO4
         # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
