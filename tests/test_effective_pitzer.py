@@ -34,12 +34,13 @@ the paper, so perfect accuracy is not expected.
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
+class Test_effective_pitzer(unittest.TestCase):
     """
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------
@@ -122,7 +123,7 @@ class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_effective_pitzer_mgcl2_activity(self):
         # test the activity coefficient of MgCl2
@@ -169,7 +170,7 @@ class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_effective_pitzer_KCl_activity(self):
         # test the activity coefficient of KCl
@@ -216,7 +217,7 @@ class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     @unittest.expectedFailure
     def test_effective_pitzer_na2so4_activity(self):
@@ -264,7 +265,7 @@ class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
                 / s1.get_solvent_mass()
             )
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_effective_pitzer_fugacity(self):
         # test the fugacity coefficient of mock seawater
@@ -280,7 +281,7 @@ class Test_effective_pitzer(unittest.TestCase, CustomAssertions):
             result = s1.get_osmotic_coefficient(scale="fugacity")
 
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
 
 if __name__ == "__main__":

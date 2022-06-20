@@ -7,13 +7,14 @@ This file contains tests for the chemical formula interpreter module of pyEQL.
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 from pyEQL import chemical_formula as cf
 
-from . import CustomAssertions
 
-
-class Test_check_formula(unittest.TestCase, CustomAssertions):
+class Test_check_formula(unittest.TestCase):
     """
     tests for the _check_formula() function
     ---------------------------------------
@@ -82,7 +83,7 @@ class Test_check_formula(unittest.TestCase, CustomAssertions):
 #            self.assertTrue(element in self.seq)
 
 
-class Test_is_valid_formula(unittest.TestCase, CustomAssertions):
+class Test_is_valid_formula(unittest.TestCase):
     """
     tests for is_valid_formula()
     ----------------------------
@@ -249,7 +250,7 @@ class Test_is_valid_formula(unittest.TestCase, CustomAssertions):
         self.assertEqual(result, expected)
 
 
-class Test_consolidate_formula(unittest.TestCase, CustomAssertions):
+class Test_consolidate_formula(unittest.TestCase):
     """
     tests for _consolidate_formula()
     --------------------------------

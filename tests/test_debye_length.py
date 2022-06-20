@@ -9,12 +9,13 @@ computations of pyEQL
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_debye_length(unittest.TestCase, CustomAssertions):
+class Test_debye_length(unittest.TestCase):
     """
     test the Debye Length calculations of various solutions
     ------------------------------------------------
@@ -40,7 +41,7 @@ class Test_debye_length(unittest.TestCase, CustomAssertions):
         result = s1.get_debye_length().magnitude
         expected = 31
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_debye_length_2(self):
         """ """
@@ -49,7 +50,7 @@ class Test_debye_length(unittest.TestCase, CustomAssertions):
         result = s1.get_debye_length().magnitude
         expected = 3.1
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_debye_length_3(self):
         """ """
@@ -58,7 +59,7 @@ class Test_debye_length(unittest.TestCase, CustomAssertions):
         result = s1.get_debye_length().magnitude
         expected = 18
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_debye_length_4(self):
         """ """
@@ -67,7 +68,7 @@ class Test_debye_length(unittest.TestCase, CustomAssertions):
         result = s1.get_debye_length().magnitude
         expected = 1.8
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
 
 if __name__ == "__main__":

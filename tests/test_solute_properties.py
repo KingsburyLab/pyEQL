@@ -15,12 +15,13 @@ in the testing are:
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_transport_number(unittest.TestCase, CustomAssertions):
+class Test_transport_number(unittest.TestCase):
     """
     test get_transport_number
     ------------------------------------------------
@@ -59,7 +60,7 @@ class Test_transport_number(unittest.TestCase, CustomAssertions):
         self.assertAlmostEqual(total_t.magnitude, 1)
 
 
-class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
+class Test_molar_conductivity(unittest.TestCase):
     """
     test get_molar_conductivity
 
@@ -84,7 +85,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("K+").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("73.48e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_sodium(self):
         # Na+ - 50.08 x 10 ** -4 m ** 2 S / mol
@@ -94,7 +95,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("Na+").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("50.08e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_magnesium(self):
         # Mg+2 - 106 x 10 ** -4 m ** 2 S / mol
@@ -104,7 +105,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("Mg+2").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("106e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_chloride(self):
         # Cl- - 76.31 x 10 ** -4 m ** 2 S / mol
@@ -114,7 +115,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("Cl-").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("76.31e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_fluoride(self):
         # F- - 55.4 x 10 ** -4 m ** 2 S / mol
@@ -124,7 +125,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("F-").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("55.4e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_sulfate(self):
         # SO4-2 - 160 x 10 ** -4 m ** 2 S / mol
@@ -134,7 +135,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("SO4-2").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("160.0e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_hydroxide(self):
         # OH- - 198 x 10 ** -4 m ** 2 S / mol
@@ -142,7 +143,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("OH-").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("198e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_molar_conductivity_hydrogen(self):
         # H+ - 349.65 x 10 ** -4 m ** 2 S / mol
@@ -150,7 +151,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         result = self.s1.get_molar_conductivity("H+").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("349.65e-4 m**2 * S / mol").magnitude
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     # molar conductivity of a neutral solute should be zero
     def test_molar_conductivity_neutral(self):
@@ -169,7 +170,7 @@ class Test_molar_conductivity(unittest.TestCase, CustomAssertions):
         self.assertAlmostEqual(result, expected, 5)
 
 
-class Test_mobility(unittest.TestCase, CustomAssertions):
+class Test_mobility(unittest.TestCase):
     """
     test get_mobility
 
@@ -199,7 +200,7 @@ class Test_mobility(unittest.TestCase, CustomAssertions):
             .magnitude
         )
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_mobility_chloride(self):
         self.s1 = pyEQL.Solution(
@@ -215,7 +216,7 @@ class Test_mobility(unittest.TestCase, CustomAssertions):
             .magnitude
         )
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_mobility_magnesium(self):
         self.s1 = pyEQL.Solution(
@@ -231,7 +232,7 @@ class Test_mobility(unittest.TestCase, CustomAssertions):
             .magnitude
         )
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_mobility_sulfate(self):
         self.s1 = pyEQL.Solution(
@@ -247,7 +248,7 @@ class Test_mobility(unittest.TestCase, CustomAssertions):
             .magnitude
         )
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
 
 if __name__ == "__main__":

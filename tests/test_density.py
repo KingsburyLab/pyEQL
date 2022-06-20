@@ -13,12 +13,13 @@ by USGS(PHREEQC)
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_density_nacl(unittest.TestCase, CustomAssertions):
+class Test_density_nacl(unittest.TestCase):
     """
     test Pitzer model for density of NaCl
     ------------------------------------------------
@@ -63,7 +64,7 @@ class Test_density_nacl(unittest.TestCase, CustomAssertions):
                 result = sol.get_density().to("g/mL").magnitude
                 expected = pub_density[i]
 
-                self.assertWithinExperimentalError(result, expected, self.tol)
+                assert np.isclose(result, expected, rtol=self.tol)
 
     def test_density_pitzer_nacl_phreeqc_1(self):
         """
@@ -102,7 +103,7 @@ class Test_density_nacl(unittest.TestCase, CustomAssertions):
                 result = sol.get_density().to("g/mL").magnitude
                 expected = phreeqc_pitzer_density[i]
 
-                self.assertWithinExperimentalError(result, expected, self.tol)
+                assert np.isclose(result, expected, rtol=self.tol)
 
 
 if __name__ == "__main__":

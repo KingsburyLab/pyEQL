@@ -8,12 +8,13 @@ used by pyEQL's Solution class
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_empty_solution(unittest.TestCase, CustomAssertions):
+class Test_empty_solution(unittest.TestCase):
     """
     test behavior when creating an empty solution
     ------------------------------------------------
@@ -80,7 +81,7 @@ class Test_empty_solution(unittest.TestCase, CustomAssertions):
         self.assertCountEqual(result, expected)
 
 
-class Test_solute_addition(unittest.TestCase, CustomAssertions):
+class Test_solute_addition(unittest.TestCase):
     """
     test behavior of various methods for adding solutes to a solution
     -----------------------------------------------------------------
@@ -371,7 +372,7 @@ class Test_solute_addition(unittest.TestCase, CustomAssertions):
         self.assertEqual(result, expected)
 
 
-class Test_get_amount(unittest.TestCase, CustomAssertions):
+class Test_get_amount(unittest.TestCase):
     """
     test the get_amount() method on a 1 mol/L NaCl solution
     ----------------------------

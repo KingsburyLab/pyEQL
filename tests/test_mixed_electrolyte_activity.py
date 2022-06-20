@@ -19,14 +19,13 @@ DOI: 10.1021/je9004432
 
 import unittest
 
+import numpy as np
 import pytest
 
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
+class Test_nano3_kno3_activity(unittest.TestCase):
     """
     test mean activity coefficients in a NaNO3 + KNO3 mixture
     ---------------------------------------------------------
@@ -57,7 +56,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     @pytest.mark.xfail
     def test_activity_K_XNa_75(self):
@@ -77,7 +76,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_activity_Na_XNa_50(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -96,7 +95,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_activity_K_XNa_50(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -115,7 +114,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_activity_Na_XNa_25(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -134,7 +133,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("Na+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
     def test_activity_K_XNa_25(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
@@ -153,7 +152,7 @@ class Test_nano3_kno3_activity(unittest.TestCase, CustomAssertions):
             )
             result = s1.get_activity_coefficient("K+").magnitude
             # print(result,expected[item])
-            self.assertWithinExperimentalError(result, expected[item], self.tol)
+            assert np.isclose(result, expected[item], self.tol)
 
 
 if __name__ == "__main__":

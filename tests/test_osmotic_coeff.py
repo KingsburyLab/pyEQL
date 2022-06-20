@@ -11,12 +11,13 @@ data rather than the theoretical result of the respective functions.
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_osmotic_pitzer(unittest.TestCase, CustomAssertions):
+class Test_osmotic_pitzer(unittest.TestCase):
     """
     test osmotic coefficient based on the Pitzer model
     ------------------------------------------------
@@ -66,7 +67,7 @@ class Test_osmotic_pitzer(unittest.TestCase, CustomAssertions):
                 result = sol.get_osmotic_coefficient()
                 expected = pub_osmotic_coeff[i]
 
-                self.assertWithinExperimentalError(result, expected, self.tol)
+                assert np.isclose(result, expected, rtol=self.tol)
 
     def test_osmotic_pitzer_coppersulfate(self):
         """
@@ -95,7 +96,7 @@ class Test_osmotic_pitzer(unittest.TestCase, CustomAssertions):
                 result = sol.get_osmotic_coefficient()
                 expected = pub_osmotic_coeff[i]
 
-                self.assertWithinExperimentalError(result, expected, self.tol)
+                assert np.isclose(result, expected, rtol=self.tol)
 
 
 if __name__ == "__main__":

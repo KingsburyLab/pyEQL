@@ -11,12 +11,13 @@ Solution class methods. Currently included methods are:
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class test_hardness(unittest.TestCase, CustomAssertions):
+class test_hardness(unittest.TestCase):
     """
     test the get_hardness() method
     ------------------------------

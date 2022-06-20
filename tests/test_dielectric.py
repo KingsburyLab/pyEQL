@@ -9,12 +9,13 @@ computations of pyEQL
 
 import unittest
 
+import numpy as np
+import pytest
+
 import pyEQL
 
-from . import CustomAssertions
 
-
-class Test_dielectric(unittest.TestCase, CustomAssertions):
+class Test_dielectric(unittest.TestCase):
     """
     test the Dielectric Constant calculations of various solutions
     ------------------------------------------------
@@ -37,7 +38,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 46
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant2(self):
         """
@@ -48,7 +49,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 58
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant3(self):
         """
@@ -59,7 +60,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 66
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant4(self):
         """
@@ -70,7 +71,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 67
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant5(self):
         """
@@ -81,7 +82,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 51
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant6(self):
         """
@@ -92,7 +93,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 39
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant7(self):
         """
@@ -103,7 +104,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 64
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     @unittest.expectedFailure
     def test_dielectric_constant8(self):
@@ -115,7 +116,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 24
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant9(self):
         """
@@ -126,7 +127,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 43
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant9(self):
         """
@@ -137,7 +138,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 59
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
     def test_dielectric_constant9(self):
         """
@@ -148,7 +149,7 @@ class Test_dielectric(unittest.TestCase, CustomAssertions):
         result = s1.get_dielectric_constant().magnitude
         expected = 73
 
-        self.assertWithinExperimentalError(result, expected, self.tol)
+        assert np.isclose(result, expected, rtol=self.tol)
 
 
 if __name__ == "__main__":
