@@ -53,7 +53,8 @@ class Paramsdb:
         self.parameters_database = {}
 
         # set the directory containing database files
-        self.database_dir = [os.path.dirname(__file__) + "/database"]
+        from pkg_resources import resource_filename
+        self.database_dir = [resource_filename("pyEQL", "database")]
 
     def add_path(self, path):
         """

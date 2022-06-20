@@ -14,6 +14,7 @@ import math
 import pyEQL.activity_correction as ac
 import pyEQL.water_properties as h2o
 import pyEQL.solute as sol
+from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
 # the pint unit registry
 from pyEQL import unit
@@ -1188,9 +1189,7 @@ class Solution:
         2
         """
         # identify the predominant salt in the solution
-        import pyEQL.salt_ion_match as salt
-
-        return salt.identify_salt(self)
+        return identify_salt(self)
 
     def get_salt_list(self):
         """
@@ -1229,9 +1228,7 @@ class Solution:
 
         """
         # identify the predominant salt in the solution
-        import pyEQL.salt_ion_match as salt
-
-        return salt.generate_salt_list(self, unit="mol/kg")
+        return generate_salt_list(self, unit="mol/kg")
 
     ## Activity-related methods
     def get_activity_coefficient(self, solute, scale="molal", verbose=False):
@@ -1321,7 +1318,7 @@ class Solution:
 
             # identify the predominant salt that this ion is a member of
             Salt = None
-            salt_list = pyEQL.salt_ion_match.generate_salt_list(self, unit="mol/kg")
+            salt_list = generate_salt_list(self, unit="mol/kg")
             for item in salt_list:
                 if solute == item.cation or solute == item.anion:
                     Salt = item
@@ -1606,8 +1603,6 @@ class Solution:
 
         effective_osmotic_sum = 0
         molality_sum = 0
-
-        import pyEQL.salt_ion_match as salt
 
         # organize the composition into a dictionary of salts
         salt_list = self.get_salt_list()
@@ -2636,7 +2631,7 @@ class Solution:
         return result_list
 
     def list_salts(self, unit="mol/kg", decimals=4):
-        list = pyEQL.salt_ion_match.generate_salt_list(self, unit)
+        list = generate_salt_list(self, unit)
         for item in list:
             print(
                 item.formula

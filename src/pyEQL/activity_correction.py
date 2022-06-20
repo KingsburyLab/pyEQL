@@ -69,7 +69,7 @@ def _debye_parameter_B(temperature="25 degC"):
     param_B = (
         8
         * math.pi
-        * unit.avogadro_number
+        * unit.N_A
         * unit.elementary_charge**2
         / (
             h2o.water_density(unit(temperature))
@@ -126,7 +126,7 @@ def _debye_parameter_activity(temperature="25 degC"):
 
     debyeparam = (
         unit.elementary_charge**3
-        * (2 * math.pi * unit.avogadro_number * h2o.water_density(unit(temperature)))
+        * (2 * math.pi * unit.N_A * h2o.water_density(unit(temperature)))
         ** 0.5
         / (
             4
