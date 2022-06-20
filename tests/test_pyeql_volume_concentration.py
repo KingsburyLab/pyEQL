@@ -6,82 +6,61 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
 
-class Test_empty_solution(unittest.TestCase):
+@pytest.fixture
+def s1():
+    return pyEQL.Solution(volume="2 L")
+
+
+@pytest.fixture
+def s2():
+    return pyEQL.Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
+
+
+@pytest.fixture
+def s3():
+    return pyEQL.Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L")
+
+
+@pytest.fixture
+def s4():
+    return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
+
+
+class Test_empty_solution:
     """
     test behavior when creating an empty solution
     ------------------------------------------------
 
     """
 
-    # create an empty solution
-    def setUp(self):
-        self.s1 = pyEQL.Solution()
-
-    # It should return type Solution
-    def test_empty_solution_1(self):
-        expected = pyEQL.solution.Solution
-
-        assert isinstance(self.s1, expected)
-
-    # It should have exactly 1L volume
-    def test_empty_solution_2(self):
-        result = self.s1.get_volume().to("L").magnitude
-        expected = 1.0
-
-        assert result == expected
-
-    #  the solvent should be water
     def test_empty_solution_3(self):
-        result = self.s1.get_solvent().get_name()
-        expected = "H2O"
-
-        assert result == expected
-
-    # It should have 0.997 kg water mass
-    def test_empty_solution_4(self):
-        result = self.s1.get_solvent_mass().to("kg").magnitude
-        expected = 0.9970415
-
-        assert round(abs(result - expected), 7) == 0
-
-    # the temperature should be 25 degC
-    def test_empty_solution_5(self):
-        result = self.s1.get_temperature().to("degC").magnitude
-        expected = 25
-
-        assert result == expected
-
-    # the pressure should be 1 atm
-    def test_empty_solution_6(self):
-        result = self.s1.get_pressure().to("atm").magnitude
-        expected = 1
-
-        assert result == expected
-
-    # the pH should be 7.0
-    def test_empty_solution_7(self):
-        result = self.s1.get_activity("H+")
-        expected = 1e-7
-
-        assert round(abs(result - expected), 9) == 0
-
-    # it should contain H2O, H+, and OH- species
-    def test_empty_solution_8(self):
-        result = self.s1.list_solutes()
-        expected = ["H2O", "OH-", "H+"]
-
-        self.assertCountEqual(result, expected)
+        # create an empty solution
+        s1 = pyEQL.Solution()
+        # It should return type Solution
+        assert isinstance(s1, pyEQL.solution.Solution)
+        # It should have exactly 1L volume
+        assert s1.get_volume().to("L").magnitude == 1.0
+        #  the solvent should be water
+        assert s1.get_solvent().get_name() == "H2O"
+        # It should have 0.997 kg water mass
+        assert np.isclose(s1.get_solvent_mass().to("kg").magnitude, 0.9970415)
+        # the temperature should be 25 degC
+        assert s1.get_temperature().to("degC").magnitude == 25
+        # the pressure should be 1 atm
+        assert s1.get_pressure().to("atm").magnitude == 1
+        # the pH should be 7.0
+        assert np.isclose(s1.get_activity("H+"), 1e-7, atol=1e-9)
+        # it should contain H2O, H+, and OH- species
+        assert set(s1.list_solutes()) == set(["H2O", "OH-", "H+"])
 
 
-class Test_solute_addition(unittest.TestCase):
+class Test_solute_addition:
     """
     test behavior of various methods for adding solutes to a solution
     -----------------------------------------------------------------
@@ -90,289 +69,209 @@ class Test_solute_addition(unittest.TestCase):
 
     # create an empty and test solutions with the same volume using substance / volume,
     # substance/mass, and substance units
-    def setUp(self):
-        self.s1 = pyEQL.Solution(volume="2 L")
-        self.s2 = pyEQL.Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
-        self.s3 = pyEQL.Solution(
-            [["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L"
-        )
-        self.s4 = pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
+    def test_solute_addition(self, s2, s3, s4):
 
-    # if solutes are added at creation-time with substance / volume units,
-    # then the total volume of the solution should not change (should remain at 2 L)
-    def test_solute_addition_1(self):
-        result = self.s2.get_volume().to("L").magnitude
-        expected = 2
+        # if solutes are added at creation-time with substance / volume units,
+        # then the total volume of the solution should not change (should remain at 2 L)
+        assert s2.get_volume().to("L").magnitude == 2
 
-        assert result == expected
+        # if solutes are added at creation-time with substance / volume units,
+        # then the resulting mol/L concentrations should be exactly what was specified
+        assert s2.get_amount("Na+", "mol/L").magnitude == 4
 
-    # if solutes are added at creation-time with substance / volume units,
-    # then the resulting mol/L concentrations should be exactly what was specified
-    def test_solute_addition_2(self):
-        result = self.s2.get_amount("Na+", "mol/L").magnitude
-        expected = 4
+        # if solutes are added at creation-time with substance / mass units,
+        # then the resulting mol/kg concentrations should be exactly what was specified
+        assert s3.get_amount("Na+", "mol/kg").magnitude == 4
 
-        assert result == expected
-
-    # if solutes are added at creation-time with substance / mass units,
-    # then the resulting mol/kg concentrations should be exactly what was specified
-    def test_solute_addition_3(self):
-        result = self.s3.get_amount("Na+", "mol/kg").magnitude
-        expected = 4
-
-        assert result == expected
-
-    # the water mass of solution s2 should be less than that of s3, because
-    # of the volume recalculation
-    def test_solute_addition_4(self):
-        result_molL = self.s2.get_solvent_mass().to("kg").magnitude
-        result_molkg = self.s3.get_solvent_mass().to("kg").magnitude
-
+        # the water mass of solution s2 should be less than that of s3, because
+        # of the volume recalculation
+        result_molL = s2.get_solvent_mass().to("kg").magnitude
+        result_molkg = s3.get_solvent_mass().to("kg").magnitude
         assert result_molL < result_molkg
 
-    # if solutes are added at creation-time with substance units,
-    # then the resulting mol amounts should be exactly what was specified
-    def test_solute_addition_4a(self):
-        result = self.s4.get_amount("Na+", "mol").magnitude
-        expected = 8
+        # if solutes are added at creation-time with substance units,
+        # then the resulting mol amounts should be exactly what was specified
+        assert s4.get_amount("Na+", "mol").magnitude == 8
 
-        assert result == expected
-
-    # the water mass of solution s2 should be less than that of s4, because
-    # of the volume recalculation
-    def test_solute_addition_4b(self):
-        result_molL = self.s2.get_solvent_mass().to("kg").magnitude
-        result_mol = self.s4.get_solvent_mass().to("kg").magnitude
-
+        # the water mass of solution s2 should be less than that of s4, because
+        # of the volume recalculation
+        result_molL = s2.get_solvent_mass().to("kg").magnitude
+        result_mol = s4.get_solvent_mass().to("kg").magnitude
         assert result_molL < result_mol
 
-    """
-    Tests for set_amount() method
-    """
+    def test_set_amount_1(self, s2):
+        """
+        Tests for set_amount() method
+        """
+        # If the concentration of a solute is directly set with a substance / volume
+        # unit, the volume should not change
+        s2.set_amount("Na+", "5 mol/L")
+        s2.set_amount("Cl-", "5 mol/L")
+        assert s2.get_volume().to("L").magnitude == 2
 
-    # If the concentration of a solute is directly set with a substance / volume
-    # unit, the volume should not change
-    def test_solute_addition_5(self):
-        self.s2.set_amount("Na+", "5 mol/L")
-        self.s2.set_amount("Cl-", "5 mol/L")
-        result = self.s2.get_volume().to("L").magnitude
-        expected = 2
+    def test_set_amount_2(self, s2):
+        # If the concentration of a solute is directly set with a substance / volume
+        # unit, the water mass should be reduced
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.set_amount("Na+", "5 mol/L")
+        s2.set_amount("Cl-", "5 mol/L")
+        assert s2.get_solvent_mass().to("kg").magnitude < original
 
-        assert result == expected
+    def test_set_amount_3(self, s2):
+        # If the concentration of a solute is directly set with a substance / volume
+        # unit, the resulting concentration should be exactly what was specified
+        s2.set_amount("Na+", "5 mol/L")
+        s2.set_amount("Cl-", "5 mol/L")
+        assert s2.get_amount("Na+", "mol/L").magnitude == 5
 
-    # If the concentration of a solute is directly set with a substance / volume
-    # unit, the water mass should be reduced
-    def test_solute_addition_6(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.set_amount("Na+", "5 mol/L")
-        self.s2.set_amount("Cl-", "5 mol/L")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
+    def test_set_amount_4(self, s2):
+        # If the concentration of a solute is directly set with a substance / mass
+        # unit, the volume should increase
+        original = s2.get_volume().to("L").magnitude
+        s2.set_amount("Na+", "5 mol/kg")
+        s2.set_amount("Cl-", "5 mol/kg")
+        assert s2.get_volume().to("L").magnitude > original
 
-        assert result < original
+    def test_set_amount_5(self, s2):
+        # If the concentration of a solute is directly set with a substance / mass
+        # unit, the water mass should not change
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.set_amount("Na+", "5 mol/kg")
+        s2.set_amount("Cl-", "5 mol/kg")
+        assert s2.get_solvent_mass().to("kg").magnitude == original
 
-    # If the concentration of a solute is directly set with a substance / volume
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_7(self):
-        self.s2.set_amount("Na+", "5 mol/L")
-        self.s2.set_amount("Cl-", "5 mol/L")
-        result = self.s2.get_amount("Na+", "mol/L").magnitude
-        expected = 5
+    def test_set_amount_6(self, s2):
+        # If the concentration of a solute is directly set with a substance / mass
+        # unit, the resulting concentration should be exactly what was specified
+        s2.set_amount("Na+", "5 mol/kg")
+        s2.set_amount("Cl-", "5 mol/kg")
+        assert s2.get_amount("Na+", "mol/kg").magnitude == 5
 
-        assert result == expected
+    def test_set_amount_7(self, s2):
+        # If the concentration of a solute is directly set with a substance
+        # unit, the volume should increase
+        original = s2.get_volume().to("L").magnitude
+        s2.set_amount("Na+", "10 mol")
+        s2.set_amount("Cl-", "10 mol")
+        assert s2.get_volume().to("L").magnitude > original
 
-    # If the concentration of a solute is directly set with a substance / mass
-    # unit, the volume should increase
-    def test_solute_addition_8(self):
-        original = self.s2.get_volume().to("L").magnitude
-        self.s2.set_amount("Na+", "5 mol/kg")
-        self.s2.set_amount("Cl-", "5 mol/kg")
-        result = self.s2.get_volume().to("L").magnitude
+    def test_set_amount_8(self, s2):
+        # If the concentration of a solute is directly set with a substance
+        # unit, the water mass should not change
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.set_amount("Na+", "10 mol")
+        s2.set_amount("Cl-", "10 mol")
+        assert s2.get_solvent_mass().to("kg").magnitude == original
 
-        assert result > original
+    def test_set_amount_9(self, s2):
+        # If the concentration of a solute is directly set with a substance / mass
+        # unit, the resulting concentration should be exactly what was specified
+        s2.set_amount("Na+", "10 mol")
+        s2.set_amount("Cl-", "10 mol")
+        assert s2.get_amount("Na+", "mol").magnitude == 10
 
-    # If the concentration of a solute is directly set with a substance / mass
-    # unit, the water mass should not change
-    def test_solute_addition_9(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.set_amount("Na+", "5 mol/kg")
-        self.s2.set_amount("Cl-", "5 mol/kg")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
+    def test_add_amount_1(self, s2):
+        """
+        Tests for add_amount() method
+        """
+        # substance / volume units
+        # If the concentration of a solute is directly increased with a substance / volume
+        # unit, the volume should not change
+        s2.add_amount("Na+", "1 mol/L")
+        s2.add_amount("Cl-", "1 mol/L")
+        assert s2.get_volume().to("L").magnitude == 2
 
-        assert result == original
+    def test_add_amount_2(self, s2):
+        # If the concentration of a solute is directly increased with a substance / volume
+        # unit, the water mass should be reduced
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.add_amount("Na+", "1 mol/L")
+        s2.add_amount("Cl-", "1 mol/L")
+        assert s2.get_solvent_mass().to("kg").magnitude < original
 
-    # If the concentration of a solute is directly set with a substance / mass
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_10(self):
-        self.s2.set_amount("Na+", "5 mol/kg")
-        self.s2.set_amount("Cl-", "5 mol/kg")
-        result = self.s2.get_amount("Na+", "mol/kg").magnitude
-        expected = 5
+    def test_add_amount_3(self, s2):
+        # If the concentration of a solute is directly increased with a substance / volume
+        # unit, the resulting concentration should be exactly what was specified
+        s2.add_amount("Na+", "1 mol/L")
+        s2.add_amount("Cl-", "1 mol/L")
+        assert s2.get_amount("Na+", "mol/L").magnitude == 5
 
-        assert result == expected
+    def test_add_amount_4(self, s3):
+        # substance / mass units
 
-    # If the concentration of a solute is directly set with a substance
-    # unit, the volume should increase
-    def test_solute_addition_8a(self):
-        original = self.s2.get_volume().to("L").magnitude
-        self.s2.set_amount("Na+", "10 mol")
-        self.s2.set_amount("Cl-", "10 mol")
-        result = self.s2.get_volume().to("L").magnitude
+        # If the concentration of a solute is directly increased with a substance / mass
+        # unit, the volume should increase
+        original = s3.get_volume().to("L").magnitude
+        s3.add_amount("Na+", "1 mol/kg")
+        s3.add_amount("Cl-", "1 mol/kg")
+        assert s3.get_volume().to("L").magnitude > original
 
-        assert result > original
+    def test_add_amount_5(self, s3):
+        # If the concentration of a solute is directly increased with a substance / mass
+        # unit, the water mass should not change
+        original = s3.get_solvent_mass().to("kg").magnitude
+        s3.add_amount("Na+", "1 mol/kg")
+        s3.add_amount("Cl-", "1 mol/kg")
+        assert s3.get_solvent_mass().to("kg").magnitude == original
 
-    # If the concentration of a solute is directly set with a substance
-    # unit, the water mass should not change
-    def test_solute_addition_9a(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.set_amount("Na+", "10 mol")
-        self.s2.set_amount("Cl-", "10 mol")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
+    def test_add_amount_12(self, s3):
+        # If the concentration of a solute is directly increased with a substance / mass
+        # unit, the resulting concentration should be exactly what was specified
+        s3.add_amount("Na+", "1 mol/kg")
+        s3.add_amount("Cl-", "1 mol/kg")
+        assert s3.get_amount("Na+", "mol/kg").magnitude == 5
 
-        assert result == original
+    def test_add_amount_6(self, s2):
+        # substance units
 
-    # If the concentration of a solute is directly set with a substance / mass
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_10a(self):
-        self.s2.set_amount("Na+", "10 mol")
-        self.s2.set_amount("Cl-", "10 mol")
-        result = self.s2.get_amount("Na+", "mol").magnitude
-        expected = 10
+        # If the concentration of a solute is directly increased with a substance
+        # unit, the volume should increase
+        original = s2.get_volume().to("L").magnitude
+        s2.add_amount("Na+", "2 mol")
+        s2.add_amount("Cl-", "2 mol")
+        assert s2.get_volume().to("L").magnitude > original
 
-        assert result == expected
+    def test_add_amount_7(self, s2):
+        # If the concentration of a solute is directly increased with a substance
+        # unit, the water mass should not change
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.add_amount("Na+", "2 mol")
+        s2.add_amount("Cl-", "2 mol")
+        assert s2.get_solvent_mass().to("kg").magnitude == original
 
-    """
-    Tests for add_amount() method
-    """
+    def test_add_amount_8(self, s2):
+        # If the concentration of a solute is directly increased with a substance
+        # unit, the resulting concentration should be exactly what was specified
+        s2.add_amount("Na+", "2 mol")
+        s2.add_amount("Cl-", "2 mol")
+        assert s2.get_amount("Na+", "mol").magnitude == 10
 
-    # substance / volume units
+    def test_add_amount_9(self, s2):
+        # negative substance units
+        # If the concentration of a solute is directly decreased with a substance
+        # unit, the volume should decrease
+        original = s2.get_volume().to("L").magnitude
+        s2.add_amount("Na+", "-2 mol")
+        s2.add_amount("Cl-", "-2 mol")
+        assert s2.get_volume().to("L").magnitude < original
 
-    # If the concentration of a solute is directly increased with a substance / volume
-    # unit, the volume should not change
-    def test_solute_addition_11(self):
-        self.s2.add_amount("Na+", "1 mol/L")
-        self.s2.add_amount("Cl-", "1 mol/L")
-        result = self.s2.get_volume().to("L").magnitude
-        expected = 2
+    def test_add_amount_10(self, s2):
+        # If the concentration of a solute is directly changed with a substance
+        # unit, the water mass should not change
+        original = s2.get_solvent_mass().to("kg").magnitude
+        s2.add_amount("Na+", "-2 mol")
+        s2.add_amount("Cl-", "-2 mol")
+        assert s2.get_solvent_mass().to("kg").magnitude == original
 
-        assert result == expected
-
-    # If the concentration of a solute is directly increased with a substance / volume
-    # unit, the water mass should be reduced
-    def test_solute_addition_12(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.add_amount("Na+", "1 mol/L")
-        self.s2.add_amount("Cl-", "1 mol/L")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
-
-        assert result < original
-
-    # If the concentration of a solute is directly increased with a substance / volume
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_13(self):
-        self.s2.add_amount("Na+", "1 mol/L")
-        self.s2.add_amount("Cl-", "1 mol/L")
-        result = self.s2.get_amount("Na+", "mol/L").magnitude
-        expected = 5
-
-        assert result == expected
-
-    # substance / mass units
-
-    # If the concentration of a solute is directly increased with a substance / mass
-    # unit, the volume should increase
-    def test_solute_addition_14(self):
-        original = self.s3.get_volume().to("L").magnitude
-        self.s3.add_amount("Na+", "1 mol/kg")
-        self.s3.add_amount("Cl-", "1 mol/kg")
-        result = self.s3.get_volume().to("L").magnitude
-
-        assert result > original
-
-    # If the concentration of a solute is directly increased with a substance / mass
-    # unit, the water mass should not change
-    def test_solute_addition_15(self):
-        original = self.s3.get_solvent_mass().to("kg").magnitude
-        self.s3.add_amount("Na+", "1 mol/kg")
-        self.s3.add_amount("Cl-", "1 mol/kg")
-        result = self.s3.get_solvent_mass().to("kg").magnitude
-
-        assert result == original
-
-    # If the concentration of a solute is directly increased with a substance / mass
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_16(self):
-        self.s3.add_amount("Na+", "1 mol/kg")
-        self.s3.add_amount("Cl-", "1 mol/kg")
-        result = self.s3.get_amount("Na+", "mol/kg").magnitude
-        expected = 5
-
-        assert result == expected
-
-    # substance units
-
-    # If the concentration of a solute is directly increased with a substance
-    # unit, the volume should increase
-    def test_solute_addition_14a(self):
-        original = self.s2.get_volume().to("L").magnitude
-        self.s2.add_amount("Na+", "2 mol")
-        self.s2.add_amount("Cl-", "2 mol")
-        result = self.s2.get_volume().to("L").magnitude
-
-        assert result > original
-
-    # If the concentration of a solute is directly increased with a substance
-    # unit, the water mass should not change
-    def test_solute_addition_15a(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.add_amount("Na+", "2 mol")
-        self.s2.add_amount("Cl-", "2 mol")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
-
-        assert result == original
-
-    # If the concentration of a solute is directly increased with a substance
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_16a(self):
-        self.s2.add_amount("Na+", "2 mol")
-        self.s2.add_amount("Cl-", "2 mol")
-        result = self.s2.get_amount("Na+", "mol").magnitude
-        expected = 10
-
-        assert result == expected
-
-    # negative substance units
-    # If the concentration of a solute is directly decreased with a substance
-    # unit, the volume should decrease
-    def test_solute_addition_14b(self):
-        original = self.s2.get_volume().to("L").magnitude
-        self.s2.add_amount("Na+", "-2 mol")
-        self.s2.add_amount("Cl-", "-2 mol")
-        result = self.s2.get_volume().to("L").magnitude
-
-        assert result < original
-
-    # If the concentration of a solute is directly changed with a substance
-    # unit, the water mass should not change
-    def test_solute_addition_15b(self):
-        original = self.s2.get_solvent_mass().to("kg").magnitude
-        self.s2.add_amount("Na+", "-2 mol")
-        self.s2.add_amount("Cl-", "-2 mol")
-        result = self.s2.get_solvent_mass().to("kg").magnitude
-
-        assert result == original
-
-    # If the concentration of a solute is directly changed with a substance
-    # unit, the resulting concentration should be exactly what was specified
-    def test_solute_addition_16b(self):
-        self.s2.add_amount("Na+", "-2 mol")
-        self.s2.add_amount("Cl-", "-2 mol")
-        result = self.s2.get_amount("Na+", "mol").magnitude
-        expected = 6
-
-        assert result == expected
+    def test_add_amount_11(self, s2):
+        # If the concentration of a solute is directly changed with a substance
+        # unit, the resulting concentration should be exactly what was specified
+        s2.add_amount("Na+", "-2 mol")
+        s2.add_amount("Cl-", "-2 mol")
+        assert s2.get_amount("Na+", "mol").magnitude == 6
 
 
-class Test_get_amount(unittest.TestCase):
+class Test_get_amount:
     """
     test the get_amount() method on a 1 mol/L NaCl solution
     ----------------------------
@@ -381,52 +280,24 @@ class Test_get_amount(unittest.TestCase):
 
     """
 
-    # create the 1 M NaCl solution
-    def setUp(self):
-        self.s1 = pyEQL.Solution([["Na+", "1 mol/L"], ["Cl-", "1 mol/L"]])
+    def test_get_amount_nacl(self):
+        # create the 1 M NaCl solution
+        s1 = pyEQL.Solution([["Na+", "1 mol/L"], ["Cl-", "1 mol/L"]])
 
-    # get_amount() - mol/L
-    def test_get_amount_molL(self):
-        result = self.s1.get_amount("Na+", "mol/L").magnitude
-        expected = 1
+        # get_amount() - mol/L
+        assert np.isclose(s1.get_amount("Na+", "mol/L").magnitude, 1)
 
-        assert round(abs(result - expected), 9) == 0
+        # get_amount() - mol/kg
+        assert np.isclose(s1.get_amount("Na+", "mol/kg").magnitude, 1.02181221888)
 
-    # get_amount() - mol/kg
-    def test_get_amount_molkg(self):
-        result = self.s1.get_amount("Na+", "mol/kg").magnitude
-        expected = 1.02181221888
+        # get_amount() - g/L
+        assert np.isclose(s1.get_amount("Na+", "g/L").magnitude, 22.98977)
 
-        assert round(abs(result - expected), 9) == 0
+        # get_amount() - mg
+        assert np.isclose(s1.get_amount("Na+", "mg").magnitude, 22989.77)
 
-    # get_amount() - g/L
-    def test_get_amount_gL(self):
-        result = self.s1.get_amount("Na+", "g/L").magnitude
-        expected = 22.98977
+        # get_amount() - mol
+        assert np.isclose(s1.get_amount("Na+", "mol").magnitude, 1)
 
-        assert round(abs(result - expected), 9) == 0
-
-    # get_amount() - mg
-    def test_get_amount_mg(self):
-        result = self.s1.get_amount("Na+", "mg").magnitude
-        expected = 22989.77
-
-        assert round(abs(result - expected), 9) == 0
-
-    # get_amount() - mol
-    def test_get_amount_mol(self):
-        result = self.s1.get_amount("Na+", "mol").magnitude
-        expected = 1
-
-        assert round(abs(result - expected), 9) == 0
-
-    # get_amount() - fraction
-    def test_get_amount_fraction(self):
-        result = self.s1.get_amount("Na+", "fraction")
-        expected = 0.01775457254
-
-        assert round(abs(result - expected), 9) == 0
-
-
-if __name__ == "__main__":
-    unittest.main()
+        # get_amount() - fraction
+        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.01775457254)

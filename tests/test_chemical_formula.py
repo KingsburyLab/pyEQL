@@ -5,8 +5,6 @@ chemical_formula.py test suite
 This file contains tests for the chemical formula interpreter module of pyEQL.
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
@@ -14,7 +12,7 @@ import pyEQL
 from pyEQL import chemical_formula as cf
 
 
-class Test_check_formula(unittest.TestCase):
+class Test_check_formula:
     """
     tests for the _check_formula() function
     ---------------------------------------
@@ -72,18 +70,7 @@ class Test_check_formula(unittest.TestCase):
         assert result == expected
 
 
-#    def test_choice(self):
-#        element = random.choice(self.seq)
-#        self.assertTrue(element in self.seq)
-#
-#    def test_sample(self):
-#        with self.assertRaises(ValueError):
-#            random.sample(self.seq, 20)
-#        for element in random.sample(self.seq, 5):
-#            self.assertTrue(element in self.seq)
-
-
-class Test_is_valid_formula(unittest.TestCase):
+class Test_is_valid_formula:
     """
     tests for is_valid_formula()
     ----------------------------
@@ -250,7 +237,7 @@ class Test_is_valid_formula(unittest.TestCase):
         assert result == expected
 
 
-class Test_consolidate_formula(unittest.TestCase):
+class Test_consolidate_formula:
     """
     tests for _consolidate_formula()
     --------------------------------
@@ -277,7 +264,3 @@ class Test_consolidate_formula(unittest.TestCase):
         expected = ["C", 8, "H", 18]
 
         assert result == expected
-
-
-if __name__ == "__main__":
-    unittest.main()

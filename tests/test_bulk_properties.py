@@ -9,15 +9,13 @@ Solution class methods. Currently included methods are:
 
 """
 
-import unittest
-
 import numpy as np
 import pytest
 
 import pyEQL
 
 
-class test_hardness(unittest.TestCase):
+class test_hardness:
     """
     test the get_hardness() method
     ------------------------------
@@ -84,7 +82,3 @@ class test_hardness(unittest.TestCase):
         expected = "[mass] / [length] ** 3"
 
         assert result == expected
-
-
-if __name__ == "__main__":
-    unittest.main()

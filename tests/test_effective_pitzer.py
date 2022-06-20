@@ -279,7 +279,3 @@ class Test_effective_pitzer:
 
             # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)
-
-
-if __name__ == "__main__":
-    unittest.main()
