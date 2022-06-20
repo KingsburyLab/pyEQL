@@ -7,7 +7,7 @@ Representing Chemical Substances in pyEQL
 =========================================
 
 pyEQL interprets the chemical formula of a substance to calculate its molecular
-weight and formal charge. The formula is also used as a key to search the 
+weight and formal charge. The formula is also used as a key to search the
 database for parameters (e.g. diffusion coefficient) that are used in subsequent
 calculations.
 
@@ -27,11 +27,11 @@ Formula Rules:
 
 1. Are composed of valid atomic symbols that start with capital letters
 2. Contain no non-alphanumeric characters other than '(', ')', '+', or '-'
-3. If a '+' or '-' is present, the formula must contain ONLY '+' or '-' 
-   (e.g. 'Na+-' is invalid) and the formula must end with either a series of 
+3. If a '+' or '-' is present, the formula must contain ONLY '+' or '-'
+   (e.g. 'Na+-' is invalid) and the formula must end with either a series of
    charges (e.g. 'Fe+++') or a numeric charge (e.g. 'Fe+3')
 4. Formula must contain matching numbers of '(' and ')'
-5. Open parentheses must precede closed parentheses  
+5. Open parentheses must precede closed parentheses
 
 Alternate Formulas and Isomers
 ------------------------------
@@ -49,7 +49,7 @@ both user-entered formulas AND keys in the database. So even if you created
 a solution containing 'ClNa', pyEQL would still match it with parameters for
 'NaCl'.
 
-Currently pyEQL **does not distinguish between isomers**. 
+Currently pyEQL **does not distinguish between isomers**.
 
 API Documentation (chemical_formula.py)
 =======================================

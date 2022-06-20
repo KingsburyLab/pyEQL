@@ -72,18 +72,18 @@ File Format
 
 Databases are formatted as TAB-SEPARATED text files and carry the .tsv extension.
 The intent of this format is to make database files easy to edit with common
-spreadsheet software. 
+spreadsheet software.
 
 .. warning:: If you open an existing or template database file for editing, some spreadsheet software will try to replace the tabs with commas when you save it again. pyEQL does NOT read comma-separated files.
 
 Since pyEQL compiles the database from multiple files, the intent is for each
-file to contain values for one type of parameter (such as a diffusion coefficient) 
+file to contain values for one type of parameter (such as a diffusion coefficient)
 from one source. The file can then list values of that parameter for a number of
 different solutes.
 
 The upper section of each file contains information about the source of the
 data, the units, the name of the parameter, and the conditions of measurement.
-The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'. 
+The top of each database file must, at a minimum, contain rows for 'Name' and 'Units'.
 Preferably, other information such as conditions, notes and a reference are also supplied.
 See `template.tsv` in the \database subdirectory for an example.
 
@@ -128,9 +128,9 @@ contain parameters for solutes that have actually been used during the execution
 of your script. The output is organized by solute.
 
 .. doctest::
-   
+
    >>> pyEQL.db.print_database()
-   
+
    >>> s1 = pyEQL.Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
    >>> pyEQL.db.print_database()
    Parameters for species Cl-:
@@ -142,7 +142,7 @@ of your script. The output is organized by solute.
    Conditions (T,P,Ionic Strength): 25 celsius, 1 atm, 0
    Notes: For most ions, increases 2-3% per degree above 25C
    Reference: CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79
-   
+
    Parameter partial_molar_volume
    Partial molar volume
    -------------------------------------------

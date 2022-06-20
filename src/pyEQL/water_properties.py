@@ -8,12 +8,11 @@ of water substance
 :license: LGPL, see LICENSE for more details.
 
 """
+# logging system
+import logging
 import math
 
 from pyEQL import unit
-
-# logging system
-import logging
 
 logger = logging.getLogger(__name__)
 

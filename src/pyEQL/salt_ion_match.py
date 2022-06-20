@@ -46,24 +46,24 @@ class Salt:
 
         """
         Create a salt object based on its component ions
-        
+
         Parameters:
         ----------
         cation, anion : str
                 Chemical formula of the cation and anion, respectively
-        
+
         Returns:
         -------
         Salt : An object representing the properties of the salt
-        
+
         Examples:
         --------
         >>> Salt('Na+','Cl-').formula
         'NaCl'
-        
+
         >>> Salt('Mg++','Cl-').formula
         'MgCl2'
-        
+
         """
 
         # get the charges on cation and anion

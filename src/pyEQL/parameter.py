@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # add a filter to emit only unique log messages to the handler
 from pyEQL.logging_system import Unique
+from pyEQL import unit
 
 unique = Unique()
 logger.addFilter(unique)
@@ -29,27 +30,6 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-
-## Units handling
-# per the pint documentation, it's important that pint and its associated Unit
-# Registry are only imported once.
-from pint import UnitRegistry
-
-# here we assign the identifier 'unit' to the UnitRegistry
-unit = UnitRegistry()
-
-# use this to enable legacy handling of offset units
-# TODO fix this to handle offsets the way pint wants us to since 0.7
-unit.autoconvert_offset_to_baseunit = True
-
-# append custom unit definitions and contexts
-from pkg_resources import resource_filename
-fname = resource_filename("pyEQL", "pint_custom_units.txt")
-unit.load_definitions(fname)
-# activate the "chemistry" context globally
-unit.enable_contexts("chem")
-# set the default string formatting for pint quantities
-unit.default_format = "P~"
 
 
 def testfunc(val):

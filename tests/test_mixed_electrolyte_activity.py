@@ -17,9 +17,12 @@ DOI: 10.1021/je9004432
 
 """
 
-import pyEQL
 import unittest
+
 import pytest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

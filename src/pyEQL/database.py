@@ -30,12 +30,11 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# for parameter creation functions
-import pyEQL.parameter as pm
-
 # for file input/output functions
 import os
 
+# for parameter creation functions
+import pyEQL.parameter as pm
 
 ## Database Management Functions
 
@@ -54,6 +53,7 @@ class Paramsdb:
 
         # set the directory containing database files
         from pkg_resources import resource_filename
+
         self.database_dir = [resource_filename("pyEQL", "database")]
 
     def add_path(self, path):

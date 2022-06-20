@@ -5,9 +5,11 @@ chemical_formula.py test suite
 This file contains tests for the chemical formula interpreter module of pyEQL.
 """
 
+import unittest
+
 import pyEQL
 from pyEQL import chemical_formula as cf
-import unittest
+
 from . import CustomAssertions
 
 

@@ -12,7 +12,7 @@ using the `issue tracker <https://github.com/rkingsbury/pyEQL/issues>`_ on `gith
 Contributing Code
 =================
 
-To contribute bug fixes, documentation enhancements, or new code, please 
+To contribute bug fixes, documentation enhancements, or new code, please
 fork pyEQL and send us a pull request. It's not as hard as it sounds!
 
 It is **strongly** recommended that you read the following short articles
@@ -59,7 +59,7 @@ Generating Test Cases
 
 pyEQL has many capabilities that have not been tested thoroughly. You can help
 the project simply by using pyEQL and comparing the output to experimental data
-and/or more established models. Report back your results on the 
+and/or more established models. Report back your results on the
 `issue tracker <https://github.com/rkingsbury/pyEQL/issues>`_.
 
 Even better, write up an automated test case (see the tests/ directory for examples).

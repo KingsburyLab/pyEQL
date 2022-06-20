@@ -9,8 +9,10 @@ NOTE: generally, these tests check the module output against experimental
 data rather than the theoretical result of the respective functions.
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

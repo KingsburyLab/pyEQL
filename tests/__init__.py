@@ -1,6 +1,6 @@
-import unittest
-import os
 import logging
+import os
+import unittest
 
 
 def testsuite():

@@ -9,15 +9,15 @@ NOTE: these methods are not currently used but are here for the future.
 
 """
 
+# logging system
+import logging
+
 ## Dependencies
 # import libraries for scientific functions
 import math
 
 # the pint unit registry
 from pyEQL import unit
-
-# logging system
-import logging
 
 logger = logging.getLogger(__name__)
 

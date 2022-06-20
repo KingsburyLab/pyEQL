@@ -13,8 +13,10 @@ in the testing are:
 
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

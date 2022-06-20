@@ -6,24 +6,23 @@ pyEQL Solution Class
 
 """
 
+# logging system
+import logging
+
 ## Dependencies
 # import libraries for scientific functions
 import math
 
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
-import pyEQL.water_properties as h2o
 import pyEQL.solute as sol
-from pyEQL.salt_ion_match import generate_salt_list, identify_salt
-
-# the pint unit registry
-from pyEQL import unit
+import pyEQL.water_properties as h2o
 
 # import the parameters database
+# the pint unit registry
 from pyEQL import paramsDB as db
-
-# logging system
-import logging
+from pyEQL import unit
+from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
 logger = logging.getLogger(__name__)
 
@@ -1744,13 +1743,13 @@ class Solution:
         """
         """
         pseudo code
-        
+
         identify predominant salt for coefficients
         check if coefficients exist for that salt
         if so => calc osmotic coefficient and log an info message
-        
+
         if not = > return mole fraction and log a warning message
-        
+
         """
         osmotic_coefficient = self.get_osmotic_coefficient()
 

@@ -7,12 +7,12 @@
     # mw is the molecular weight of the species
     # volume is the volume of the solution
     # solvent_mass is the mass of solvent in the solution
-    
+
     # moles -> mass require the molecular weight
     [substance] -> [mass]: value * mw
     [mass] -> [substance]: value / mw
 
-    # moles/volume -> mass/volume and moles/mass -> mass / mass 
+    # moles/volume -> mass/volume and moles/mass -> mass / mass
     # require the  molecular weight
     [substance] / [volume] -> [mass] / [volume]: value * mw
     [mass] / [volume] -> [substance] / [volume]: value / mw

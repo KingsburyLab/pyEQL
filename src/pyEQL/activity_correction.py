@@ -1,10 +1,10 @@
 """
 pyEQL activity correction library
 
-This file contains functions for computing molal-scale activity coefficients 
+This file contains functions for computing molal-scale activity coefficients
 of ions and salts in aqueous solution.
 
-Individual functions for activity coefficients are defined here so that they 
+Individual functions for activity coefficients are defined here so that they
 can be used independently of a pyEQL solution object. Normally, these functions
 are called from within the get_activity_coefficient method of the Solution class.
 
@@ -12,6 +12,8 @@ are called from within the get_activity_coefficient method of the Solution class
 :license: LGPL, see LICENSE for more details.
 
 """
+# logging system
+import logging
 import math
 
 # functions for properties of water
@@ -19,9 +21,6 @@ import pyEQL.water_properties as h2o
 
 # the pint unit registry
 from pyEQL import unit
-
-# logging system
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -85,49 +84,48 @@ def _debye_parameter_B(temperature="25 degC"):
 def _debye_parameter_activity(temperature="25 degC"):
     """
     Return the constant A for use in the Debye-Huckel limiting law (base 10)
-    
+
     Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
-    
+
     Returns
     -------
     Quantity          The parameter A for use in the Debye-Huckel limiting law (base e)
-    
+
     Notes
     -----
-     
+
     The parameter A is equal to: [#]_
-     
-    ..  math::    
+
+    ..  math::
         A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
-    
+
     Note that this equation returns the parameter value that can be used to calculate
     the natural logarithm of the activity coefficient. For base 10, divide the
     value returned by 2.303. The value is often given in base 10 terms (0.509 at
     25 degC) in older textbooks.
-    
+
     References
     ----------
     .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
-        
+
     Examples
     --------
     >>> _debye_parameter_activity() #doctest: +ELLIPSIS
     1.17499...
-    
+
     See Also
     --------
     _debye_parameter_osmotic
-    
+
     """
 
     debyeparam = (
         unit.elementary_charge**3
-        * (2 * math.pi * unit.N_A * h2o.water_density(unit(temperature)))
-        ** 0.5
+        * (2 * math.pi * unit.N_A * h2o.water_density(unit(temperature))) ** 0.5
         / (
             4
             * math.pi
@@ -149,37 +147,37 @@ def _debye_parameter_activity(temperature="25 degC"):
 def _debye_parameter_osmotic(temperature="25 degC"):
     """
     Return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory
-    
+
     Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
-    
+
     Notes
     -----
-    Not to be confused with the Debye-Huckel constant used for activity coefficients in the limiting law. 
+    Not to be confused with the Debye-Huckel constant used for activity coefficients in the limiting law.
     Takes the value 0.392 at 25 C.
     This constant is calculated according to: [#]_ [#]_
 
      .. math:: A^{\\phi} = {1 \\over 3} A^{\\gamma}
-    
+
     References
     ----------
     .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
        *J. Chemical Engineering Data* 33, pp.177-184.
-    
+
     .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
        and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
-    
+
     Examples
     --------
     >>> _debye_parameter_osmotic() #doctest: +ELLIPSIS
-    0.3916... 
+    0.3916...
 
     See Also
     --------
     _debye_parameter_activity
-    
+
     """
 
     output = 1 / 3 * _debye_parameter_activity(temperature)
@@ -194,12 +192,12 @@ def _debye_parameter_volume(temperature="25 degC"):
     """
     Return the constant A_V, the Debye-Huckel limiting slope for apparent
     molar volume.
-    
+
     Parameters
     ----------
     temperature : str Quantity, optional
                   String representing the temperature of the solution. Defaults to '25 degC' if not specified.
-    
+
     Notes
     -----
     Takes the value 1.8305 cm ** 3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
@@ -207,34 +205,34 @@ def _debye_parameter_volume(temperature="25 degC"):
 
      .. math:: A_V = -2 A_{\\phi} R T [ {3 \\over \\epsilon} {{\\partial \\epsilon \\over \\partial p} \
      } - {{1 \\over \\rho}{\\partial \\rho \\over \\partial p} }]
-     
+
     NOTE: at this time, the term in brackets (containing the partial derivatives) is approximate.
-    These approximations give the correct value of the slope at 25 degC and 
+    These approximations give the correct value of the slope at 25 degC and
     produce estimates with less than 10% error between 0 and 60 degC.
-     
+
     The derivative of epsilon with respect to pressure is assumed constant (for atmospheric pressure)
     at -0.01275 1/MPa. Note that the negative sign does not make sense in light
     of real data, but is required to give the correct result.
-     
+
     The second term is equivalent to the inverse of the bulk modulus of water, which
     is taken to be 2.2 GPa. [#]_
-    
+
     References
     ----------
     .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
     and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
-        
+
     .. [#] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
-    
+
     Examples
     --------
     TODO
-  
-    
+
+
     See Also
     --------
     _debye_parameter_osmotic
-    
+
     """
 
     # TODO - add partial derivatives to calculation
@@ -916,11 +914,11 @@ def _pitzer_log_gamma(
     """
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
     ion interaction model.
-    
+
     .. math:: \\ln \\gamma_{MX} = -{|z_+ z_-| A^{Phi} ( I ^ {0.5} \\over (1 + b I ^ {0.5})} + {2 \\over b }\\ln (1 + b I ^ {0.5}) )+\
-    + {m (2 \\nu_+ \\nu_-) \\over (\\nu_+ + \\nu_-)} (B_{MX} + B_{MX}^\\Phi) + {m^2(3 (\\nu_+ \\nu_-)^{1.5} \\over (\\nu_+ + \\nu_-))} C_{MX}^\\Phi    
-    
-    
+    + {m (2 \\nu_+ \\nu_-) \\over (\\nu_+ + \\nu_-)} (B_{MX} + B_{MX}^\\Phi) + {m^2(3 (\\nu_+ \\nu_-)^{1.5} \\over (\\nu_+ + \\nu_-))} C_{MX}^\\Phi
+
+
     Parameters
     ----------
     ionic_strength: Quantity
@@ -937,20 +935,20 @@ def _pitzer_log_gamma(
                     String representing the temperature of the solution. Defaults to '25 degC' if not specified.
     b:              number, optional
                     Coefficient. Usually set equal to 1.2 kg ** 0.5 / mol ** 0.5 and considered independent of temperature and pressure
-                    
+
     Returns
     -------
     float
             The natural logarithm of the binary activity coefficient calculated by the Pitzer ion interaction model.
-    
+
     References
-    ----------       
-    Kim, H., & Jr, W. F. (1988). 
-    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters. 
+    ----------
+    Kim, H., & Jr, W. F. (1988).
+    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
     Journal of Chemical and Engineering Data, (2), 177–184.
-    
-    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011). 
-    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C. 
+
+    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
     Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
     """
     first_term = (

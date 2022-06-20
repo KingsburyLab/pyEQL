@@ -6,8 +6,10 @@ This file contains tests for the salt-matching algorithm used by pyEQL in
 salt_ion_match.py
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

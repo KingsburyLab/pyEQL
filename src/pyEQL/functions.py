@@ -6,6 +6,9 @@ pyEQL functions that take Solution objects as inputs or return Solution objects
 
 """
 
+# logging system
+import logging
+
 ## Dependencies
 # import libraries for scientific functions
 import math
@@ -13,14 +16,10 @@ import math
 # internal pyEQL imports
 import pyEQL
 
+# the pint unit registry
 # import the parameters database
 from pyEQL import paramsDB as db
-
-# the pint unit registry
 from pyEQL import unit
-
-# logging system
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -168,70 +167,70 @@ def entropy_mix(Solution1, Solution2):
 def donnan_eql(solution, fixed_charge):
     """
     Return a solution object in equilibrium with fixed_charge
-    
+
     Parameters
     ----------
     Solution : Solution object
         The external solution to be brought into equilibrium with the fixed
         charges
     fixed_charge : str quantity
-        String representing the concentration of fixed charges, including sign. 
+        String representing the concentration of fixed charges, including sign.
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
-        
+
     Returns
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
-    
+
     Notes
     -----
-    
-    The general equation representing the equilibrium between an external 
+
+    The general equation representing the equilibrium between an external
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[#]_
-    
+
     .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
     = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
-    
-    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively, 
+
+    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
     the overbar indicates the membrane phase,
     :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
-    coefficient, :math:`V` represents the partial molar volume of the salt, and 
+    coefficient, :math:`V` represents the partial molar volume of the salt, and
     :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
     solution phase.
-    
+
     In addition, electroneutrality must prevail within the membrane phase:
-    
+
     .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
-    
+
     Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
     in the membrane or ion exchange phase.
-    
-    This function solves these two equations simultaneously to arrive at the 
+
+    This function solves these two equations simultaneously to arrive at the
     concentrations of the cation and anion in the membrane phase. It returns
     a solution equal to the input solution except that the concentrations of
-    the predominant cation and anion have been adjusted according to this 
+    the predominant cation and anion have been adjusted according to this
     equilibrium.
-    
+
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
-    
+
     References
     ----------
-    
+
     .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
            Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
-    
+
     Examples
     --------
     TODO
-    
+
     See Also
     --------
     get_salt()
-    
+
     """
     # identify the salt
     salt = solution.get_salt()

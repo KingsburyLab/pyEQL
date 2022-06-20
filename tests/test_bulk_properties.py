@@ -9,8 +9,10 @@ Solution class methods. Currently included methods are:
 
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

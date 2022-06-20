@@ -6,8 +6,10 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

@@ -18,5 +18,3 @@ Contents:
     class_solute
     internal
     module_functions
-   
-

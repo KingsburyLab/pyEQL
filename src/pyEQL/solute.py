@@ -1,7 +1,7 @@
 """
 pyEQL Solute class
 
-This file contains functions and methods for managing properties of 
+This file contains functions and methods for managing properties of
 individual solutes. The Solute class contains methods for accessing
 ONLY those properties that DO NOT depend on solution composition.
 Solute properties such as activity coefficient or concentration
@@ -12,11 +12,11 @@ that do depend on compsition are accessed via Solution class methods.
 
 """
 
-# the pint unit registry
-from pyEQL import unit
-
 # logging system
 import logging
+
+# the pint unit registry
+from pyEQL import unit
 
 logger = logging.getLogger(__name__)
 

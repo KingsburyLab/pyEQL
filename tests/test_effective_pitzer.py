@@ -8,9 +8,9 @@ implemented in pyEQL.
 The Effective Pitzer Model is described in Mistry et al.
 (DOI: 10.1016/j.desal.2013.03.015). The paper validates
 the model by showing the calculated activity coefficients
-for each component of synthetic seawater (composition 
+for each component of synthetic seawater (composition
 given in Table 2 of the paper). The mock seawater
-has a mass ratio of NaCl:MgCl2:Na2SO4:CaCl2:KCl 
+has a mass ratio of NaCl:MgCl2:Na2SO4:CaCl2:KCl
 of 24.53:5.20:4.09:1.16:0.695, and the total
 salinity is varied.
 
@@ -24,7 +24,7 @@ KCl	    74.55	0.0695	0.00093226
 The total molality is 0.515 mol salts/kg
 
 This test suite replicates that synthetic seawter and then
-confirms that pyEQL's output of activity and fugacity 
+confirms that pyEQL's output of activity and fugacity
 coefficients matches that given by the authors.
 
 pyEQL probably uses different pitzer parameters than
@@ -32,8 +32,10 @@ the paper, so perfect accuracy is not expected.
 
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

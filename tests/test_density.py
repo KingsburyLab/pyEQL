@@ -11,8 +11,10 @@ cases, the output is also tested against a well-established model published
 by USGS(PHREEQC)
 """
 
-import pyEQL
 import unittest
+
+import pyEQL
+
 from . import CustomAssertions
 
 

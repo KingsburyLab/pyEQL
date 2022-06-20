@@ -4,7 +4,7 @@
 Tutorial
 ********
 
-pyEQL creates a new type (`Solution` class) to represent a chemical solution. 
+pyEQL creates a new type (`Solution` class) to represent a chemical solution.
 It also comes pre-loaded with a database of diffusion coefficients, activity
 correction parameters, and other data on a variety of common electrolytes.
 Virtually all of the user-facing functions in pyEQL are accessed through the
@@ -34,7 +34,7 @@ More usefully, you can specify solutes and bulk properties:
 
 Retrieving Solution Properties
 ==============================
-    
+
 Bulk Solution Properties
 --------------------------
 
@@ -44,11 +44,11 @@ like temperature, ionic strength, conductivity, and density.
     >>> s2.get_volume()
     8.071524653929277 liter
     >>> s2.get_density()
-    1.0182802742389558 kilogram/liter 
+    1.0182802742389558 kilogram/liter
     >>> s2.get_conductivity()
-    4.083570230022633 siemens/meter 
+    4.083570230022633 siemens/meter
     >>> s2.get_ionic_strength()
-    0.500000505903012 mole/kilogram 
+    0.500000505903012 mole/kilogram
 
 Individual Solute Properties
 ----------------------------
@@ -58,7 +58,7 @@ You can also retrieve properties for individual solutes (or the solvent, water)
 .. doctest::
 
     >>> s2.get_amount('Na+','mol/L')
-    0.4946847550064916 mole/liter 
+    0.4946847550064916 mole/liter
     >>> s2.get_activity_coefficient('Na+)
     0.6838526233869155
     >>> s2.get_activity('Na+')
@@ -74,14 +74,14 @@ Quantity objects that contain both a magnitude and a unit.
 
     >>> from pyEQL import unit
     >>> test_qty = pyEQL.unit('1 kg/m**3')
-    1.0 kilogram/meter3 
+    1.0 kilogram/meter3
 
 Many pyEQL methods require physical quantities to be input as strings, then these methods return pint Quantity objects.
 A string quantity must contain both a magnitude and a unit (e.g. '0.5 mol/L').
 In general, pint recognizes common abbreviations and SI prefixes. Compound units must follow Python math syntax (e.g. cm**2 not cm2).
 
 Pint Quantity objects have several useful attributes. They can be converted to strings:
-    
+
     >>> str(test_qty)
     '1.0 kg/m**3'
 
@@ -108,6 +108,6 @@ In order to directly create Quantity objects, you need to explicitly import the 
 
     >>> from pyEQL import unit
     >>> test_qty = pyEQL.unit('1 kg/m**3')
-    1.0 kilogram/meter3 
+    1.0 kilogram/meter3
 
 .. warning:: if you use pyEQL in conjunction with another module that also uses pint for units-aware calculations, you must convert all Quantity objects to strings before passing them to the other module, as pint cannot perform mathematical operations on units that belong to different "registries."  See the `pint documentation <http://pint.readthedocs.io/>`_ for more details.
