@@ -4,7 +4,7 @@ pyEQL water properties library
 This file contains functions for retrieving various physical properties
 of water substance
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2022 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """

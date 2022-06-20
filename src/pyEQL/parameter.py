@@ -4,7 +4,7 @@ This module implements the Parameter() class, which is used to store
 values, units, uncertainties, and reference data for various quantities
 used throughout pyEQL.
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2022 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """

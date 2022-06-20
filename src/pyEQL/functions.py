@@ -1,7 +1,7 @@
 """
 pyEQL functions that take Solution objects as inputs or return Solution objects
 
-:copyright: 2013-2018 by Ryan S. Kingsbury
+:copyright: 2013-2022 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
