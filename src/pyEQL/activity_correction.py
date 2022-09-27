@@ -16,8 +16,7 @@ are called from within the get_activity_coefficient method of the Solution class
 import logging
 import math
 
-# functions for properties of water
-import pyEQL.water_properties as h2o
+from iapws import IAPWS95
 
 # the pint unit registry
 from pyEQL import unit
@@ -62,6 +61,10 @@ def _debye_parameter_B(temperature="25 degC"):
     0.3291...
 
     """
+    water_substance = IAPWS95(
+        T=unit(temperature).magnitude,
+        P=unit("1 atm").to("MPa").magnitude,
+    )
     # TODO - fix this and resolve units
     param_B = (
         8
@@ -69,9 +72,10 @@ def _debye_parameter_B(temperature="25 degC"):
         * unit.N_A
         * unit.elementary_charge**2
         / (
-            h2o.water_density(unit(temperature))
+            water_substance.mu
+            * unit("1 g/L")  # in g/L
             * unit.epsilon_0
-            * h2o.water_dielectric_constant(unit(temperature))
+            * water_substance.epsilon
             * unit.boltzmann_constant
             * unit(temperature)
         )
@@ -120,15 +124,19 @@ def _debye_parameter_activity(temperature="25 degC"):
     _debye_parameter_osmotic
 
     """
+    water_substance = IAPWS95(
+        T=unit(temperature).magnitude,
+        P=unit("1 atm").to("MPa").magnitude,
+    )
 
     debyeparam = (
         unit.elementary_charge**3
-        * (2 * math.pi * unit.N_A * h2o.water_density(unit(temperature))) ** 0.5
+        * (2 * math.pi * unit.N_A * water_substance.rho * unit("1 g/L")) ** 0.5
         / (
             4
             * math.pi
             * unit.epsilon_0
-            * h2o.water_dielectric_constant(unit(temperature))
+            * water_substance.epsilon
             * unit.boltzmann_constant
             * unit(temperature)
         )
@@ -232,9 +240,13 @@ def _debye_parameter_volume(temperature="25 degC"):
     _debye_parameter_osmotic
 
     """
+    water_substance = IAPWS95(
+        T=unit(temperature).magnitude,
+        P=unit("1 atm").to("MPa").magnitude,
+    )
 
     # TODO - add partial derivatives to calculation
-    epsilon = h2o.water_dielectric_constant(unit(temperature))
+    epsilon = water_substance.epsilon
     dedp = unit("-0.01275 1/MPa")
     result = (
         -2
