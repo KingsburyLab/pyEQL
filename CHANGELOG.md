@@ -2,6 +2,7 @@
 
 ## 0.6.0 (in progress)
 
+- replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - replace elements.py with `pymatgen.core.periodic_table`
 - add `pymatgen` as a depedency
 - migrate all tests to `pytest`

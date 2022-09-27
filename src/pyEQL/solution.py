@@ -12,12 +12,12 @@ import logging
 # import libraries for scientific functions
 import math
 
+from iapws import IAPWS95
 from pint import DimensionalityError
 
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
 import pyEQL.solute as sol
-import pyEQL.water_properties as h2o
 
 # import the parameters database
 # the pint unit registry
@@ -109,6 +109,12 @@ class Solution:
         else:
             self.pressure = unit("1 atm")
 
+        # instantiate a water substance for property retrieval
+        self.water_substance = IAPWS95(
+            T=self.get_temperature().magnitude,
+            P=self.get_pressure().to("MPa").magnitude,
+        )
+
         # create an empty dictionary of components
         self.components = {}
 
@@ -138,7 +144,15 @@ class Solution:
             # calculate the solvent (water) mass based on the density and the solution volume
             self.add_solvent(
                 self.solvent_name,
-                str(self.volume * h2o.water_density(self.temperature)),
+                str(
+                    self.volume.magnitude
+                    / 1000
+                    * IAPWS95(
+                        T=self.get_temperature().magnitude,
+                        P=self.get_pressure().to("MPa").magnitude,
+                    ).rho
+                    * unit.Quantity("1 kg")
+                ),
             )
 
         # set the pH with H+ and OH-
@@ -194,7 +208,10 @@ class Solution:
             target_vol = orig_volume - solute_vol
 
             # adjust the amount of solvent
-            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            # density is returned in kg/m3 = g/L
+            target_mass = (
+                target_vol.magnitude * self.water_substance.rho * unit.Quantity("1 g")
+            )
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
@@ -427,7 +444,7 @@ class Solution:
         electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123.
         doi:10.1016/j.fluid.2014.05.037.
         """
-        di_water = h2o.water_dielectric_constant(self.get_temperature())
+        di_water = self.water_substance.epsilon
 
         denominator = 1
         for item in self.components:
@@ -480,8 +497,10 @@ class Solution:
         #                    coefficients[2] * conc ** 2
         #                except TypeError:
         #                    continue
-        viscosity_rel = self.get_viscosity_dynamic() / h2o.water_viscosity_dynamic(
-            self.get_temperature(), self.get_pressure()
+        viscosity_rel = (
+            self.get_viscosity_dynamic()
+            / self.water_substance.mu
+            * unit.Quantity("1 Pa*s")
         )
 
         return viscosity_rel
@@ -564,12 +583,8 @@ class Solution:
         G_123 = a0 + a1 * (temperature.magnitude) ** 0.75
         G_23 = b0 + b1 * (temperature.magnitude) ** 0.5
 
-        # get the kinematic viscosity of water
-        nu_w = (
-            h2o.water_viscosity_kinematic(temperature, self.get_pressure())
-            .to("m**2 / s")
-            .magnitude
-        )
+        # get the kinematic viscosity of water, returned by IAPWS in m2/s
+        nu_w = self.water_substance.nu
 
         # compute the effective molar mass of the solution
         MW = self.get_mass() / (
@@ -951,7 +966,11 @@ class Solution:
             target_vol = orig_volume - solute_vol
 
             # adjust the amount of solvent
-            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            # volume in L, density in kg/m3 = g/L
+            target_mass = (
+                target_vol.magnitude * self.water_substance.rho * unit.Quantity("1 g")
+            )
+
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
@@ -1041,7 +1060,12 @@ class Solution:
             target_vol = orig_volume - solute_vol
 
             # adjust the amount of solvent
-            target_mass = target_vol * h2o.water_density(self.get_temperature())
+            target_mass = (
+                target_vol.magnitude
+                / 1000
+                * self.water_substance.rho
+                * unit.Quantity("1 kg")
+            )
             mw = self.get_solvent().get_molecular_weight()
             target_mol = target_mass / mw
             self.get_solvent().moles = target_mol
@@ -1436,7 +1460,8 @@ class Solution:
                 total_molarity = self.get_total_moles_solute() / self.get_volume()
                 return (
                     molal
-                    * h2o.water_density(self.get_temperature())
+                    * self.water_substance.rho
+                    * unit.Quantity("1 g/L")
                     * total_molality
                     / total_molarity
                 ).to("dimensionless")
@@ -2239,7 +2264,7 @@ class Solution:
             base_value = None
 
         base_temperature = unit("25 degC")
-        base_pressure = unit("1 atm")
+        # base_pressure = unit("1 atm")
 
         # perform temperature-corrections or other adjustments for certain
         # parameter types
@@ -2253,7 +2278,8 @@ class Solution:
                     base_value
                     * self.get_temperature()
                     / base_temperature
-                    * h2o.water_viscosity_dynamic(base_temperature, base_pressure)
+                    * self.water_substance.mu
+                    * unit.Quantity("1 Pa*s")
                     / self.get_viscosity_dynamic()
                 )
             else:
@@ -2268,9 +2294,12 @@ class Solution:
         if name == "partial_molar_volume":
             # calculate the partial molar volume for water since it isn't in the database
             if solute == "H2O":
-                vol = self.get_solute("H2O").get_molecular_weight() / h2o.water_density(
-                    self.get_temperature()
+                vol = (
+                    self.get_solute("H2O").get_molecular_weight()
+                    / self.water_substance.rho
+                    * unit.Quantity("1 g/L")
                 )
+
                 return vol.to("cm **3 / mol")
             else:
                 if base_value is not None:
@@ -2414,8 +2443,8 @@ class Solution:
 
         """
         # calculate the volume of the pure solvent
-        solvent_vol = self.get_solvent_mass() / h2o.water_density(
-            self.get_temperature(), self.get_pressure()
+        solvent_vol = self.get_solvent_mass() / (
+            self.water_substance.rho * unit.Quantity("1 g/L")
         )
 
         return solvent_vol.to("L")
