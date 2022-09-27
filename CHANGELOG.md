@@ -2,11 +2,12 @@
 
 ## 0.6.0 (in progress)
 
-- replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
-- replace elements.py with `pymatgen.core.periodic_table`
-- add `pymatgen` as a depedency
-- migrate all tests to `pytest`
-- add pre-commit configuration and lint with `black`
+- Add more comprehensive platform testing via `tox`
+- Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
+- Replace elements.py with `pymatgen.core.periodic_table`
+- Add `pymatgen` as a depedency
+- Migrate all tests to `pytest`
+- Add pre-commit configuration and lint with `black`
 - Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
 
 ## 0.5.0 (2018-09-19)
