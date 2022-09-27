@@ -2,6 +2,10 @@
 
 ## 0.6.0 (in progress)
 
+- replace elements.py with `pymatgen.core.periodic_table`
+- add `pymatgen` as a depedency
+- migrate all tests to `pytest`
+- add pre-commit configuration and lint with `black`
 - Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
 
 ## 0.5.0 (2018-09-19)

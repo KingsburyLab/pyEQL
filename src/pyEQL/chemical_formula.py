@@ -13,6 +13,8 @@ The correct case must be used when specifying elements.
 # logging system
 import logging
 
+from pymatgen.core.periodic_table import Element
+
 from pyEQL.logging_system import Unique
 
 logger = logging.getLogger(__name__)
@@ -29,6 +31,9 @@ formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
 # add formatter to the handler
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+# atomic masses
+ATOMIC_MASS = {e.symbol: e.atomic_mass for e in Element}
 
 
 # Formula validation and processing functions. These internal routines
@@ -734,12 +739,8 @@ def get_element_weight(formula, element):
     moles = get_element_mole_ratio(formula, element)
 
     if moles != 0:
-        # import elements.py - used to retreive various molecular data
-        from pyEQL.elements import ELEMENTS
-
         # look up the molecular weight for the element
-        mass = ELEMENTS[element].mass
-
+        mass = ATOMIC_MASS[element]
         wt = mass * moles
     else:
         wt = 0.0
@@ -817,9 +818,6 @@ def get_molecular_weight(formula):
     elements
 
     """
-    # import elements.py - used to retreive various molecular data
-    from pyEQL.elements import ELEMENTS
-
     # perform validity check and return a parsed list of the chemical formula
     input_list = _consolidate_formula(formula)
     mw = 0
@@ -830,7 +828,7 @@ def get_molecular_weight(formula):
                 index = input_list.index(item)
                 quantity = input_list[index + 1]
                 # look up the molecular weight for the element
-                mass = ELEMENTS[item].mass
+                mass = ATOMIC_MASS[item]
                 mw += mass * quantity
 
         # if the list item is a number or a charge, move on
