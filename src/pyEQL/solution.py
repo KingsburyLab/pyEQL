@@ -529,13 +529,13 @@ class Solution:
 
         .. math::
 
-            \\ln \\nu = \\ln {\\nu_w MW_w \over \sum_i x_i MW_i } +
-            15 x_+^2 + x_+^3  \delta G^*_{123} + 3 x_+ \delta G^*_{23} (1-0.05x_+)
+            \\ln \\nu = \\ln {\\nu_w MW_w \\over \\sum_i x_i MW_i } +
+            15 x_+^2 + x_+^3  \\delta G^*_{123} + 3 x_+ \\delta G^*_{23} (1-0.05x_+)
 
         Where:
 
-        .. math:: \delta G^*_{123} = a_o + a_1 (T)^{0.75}
-        .. math:: \delta G^*_{23} = b_o + b_1 (T)^{0.5}
+        .. math:: \\delta G^*_{123} = a_o + a_1 (T)^{0.75}
+        .. math:: \\delta G^*_{23} = b_o + b_1 (T)^{0.5}
 
         In which :math: `\\nu` is the kinematic viscosity, MW is the molecular weight,
         `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
@@ -634,7 +634,7 @@ class Solution:
 
         .. math::
 
-            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
+            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
 
         Note: PHREEQC uses the molal rather than molar concentration according to
         http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
@@ -704,7 +704,7 @@ class Solution:
         -----
         Osmotic pressure is calculated based on the water activity [#]_ [#]_ :
 
-        .. math:: \\Pi = {RT \\over V_w} \ln a_w
+        .. math:: \\Pi = {RT \\over V_w} \\ln a_w
 
         Where :math:`\\Pi` is the osmotic pressure, :math:`V_w` is the partial
         molar volume of water (18.2 cm**3/mol), and :math:`a_w` is the water
@@ -1747,7 +1747,7 @@ class Solution:
         -----
         Water activity is related to the osmotic coefficient in a solution containing i solutes by: [#]_
 
-        .. math:: \ln a_w = - \\Phi M_w \\sum_i m_i
+        .. math:: \\ln a_w = - \\Phi M_w \\sum_i m_i
 
         Where :math:`M_w` is the molar mass of water (0.018015 kg/mol) and :math:`m_i` is the molal concentration
         of each species.
@@ -1818,7 +1818,7 @@ class Solution:
         -----
         The ionic strength is calculated according to:
 
-        .. math:: I = \sum_i m_i z_i^2
+        .. math:: I = \\sum_i m_i z_i^2
 
         Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
 
@@ -1859,7 +1859,7 @@ class Solution:
         -----
         The charge balance is calculated according to:
 
-        .. math:: CB = F \sum_i n_i z_i
+        .. math:: CB = F \\sum_i n_i z_i
 
         Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
 
@@ -1888,7 +1888,7 @@ class Solution:
         -----
         The alkalinity is calculated according to: [#]_
 
-        .. math:: Alk = F \sum_i z_i C_B - \sum_i z_i C_A
+        .. math:: Alk = F \\sum_i z_i C_B - \\sum_i z_i C_A
 
         Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively
         (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
@@ -2084,7 +2084,7 @@ class Solution:
 
         .. math::
 
-            t_i = {D_i z_i^2 C_i \\over \sum D_i z_i^2 C_i}
+            t_i = {D_i z_i^2 C_i \\over \\sum D_i z_i^2 C_i}
 
         Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
         coefficient, and :math:`z_i` is the charge, and the summation extends
@@ -2211,7 +2211,7 @@ class Solution:
 
         .. math::
 
-            \mu_i = {F |z_i| D_i \over RT}
+            \\mu_i = {F |z_i| D_i \\over RT}
 
         References
         ----------
@@ -2344,11 +2344,11 @@ class Solution:
         The chemical potential energy (related to the Gibbs mixing energy) is
         calculated as follows: [#]_
 
-        .. math::      E = R T \sum_i n_i  \ln a_i
+        .. math::      E = R T \\sum_i n_i  \\ln a_i
 
         or
 
-        .. math::      E = R T \sum_i n_i \ln x_i
+        .. math::      E = R T \\sum_i n_i \\ln x_i
 
         Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
         :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
@@ -2420,7 +2420,7 @@ class Solution:
         -----
         The lattice distance is related to the molar concentration as follows:
 
-        .. math:: d = ( C_i N_A ) ^ {-{1\over3}}
+        .. math:: d = ( C_i N_A ) ^ {-{1 \\over 3}}
 
         """
         # calculate the volume per particle as the reciprocal of the molar concentration

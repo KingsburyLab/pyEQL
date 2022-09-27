@@ -298,7 +298,7 @@ def get_activity_coefficient_debyehuckel(
     -----
     Activity coefficient is calculated according to: [#]_
 
-    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 \sqrt I
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 \\sqrt I
 
     Valid only for I < 0.005
 
@@ -351,7 +351,7 @@ def get_activity_coefficient_guntelberg(
     ------
     Activity coefficient is calculated according to: [#]_
 
-    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 {\sqrt I \\over (1 + \sqrt I)}
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 {\\sqrt I \\over (1 + \\sqrt I)}
 
     Valid for I < 0.1
 
@@ -405,7 +405,7 @@ def get_activity_coefficient_davies(
     -----
     Activity coefficient is calculated according to: [#]_
 
-    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 ({\sqrt I \\over (1 + \sqrt I)} + 0.2 I)
+    .. math:: \\ln \\gamma = A^{\\gamma} z_i^2 ({\\sqrt I \\over (1 + \\sqrt I)} + 0.2 I)
 
     Valid for 0.1 < I < 0.5
 
@@ -704,7 +704,7 @@ def _pitzer_f1(x):
     """
     The function of ionic strength used to calculate \beta_MX in the Pitzer ion intercation model.
 
-    .. math:: f(x) = 2 [ 1- (1+x) \exp(-x)] / x ^ 2
+    .. math:: f(x) = 2 [ 1- (1+x) \\exp(-x)] / x ^ 2
 
     References
     ----------
@@ -725,7 +725,7 @@ def _pitzer_f1(x):
 
 def _pitzer_f2(x):
     """
-    The function of ionic strength used to calculate \beta_\gamma in the Pitzer ion intercation model.
+    The function of ionic strength used to calculate \\beta_\\gamma in the Pitzer ion intercation model.
 
     .. math:: f(x) = -{2 \\over x ^ 2} [ 1 - ({1+x+ x^2 \\over 2}) \\exp(-x)]
 
@@ -830,9 +830,9 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 
 def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
     """
-    Return the B^\Phi coefficient for the Pitzer ion interaction model.
+    Return the B^\\Phi coefficient for the Pitzer ion interaction model.
 
-    .. math:: B^\Phi = \\beta_0 + \\beta1 \exp(-\\alpha_1 I ^{0.5}) + \\beta_2 \exp(-\\alpha_2 I ^ {0.5})
+    .. math:: B^\\Phi = \\beta_0 + \\beta1 \\exp(-\\alpha_1 I ^{0.5}) + \\beta_2 \\exp(-\\alpha_2 I ^ {0.5})
 
     or
 
