@@ -2,6 +2,13 @@
 
 ## 0.6.0 (in progress)
 
+- Implement extensible system for connecting `Solution` to various activity and speciation models. Models can be
+  integrated into pyEQL by implementing an `EOS` class. The desired activity model is selected on init.
+  Currently available models are `native` (for pyEQL's implementation of Pitzer, which decays gracefully into
+  Debye-Huckel and other models if parameters are not available) or `ideal` for a dummy engine that returns unit
+  activity coefficients. Support for additional external engines such as [`phreeqpython`](https://github.com/Vitens/phreeqpython)
+  is planned.
+- **BREAKING CHANGE** disable 'verbose' kwarg in `get_activity` and `get_activity_coefficient`
 - Add @property methods for `Solution.temperature` and `Solution.pressure`
 - **DEPRECATION NOTICE** - `get_temperature()`, `set_temperature()`, `get_pressure`, and `set_pressure()` will be
   removed in the next release. Use direct access via property (e.g. `Solution.pressure`) instead.
