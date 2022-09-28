@@ -82,7 +82,6 @@ def gibbs_mix(Solution1, Solution2):
     dilute = Solution2
     blend = mix(Solution1, Solution2)
     term_list = {concentrate: 0, dilute: 0, blend: 0}
-    temperature = blend.get_temperature()
 
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
@@ -94,7 +93,7 @@ def gibbs_mix(Solution1, Solution2):
 
     return (
         unit.R
-        * temperature.to("K")
+        * blend.temperature.to("K")
         * (term_list[blend] - term_list[concentrate] - term_list[dilute])
     ).to("J")
 
@@ -144,7 +143,6 @@ def entropy_mix(Solution1, Solution2):
     dilute = Solution2
     blend = mix(Solution1, Solution2)
     term_list = {concentrate: 0, dilute: 0, blend: 0}
-    temperature = blend.get_temperature()
 
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
@@ -156,7 +154,7 @@ def entropy_mix(Solution1, Solution2):
 
     return (
         unit.R
-        * temperature.to("K")
+        * blend.temperature.to("K")
         * (term_list[blend] - term_list[concentrate] - term_list[dilute])
     ).to("J")
 
@@ -279,7 +277,7 @@ def donnan_eql(solution, fixed_charge):
     # the stuff in the term below doesn't change on iteration, so calculate it up-front
     # assign it the correct units and extract the magnitude for a performance gain
     exp_term = (
-        (molar_volume / (unit.R * solution.get_temperature() * z_cation * nu_cation))
+        (molar_volume / (unit.R * solution.temperature * z_cation * nu_cation))
         .to("1/Pa")
         .magnitude
     )
@@ -374,11 +372,11 @@ def mix(Solution1, Solution2):
         logger.error("mix() function does not support non-water solvents. Aborting.")
 
     # set the pressure for the new solution
-    p1 = Solution1.get_pressure()
-    t1 = Solution1.get_temperature()
+    p1 = Solution1.pressure
+    t1 = Solution1.temperature
     v1 = Solution1.get_volume()
-    p2 = Solution2.get_pressure()
-    t2 = Solution2.get_temperature()
+    p2 = Solution2.pressure
+    t2 = Solution2.temperature
     v2 = Solution2.get_volume()
 
     # check to see if the solutions have the same temperature and pressure

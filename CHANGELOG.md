@@ -2,6 +2,9 @@
 
 ## 0.6.0 (in progress)
 
+- Add @property methods for `Solution.temperature` and `Solution.pressure`
+- **DEPRECATION NOTICE** - `get_temperature()`, `set_temperature()`, `get_pressure`, and `set_pressure()` will be
+  removed in the next release. Use direct access via property (e.g. `Solution.pressure`) instead.
 - Add more comprehensive platform testing via `tox`
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace elements.py with `pymatgen.core.periodic_table`

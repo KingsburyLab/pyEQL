@@ -11,8 +11,10 @@ import logging
 
 # import libraries for scientific functions
 import math
+from typing import Optional
 
 from iapws import IAPWS95
+from monty.dev import deprecated
 from pint import DimensionalityError
 
 # internal pyEQL imports
@@ -47,72 +49,63 @@ class Solution:
     """
     Class representing the properties of a solution. Instances of this class
     contain information about the solutes, solvent, and bulk properties.
-
-    Parameters
-    ----------
-    solutes : list of lists, optional
-                See add_solute() documentation for formatting of this list.
-                Defaults to empty (pure solvent) if omitted
-    volume : str, optional
-                Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
-                Note that the total solution volume will be computed using partial molar
-                volumes of the respective solutes as they are added to the solution.
-    temperature : str, optional
-                The solution temperature, including the unit. Defaults to '25 degC' if omitted.
-    pressure : Quantity, optional
-                The ambient pressure of the solution, including the unit.
-                Defaults to '1 atm' if omitted.
-    pH : number, optional
-                Negative log of H+ activity. If omitted, the solution will be
-                initialized to pH 7 (neutral) with appropriate quantities of
-                H+ and OH- ions
-
-    Returns
-    -------
-    Solution
-        A Solution object.
-
-    Examples
-    --------
-    >>> s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']],temperature='20 degC',volume='500 mL')
-    >>> print(s1)
-    Components:
-    ['H2O', 'Cl-', 'H+', 'OH-', 'Na+']
-    Volume: 0.5 l
-    Density: 1.0383030844030992 kg/l
-
-    See Also
-    --------
-    add_solute
-
     """
 
-    def __init__(self, solutes=[], **kwargs):
+    def __init__(
+        self,
+        solutes=[],
+        volume: Optional[str] = None,
+        temperature: str = "298.15 K",
+        pressure: str = "1 atm",
+        pH: float = 7,
+        **kwargs,
+    ):
+        """
 
-        # initialize the volume
-        if "volume" in kwargs:
+        Args:
+            solutes : list of lists, optional
+                        See add_solute() documentation for formatting of this list.
+                        Defaults to empty (pure solvent) if omitted
+            volume : str, optional
+                        Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
+                        Note that the total solution volume will be computed using partial molar
+                        volumes of the respective solutes as they are added to the solution.
+            temperature : str, optional
+                        The solution temperature, including the unit. Defaults to '25 degC' if omitted.
+            pressure : Quantity, optional
+                        The ambient pressure of the solution, including the unit.
+                        Defaults to '1 atm' if omitted.
+            pH : number, optional
+                        Negative log of H+ activity. If omitted, the solution will be
+                        initialized to pH 7 (neutral) with appropriate quantities of
+                        H+ and OH- ions
+
+        Examples:
+            >>> s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']],temperature='20 degC',volume='500 mL')
+            >>> print(s1)
+            Components:
+            ['H2O', 'Cl-', 'H+', 'OH-', 'Na+']
+            Volume: 0.5 l
+            Density: 1.0383030844030992 kg/l
+
+        See Also:
+            add_solute
+        """
+
+        # initialize the volume with a flag to distinguish user-specified volume
+        if volume is not None:
             volume_set = True
-            self.volume = unit(kwargs["volume"])
+            self.volume = unit(volume).to("L")
         else:
             volume_set = False
             self.volume = unit("1 L")
-
-        # set the temperature
-        if "temperature" in kwargs:
-            self.temperature = unit(kwargs["temperature"])
-        else:
-            self.temperature = unit("25 degC")
-
-        # set the pressure
-        if "pressure" in kwargs:
-            self.pressure = unit(kwargs["pressure"])
-        else:
-            self.pressure = unit("1 atm")
+        self._temperature = unit(temperature)
+        self._pressure = unit(pressure)
 
         # instantiate a water substance for property retrieval
         self.water_substance = IAPWS95(
-            T=self.get_temperature().magnitude,
-            P=self.get_pressure().to("MPa").magnitude,
+            T=self.temperature.magnitude,
+            P=self.pressure.to("MPa").magnitude,
         )
 
         # create an empty dictionary of components
@@ -147,20 +140,12 @@ class Solution:
                 str(
                     self.volume.magnitude
                     / 1000
-                    * IAPWS95(
-                        T=self.get_temperature().magnitude,
-                        P=self.get_pressure().to("MPa").magnitude,
-                    ).rho
+                    * self.water_substance.rho
                     * unit.Quantity("1 kg")
                 ),
             )
 
         # set the pH with H+ and OH-
-        if "pH" in kwargs:
-            pH = kwargs["pH"]
-        else:
-            pH = 7
-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
         self.add_solute("OH-", str(10 ** (-1 * (14 - pH))) + "mol/L")
 
@@ -254,6 +239,28 @@ class Solution:
         """
         return self.components[self.solvent_name]
 
+    @property
+    def temperature(self):
+        """
+        Return the temperature of the solution in Kelvin.
+        """
+        return self._temperature.to("K")
+
+    @temperature.setter
+    def temperature(self, temperature: str):
+        """
+        Set the solution temperature.
+
+        Args:
+            temperature: pint-compatible string, e.g. '25 degC'
+        """
+        self._temperature = unit(temperature)
+        # recalculate the volume
+        self._update_volume()
+
+    @deprecated(
+        message="get_temperature() will be removed in the next release. Access the temperature directly via the attribute Solution.temperature"
+    )
     def get_temperature(self):
         """
         Return the temperature of the solution.
@@ -266,8 +273,11 @@ class Solution:
         -------
         Quantity: The temperature of the solution, in Kelvin.
         """
-        return self.temperature.to("K")
+        return self.temperature
 
+    @deprecated(
+        message="set_temperature() will be removed in the next release. Set the temperature directly via the attribute Solution.temperature"
+    )
     def set_temperature(self, temperature):
         """
         Set the solution temperature.
@@ -282,6 +292,28 @@ class Solution:
         # recalculate the volume
         self._update_volume()
 
+    @property
+    def pressure(self):
+        """
+        Return the hydrostatic pressure of the solution in atm.
+        """
+        return self._pressure.to("atm")
+
+    @pressure.setter
+    def pressure(self, pressure: str):
+        """
+        Set the solution pressure.
+
+        Args:
+            pressure: pint-compatible string, e.g. '1.2 atmC'
+        """
+        self._pressure = unit(pressure)
+        # recalculate the volume
+        self._update_volume()
+
+    @deprecated(
+        message="get_pressure() will be removed in the next release. Access the pressure directly via the attribute Solution.pressure"
+    )
     def get_pressure(self):
         """
         Return the hydrostatic pressure of the solution.
@@ -290,8 +322,11 @@ class Solution:
         -------
         Quantity: The hydrostatic pressure of the solution, in atm.
         """
-        return self.pressure.to("atm")
+        return self.pressure
 
+    @deprecated(
+        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
+    )
     def set_pressure(self, pressure):
         """
         Set the hydrostatic pressure of the solution.
@@ -301,7 +336,7 @@ class Solution:
         pressure : str
             String representing the temperature, e.g. '25 degC'
         """
-        self.pressure = unit(pressure)
+        self._pressure = unit(pressure)
 
         # recalculate the volume
         self._update_volume()
@@ -579,7 +614,7 @@ class Solution:
             )
 
         # compute the delta G parameters
-        temperature = self.get_temperature().to("degC")
+        temperature = self.temperature.to("degC")
         G_123 = a0 + a1 * (temperature.magnitude) ** 0.75
         G_23 = b0 + b1 * (temperature.magnitude) ** 0.5
 
@@ -652,7 +687,6 @@ class Solution:
 
         """
         EC = 0 * unit("S/m")
-        temperature = self.get_temperature()
 
         for item in self.components:
             z = abs(self.get_solute(item).get_formal_charge())
@@ -670,7 +704,7 @@ class Solution:
                     diffusion_coefficient
                     * (unit.e * unit.N_A) ** 2
                     * self.get_solute(item).get_formal_charge() ** 2
-                    / (unit.R * temperature)
+                    / (unit.R * self.temperature)
                 )
 
                 EC += (
@@ -733,13 +767,13 @@ class Solution:
         osmotic_pressure = (
             -1
             * unit.R
-            * self.get_temperature()
+            * self.temperature
             / partial_molar_volume_water
             * math.log(self.get_water_activity())
         )
         logger.info(
             "Computed osmotic pressure of solution as %s Pa at T= %s degrees C"
-            % (osmotic_pressure, self.get_temperature())
+            % (osmotic_pressure, self.temperature)
         )
         return osmotic_pressure.to("Pa")
 
@@ -1332,7 +1366,6 @@ class Solution:
 
         """
         ion = self.components[solute]
-        temperature = str(self.get_temperature())
 
         # return zero activity if the concentration of the solute is zero
         if self.get_amount(solute, "mol").magnitude == 0:
@@ -1405,7 +1438,7 @@ class Solution:
                     Salt.z_anion,
                     Salt.nu_cation,
                     Salt.nu_anion,
-                    temperature,
+                    str(self.temperature),
                 )
 
                 logger.info(
@@ -1421,7 +1454,9 @@ class Solution:
                     % self.get_ionic_strength()
                 )
                 molal = ac.get_activity_coefficient_debyehuckel(
-                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                    self.get_ionic_strength(),
+                    ion.get_formal_charge(),
+                    str(self.temperature),
                 )
 
             # use the Guntelberg approximation for 0.005 < I < 0.1
@@ -1431,7 +1466,9 @@ class Solution:
                     % self.get_ionic_strength()
                 )
                 molal = ac.get_activity_coefficient_guntelberg(
-                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                    self.get_ionic_strength(),
+                    ion.get_formal_charge(),
+                    str(self.temperature),
                 )
 
             # use the Davies equation for 0.1 < I < 0.5
@@ -1441,7 +1478,9 @@ class Solution:
                     % self.get_ionic_strength()
                 )
                 molal = ac.get_activity_coefficient_davies(
-                    self.get_ionic_strength(), ion.get_formal_charge(), temperature
+                    self.get_ionic_strength(),
+                    ion.get_formal_charge(),
+                    str(self.temperature),
                 )
 
             else:
@@ -1622,7 +1661,6 @@ class Solution:
         <Quantity(0.891154788474231, 'dimensionless')>
 
         """
-        temperature = str(self.get_temperature())
         ionic_strength = self.get_ionic_strength()
 
         effective_osmotic_sum = 0
@@ -1684,7 +1722,7 @@ class Solution:
                     item.z_anion,
                     item.nu_cation,
                     item.nu_anion,
-                    temperature,
+                    str(self.temperature),
                 )
 
                 logger.info(
@@ -1995,8 +2033,6 @@ class Solution:
         get_dielectric_constant()
 
         """
-        temperature = self.get_temperature()
-
         # to preserve dimensionality, convert the ionic strength into mol/L units
         ionic_strength = self.get_ionic_strength().magnitude * unit("mol/L")
         dielectric_constant = self.get_dielectric_constant()
@@ -2005,7 +2041,7 @@ class Solution:
             dielectric_constant
             * unit.epsilon_0
             * unit.k
-            * temperature
+            * self.temperature
             / (2 * unit.N_A * unit.e**2 * ionic_strength)
         ) ** 0.5
 
@@ -2051,11 +2087,15 @@ class Solution:
         get_dielectric_constant()
 
         """
-        temperature = self.get_temperature()
         dielectric_constant = self.get_dielectric_constant()
 
         bjerrum_length = unit.e**2 / (
-            4 * math.pi * dielectric_constant * unit.epsilon_0 * unit.k * temperature
+            4
+            * math.pi
+            * dielectric_constant
+            * unit.epsilon_0
+            * unit.k
+            * self.temperature
         )
         return bjerrum_length.to("nm")
 
@@ -2171,20 +2211,18 @@ class Solution:
         TODO
 
         """
-        temperature = self.get_temperature()
-
         D = self.get_property(solute, "diffusion_coefficient")
 
         molar_cond = (
             D
             * (unit.e * unit.N_A) ** 2
             * self.get_solute(solute).get_formal_charge() ** 2
-            / (unit.R * temperature)
+            / (unit.R * self.temperature)
         )
 
         logger.info(
             "Computed molar conductivity as %s from D = %s at T=%s"
-            % (molar_cond, str(D), temperature)
+            % (molar_cond, str(D), self.temperature)
         )
 
         return molar_cond.to("mS / cm / (mol/L)")
@@ -2218,8 +2256,6 @@ class Solution:
         .. [#] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
 
         """
-        temperature = self.get_temperature()
-
         D = self.get_property(solute, "diffusion_coefficient")
 
         mobility = (
@@ -2227,12 +2263,12 @@ class Solution:
             * unit.e
             * abs(self.get_solute(solute).get_formal_charge())
             * D
-            / (unit.R * temperature)
+            / (unit.R * self.temperature)
         )
 
         logger.info(
             "Computed ionic mobility as %s from D = %s at T=%s"
-            % (mobility, str(D), temperature)
+            % (mobility, str(D), self.temperature)
         )
 
         return mobility.to("m**2/V/s")
@@ -2276,7 +2312,7 @@ class Solution:
                 # assume that the base viscosity is that of pure water
                 return (
                     base_value
-                    * self.get_temperature()
+                    * self.temperature
                     / base_temperature
                     * self.water_substance.mu
                     * unit.Quantity("1 Pa*s")
@@ -2304,7 +2340,7 @@ class Solution:
             else:
                 if base_value is not None:
                     return base_value
-                    if self.get_temperature() != base_temperature:
+                    if self.temperature != base_temperature:
                         logger.warning(
                             "Partial molar volume for species %s not corrected for temperature"
                             % solute
@@ -2366,8 +2402,6 @@ class Solution:
         --------
 
         """
-        temperature = self.get_temperature()
-
         E = unit("0 J")
 
         # loop through all the components and add their potential energy
@@ -2376,14 +2410,14 @@ class Solution:
                 if activity_correction is True:
                     E += (
                         unit.R
-                        * temperature.to("K")
+                        * self.temperature.to("K")
                         * self.get_amount(item, "mol")
                         * math.log(self.get_activity(item))
                     )
                 else:
                     E += (
                         unit.R
-                        * temperature.to("K")
+                        * self.temperature.to("K")
                         * self.get_amount(item, "mol")
                         * math.log(self.get_amount(item, "fraction"))
                     )
@@ -2454,8 +2488,6 @@ class Solution:
         Return the volume of only the solutes
 
         """
-        temperature = str(self.get_temperature())
-
         # identify the predominant salt in the solution
         Salt = self.get_salt()
 
@@ -2509,7 +2541,7 @@ class Solution:
                 Salt.z_anion,
                 Salt.nu_cation,
                 Salt.nu_anion,
-                temperature,
+                str(self.temperature),
             )
 
             solute_vol += (
@@ -2565,7 +2597,7 @@ class Solution:
         TODO - clarify whether this is a deep or shallow copy
         """
         # prepare to copy the bulk properties
-        new_temperature = str(self.get_temperature())
+        new_temperature = str(self.temperature)
         new_pressure = str(self.pressure)
         new_solvent = self.solvent_name
         new_solvent_mass = str(self.get_solvent_mass())
@@ -2693,8 +2725,8 @@ class Solution:
 
     def __str__(self):
         # set output of the print() statement for the solution
-        str1 = "Volume: {0:.3f~}\n".format(self.get_volume())
-        str2 = "Pressure: {0:.3f~}\n".format(self.get_pressure())
-        str3 = "Temperature: {0:.3f~}\n".format(self.get_temperature())
-        str4 = "Components: {0:}\n".format(self.list_solutes())
+        str1 = f"Volume: {self.get_volume():.3f~}\n"
+        str2 = f"Pressure: {self.pressure:.3f~}\n"
+        str3 = f"Temperature: {self.temperature:.3f~}\n"
+        str4 = f"Components: {self.list_solutes():}\n"
         return str1 + str2 + str3 + str4

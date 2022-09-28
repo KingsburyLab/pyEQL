@@ -51,9 +51,9 @@ class Test_empty_solution:
         # It should have 0.997 kg water mass
         assert np.isclose(s1.get_solvent_mass().to("kg").magnitude, 0.9970415)
         # the temperature should be 25 degC
-        assert s1.get_temperature().to("degC").magnitude == 25
+        assert s1.temperature.to("degC").magnitude == 25
         # the pressure should be 1 atm
-        assert s1.get_pressure().to("atm").magnitude == 1
+        assert s1.pressure.to("atm").magnitude == 1
         # the pH should be 7.0
         assert np.isclose(s1.get_activity("H+"), 1e-7, atol=1e-9)
         # it should contain H2O, H+, and OH- species
