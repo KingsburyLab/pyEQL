@@ -4,6 +4,8 @@
 
 A Python library for solution chemistry
 
+[![testing](https://github.com/rkingsbury/pyeql/workflows/testing/badge.svg)](https://github.com/rkingsbury/pyeql/actions?query=workflow%3Atesting) [![codecov](https://codecov.io/gh/rkingsbury/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/rkingsbury/pyeql)
+
 ## Description
 
 pyEQL is a Python library that provides tools for modeling aqueous electrolyte
