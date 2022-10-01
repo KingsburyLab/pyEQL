@@ -92,7 +92,7 @@ class Test_effective_pitzer:
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.get_ionic_strength())
-            temperature = str(s1.get_temperature())
+            temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
@@ -139,7 +139,7 @@ class Test_effective_pitzer:
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.get_ionic_strength())
-            temperature = str(s1.get_temperature())
+            temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
@@ -186,7 +186,7 @@ class Test_effective_pitzer:
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.get_ionic_strength())
-            temperature = str(s1.get_temperature())
+            temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
@@ -234,7 +234,7 @@ class Test_effective_pitzer:
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.get_ionic_strength())
-            temperature = str(s1.get_temperature())
+            temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
