@@ -145,7 +145,7 @@ class Test_solute_addition:
         # unit, the resulting concentration should be exactly what was specified
         s2.set_amount("Na+", "5 mol/kg")
         s2.set_amount("Cl-", "5 mol/kg")
-        assert s2.get_amount("Na+", "mol/kg").magnitude == 5
+        assert np.allclose(s2.get_amount("Na+", "mol/kg").magnitude, 5)
 
     def test_set_amount_7(self, s2):
         # If the concentration of a solute is directly set with a substance
