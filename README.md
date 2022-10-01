@@ -1,10 +1,11 @@
+[![testing](https://github.com/rkingsbury/pyeql/workflows/testing/badge.svg)](https://github.com/rkingsbury/pyeql/actions?query=workflow%3Atesting) [![codecov](https://codecov.io/gh/rkingsbury/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/rkingsbury/pyeql)
+
 # pyEQL
 
 ![pyeql logo](pyeql-logo.png)
 
 A Python library for solution chemistry
 
-[![testing](https://github.com/rkingsbury/pyeql/workflows/testing/badge.svg)](https://github.com/rkingsbury/pyeql/actions?query=workflow%3Atesting) [![codecov](https://codecov.io/gh/rkingsbury/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/rkingsbury/pyeql)
 
 ## Description
 
