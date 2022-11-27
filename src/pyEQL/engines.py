@@ -134,7 +134,7 @@ class IdealEOS(EOS):
         """
         Return the volume of the solutes
         """
-        return unit("0 dimensionless")
+        return unit("0 L")
 
     def equilibrate(self, solution):
         """
