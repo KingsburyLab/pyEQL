@@ -11,7 +11,7 @@ import logging
 
 # import libraries for scientific functions
 import math
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, List, Dict
 
 from iapws import IAPWS95
 from monty.dev import deprecated
@@ -53,7 +53,7 @@ class Solution:
 
     def __init__(
         self,
-        solutes: Optional[Union[list[list[str]], dict[str, str]]] = None,
+        solutes: Optional[Union[List[List[str]], Dict[str, str]]] = None,
         volume: Optional[str] = None,
         temperature: str = "298.15 K",
         pressure: str = "1 atm",
