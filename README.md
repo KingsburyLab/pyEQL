@@ -51,6 +51,9 @@ Detailed documentation is available at [](https://pyeql.readthedocs.io/)
   for older version of Python.
 - [pint](https://github.com/hgrecco/pint) - for units-awarecalculations
 - [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
+- [pymatgen](https://github.com/materialsproject/pymatgen) - periodic table and chemical formula information
+- [iapws](https://github.com/jjgomera/iapws/) - equations of state for water
+- [monty](https://github.com/materialsvirtuallab/monty) - serialization and deserialization utilities
 
 <!-- pyscaffold-notes -->
 
