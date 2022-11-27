@@ -34,12 +34,12 @@ Hacking pyEQL in Six Easy Steps:
 3. Create a branch for your work. We loosely follow the branching guidelines
    outlined at http://nvie.com/posts/a-successful-git-branching-model.
 
-   If you are adding **documentation** or **bug fixes**, start with the **master** branch and
+   If you are adding **documentation** or **bug fixes**, start with the **main** branch and
    prefix your branch with "fix-" or "doc-" as appropriate::
 
-    git checkout -b fix-myfix master
+    git checkout -b fix-myfix main
 
-    git checkout -b doc-mydoc master
+    git checkout -b doc-mydoc main
 
    If you are adding a **new feature**, start with the **develop** branch and prefix your
    branch with "feature-"::

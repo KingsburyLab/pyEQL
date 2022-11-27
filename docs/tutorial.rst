@@ -30,7 +30,7 @@ More usefully, you can specify solutes and bulk properties:
 
 .. doctest::
 
-    >>> s2 = pyEQL.Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']],pH=8,temperature = '20 degC', volume='8 L')
+    >>> s2 = pyEQL.Solution({'Na+':'0.5 mol/kg', 'Cl-': '0.5 mol/kg'},pH=8,temperature = '20 degC', volume='8 L')
 
 Retrieving Solution Properties
 ==============================
