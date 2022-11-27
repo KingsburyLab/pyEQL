@@ -11,7 +11,7 @@ import logging
 
 # import libraries for scientific functions
 import math
-from typing import Literal, Optional, Union, List, Dict
+from typing import Dict, List, Literal, Optional, Union
 
 from iapws import IAPWS95
 from monty.dev import deprecated
