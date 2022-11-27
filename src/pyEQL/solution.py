@@ -11,7 +11,7 @@ import logging
 
 # import libraries for scientific functions
 import math
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from iapws import IAPWS95
 from monty.dev import deprecated
@@ -53,7 +53,7 @@ class Solution:
 
     def __init__(
         self,
-        solutes=[],
+        solutes=Union[list[list[str]], dict[str, str]],
         volume: Optional[str] = None,
         temperature: str = "298.15 K",
         pressure: str = "1 atm",
@@ -64,8 +64,17 @@ class Solution:
         """
 
         Args:
-            solutes : list of lists, optional
-                        See add_solute() documentation for formatting of this list.
+            solutes : dict, optional. Keys must be the chemical formula, while values must be
+                        str Quantity representing the amount. For example:
+
+                        {"Na+": "0.1 mol/L", "Cl-": "0.1 mol/L"}
+
+                        Note that an older "list of lists" syntax is also supported; however this
+                        will be deprecated in the future and is no longer recommended. The equivalent
+                        list syntax for the above example is
+
+                        [["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]]
+
                         Defaults to empty (pure solvent) if omitted
             volume : str, optional
                         Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
@@ -160,8 +169,14 @@ class Solution:
         self.add_solute("OH-", str(10 ** (-1 * (14 - pH))) + "mol/L")
 
         # populate the other solutes
-        for item in solutes:
-            self.add_solute(*item)
+        if isinstance(solutes, dict):
+            for k, v in solutes.items():
+                self.add_solute(k, v)
+        elif isinstance(solutes, list):
+            for item in solutes:
+                self.add_solute(*item)
+        else:
+            raise ValueError("Solutes must be given as a list or dict!")
 
     def add_solute(self, formula, amount, parameters={}):
         """Primary method for adding substances to a pyEQL solution
