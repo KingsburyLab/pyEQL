@@ -53,7 +53,7 @@ class Solution:
 
     def __init__(
         self,
-        solutes=Union[list[list[str]], dict[str, str]],
+        solutes: Optional[Union[list[list[str]], dict[str, str]]] = None,
         volume: Optional[str] = None,
         temperature: str = "298.15 K",
         pressure: str = "1 atm",
@@ -175,7 +175,7 @@ class Solution:
         elif isinstance(solutes, list):
             for item in solutes:
                 self.add_solute(*item)
-        else:
+        elif solutes is not None:
             raise ValueError("Solutes must be given as a list or dict!")
 
     def add_solute(self, formula, amount, parameters={}):
