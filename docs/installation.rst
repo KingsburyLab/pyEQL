@@ -46,6 +46,12 @@ This should automatically pull in the required dependencies as well.
 
     To get to Python 3.x, you have to type 'python3'. In this case, you would run 'pip3 install'
 
+Installing the development branch
+=================================
+If you want to use the bleeding edge (and potentially unstable!) development branch instead of the latest stable release, you can substitute the following for the above `pip install` command:
+
+    pip install git+https://github.com/rkingsbury/pyEQL.git@develop
+
 Manually install via Git
 ========================
 Simply navigate to a directory of your choice on your computer and clone the repository by executing the following terminal command::
