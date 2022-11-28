@@ -48,7 +48,7 @@ This should automatically pull in the required dependencies as well.
 
 Installing the development branch
 =================================
-If you want to use the bleeding edge (and potentially unstable!) development branch instead of the latest stable release, you can substitute the following for the above `pip install` command:
+If you want to use the bleeding edge (and potentially unstable!) development branch instead of the latest stable release, you can substitute the following for the above 'pip install' command::
 
     pip install git+https://github.com/rkingsbury/pyEQL.git@develop
 
