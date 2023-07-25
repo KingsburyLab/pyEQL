@@ -1186,6 +1186,9 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
 
+    @deprecated(
+        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead."
+    )
     def get_mole_fraction(self, solute):
         """
         Return the mole fraction of 'solute' in the solution
