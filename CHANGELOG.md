@@ -2,6 +2,7 @@
 
 ## 0.6.0 (in progress)
 
+- `Solution`: add `pE` and `pH` properties
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation models. Models can be
   integrated into pyEQL by implementing an `EOS` class. The desired activity model is selected on init.

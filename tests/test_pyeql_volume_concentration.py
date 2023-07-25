@@ -56,6 +56,8 @@ class Test_empty_solution:
         assert s1.pressure.to("atm").magnitude == 1
         # the pH should be 7.0
         assert np.isclose(s1.get_activity("H+"), 1e-7, atol=1e-9)
+        assert np.isclose(s1.pH, 7.0, atol=0.01)
+        assert np.isclose(s1.pE, 8.5)
         # it should contain H2O, H+, and OH- species
         assert set(s1.list_solutes()) == set(["H2O", "OH-", "H+"])
 
@@ -213,6 +215,8 @@ class Test_solute_addition:
         s3.add_amount("Na+", "1 mol/kg")
         s3.add_amount("Cl-", "1 mol/kg")
         assert np.allclose(s3.get_solvent_mass().to("kg").magnitude, original)
+        assert np.isclose(s3.pH, 7.0, atol=0.01)
+        assert np.isclose(s3.pE, 8.5)
 
     def test_add_amount_12(self, s3):
         # If the concentration of a solute is directly increased with a substance / mass

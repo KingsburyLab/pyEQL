@@ -15,7 +15,7 @@ from typing import Dict, List, Literal, Optional, Union
 
 from iapws import IAPWS95
 from monty.dev import deprecated
-from pint import DimensionalityError
+from pint import DimensionalityError, Quantity
 
 # internal pyEQL imports
 import pyEQL.solute as sol
@@ -58,6 +58,7 @@ class Solution:
         temperature: str = "298.15 K",
         pressure: str = "1 atm",
         pH: float = 7,
+        pE: float = 8.5,
         engine: Literal["native", "ideal"] = "native",
         **kwargs,
     ):
@@ -89,6 +90,10 @@ class Solution:
                         Negative log of H+ activity. If omitted, the solution will be
                         initialized to pH 7 (neutral) with appropriate quantities of
                         H+ and OH- ions
+            pe: the pE value (redox potential) of the solution.     Lower values = more reducing,
+                higher values = more oxidizing. At pH 7, water is stable between approximately
+                -7 to +14. The default value corresponds to a pE value typical of natural
+                waters in equilibrium with the atmosphere.
 
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']],temperature='20 degC',volume='500 mL')
@@ -111,6 +116,7 @@ class Solution:
             self.volume = unit("1 L")
         self._temperature = unit(temperature)
         self._pressure = unit(pressure)
+        self.pE = pE
 
         # instantiate a water substance for property retrieval
         self.water_substance = IAPWS95(
@@ -265,7 +271,7 @@ class Solution:
         return self.components[self.solvent_name]
 
     @property
-    def temperature(self):
+    def temperature(self) -> Quantity:
         """
         Return the temperature of the solution in Kelvin.
         """
@@ -318,7 +324,14 @@ class Solution:
         self._update_volume()
 
     @property
-    def pressure(self):
+    def pH(self) -> Quantity:
+        """
+        Return the pH of the solution.
+        """
+        return self.p('H+', activity=True)
+
+    @property
+    def pressure(self) -> Quantity:
         """
         Return the hydrostatic pressure of the solution in atm.
         """
