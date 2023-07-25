@@ -54,7 +54,7 @@ class Test_density_nacl:
             sol = pyEQL.Solution()
             sol.add_solute("Na+", conc)
             sol.add_solute("Cl-", conc)
-            result = sol.get_density().to("g/mL").magnitude
+            result = sol.density.to("g/mL").magnitude
             expected = pub_density[i]
 
             assert np.isclose(result, expected, rtol=0.01)
@@ -92,7 +92,7 @@ class Test_density_nacl:
             sol = pyEQL.Solution()
             sol.add_solute("Na+", conc)
             sol.add_solute("Cl-", conc)
-            result = sol.get_density().to("g/mL").magnitude
+            result = sol.density.to("g/mL").magnitude
             expected = phreeqc_pitzer_density[i]
 
             assert np.isclose(result, expected, rtol=0.01)

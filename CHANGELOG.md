@@ -2,7 +2,7 @@
 
 ## 0.6.0 (in progress)
 
-- `Solution`: add `pE` and `pH` properties
+- `Solution`: new properties `pE`, `pH`, `mass`, `density`
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation models. Models can be
   integrated into pyEQL by implementing an `EOS` class. The desired activity model is selected on init.
@@ -12,8 +12,9 @@
   is planned.
 - **BREAKING CHANGE** disable 'verbose' kwarg in `get_activity` and `get_activity_coefficient`
 - Add @property methods for `Solution.temperature` and `Solution.pressure`
-- **DEPRECATION NOTICE** - `get_temperature()`, `set_temperature()`, `get_pressure`, and `set_pressure()` will be
-  removed in the next release. Use direct access via property (e.g. `Solution.pressure`) instead.
+- **DEPRECATION NOTICE** - `get_temperature()`, `set_temperature()`, `get_pressure`, `set_pressure()`,
+  `get_mass()`, and `get_density` will be removed in the next release. Use direct access via property
+  (e.g. `Solution.pressure`) instead.
 - Add more comprehensive platform testing via `tox`
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace elements.py with `pymatgen.core.periodic_table`

@@ -328,7 +328,7 @@ class Solution:
         """
         Return the pH of the solution.
         """
-        return self.p('H+', activity=True)
+        return self.p("H+", activity=True)
 
     @property
     def pressure(self) -> Quantity:
@@ -457,7 +457,8 @@ class Solution:
         # update the solution volume
         self.volume = unit(volume)
 
-    def get_mass(self):
+    @property
+    def mass(self) -> Quantity:
         """
         Return the total mass of the solution.
 
@@ -476,6 +477,28 @@ class Solution:
             total_mass += self.get_amount(item, "kg")
         return total_mass.to("kg")
 
+    @deprecated(
+        message="get_mass() will be removed in the next release. Use the Solution.mass property instead."
+    )
+    def get_mass(self):
+        """
+        Return the total mass of the solution.
+
+        The mass is calculated each time this method is called.
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity: the mass of the solution, in kg
+
+        """
+        return self.mass
+
+    @deprecated(
+        message="get_density() will be removed in the next release. Use the Solution.density property instead."
+    )
     def get_density(self):
         """
         Return the density of the solution.
@@ -486,7 +509,20 @@ class Solution:
         -------
         Quantity: The density of the solution.
         """
-        return self.get_mass() / self.get_volume()
+        return self.density
+
+    @property
+    def density(self) -> Quantity:
+        """
+        Return the density of the solution.
+
+        Density is calculated from the mass and volume each time this method is called.
+
+        Returns
+        -------
+        Quantity: The density of the solution.
+        """
+        return self.mass / self.get_volume()
 
     def get_dielectric_constant(self):
         """
@@ -589,7 +625,7 @@ class Solution:
         get_viscosity_kinematic
         get_viscosity_relative
         """
-        return self.get_viscosity_kinematic() * self.get_density()
+        return self.get_viscosity_kinematic() * self.density
 
     def get_viscosity_kinematic(self):
         """
@@ -660,9 +696,7 @@ class Solution:
         nu_w = self.water_substance.nu
 
         # compute the effective molar mass of the solution
-        MW = self.get_mass() / (
-            self.get_moles_solvent() + self.get_total_moles_solute()
-        )
+        MW = self.mass / (self.get_moles_solvent() + self.get_total_moles_solute())
 
         # get the MW of water
         MW_w = self.get_solvent().get_molecular_weight()
@@ -909,7 +943,7 @@ class Solution:
         if units == "fraction":
             return moles / (self.get_moles_solvent() + self.get_total_moles_solute())
         elif units == "%":
-            return moles.to("kg", "chem", mw=mw) / self.get_mass().to("kg") * 100
+            return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
         elif unit(units).dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",

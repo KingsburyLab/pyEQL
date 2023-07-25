@@ -43,7 +43,7 @@ like temperature, ionic strength, conductivity, and density.
 
     >>> s2.get_volume()
     8.071524653929277 liter
-    >>> s2.get_density()
+    >>> s2.density
     1.0182802742389558 kilogram/liter
     >>> s2.get_conductivity()
     4.083570230022633 siemens/meter
