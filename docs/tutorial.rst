@@ -41,11 +41,11 @@ Bulk Solution Properties
 pyEQL provides a variety of methods to calculate or look up bulk properties
 like temperature, ionic strength, conductivity, and density.
 
-    >>> s2.get_volume()
+    >>> s2.volume
     8.071524653929277 liter
     >>> s2.density
     1.0182802742389558 kilogram/liter
-    >>> s2.get_conductivity()
+    >>> s2.conductivity
     4.083570230022633 siemens/meter
     >>> s2.get_ionic_strength()
     0.500000505903012 mole/kilogram

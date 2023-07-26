@@ -576,9 +576,7 @@ class Solution:
 
         return dielectric_constant
 
-    @deprecated(
-        message="get_viscosity_relative() will be removed in the next release."
-    )
+    @deprecated(message="get_viscosity_relative() will be removed in the next release.")
     def get_viscosity_relative(self):
         """
         Return the viscosity of the solution relative to that of water
@@ -608,9 +606,7 @@ class Solution:
         #                except TypeError:
         #                    continue
         return (
-            self.viscosity_dynamic
-            / self.water_substance.mu
-            * unit.Quantity("1 Pa*s")
+            self.viscosity_dynamic / self.water_substance.mu * unit.Quantity("1 Pa*s")
         )
 
     # TODO - need tests for viscosity
@@ -746,9 +742,9 @@ class Solution:
             )
 
         # compute the delta G parameters
-        temperature = self.temperature.to("degC")
-        G_123 = a0 + a1 * (temperature.magnitude) ** 0.75
-        G_23 = b0 + b1 * (temperature.magnitude) ** 0.5
+        temperature = self.temperature.to("degC").magnitude
+        G_123 = a0 + a1 * (temperature) ** 0.75
+        G_23 = b0 + b1 * (temperature) ** 0.5
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
         nu_w = self.water_substance.nu
@@ -772,6 +768,9 @@ class Solution:
 
         return math.exp(nu) * unit("m**2 / s")
 
+    @deprecated(
+        message="get_conductivity() will be removed in the next release. Access directly via the property Solution.conductivity."
+    )
     def get_conductivity(self):
         """
         Compute the electrical conductivity of the solution.
@@ -806,7 +805,54 @@ class Solution:
 
         References
         ----------
-        .. [#] http://www.aqion.de/site/77
+        .. [#] https://www.aqion.de/site/electrical-conductivity
+        .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
+
+        See Also
+        --------
+        get_ionic_strength()
+        get_molar_conductivity()
+        get_activity_coefficient()
+
+        """
+        return self.conductivity
+
+    @property
+    def conductivity(self):
+        """
+        Compute the electrical conductivity of the solution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The electrical conductivity of the solution in Siemens / meter.
+
+        Notes
+        -----
+        Conductivity is calculated by summing the molar conductivities of the respective
+        solutes, but they are activity-corrected and adjusted using an empricial exponent.
+        This approach is used in PHREEQC and Aqion models [#]_ [#]_
+
+        .. math::
+
+            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+
+        Where:
+
+        .. math::
+
+            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
+
+        Note: PHREEQC uses the molal rather than molar concentration according to
+        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
+
+        References
+        ----------
+        .. [#] https://www.aqion.de/site/electrical-conductivity
         .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
 
         See Also
@@ -1291,8 +1337,9 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
 
-    @deprecated(replacmenet=get_amount,
-        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead."
+    @deprecated(
+        replacement=get_amount,
+        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead.",
     )
     def get_mole_fraction(self, solute):
         """
