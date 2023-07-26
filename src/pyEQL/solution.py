@@ -810,7 +810,7 @@ class Solution:
 
         See Also
         --------
-        get_ionic_strength()
+        ionic_strength
         get_molar_conductivity()
         get_activity_coefficient()
 
@@ -1708,6 +1708,9 @@ class Solution:
                 -osmotic_coefficient * 0.018015 * unit("kg/mol") * concentration_sum
             ) * unit("1 dimensionless")
 
+    @deprecated(
+        message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"
+    )
     def get_ionic_strength(self):
         """
         Return the ionic strength of the solution.
@@ -1736,22 +1739,61 @@ class Solution:
         Examples
         --------
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-        >>> s1.get_ionic_strength()
+        >>> s1.ionic_strength
         <Quantity(0.20000010029672785, 'mole / kilogram')>
 
         >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
-        >>> s1.get_ionic_strength()
+        >>> s1.ionic_strength
         <Quantity(1.0000001004383303, 'mole / kilogram')>
         """
-        self.ionic_strength = 0
+        return self.ionic_strength
+
+    @property
+    def ionic_strength(self) -> Quantity:
+        """
+        Return the ionic strength of the solution.
+
+        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
+
+        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
+
+        Returns
+        -------
+        Quantity :
+            The ionic strength of the parent solution, mol/kg.
+
+        See Also
+        --------
+        get_activity
+        get_water_activity
+
+        Notes
+        -----
+        The ionic strength is calculated according to:
+
+        .. math:: I = \\sum_i m_i z_i^2
+
+        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.ionic_strength
+        <Quantity(0.20000010029672785, 'mole / kilogram')>
+
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
+        >>> s1.ionic_strength
+        <Quantity(1.0000001004383303, 'mole / kilogram')>
+        """
+        ionic_strength = 0
         for solute in self.components.keys():
-            self.ionic_strength += (
+            ionic_strength += (
                 0.5
                 * self.get_amount(solute, "mol/kg")
                 * self.components[solute].get_formal_charge() ** 2
             )
 
-        return self.ionic_strength
+        return ionic_strength
 
     def get_charge_balance(self):
         """
@@ -1902,12 +1944,12 @@ class Solution:
 
         See Also
         --------
-        get_ionic_strength()
+        ionic_strength
         get_dielectric_constant()
 
         """
         # to preserve dimensionality, convert the ionic strength into mol/L units
-        ionic_strength = self.get_ionic_strength().magnitude * unit("mol/L")
+        ionic_strength = self.ionic_strength.magnitude * unit("mol/L")
         dielectric_constant = self.get_dielectric_constant()
 
         debye_length = (
@@ -2029,10 +2071,10 @@ class Solution:
             if activity_correction is True:
                 gamma = self.get_activity_coefficient(item)
 
-                if self.get_ionic_strength().magnitude < 0.36 * z:
+                if self.ionic_strength.magnitude < 0.36 * z:
                     alpha = 0.6 / z**0.5
                 else:
-                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z
+                    alpha = self.ionic_strength.magnitude**0.5 / z
 
                 if item == solute:
                     numerator = term * gamma**alpha

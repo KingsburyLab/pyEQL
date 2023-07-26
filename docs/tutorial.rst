@@ -47,7 +47,7 @@ like temperature, ionic strength, conductivity, and density.
     1.0182802742389558 kilogram/liter
     >>> s2.conductivity
     4.083570230022633 siemens/meter
-    >>> s2.get_ionic_strength()
+    >>> s2.ionic_strength
     0.500000505903012 mole/kilogram
 
 Individual Solute Properties

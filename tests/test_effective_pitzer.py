@@ -91,12 +91,12 @@ class Test_effective_pitzer:
             param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
             alpha1 = 2
             alpha2 = 0
-            molality = Salt.get_effective_molality(s1.get_ionic_strength())
+            molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.get_ionic_strength(),
+                    s1.ionic_strength,
                     molality,
                     alpha1,
                     alpha2,
@@ -138,12 +138,12 @@ class Test_effective_pitzer:
             param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
             alpha1 = 2
             alpha2 = 0
-            molality = Salt.get_effective_molality(s1.get_ionic_strength())
+            molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.get_ionic_strength(),
+                    s1.ionic_strength,
                     molality,
                     alpha1,
                     alpha2,
@@ -185,12 +185,12 @@ class Test_effective_pitzer:
             param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
             alpha1 = 2
             alpha2 = 0
-            molality = Salt.get_effective_molality(s1.get_ionic_strength())
+            molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.get_ionic_strength(),
+                    s1.ionic_strength,
                     molality,
                     alpha1,
                     alpha2,
@@ -233,12 +233,12 @@ class Test_effective_pitzer:
             param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
             alpha1 = 2
             alpha2 = 0
-            molality = Salt.get_effective_molality(s1.get_ionic_strength())
+            molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
             activity_coefficient = (
                 pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.get_ionic_strength(),
+                    s1.ionic_strength,
                     molality,
                     alpha1,
                     alpha2,

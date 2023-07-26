@@ -279,10 +279,10 @@ class NativeEOS(EOS):
             # molality = (solution.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # determine the effective molality of the salt in the solution
-            molality = Salt.get_effective_molality(solution.get_ionic_strength())
+            molality = Salt.get_effective_molality(solution.ionic_strength)
 
             activity_coefficient = ac.get_activity_coefficient_pitzer(
-                solution.get_ionic_strength(),
+                solution.ionic_strength,
                 molality,
                 alpha1,
                 alpha2,
@@ -304,37 +304,37 @@ class NativeEOS(EOS):
             molal = activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
-        elif solution.get_ionic_strength().magnitude <= 0.005:
+        elif solution.ionic_strength.magnitude <= 0.005:
             logger.info(
                 "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient."
-                % solution.get_ionic_strength()
+                % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_debyehuckel(
-                solution.get_ionic_strength(),
+                solution.ionic_strength,
                 ion.get_formal_charge(),
                 str(solution.temperature),
             )
 
         # use the Guntelberg approximation for 0.005 < I < 0.1
-        elif solution.get_ionic_strength().magnitude <= 0.1:
+        elif solution.ionic_strength.magnitude <= 0.1:
             logger.info(
                 "Ionic strength = %s. Using Guntelberg to calculate activity coefficient."
-                % solution.get_ionic_strength()
+                % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_guntelberg(
-                solution.get_ionic_strength(),
+                solution.ionic_strength,
                 ion.get_formal_charge(),
                 str(solution.temperature),
             )
 
         # use the Davies equation for 0.1 < I < 0.5
-        elif solution.get_ionic_strength().magnitude <= 0.5:
+        elif solution.ionic_strength.magnitude <= 0.5:
             logger.info(
                 "Ionic strength = %s. Using Davies equation to calculate activity coefficient."
-                % solution.get_ionic_strength()
+                % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_davies(
-                solution.get_ionic_strength(),
+                solution.ionic_strength,
                 ion.get_formal_charge(),
                 str(solution.temperature),
             )
@@ -428,7 +428,7 @@ class NativeEOS(EOS):
         <Quantity(0.891154788474231, 'dimensionless')>
 
         """
-        ionic_strength = solution.get_ionic_strength()
+        ionic_strength = solution.ionic_strength
 
         effective_osmotic_sum = 0
         molality_sum = 0
@@ -552,7 +552,7 @@ class NativeEOS(EOS):
                 alpha2 = 0
 
             apparent_vol = ac.get_apparent_volume_pitzer(
-                solution.get_ionic_strength(),
+                solution.ionic_strength,
                 molality,
                 alpha1,
                 alpha2,
