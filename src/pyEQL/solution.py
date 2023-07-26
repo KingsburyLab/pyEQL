@@ -289,40 +289,6 @@ class Solution:
         # recalculate the volume
         self._update_volume()
 
-    @deprecated(
-        message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
-    )
-    def get_temperature(self):
-        """
-        Return the temperature of the solution.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity: The temperature of the solution, in Kelvin.
-        """
-        return self.temperature
-
-    @deprecated(
-        message="set_temperature() will be removed in the next release. Set the temperature directly via the property Solution.temperature"
-    )
-    def set_temperature(self, temperature):
-        """
-        Set the solution temperature.
-
-        Parameters
-        ----------
-        temperature : str
-            String representing the temperature, e.g. '25 degC'
-        """
-        self.temperature = unit(temperature)
-
-        # recalculate the volume
-        self._update_volume()
-
     @property
     def pH(self) -> Quantity:
         """
@@ -346,36 +312,6 @@ class Solution:
             pressure: pint-compatible string, e.g. '1.2 atmC'
         """
         self._pressure = unit(pressure)
-        # recalculate the volume
-        self._update_volume()
-
-    @deprecated(
-        message="get_pressure() will be removed in the next release. Access the pressure directly via the property Solution.pressure"
-    )
-    def get_pressure(self):
-        """
-        Return the hydrostatic pressure of the solution.
-
-        Returns
-        -------
-        Quantity: The hydrostatic pressure of the solution, in atm.
-        """
-        return self.pressure
-
-    @deprecated(
-        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
-    )
-    def set_pressure(self, pressure):
-        """
-        Set the hydrostatic pressure of the solution.
-
-        Parameters
-        ----------
-        pressure : str
-            String representing the temperature, e.g. '25 degC'
-        """
-        self._pressure = unit(pressure)
-
         # recalculate the volume
         self._update_volume()
 
@@ -477,40 +413,6 @@ class Solution:
             total_mass += self.get_amount(item, "kg")
         return total_mass.to("kg")
 
-    @deprecated(
-        message="get_mass() will be removed in the next release. Use the Solution.mass property instead."
-    )
-    def get_mass(self):
-        """
-        Return the total mass of the solution.
-
-        The mass is calculated each time this method is called.
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity: the mass of the solution, in kg
-
-        """
-        return self.mass
-
-    @deprecated(
-        message="get_density() will be removed in the next release. Use the Solution.density property instead."
-    )
-    def get_density(self):
-        """
-        Return the density of the solution.
-
-        Density is calculated from the mass and volume each time this method is called.
-
-        Returns
-        -------
-        Quantity: The density of the solution.
-        """
-        return self.density
-
     @property
     def density(self) -> Quantity:
         """
@@ -576,39 +478,6 @@ class Solution:
 
         return dielectric_constant
 
-    @deprecated(message="get_viscosity_relative() will be removed in the next release.")
-    def get_viscosity_relative(self):
-        """
-        Return the viscosity of the solution relative to that of water
-
-        This is calculated using a simplified form of the Jones-Dole equation:
-
-        .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
-
-        Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
-
-        See
-        <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
-        """
-        # if self.ionic_strength.magnitude > 0.2:
-        #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
-
-        #        viscosity_rel = 1
-        #        for item in self.components:
-        #            # ignore water
-        #            if item != 'H2O':
-        #                # skip over solutes that don't have parameters
-        #                try:
-        #                    conc = self.get_amount(item,'mol/kg').magnitude
-        #                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
-        #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-        #                    coefficients[2] * conc ** 2
-        #                except TypeError:
-        #                    continue
-        return (
-            self.viscosity_dynamic / self.water_substance.mu * unit.Quantity("1 Pa*s")
-        )
-
     # TODO - need tests for viscosity
     @property
     def viscosity_dynamic(self) -> Quantity:
@@ -623,64 +492,27 @@ class Solution:
         """
         return self.viscosity_kinematic * self.density
 
-    @deprecated(
-        message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
-    )
-    def get_viscosity_dynamic(self):
-        """
-        Return the dynamic (absolute) viscosity of the solution.
-
-        Calculated from the kinematic viscosity
-
-        See Also
-        --------
-        get_viscosity_kinematic
-        """
-        return self.viscosity_dynamic
-
-    @deprecated(
-        message="get_viscosity_kinematic() will be removed in the next release. Access directly via the property Solution.viscosity_kinematic."
-    )
-    def get_viscosity_kinematic(self):
-        """
-        Return the kinematic viscosity of the solution.
-
-        Notes
-        -----
-        The calculation is based on a model derived from the Eyring equation
-        and presented in [#]_
-
-        .. math::
-
-            \\ln \\nu = \\ln {\\nu_w MW_w \\over \\sum_i x_i MW_i } +
-            15 x_+^2 + x_+^3  \\delta G^*_{123} + 3 x_+ \\delta G^*_{23} (1-0.05x_+)
-
-        Where:
-
-        .. math:: \\delta G^*_{123} = a_o + a_1 (T)^{0.75}
-        .. math:: \\delta G^*_{23} = b_o + b_1 (T)^{0.5}
-
-        In which :math: `\\nu` is the kinematic viscosity, MW is the molecular weight,
-        `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
-
-        The a and b fitting parameters for a variety of common salts are included in the
-        database.
-
-        References
-        ----------
-        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
-               of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
-               Fluid Phase Equilib. 2013, 358, 44–49.
-
-        See Also
-        --------
-        viscosity_dynamic
-        """
-        return self.viscosity_kinematic
-
     # TODO - before deprecating get_viscosity_relative, consider whether the Jones-Dole
     # model should be integrated here as a fallback, in case salt parameters for the
     # other model are not available.
+    # if self.ionic_strength.magnitude > 0.2:
+    #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+
+    #        viscosity_rel = 1
+    #        for item in self.components:
+    #            # ignore water
+    #            if item != 'H2O':
+    #                # skip over solutes that don't have parameters
+    #                try:
+    #                    conc = self.get_amount(item,'mol/kg').magnitude
+    #                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+    #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+    #                    coefficients[2] * conc ** 2
+    #                except TypeError:
+    #                    continue
+    # return (
+    #     self.viscosity_dynamic / self.water_substance.mu * unit.Quantity("1 Pa*s")
+    # )
     @property
     def viscosity_kinematic(self):
         """
@@ -767,55 +599,6 @@ class Solution:
         )
 
         return math.exp(nu) * unit("m**2 / s")
-
-    @deprecated(
-        message="get_conductivity() will be removed in the next release. Access directly via the property Solution.conductivity."
-    )
-    def get_conductivity(self):
-        """
-        Compute the electrical conductivity of the solution.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The electrical conductivity of the solution in Siemens / meter.
-
-        Notes
-        -----
-        Conductivity is calculated by summing the molar conductivities of the respective
-        solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion models [#]_ [#]_
-
-        .. math::
-
-            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
-
-        Where:
-
-        .. math::
-
-            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
-
-        Note: PHREEQC uses the molal rather than molar concentration according to
-        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
-
-        References
-        ----------
-        .. [#] https://www.aqion.de/site/electrical-conductivity
-        .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
-
-        See Also
-        --------
-        ionic_strength
-        get_molar_conductivity()
-        get_activity_coefficient()
-
-        """
-        return self.conductivity
 
     # TODO - need tests of conductivity
     @property
@@ -1338,22 +1121,6 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
 
-    @deprecated(
-        replacement=get_amount,
-        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead.",
-    )
-    def get_mole_fraction(self, solute):
-        """
-        Return the mole fraction of 'solute' in the solution
-
-        Notes
-        -----
-        This function is DEPRECATED and will raise a warning when called.
-        Use get_amount() instead and specify 'fraction' as the unit type.
-        """
-        logger.warning("get_mole_fraction is DEPRECATED! Use get_amount() instead.")
-        return self.get_amount(solute, "fraction")
-
     def get_moles_solvent(self):
         """
         Return the moles of solvent present in the solution
@@ -1709,46 +1476,6 @@ class Solution:
                 -osmotic_coefficient * 0.018015 * unit("kg/mol") * concentration_sum
             ) * unit("1 dimensionless")
 
-    @deprecated(
-        message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"
-    )
-    def get_ionic_strength(self):
-        """
-        Return the ionic strength of the solution.
-
-        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
-        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
-
-        Returns
-        -------
-        Quantity :
-            The ionic strength of the parent solution, mol/kg.
-
-        See Also
-        --------
-        get_activity
-        get_water_activity
-
-        Notes
-        -----
-        The ionic strength is calculated according to:
-
-        .. math:: I = \\sum_i m_i z_i^2
-
-        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
-
-        Examples
-        --------
-        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-        >>> s1.ionic_strength
-        <Quantity(0.20000010029672785, 'mole / kilogram')>
-
-        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
-        >>> s1.ionic_strength
-        <Quantity(1.0000001004383303, 'mole / kilogram')>
-        """
-        return self.ionic_strength
-
     @property
     def ionic_strength(self) -> Quantity:
         """
@@ -1795,33 +1522,6 @@ class Solution:
             )
 
         return ionic_strength
-
-    @deprecated(
-        message="get_charge_balance() will be removed in the next release. Access directly via the property Solution.charge_balance"
-    )
-    def get_charge_balance(self):
-        """
-        Return the charge balance of the solution.
-
-        Return the charge balance of the solution. The charge balance represents the net electric charge
-        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-        have a small nonzero value.
-
-        Returns
-        -------
-        float :
-            The charge balance of the solution, in equivalents.
-
-        Notes
-        -----
-        The charge balance is calculated according to:
-
-        .. math:: CB = F \\sum_i n_i z_i
-
-        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
-
-        """
-        return self.charge_balance
 
     @property
     def charge_balance(self) -> float:
@@ -2076,7 +1776,7 @@ class Solution:
 
         If `activity_correction` is True, the contribution of each ion to the
         transport number is corrected with an activity factor. See the documentation
-        for get_conductivity() for an explanation of this correction.
+        for Solution.conductivity for an explanation of this correction.
 
         References
         ----------
@@ -2573,3 +2273,325 @@ class Solution:
         str3 = f"Temperature: {self.temperature:.3f~}\n"
         str4 = f"Components: {self.list_solutes():}\n"
         return str1 + str2 + str3 + str4
+
+    """
+    Legacy methods to be deprecated in a future release.
+    """
+
+    @deprecated(
+        message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
+    )
+    def get_temperature(self):
+        """
+        Return the temperature of the solution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity: The temperature of the solution, in Kelvin.
+        """
+        return self.temperature
+
+    @deprecated(
+        message="set_temperature() will be removed in the next release. Set the temperature directly via the property Solution.temperature"
+    )
+    def set_temperature(self, temperature):
+        """
+        Set the solution temperature.
+
+        Parameters
+        ----------
+        temperature : str
+            String representing the temperature, e.g. '25 degC'
+        """
+        self.temperature = unit(temperature)
+
+        # recalculate the volume
+        self._update_volume()
+
+        # recalculate the volume
+        self._update_volume()
+
+    @deprecated(
+        message="get_pressure() will be removed in the next release. Access the pressure directly via the property Solution.pressure"
+    )
+    def get_pressure(self):
+        """
+        Return the hydrostatic pressure of the solution.
+
+        Returns
+        -------
+        Quantity: The hydrostatic pressure of the solution, in atm.
+        """
+        return self.pressure
+
+    @deprecated(
+        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
+    )
+    def set_pressure(self, pressure):
+        """
+        Set the hydrostatic pressure of the solution.
+
+        Parameters
+        ----------
+        pressure : str
+            String representing the temperature, e.g. '25 degC'
+        """
+        self._pressure = unit(pressure)
+
+    @deprecated(
+        message="get_mass() will be removed in the next release. Use the Solution.mass property instead."
+    )
+    def get_mass(self):
+        """
+        Return the total mass of the solution.
+
+        The mass is calculated each time this method is called.
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity: the mass of the solution, in kg
+
+        """
+        return self.mass
+
+    @deprecated(
+        message="get_density() will be removed in the next release. Use the Solution.density property instead."
+    )
+    def get_density(self):
+        """
+        Return the density of the solution.
+
+        Density is calculated from the mass and volume each time this method is called.
+
+        Returns
+        -------
+        Quantity: The density of the solution.
+        """
+        return self.density
+
+    @deprecated(message="get_viscosity_relative() will be removed in the next release.")
+    def get_viscosity_relative(self):
+        """
+        Return the viscosity of the solution relative to that of water
+
+        This is calculated using a simplified form of the Jones-Dole equation:
+
+        .. math:: \\eta_{rel} = 1 + \\sum_i B_i m_i
+
+        Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
+
+        See
+        <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
+        """
+        # if self.ionic_strength.magnitude > 0.2:
+        #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+
+        #        viscosity_rel = 1
+        #        for item in self.components:
+        #            # ignore water
+        #            if item != 'H2O':
+        #                # skip over solutes that don't have parameters
+        #                try:
+        #                    conc = self.get_amount(item,'mol/kg').magnitude
+        #                    coefficients= self.get_solute(item).get_parameter('jones_dole_viscosity')
+        #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
+        #                    coefficients[2] * conc ** 2
+        #                except TypeError:
+        #                    continue
+        return (
+            self.viscosity_dynamic / self.water_substance.mu * unit.Quantity("1 Pa*s")
+        )
+
+    @deprecated(
+        message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
+    )
+    def get_viscosity_dynamic(self):
+        """
+        Return the dynamic (absolute) viscosity of the solution.
+
+        Calculated from the kinematic viscosity
+
+        See Also
+        --------
+        get_viscosity_kinematic
+        """
+        return self.viscosity_dynamic
+
+    @deprecated(
+        message="get_viscosity_kinematic() will be removed in the next release. Access directly via the property Solution.viscosity_kinematic."
+    )
+    def get_viscosity_kinematic(self):
+        """
+        Return the kinematic viscosity of the solution.
+
+        Notes
+        -----
+        The calculation is based on a model derived from the Eyring equation
+        and presented in [#]_
+
+        .. math::
+
+            \\ln \\nu = \\ln {\\nu_w MW_w \\over \\sum_i x_i MW_i } +
+            15 x_+^2 + x_+^3  \\delta G^*_{123} + 3 x_+ \\delta G^*_{23} (1-0.05x_+)
+
+        Where:
+
+        .. math:: \\delta G^*_{123} = a_o + a_1 (T)^{0.75}
+        .. math:: \\delta G^*_{23} = b_o + b_1 (T)^{0.5}
+
+        In which :math: `\\nu` is the kinematic viscosity, MW is the molecular weight,
+        `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
+
+        The a and b fitting parameters for a variety of common salts are included in the
+        database.
+
+        References
+        ----------
+        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
+               of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
+               Fluid Phase Equilib. 2013, 358, 44–49.
+
+        See Also
+        --------
+        viscosity_dynamic
+        """
+        return self.viscosity_kinematic
+
+    @deprecated(
+        message="get_conductivity() will be removed in the next release. Access directly via the property Solution.conductivity."
+    )
+    def get_conductivity(self):
+        """
+        Compute the electrical conductivity of the solution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The electrical conductivity of the solution in Siemens / meter.
+
+        Notes
+        -----
+        Conductivity is calculated by summing the molar conductivities of the respective
+        solutes, but they are activity-corrected and adjusted using an empricial exponent.
+        This approach is used in PHREEQC and Aqion models [#]_ [#]_
+
+        .. math::
+
+            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+
+        Where:
+
+        .. math::
+
+            \\alpha = \\begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
+
+        Note: PHREEQC uses the molal rather than molar concentration according to
+        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
+
+        References
+        ----------
+        .. [#] https://www.aqion.de/site/electrical-conductivity
+        .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
+
+        See Also
+        --------
+        ionic_strength
+        get_molar_conductivity()
+        get_activity_coefficient()
+
+        """
+        return self.conductivity
+
+    @deprecated(
+        replacement=get_amount,
+        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead.",
+    )
+    def get_mole_fraction(self, solute):
+        """
+        Return the mole fraction of 'solute' in the solution
+
+        Notes
+        -----
+        This function is DEPRECATED and will raise a warning when called.
+        Use get_amount() instead and specify 'fraction' as the unit type.
+        """
+        logger.warning("get_mole_fraction is DEPRECATED! Use get_amount() instead.")
+        return self.get_amount(solute, "fraction")
+
+    @deprecated(
+        message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"
+    )
+    def get_ionic_strength(self):
+        """
+        Return the ionic strength of the solution.
+
+        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
+        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
+
+        Returns
+        -------
+        Quantity :
+            The ionic strength of the parent solution, mol/kg.
+
+        See Also
+        --------
+        get_activity
+        get_water_activity
+
+        Notes
+        -----
+        The ionic strength is calculated according to:
+
+        .. math:: I = \\sum_i m_i z_i^2
+
+        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.ionic_strength
+        <Quantity(0.20000010029672785, 'mole / kilogram')>
+
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
+        >>> s1.ionic_strength
+        <Quantity(1.0000001004383303, 'mole / kilogram')>
+        """
+        return self.ionic_strength
+
+    @deprecated(
+        message="get_charge_balance() will be removed in the next release. Access directly via the property Solution.charge_balance"
+    )
+    def get_charge_balance(self):
+        """
+        Return the charge balance of the solution.
+
+        Return the charge balance of the solution. The charge balance represents the net electric charge
+        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
+        have a small nonzero value.
+
+        Returns
+        -------
+        float :
+            The charge balance of the solution, in equivalents.
+
+        Notes
+        -----
+        The charge balance is calculated according to:
+
+        .. math:: CB = F \\sum_i n_i z_i
+
+        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
+
+        """
+        return self.charge_balance
