@@ -35,7 +35,7 @@ class Test_debye_length:
         """ """
         s1 = pyEQL.Solution([["Na+", "0.1 mmol/L"], ["Cl-", "0.1 mmol/L"]])
 
-        result = s1.get_debye_length().magnitude
+        result = s1.debye_length.magnitude
         expected = 31
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -44,7 +44,7 @@ class Test_debye_length:
         """ """
         s1 = pyEQL.Solution([["Na+", "10 mmol/L"], ["Cl-", "10 mmol/L"]])
 
-        result = s1.get_debye_length().magnitude
+        result = s1.debye_length.magnitude
         expected = 3.1
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -53,7 +53,7 @@ class Test_debye_length:
         """ """
         s1 = pyEQL.Solution([["Na+", "0.2 mmol/L"], ["SO4-2", "0.1 mmol/L"]])
 
-        result = s1.get_debye_length().magnitude
+        result = s1.debye_length.magnitude
         expected = 18
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -62,7 +62,7 @@ class Test_debye_length:
         """ """
         s1 = pyEQL.Solution([["Na+", "20 mmol/L"], ["SO4-2", "10 mmol/L"]])
 
-        result = s1.get_debye_length().magnitude
+        result = s1.debye_length.magnitude
         expected = 1.8
 
         assert np.isclose(result, expected, rtol=RTOL)

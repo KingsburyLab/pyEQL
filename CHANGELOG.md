@@ -2,8 +2,12 @@
 
 ## 0.6.0 (in progress)
 
-- `Solution`: new properties `pressure`, `temperature`, `pE`, `pH`, `mass`, `density`,
-  `viscosity_dynamic`, `viscosity_kinematic`
+- **DEPRECATION NOTICE** `Solution`: new properties `pressure`, `temperature`, `pE`,
+- `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`,
+- `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`,
+- `dielectric_constant`, `charge_balance` have replaced the corresponding get_XXX and
+  set_XXX (for temperature and pressure) methods, which will be removed in a future
+  release. `get_viscosity_relative` will be removed entirely.
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation
   models. Models can be integrated into pyEQL by implementing an `EOS` class. The desired
@@ -12,8 +16,6 @@
   parameters are not available) or `ideal` for a dummy engine that returns unit activity
   coefficients. Support for additional external engines such as [`phreeqpython`](https://github.com/Vitens/phreeqpython) is planned.
 - **BREAKING CHANGE** disable 'verbose' kwarg in `get_activity` and `get_activity_coefficient`
-- **DEPRECATION NOTICE** - `get_temperature()`, `set_temperature()`, `get_pressure`, `set_pressure()`,
-  `get_mass()`, `get_viscosity_dynamic`, `get_viscosity_kinematic`, and `get_density` will be removed in the next release. Use direct access via property (e.g. `Solution.pressure`) instead. `get_viscosity_relative` will be removed entirely.
 - Add more comprehensive platform testing via `tox`
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace elements.py with `pymatgen.core.periodic_table`

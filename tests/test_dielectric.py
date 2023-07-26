@@ -32,7 +32,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Na+", "4.4 mol/kg"], ["Cl-", "4.4 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 46
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -43,7 +43,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Na+", "2 mol/kg"], ["Cl-", "2 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 58
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -54,7 +54,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Na+", "1 mol/kg"], ["Cl-", "1 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 66
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -65,7 +65,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["K+", "1 mol/kg"], ["Br-", "1 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 67
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -76,7 +76,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["K+", "3.4 mol/kg"], ["Br-", "3.4 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 51
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -87,7 +87,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Li+", "5 mol/kg"], ["Cl-", "5 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 39
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -98,7 +98,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Li+", "1 mol/kg"], ["Cl-", "1 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 64
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -110,7 +110,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Li+", "12 mol/kg"], ["Cl-", "12 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 24
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -121,7 +121,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Rb+", "6.5 mol/kg"], ["Cl-", "6.5 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 43
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -132,7 +132,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Rb+", "2.1 mol/kg"], ["Cl-", "2.1 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 59
 
         assert np.isclose(result, expected, rtol=RTOL)
@@ -143,7 +143,7 @@ class Test_dielectric:
         """
         s1 = pyEQL.Solution([["Rb+", "0.5 mol/kg"], ["Cl-", "0.5 mol/kg"]])
 
-        result = s1.get_dielectric_constant().magnitude
+        result = s1.dielectric_constant.magnitude
         expected = 73
 
         assert np.isclose(result, expected, rtol=RTOL)

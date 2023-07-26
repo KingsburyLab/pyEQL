@@ -5,7 +5,7 @@ pyEQL test suite for bulk property calculations
 This file contains tests for the bulk properties calculated by
 Solution class methods. Currently included methods are:
 
-- get_hardness()
+- hardness
 
 """
 
@@ -17,14 +17,14 @@ import pyEQL
 
 class test_hardness:
     """
-    test the get_hardness() method
+    test the hardness method
     ------------------------------
     """
 
     # an empty solution should have zero hardness
     def test_empty_solution(self):
         s1 = pyEQL.Solution()
-        result = s1.get_hardness().magnitude
+        result = s1.hardness.magnitude
         expected = 0
 
         assert result == expected
@@ -32,7 +32,7 @@ class test_hardness:
     # a solution with only monovalent ions should have zero hardness
     def test_hardness_1(self):
         s1 = pyEQL.Solution([["Na+", "0.2 mol/L"], ["Cl-", "0.2 mol/L"]])
-        result = s1.get_hardness().magnitude
+        result = s1.hardness.magnitude
         expected = 0
 
         assert result == expected
@@ -40,7 +40,7 @@ class test_hardness:
     # a solution with only multivalent anions should have zero hardness
     def test_hardness_2(self):
         s1 = pyEQL.Solution([["Na+", "0.4 mol/L"], ["SO4-2", "0.2 mol/L"]])
-        result = s1.get_hardness().magnitude
+        result = s1.hardness.magnitude
         expected = 0
 
         assert result == expected
@@ -49,7 +49,7 @@ class test_hardness:
     # molar concentration (e.g. multiply by the charge)
     def test_hardness_3(self):
         s1 = pyEQL.Solution([["Fe+3", "0.1 mol/L"], ["Cl-", "0.3 mol/L"]])
-        result = s1.get_hardness().magnitude
+        result = s1.hardness.magnitude
         expected = 15013.5
 
         assert round(abs(result - expected), 7) == 0
@@ -70,7 +70,7 @@ class test_hardness:
                 ["PO4-3", "0.1 mol/L"],
             ]
         )
-        result = s1.get_hardness().magnitude
+        result = s1.hardness.magnitude
         expected = 35031.5
 
         assert round(abs(result - expected), 7) == 0
@@ -78,7 +78,7 @@ class test_hardness:
     # the hardness should return g/L units
     def test_hardness_5(self):
         s1 = pyEQL.Solution([["Fe+3", "0.1 mol/L"], ["Cl-", "0.3 mol/L"]])
-        result = str(s1.get_hardness().dimensionality)
+        result = str(s1.hardness.dimensionality)
         expected = "[mass] / [length] ** 3"
 
         assert result == expected

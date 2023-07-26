@@ -426,7 +426,8 @@ class Solution:
         """
         return self.mass / self.get_volume()
 
-    def get_dielectric_constant(self):
+    @property
+    def dielectric_constant(self) -> Quantity:
         """
         Returns the dielectric constant of the solution.
 
@@ -674,6 +675,275 @@ class Solution:
                 )
 
         return EC.to("S/m")
+
+    @property
+    def ionic_strength(self) -> Quantity:
+        """
+        Return the ionic strength of the solution.
+
+        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
+
+        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
+
+        Returns
+        -------
+        Quantity :
+            The ionic strength of the parent solution, mol/kg.
+
+        See Also
+        --------
+        get_activity
+        get_water_activity
+
+        Notes
+        -----
+        The ionic strength is calculated according to:
+
+        .. math:: I = \\sum_i m_i z_i^2
+
+        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+        >>> s1.ionic_strength
+        <Quantity(0.20000010029672785, 'mole / kilogram')>
+
+        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
+        >>> s1.ionic_strength
+        <Quantity(1.0000001004383303, 'mole / kilogram')>
+        """
+        ionic_strength = 0
+        for solute in self.components.keys():
+            ionic_strength += (
+                0.5
+                * self.get_amount(solute, "mol/kg")
+                * self.components[solute].get_formal_charge() ** 2
+            )
+
+        return ionic_strength
+
+    @property
+    def charge_balance(self) -> float:
+        """
+        Return the charge balance of the solution.
+
+        Return the charge balance of the solution. The charge balance represents the net electric charge
+        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
+        have a small nonzero value.
+
+        Returns
+        -------
+        float :
+            The charge balance of the solution, in equivalents.
+
+        Notes
+        -----
+        The charge balance is calculated according to:
+
+        .. math:: CB = F \\sum_i n_i z_i
+
+        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
+
+        """
+        charge_balance = 0
+        F = (unit.e * unit.N_A).magnitude
+        for solute in self.components.keys():
+            charge_balance += (
+                self.get_amount(solute, "mol").magnitude
+                * self.components[solute].get_formal_charge()
+                * F
+            )
+
+        return charge_balance
+
+    # TODO - need tests for alkalinity
+    @property
+    def alkalinity(self):
+        """
+        Return the alkalinity or acid neutralizing capacity of a solution
+
+        Returns
+        -------
+        Quantity :
+            The alkalinity of the solution in mg/L as CaCO3
+
+        Notes
+        -----
+        The alkalinity is calculated according to: [#]_
+
+        .. math:: Alk = F \\sum_i z_i C_B - \\sum_i z_i C_A
+
+        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively
+        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
+        In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions are all the anions of strong acids.
+
+        References
+        ----------
+        .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
+               pp 165. Wiley Interscience, 1996.
+        """
+        alkalinity = 0 * unit("mol/L")
+        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
+
+        base_cations = [
+            "Li+",
+            "Na+",
+            "K+",
+            "Rb+",
+            "Cs+",
+            "Fr+",
+            "Be+2",
+            "Mg+2",
+            "Ca+2",
+            "Sr+2",
+            "Ba+2",
+            "Ra+2",
+        ]
+        acid_anions = ["Cl-", "Br-", "I-", "SO4-2", "NO3-", "ClO4-", "ClO3-"]
+
+        for item in self.components:
+            if item in base_cations:
+                z = self.get_solute(item).get_formal_charge()
+                alkalinity += self.get_amount(item, "mol/L") * z
+            if item in acid_anions:
+                z = self.get_solute(item).get_formal_charge()
+                alkalinity -= self.get_amount(item, "mol/L") * z
+
+        # convert the alkalinity to mg/L as CaCO3
+        return (alkalinity * equiv_wt_CaCO3).to("mg/L")
+
+    @property
+    def hardness(self):
+        """
+        Return the hardness of a solution.
+
+        Hardness is defined as the sum of the equivalent concentrations
+        of multivalent cations as calcium carbonate.
+
+        NOTE: at present pyEQL cannot distinguish between mg/L as CaCO3
+        and mg/L units. Use with caution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The hardness of the solution in mg/L as CaCO3
+
+        """
+        hardness = 0 * unit("mol/L")
+        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
+
+        for item in self.components:
+            z = self.get_solute(item).get_formal_charge()
+            if z > 1:
+                hardness += z * self.get_amount(item, "mol/L")
+
+        # convert the hardness to mg/L as CaCO3
+        return (hardness * equiv_wt_CaCO3).to("mg/L")
+
+    @property
+    def debye_length(self) -> Quantity:
+        """
+        Return the Debye length of a solution
+
+        Debye length is calculated as [#]_
+
+        .. math::
+
+            \\kappa^{-1} = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
+
+        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
+        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the
+        elementary charge, and :math:`N_A` is Avogadro's number.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The Debye length, in nanometers.
+
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
+
+        See Also
+        --------
+        ionic_strength
+        dielectric_constant
+
+        """
+        # to preserve dimensionality, convert the ionic strength into mol/L units
+        ionic_strength = self.ionic_strength.magnitude * unit("mol/L")
+        dielectric_constant = self.dielectric_constant
+
+        debye_length = (
+            dielectric_constant
+            * unit.epsilon_0
+            * unit.k
+            * self.temperature
+            / (2 * unit.N_A * unit.e**2 * ionic_strength)
+        ) ** 0.5
+
+        return debye_length.to("nm")
+
+    @property
+    def bjerrum_length(self) -> Quantity:
+        """
+        Return the Bjerrum length of a solution
+
+        Bjerrum length representes the distance at which electrostatic
+        interactions between particles become comparable in magnitude
+        to the thermal energy.:math:`\\lambda_B` is calculated as [#]_
+
+        .. math::
+
+            \\lambda_B = {e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)}
+
+        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
+        Boltzmann constant, and :math:`T` is the temperature.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The Bjerrum length, in nanometers.
+
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Bjerrum_length
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution()
+        >>> s1.bjerrum_length
+        <Quantity(0.7152793009386953, 'nanometer')>
+
+        See Also
+        --------
+        dielectric_constant
+
+        """
+        bjerrum_length = unit.e**2 / (
+            4
+            * math.pi
+            * self.dielectric_constant
+            * unit.epsilon_0
+            * unit.k
+            * self.temperature
+        )
+        return bjerrum_length.to("nm")
 
     def get_osmotic_pressure(self):
         """
@@ -1475,273 +1745,6 @@ class Solution:
             return math.exp(
                 -osmotic_coefficient * 0.018015 * unit("kg/mol") * concentration_sum
             ) * unit("1 dimensionless")
-
-    @property
-    def ionic_strength(self) -> Quantity:
-        """
-        Return the ionic strength of the solution.
-
-        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
-
-        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
-
-        Returns
-        -------
-        Quantity :
-            The ionic strength of the parent solution, mol/kg.
-
-        See Also
-        --------
-        get_activity
-        get_water_activity
-
-        Notes
-        -----
-        The ionic strength is calculated according to:
-
-        .. math:: I = \\sum_i m_i z_i^2
-
-        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
-
-        Examples
-        --------
-        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-        >>> s1.ionic_strength
-        <Quantity(0.20000010029672785, 'mole / kilogram')>
-
-        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
-        >>> s1.ionic_strength
-        <Quantity(1.0000001004383303, 'mole / kilogram')>
-        """
-        ionic_strength = 0
-        for solute in self.components.keys():
-            ionic_strength += (
-                0.5
-                * self.get_amount(solute, "mol/kg")
-                * self.components[solute].get_formal_charge() ** 2
-            )
-
-        return ionic_strength
-
-    @property
-    def charge_balance(self) -> float:
-        """
-        Return the charge balance of the solution.
-
-        Return the charge balance of the solution. The charge balance represents the net electric charge
-        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-        have a small nonzero value.
-
-        Returns
-        -------
-        float :
-            The charge balance of the solution, in equivalents.
-
-        Notes
-        -----
-        The charge balance is calculated according to:
-
-        .. math:: CB = F \\sum_i n_i z_i
-
-        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
-
-        """
-        charge_balance = 0
-        F = (unit.e * unit.N_A).magnitude
-        for solute in self.components.keys():
-            charge_balance += (
-                self.get_amount(solute, "mol").magnitude
-                * self.components[solute].get_formal_charge()
-                * F
-            )
-
-        return charge_balance
-
-    def get_alkalinity(self):
-        """
-        Return the alkalinity or acid neutralizing capacity of a solution
-
-        Returns
-        -------
-        Quantity :
-            The alkalinity of the solution in mg/L as CaCO3
-
-        Notes
-        -----
-        The alkalinity is calculated according to: [#]_
-
-        .. math:: Alk = F \\sum_i z_i C_B - \\sum_i z_i C_A
-
-        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively
-        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
-        In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions
-        are all the anions of strong acids.
-
-        References
-        ----------
-        .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
-               pp 165. Wiley Interscience, 1996.
-        """
-        alkalinity = 0 * unit("mol/L")
-        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
-
-        base_cations = [
-            "Li+",
-            "Na+",
-            "K+",
-            "Rb+",
-            "Cs+",
-            "Fr+",
-            "Be+2",
-            "Mg+2",
-            "Ca+2",
-            "Sr+2",
-            "Ba+2",
-            "Ra+2",
-        ]
-        acid_anions = ["Cl-", "Br-", "I-", "SO4-2", "NO3-", "ClO4-", "ClO3-"]
-
-        for item in self.components:
-            if item in base_cations:
-                z = self.get_solute(item).get_formal_charge()
-                alkalinity += self.get_amount(item, "mol/L") * z
-            if item in acid_anions:
-                z = self.get_solute(item).get_formal_charge()
-                alkalinity -= self.get_amount(item, "mol/L") * z
-
-        # convert the alkalinity to mg/L as CaCO3
-        return (alkalinity * equiv_wt_CaCO3).to("mg/L")
-
-    def get_hardness(self):
-        """
-        Return the hardness of a solution.
-
-        Hardness is defined as the sum of the equivalent concentrations
-        of multivalent cations as calcium carbonate.
-
-        NOTE: at present pyEQL cannot distinguish between mg/L as CaCO3
-        and mg/L units. Use with caution.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The hardness of the solution in mg/L as CaCO3
-
-        """
-        hardness = 0 * unit("mol/L")
-        equiv_wt_CaCO3 = 100.09 / 2 * unit("g/mol")
-
-        for item in self.components:
-            z = self.get_solute(item).get_formal_charge()
-            if z > 1:
-                hardness += z * self.get_amount(item, "mol/L")
-
-        # convert the hardness to mg/L as CaCO3
-        return (hardness * equiv_wt_CaCO3).to("mg/L")
-
-    def get_debye_length(self):
-        """
-        Return the Debye length of a solution
-
-        Debye length is calculated as [#]_
-
-        .. math::
-
-            \\kappa^{-1} = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
-
-        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r`
-        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
-        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the
-        elementary charge, and :math:`N_A` is Avogadro's number.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The Debye length, in nanometers.
-
-        References
-        ----------
-        .. [#] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
-
-        See Also
-        --------
-        ionic_strength
-        get_dielectric_constant()
-
-        """
-        # to preserve dimensionality, convert the ionic strength into mol/L units
-        ionic_strength = self.ionic_strength.magnitude * unit("mol/L")
-        dielectric_constant = self.get_dielectric_constant()
-
-        debye_length = (
-            dielectric_constant
-            * unit.epsilon_0
-            * unit.k
-            * self.temperature
-            / (2 * unit.N_A * unit.e**2 * ionic_strength)
-        ) ** 0.5
-
-        return debye_length.to("nm")
-
-    def get_bjerrum_length(self):
-        """
-        Return the Bjerrum length of a solution
-
-        Bjerrum length representes the distance at which electrostatic
-        interactions between particles become comparable in magnitude
-        to the thermal energy.:math:`\\lambda_B` is calculated as [#]_
-
-        .. math::
-
-            \\lambda_B = {e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)}
-
-        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
-        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
-        Boltzmann constant, and :math:`T` is the temperature.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The Bjerrum length, in nanometers.
-
-        References
-        ----------
-        .. [#] https://en.wikipedia.org/wiki/Bjerrum_length
-
-        Examples
-        --------
-        >>> s1 = pyEQL.Solution()
-        >>> s1.get_bjerrum_length()
-        <Quantity(0.7152793009386953, 'nanometer')>
-
-        See Also
-        --------
-        get_dielectric_constant()
-
-        """
-        dielectric_constant = self.get_dielectric_constant()
-
-        bjerrum_length = unit.e**2 / (
-            4
-            * math.pi
-            * dielectric_constant
-            * unit.epsilon_0
-            * unit.k
-            * self.temperature
-        )
-        return bjerrum_length.to("nm")
 
     def get_transport_number(self, solute, activity_correction=False):
         """Calculate the transport number of the solute in the solution
@@ -2595,3 +2598,175 @@ class Solution:
 
         """
         return self.charge_balance
+
+    @deprecated(
+        message="get_alkalinity() will be removed in the next release. Access directly via the property Solution.alkalinity"
+    )
+    def get_alkalinity(self):
+        """
+        Return the alkalinity or acid neutralizing capacity of a solution
+
+        Returns
+        -------
+        Quantity :
+            The alkalinity of the solution in mg/L as CaCO3
+
+        Notes
+        -----
+        The alkalinity is calculated according to: [#]_
+
+        .. math:: Alk = F \\sum_i z_i C_B - \\sum_i z_i C_A
+
+        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively
+        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
+        In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions are all the anions of strong acids.
+
+        References
+        ----------
+        .. [#] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
+               pp 165. Wiley Interscience, 1996.
+        """
+        return self.alkalinity
+
+    @deprecated(
+        message="get_hardness() will be removed in the next release. Access directly via the property Solution.hardness"
+    )
+    def get_hardness(self):
+        """
+        Return the hardness of a solution.
+
+        Hardness is defined as the sum of the equivalent concentrations
+        of multivalent cations as calcium carbonate.
+
+        NOTE: at present pyEQL cannot distinguish between mg/L as CaCO3
+        and mg/L units. Use with caution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The hardness of the solution in mg/L as CaCO3
+
+        """
+        return self.hardness
+
+    @deprecated(
+        message="get_debye_length() will be removed in the next release. Access directly via the property Solution.debye_length"
+    )
+    def get_debye_length(self):
+        """
+        Return the Debye length of a solution
+
+        Debye length is calculated as [#]_
+
+        .. math::
+
+            \\kappa^{-1} = \\sqrt({\\epsilon_r \\epsilon_o k_B T \\over (2 N_A e^2 I)})
+
+        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
+        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the
+        elementary charge, and :math:`N_A` is Avogadro's number.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The Debye length, in nanometers.
+
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
+
+        See Also
+        --------
+        ionic_strength
+        get_dielectric_constant()
+
+        """
+        return self.debye_length
+
+    @deprecated(
+        message="get_bjerrum_length() will be removed in the next release. Access directly via the property Solution.bjerrum_length"
+    )
+    def get_bjerrum_length(self):
+        """
+        Return the Bjerrum length of a solution
+
+        Bjerrum length representes the distance at which electrostatic
+        interactions between particles become comparable in magnitude
+        to the thermal energy.:math:`\\lambda_B` is calculated as [#]_
+
+        .. math::
+
+            \\lambda_B = {e^2 \\over (4 \\pi \\epsilon_r \\epsilon_o k_B T)}
+
+        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
+        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
+        Boltzmann constant, and :math:`T` is the temperature.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity
+            The Bjerrum length, in nanometers.
+
+        References
+        ----------
+        .. [#] https://en.wikipedia.org/wiki/Bjerrum_length
+
+        Examples
+        --------
+        >>> s1 = pyEQL.Solution()
+        >>> s1.get_bjerrum_length()
+        <Quantity(0.7152793009386953, 'nanometer')>
+
+        See Also
+        --------
+        get_dielectric_constant()
+
+        """
+        return self.bjerrum_length
+
+    @deprecated(
+        message="get_dielectric_constant() will be removed in the next release. Access directly via the property Solution.dielectric_constant"
+    )
+    def get_dielectric_constant(self):
+        """
+        Returns the dielectric constant of the solution.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity: the dielectric constant of the solution, dimensionless.
+
+        Notes
+        -----
+        Implements the following equation as given by [#]_
+
+        .. math:: \\epsilon = \\epsilon_solvent \\over 1 + \\sum_i \\alpha_i x_i
+
+        where :math:`\\alpha_i` is a coefficient specific to the solvent and ion, and :math:`x_i`
+        is the mole fraction of the ion in solution.
+
+
+        References
+        ----------
+        .. [#] [1] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier,
+        An empirical equation for the dielectric constant in aqueous and nonaqueous
+        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123.
+        doi:10.1016/j.fluid.2014.05.037.
+        """
+        return self.dielectric_constant
