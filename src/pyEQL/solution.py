@@ -576,6 +576,9 @@ class Solution:
 
         return dielectric_constant
 
+    @deprecated(
+        message="get_viscosity_relative() will be removed in the next release."
+    )
     def get_viscosity_relative(self):
         """
         Return the viscosity of the solution relative to that of water
@@ -587,9 +590,7 @@ class Solution:
         Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
 
         See
-        <http://downloads.olisystems.com/ResourceCD/TransportProperties/Viscosity-Aqueous.pdf>
         <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
-        <http://apple.csgi.unifi.it/~fratini/chen/pdf/14.pdf>
         """
         # if self.get_ionic_strength().magnitude > 0.2:
         #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
@@ -606,14 +607,29 @@ class Solution:
         #                    coefficients[2] * conc ** 2
         #                except TypeError:
         #                    continue
-        viscosity_rel = (
-            self.get_viscosity_dynamic()
+        return (
+            self.viscosity_dynamic
             / self.water_substance.mu
             * unit.Quantity("1 Pa*s")
         )
 
-        return viscosity_rel
+    # TODO - need tests for viscosity
+    @property
+    def viscosity_dynamic(self) -> Quantity:
+        """
+        Return the dynamic (absolute) viscosity of the solution.
 
+        Calculated from the kinematic viscosity
+
+        See Also
+        --------
+        viscosity_kinematic
+        """
+        return self.viscosity_kinematic() * self.density
+
+    @deprecated(
+        message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
+    )
     def get_viscosity_dynamic(self):
         """
         Return the dynamic (absolute) viscosity of the solution.
@@ -623,10 +639,12 @@ class Solution:
         See Also
         --------
         get_viscosity_kinematic
-        get_viscosity_relative
         """
-        return self.get_viscosity_kinematic() * self.density
+        return self.viscosity_dynamic
 
+    @deprecated(
+        message="get_viscosity_kinematic() will be removed in the next release. Access directly via the property Solution.viscosity_kinematic."
+    )
     def get_viscosity_kinematic(self):
         """
         Return the kinematic viscosity of the solution.
@@ -660,8 +678,48 @@ class Solution:
 
         See Also
         --------
-        get_viscosity_dynamic
-        get_viscosity_relative
+        viscosity_dynamic
+        """
+        return self.viscosity_kinematic
+
+    # TODO - before deprecating get_viscosity_relative, consider whether the Jones-Dole
+    # model should be integrated here as a fallback, in case salt parameters for the
+    # other model are not available.
+    @property
+    def viscosity_kinematic(self):
+        """
+        Return the kinematic viscosity of the solution.
+
+        Notes
+        -----
+        The calculation is based on a model derived from the Eyring equation
+        and presented in [#]_
+
+        .. math::
+
+            \\ln \\nu = \\ln {\\nu_w MW_w \\over \\sum_i x_i MW_i } +
+            15 x_+^2 + x_+^3  \\delta G^*_{123} + 3 x_+ \\delta G^*_{23} (1-0.05x_+)
+
+        Where:
+
+        .. math:: \\delta G^*_{123} = a_o + a_1 (T)^{0.75}
+        .. math:: \\delta G^*_{23} = b_o + b_1 (T)^{0.5}
+
+        In which :math: `\\nu` is the kinematic viscosity, MW is the molecular weight,
+        `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
+
+        The a and b fitting parameters for a variety of common salts are included in the
+        database.
+
+        References
+        ----------
+        .. [#] Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
+               of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
+               Fluid Phase Equilib. 2013, 358, 44–49.
+
+        See Also
+        --------
+        viscosity_dynamic
         """
         # identify the main salt in the solution
         salt = self.get_salt()
@@ -1233,7 +1291,7 @@ class Solution:
                 tot_mol += self.components[item].get_moles()
         return tot_mol
 
-    @deprecated(
+    @deprecated(replacmenet=get_amount,
         message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead."
     )
     def get_mole_fraction(self, solute):
