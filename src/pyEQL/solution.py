@@ -290,7 +290,7 @@ class Solution:
         self._update_volume()
 
     @deprecated(
-        message="get_temperature() will be removed in the next release. Access the temperature directly via the attribute Solution.temperature"
+        message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
     )
     def get_temperature(self):
         """
@@ -307,7 +307,7 @@ class Solution:
         return self.temperature
 
     @deprecated(
-        message="set_temperature() will be removed in the next release. Set the temperature directly via the attribute Solution.temperature"
+        message="set_temperature() will be removed in the next release. Set the temperature directly via the property Solution.temperature"
     )
     def set_temperature(self, temperature):
         """
@@ -350,7 +350,7 @@ class Solution:
         self._update_volume()
 
     @deprecated(
-        message="get_pressure() will be removed in the next release. Access the pressure directly via the attribute Solution.pressure"
+        message="get_pressure() will be removed in the next release. Access the pressure directly via the property Solution.pressure"
     )
     def get_pressure(self):
         """
@@ -590,7 +590,7 @@ class Solution:
         See
         <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
         """
-        # if self.get_ionic_strength().magnitude > 0.2:
+        # if self.ionic_strength.magnitude > 0.2:
         #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
 
         #        viscosity_rel = 1
@@ -621,7 +621,7 @@ class Solution:
         --------
         viscosity_kinematic
         """
-        return self.viscosity_kinematic() * self.density
+        return self.viscosity_kinematic * self.density
 
     @deprecated(
         message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
@@ -817,6 +817,7 @@ class Solution:
         """
         return self.conductivity
 
+    # TODO - need tests of conductivity
     @property
     def conductivity(self):
         """
@@ -857,7 +858,7 @@ class Solution:
 
         See Also
         --------
-        get_ionic_strength()
+        ionic_strength
         get_molar_conductivity()
         get_activity_coefficient()
 
@@ -869,10 +870,10 @@ class Solution:
             # ignore uncharged species
             if not z == 0:
                 # determine the value of the exponent alpha
-                if self.get_ionic_strength().magnitude < 0.36 * z:
+                if self.ionic_strength.magnitude < 0.36 * z:
                     alpha = 0.6 / z**0.5
                 else:
-                    alpha = self.get_ionic_strength().magnitude ** 0.5 / z
+                    alpha = self.ionic_strength.magnitude**0.5 / z
 
                 diffusion_coefficient = self.get_property(item, "diffusion_coefficient")
 
@@ -1795,6 +1796,9 @@ class Solution:
 
         return ionic_strength
 
+    @deprecated(
+        message="get_charge_balance() will be removed in the next release. Access directly via the property Solution.charge_balance"
+    )
     def get_charge_balance(self):
         """
         Return the charge balance of the solution.
@@ -1817,16 +1821,41 @@ class Solution:
         Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
 
         """
-        self.charge_balance = 0
+        return self.charge_balance
+
+    @property
+    def charge_balance(self) -> float:
+        """
+        Return the charge balance of the solution.
+
+        Return the charge balance of the solution. The charge balance represents the net electric charge
+        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
+        have a small nonzero value.
+
+        Returns
+        -------
+        float :
+            The charge balance of the solution, in equivalents.
+
+        Notes
+        -----
+        The charge balance is calculated according to:
+
+        .. math:: CB = F \\sum_i n_i z_i
+
+        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
+
+        """
+        charge_balance = 0
+        F = (unit.e * unit.N_A).magnitude
         for solute in self.components.keys():
-            self.charge_balance += (
-                self.get_amount(solute, "mol")
+            charge_balance += (
+                self.get_amount(solute, "mol").magnitude
                 * self.components[solute].get_formal_charge()
-                * unit.e
-                * unit.N_A
+                * F
             )
 
-        return self.charge_balance.magnitude
+        return charge_balance
 
     def get_alkalinity(self):
         """
