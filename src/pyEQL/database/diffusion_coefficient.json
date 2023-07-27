@@ -1,0 +1,418 @@
+[
+    {
+      "Formula": "Ag+",
+      "Value": "0.00001648"
+    },
+    {
+      "Formula": "Al+3",
+      "Value": "0.00000541"
+    },
+    {
+      "Formula": "Ba+2",
+      "Value": "0.00000847"
+    },
+    {
+      "Formula": "Be+2",
+      "Value": "0.00000599"
+    },
+    {
+      "Formula": "Ca+2",
+      "Value": "0.00000792"
+    },
+    {
+      "Formula": "Cd+2",
+      "Value": "0.00000719"
+    },
+    {
+      "Formula": "Ce+3",
+      "Value": "0.0000062"
+    },
+    {
+      "Formula": "Co+2",
+      "Value": "0.00000732"
+    },
+    {
+      "Formula": "Cr+3",
+      "Value": "0.00000595"
+    },
+    {
+      "Formula": "Cs+",
+      "Value": "0.00002056"
+    },
+    {
+      "Formula": "Cu+2",
+      "Value": "0.00000714"
+    },
+    {
+      "Formula": "Dy+3",
+      "Value": "0.00000582"
+    },
+    {
+      "Formula": "Er+3",
+      "Value": "0.00000585"
+    },
+    {
+      "Formula": "Eu+3",
+      "Value": "0.00000602"
+    },
+    {
+      "Formula": "Fe+2",
+      "Value": "0.00000719"
+    },
+    {
+      "Formula": "Fe+3",
+      "Value": "0.00000604"
+    },
+    {
+      "Formula": "Gd+3",
+      "Value": "0.00000597"
+    },
+    {
+      "Formula": "H+",
+      "Value": "0.00009311"
+    },
+    {
+      "Formula": "Hg+2",
+      "Value": "0.00000847"
+    },
+    {
+      "Formula": "Ho+3",
+      "Value": "0.00000589"
+    },
+    {
+      "Formula": "K+",
+      "Value": "0.00001957"
+    },
+    {
+      "Formula": "La+3",
+      "Value": "0.00000619"
+    },
+    {
+      "Formula": "Li+",
+      "Value": "0.00001029"
+    },
+    {
+      "Formula": "Mg+2",
+      "Value": "0.00000706"
+    },
+    {
+      "Formula": "Mn+2",
+      "Value": "0.00000712"
+    },
+    {
+      "Formula": "NH4+",
+      "Value": "0.00001957"
+    },
+    {
+      "Formula": "N2H5+",
+      "Value": "0.00001571"
+    },
+    {
+      "Formula": "Na+",
+      "Value": "0.00001334"
+    },
+    {
+      "Formula": "Nd+3",
+      "Value": "0.00000616"
+    },
+    {
+      "Formula": "Ni+2",
+      "Value": "0.00000661"
+    },
+    {
+      "Formula": "Pb+2",
+      "Value": "0.00000945"
+    },
+    {
+      "Formula": "Pr+3",
+      "Value": "0.00000617"
+    },
+    {
+      "Formula": "Ra+2",
+      "Value": "0.00000889"
+    },
+    {
+      "Formula": "Rb+",
+      "Value": "0.00002072"
+    },
+    {
+      "Formula": "Sc+3",
+      "Value": "0.00000574"
+    },
+    {
+      "Formula": "Sm+3",
+      "Value": "0.00000608"
+    },
+    {
+      "Formula": "Sr+2",
+      "Value": "0.00000791"
+    },
+    {
+      "Formula": "Tl+",
+      "Value": "0.00001989"
+    },
+    {
+      "Formula": "Tm+3",
+      "Value": "0.00000581"
+    },
+    {
+      "Formula": "UO2+2",
+      "Value": "0.00000426"
+    },
+    {
+      "Formula": "Y+3",
+      "Value": "0.0000055"
+    },
+    {
+      "Formula": "Yb+3",
+      "Value": "0.00000582"
+    },
+    {
+      "Formula": "Zn+2",
+      "Value": "0.00000703"
+    },
+    {
+      "Formula": "Au(CN)2-",
+      "Value": "0.00001331"
+    },
+    {
+      "Formula": "Au(CN)4-",
+      "Value": "0.00000959"
+    },
+    {
+      "Formula": "B(C6H5)4-",
+      "Value": "0.00000559"
+    },
+    {
+      "Formula": "Br-",
+      "Value": "0.0000208"
+    },
+    {
+      "Formula": "Br3-",
+      "Value": "0.00001145"
+    },
+    {
+      "Formula": "BrO3-",
+      "Value": "0.00001483"
+    },
+    {
+      "Formula": "CN-",
+      "Value": "0.00002077"
+    },
+    {
+      "Formula": "CNO-",
+      "Value": "0.0000172"
+    },
+    {
+      "Formula": "CO3-2",
+      "Value": "0.00000923"
+    },
+    {
+      "Formula": "Cl-",
+      "Value": "0.00002032"
+    },
+    {
+      "Formula": "CLO2-",
+      "Value": "0.00001385"
+    },
+    {
+      "Formula": "CLO3-",
+      "Value": "0.0000172"
+    },
+    {
+      "Formula": "CLO4-",
+      "Value": "0.00001792"
+    },
+    {
+      "Formula": "Co(CN)6-3",
+      "Value": "0.00000878"
+    },
+    {
+      "Formula": "CrO4-2",
+      "Value": "0.00001132"
+    },
+    {
+      "Formula": "F-",
+      "Value": "0.00001475"
+    },
+    {
+      "Formula": "Fe(CN)6-4",
+      "Value": "0.00000735"
+    },
+    {
+      "Formula": "Fe(CN)6-3",
+      "Value": "0.00000896"
+    },
+    {
+      "Formula": "H2ASO4-",
+      "Value": "0.00000905"
+    },
+    {
+      "Formula": "HCO3-",
+      "Value": "0.00001185"
+    },
+    {
+      "Formula": "HF2-",
+      "Value": "0.00001997"
+    },
+    {
+      "Formula": "HPO4-2",
+      "Value": "0.00000759"
+    },
+    {
+      "Formula": "H2PO4-",
+      "Value": "0.00000959"
+    },
+    {
+      "Formula": "H2PO2-",
+      "Value": "0.00001225"
+    },
+    {
+      "Formula": "HS-",
+      "Value": "0.00001731"
+    },
+    {
+      "Formula": "HSO3-",
+      "Value": "0.00001545"
+    },
+    {
+      "Formula": "HSO4-",
+      "Value": "0.00001385"
+    },
+    {
+      "Formula": "H2SbO4-",
+      "Value": "0.00000825"
+    },
+    {
+      "Formula": "I-",
+      "Value": "0.00002045"
+    },
+    {
+      "Formula": "IO3-",
+      "Value": "0.00001078"
+    },
+    {
+      "Formula": "IO4-",
+      "Value": "0.00001451"
+    },
+    {
+      "Formula": "MnO4-",
+      "Value": "0.00001632"
+    },
+    {
+      "Formula": "MoO4-2",
+      "Value": "0.00001984"
+    },
+    {
+      "Formula": "N(CN)2-",
+      "Value": "0.00001451"
+    },
+    {
+      "Formula": "NO2-",
+      "Value": "0.00001912"
+    },
+    {
+      "Formula": "NO3-",
+      "Value": "0.00001902"
+    },
+    {
+      "Formula": "NH2SO3-",
+      "Value": "0.00001286"
+    },
+    {
+      "Formula": "N3-",
+      "Value": "0.00001837"
+    },
+    {
+      "Formula": "OCN-",
+      "Value": "0.0000172"
+    },
+    {
+      "Formula": "OH-",
+      "Value": "0.00005273"
+    },
+    {
+      "Formula": "PF6-",
+      "Value": "0.00001515"
+    },
+    {
+      "Formula": "PO3F-2",
+      "Value": "0.00000843"
+    },
+    {
+      "Formula": "PO4-3",
+      "Value": "0.00000824"
+    },
+    {
+      "Formula": "P2O7-4",
+      "Value": "0.00000639"
+    },
+    {
+      "Formula": "P3O9-3",
+      "Value": "0.00000742"
+    },
+    {
+      "Formula": "P3O10-5",
+      "Value": "0.00000581"
+    },
+    {
+      "Formula": "ReO4-",
+      "Value": "0.00001462"
+    },
+    {
+      "Formula": "SCN-",
+      "Value": "0.00001758"
+    },
+    {
+      "Formula": "SO3-2",
+      "Value": "0.00000959"
+    },
+    {
+      "Formula": "SO4-2",
+      "Value": "0.00001065"
+    },
+    {
+      "Formula": "S2O3-2",
+      "Value": "0.00001132"
+    },
+    {
+      "Formula": "S2O4-2",
+      "Value": "0.00000885"
+    },
+    {
+      "Formula": "S2O6-2",
+      "Value": "0.00001238"
+    },
+    {
+      "Formula": "S2O8-2",
+      "Value": "0.00001145"
+    },
+    {
+      "Formula": "Sb(OH)6-",
+      "Value": "0.00000849"
+    },
+    {
+      "Formula": "SeCN-",
+      "Value": "0.00001723"
+    },
+    {
+      "Formula": "SeO4-",
+      "Value": "0.00001008"
+    },
+    {
+      "Formula": "WO4-2",
+      "Value": "0.00000919"
+    },
+    {
+      "Formula": "HCO2-",
+      "Value": "0.00001454"
+    },
+    {
+      "Formula": "CH3COO-",
+      "Value": "0.00001089"
+    },
+    {
+      "Formula": "C6H5O7-3",
+      "Value": "0.00000623"
+    }
+  ]
