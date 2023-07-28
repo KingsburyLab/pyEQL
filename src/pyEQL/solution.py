@@ -1,13 +1,10 @@
 """
 pyEQL Solution Class
 
-:copyright: 2013-2022 by Ryan S. Kingsbury
+:copyright: 2013-2023 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
-
-# logging system
-import logging
 
 # import libraries for scientific functions
 import math
@@ -26,23 +23,9 @@ from pyEQL import paramsDB as db
 from pyEQL import unit
 from pyEQL.engines import EOS, IdealEOS, NativeEOS
 
-# add a filter to emit only unique log messages to the handler
-from pyEQL.logging_system import Unique
+# logging system
+from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list, identify_salt
-
-logger = logging.getLogger(__name__)
-unique = Unique()
-logger.addFilter(unique)
-
-# add a handler for console output, since pyEQL is meant to be used interactively
-ch = logging.StreamHandler()
-
-# create formatter for the log
-formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
-
-# add formatter to the handler
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 
 class Solution:
@@ -106,6 +89,8 @@ class Solution:
         See Also:
             add_solute
         """
+        # create a logger attached to this class
+        # self.logger = logging.getLogger(type(self).__name__)
 
         # initialize the volume with a flag to distinguish user-specified volume
         if volume is not None:
@@ -2526,11 +2511,9 @@ class Solution:
 
         Notes
         -----
-        This function is DEPRECATED and will raise a warning when called.
+        This function is DEPRECATED.
         Use get_amount() instead and specify 'fraction' as the unit type.
         """
-        logger.warning("get_mole_fraction is DEPRECATED! Use get_amount() instead.")
-        return self.get_amount(solute, "fraction")
 
     @deprecated(
         message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"

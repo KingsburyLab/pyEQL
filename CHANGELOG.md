@@ -26,29 +26,29 @@
 
 ## 0.5.0 (2018-09-19)
 
-- Implement the effective Pitzer model for improved activitycalculations in multicomponent solutions
-- Add support for calculation of activity and osmotic coefficientson different scales
+- Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
+- Add support for calculation of activity and osmotic coefficients on different scales
 - Add support for calculating % by weight to get_amount()
-- Added methods for calculating the osmolarity or osmolality of aSolution
-- Add the ability to filter list_concentrations() to show onlycations or anions
+- Added methods for calculating the osmolarity or osmolality of a Solution
+- Add the ability to filter list_concentrations() to show only cations or anions
 - Add two medical solutions - normal saline and Ringer's lacate -to the autogenerate method
-- Add shorthand abbreviations for 'seawater' and 'wastewater' inthe autogenerate method
-- Enhance automatic test suite to compare results withexperimental data based on relative error
-- Add test suites for the effective Pitzer model and amulticomponent salt solution
+- Add shorthand abbreviations for 'seawater' and 'wastewater' in the autogenerate method
+- Enhance automatic test suite to compare results with experimental data based on relative error
+- Add test suites for the effective Pitzer model and a multicomponent salt solution
 - DEPRECATED get_mole_fraction. Use get_amount() instead
 - Fix bug causing get_activity_coefficient to fail if the solute concentration was zero
 
 ## 0.4.0 (2016-07-14)
 
-- Add ability to calculate dielectric constant based on solutioncomposition for salts
+- Add ability to calculate dielectric constant based on solution composition for salts
 - Add database entries for the viscosity 'B' parameter for 63 more inorganic ions
 - Add domestic wastewater and human urine to the autogenerate()method
-- Improve entry point for running automated tests (#16, thanksHernan Grecco)
+- Improve entry point for running automated tests (#16, thanks Hernan Grecco)
 - Significantly expand documentation of activity correction methods
-- Make output of get_osmotic_coefficient more verbose when Pitzerparameters are not found
-- Fix bug causing activity corrections for non 1:1 salts to becalculated incorrectly (#15)
-- Fix bug causing 'bad operand type' error when calculatingosmotic pressure on some systems
-- Fix bug causing ValueError exceptions when a solute has zeroconcentration
+- Make output of get_osmotic_coefficient more verbose when Pitzer parameters are not found
+- Fix bug causing activity corrections for non 1:1 salts to be calculated incorrectly (#15)
+- Fix bug causing 'bad operand type' error when calculating osmotic pressure on some systems
+- Fix bug causing ValueError exceptions when a solute has zero concentration
 - Numerous fixes and corrections in the documentation
 
 ## 0.3.1 (2016-02-24)
@@ -58,18 +58,18 @@
 
 ## 0.3.0 (2016-01-15)
 
-- Add method to calculate the total concentration of an element ina solution
-- Add method to automatically generate certain solutions (likeseawater)
+- Add method to calculate the total concentration of an element in a solution
+- Add method to automatically generate certain solutions (like seawater)
 - Add method to calculate the hardness of a solution
 - Add method to calculate the alkalinity of a solution
 - Add method to calculate the charge balance of a solution
 - Add method to calculate the Bjerrum length
 - Add database entries for hydrated and ionic radii of 23 commonions
 - Add database entries for the 'B' parameter in the Jones-Dole viscosity equation for 20 common ions
-- Add test suites for solute property methods, hardness, osmoticcoefficient, and Debye length
-- Improve logging system to work better when using pyEQLinteractively
+- Add test suites for solute property methods, hardness, osmotic coefficient, and Debye length
+- Improve logging system to work better when using pyEQL interactively
 - Improved README with graphics and rich formatting
-- Fix bug related to activity and osmotic coefficients formultivalent salts
+- Fix bug related to activity and osmotic coefficients for multivalent salts
 - Fix bug related to retrieval of water properties
 - Documentation enhancements and fixes
 

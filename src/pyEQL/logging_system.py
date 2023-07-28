@@ -15,11 +15,34 @@ WARNING     -   assumptions or limitations of module output
 ERROR       -   Module could not complete a task due to invalid input or other problem
 CRITICAL    -   not used
 
-:copyright: 2013-2022 by Ryan S. Kingsbury
+:copyright: 2013-2023 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
 import logging
+
+# courtesy https://calmcode.io/logging/format.html
+
+logger = logging.getLogger(__name__)
+
+# the handler determines where the logs go: stdout/file
+handler = logging.StreamHandler()
+
+# the formatter determines what our logs will look like
+fmt = "%(levelname)s %(asctime)s %(filename)s %(funcName)s %(lineno)d %(message)s"
+formatter = logging.Formatter(fmt)
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+# use rich for pretty log formatting, if installed
+try:
+    from rich.logging import RichHandler
+
+    logger.addHandler(RichHandler(rich_tracebacks=True))
+except ImportError:
+    pass
+
+logger.setLevel(logging.WARNING)
 
 
 # define a log filter to emit only unique log messages

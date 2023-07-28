@@ -7,34 +7,15 @@ ONLY those properties that DO NOT depend on solution composition.
 Solute properties such as activity coefficient or concentration
 that do depend on compsition are accessed via Solution class methods.
 
-:copyright: 2013-2022 by Ryan S. Kingsbury
+:copyright: 2013-2023 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
-
-# logging system
-import logging
-
 # import the parameters database
 # the pint unit registry
 from pyEQL import paramsDB as db
 from pyEQL import unit
-from pyEQL.logging_system import Unique
-
-logger = logging.getLogger(__name__)
-# add a filter to emit only unique log messages to the handler
-unique = Unique()
-logger.addFilter(unique)
-
-# add a handler for console output, since pyEQL is meant to be used interactively
-ch = logging.StreamHandler()
-
-# create formatter for the log
-formatter = logging.Formatter("(%(name)s) - %(levelname)s - %(message)s")
-
-# add formatter to the handler
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+from pyEQL.logging_system import logger
 
 
 class Solute:
