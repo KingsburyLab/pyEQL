@@ -119,7 +119,7 @@ class Test_effective_pitzer:
                 * s1.get_total_moles_solute()
                 / s1.get_solvent_mass()
             )
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_mgcl2_activity(self):
@@ -166,7 +166,7 @@ class Test_effective_pitzer:
                 * s1.get_total_moles_solute()
                 / s1.get_solvent_mass()
             )
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_KCl_activity(self):
@@ -213,7 +213,7 @@ class Test_effective_pitzer:
                 * s1.get_total_moles_solute()
                 / s1.get_solvent_mass()
             )
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     @pytest.mark.xfail
@@ -261,7 +261,7 @@ class Test_effective_pitzer:
                 * s1.get_total_moles_solute()
                 / s1.get_solvent_mass()
             )
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_effective_pitzer_fugacity(self):
@@ -277,5 +277,4 @@ class Test_effective_pitzer:
             s1 = self.mock_seawater(multiple[item])
             result = s1.get_osmotic_coefficient(scale="fugacity")
 
-            # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)

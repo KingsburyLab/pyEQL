@@ -52,7 +52,7 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("Na+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     @pytest.mark.xfail
@@ -72,7 +72,7 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("K+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_Na_XNa_50(self):
@@ -91,7 +91,7 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("Na+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_50(self):
@@ -110,7 +110,7 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("K+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_Na_XNa_25(self):
@@ -129,7 +129,7 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("Na+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_25(self):
@@ -148,5 +148,5 @@ class Test_nano3_kno3_activity:
                 ]
             )
             result = s1.get_activity_coefficient("K+").magnitude
-            # print(result,expected[item])
+
             assert np.isclose(result, expected[item], RTOL)
