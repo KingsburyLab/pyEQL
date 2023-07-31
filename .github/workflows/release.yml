@@ -1,0 +1,34 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: publish
+
+    steps:
+    - uses: actions/checkout@v3
+
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools setuptools_scm wheel tox
+
+    - name: Build packages for distribution
+      run: |
+        tox -e build
+
+    - name: Upload to PyPi
+      uses: pypa/gh-action-pypi-publish@v1.8.8
+      permissions:
+        id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
