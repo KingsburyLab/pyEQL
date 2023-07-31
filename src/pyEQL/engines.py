@@ -140,7 +140,6 @@ class IdealEOS(EOS):
         """
         Adjust the speciation of a Solution object to achieve chemical equilibrium.
         """
-        pass
 
 
 class NativeEOS(EOS):
@@ -217,7 +216,7 @@ class NativeEOS(EOS):
         ----------
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+               *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
 
         .. [#] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed,
                pp 165. Wiley Interscience, 1996.
@@ -237,10 +236,7 @@ class NativeEOS(EOS):
 
         # show an error if no salt can be found that contains the solute
         if Salt is None:
-            logger.warning(
-                "No salts found that contain solute %s. Returning unit activity coefficient."
-                % solute
-            )
+            logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
             return unit("1 dimensionless")
 
         # search the database for pitzer parameters for 'Salt'
@@ -251,10 +247,7 @@ class NativeEOS(EOS):
         # search for Pitzer parameters
         if db.has_parameter(Salt.formula, "pitzer_parameters_activity"):
             if verbose is True:
-                print(
-                    "Calculating activity coefficient based on parent salt %s"
-                    % Salt.formula
-                )
+                print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
 
             param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
 
@@ -298,16 +291,16 @@ class NativeEOS(EOS):
             )
 
             logger.info(
-                "Calculated activity coefficient of species %s as %s based on salt %s using Pitzer model"
-                % (solute, activity_coefficient, Salt)
+                "Calculated activity coefficient of species {} as {} based on salt {} using Pitzer model".format(
+                    solute, activity_coefficient, Salt
+                )
             )
             molal = activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif solution.ionic_strength.magnitude <= 0.005:
             logger.info(
-                "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient."
-                % solution.ionic_strength
+                "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient." % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_debyehuckel(
                 solution.ionic_strength,
@@ -318,8 +311,7 @@ class NativeEOS(EOS):
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif solution.ionic_strength.magnitude <= 0.1:
             logger.info(
-                "Ionic strength = %s. Using Guntelberg to calculate activity coefficient."
-                % solution.ionic_strength
+                "Ionic strength = %s. Using Guntelberg to calculate activity coefficient." % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_guntelberg(
                 solution.ionic_strength,
@@ -409,13 +401,13 @@ class NativeEOS(EOS):
         ----------
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-               *Journal of Chemical & Engineering Data*, 56(12), 5066–5077. doi:10.1021/je2009329
+               *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
 
         .. [#] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
                Edition; Butterworths: London, 1968, p.32.
 
         .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed
-                electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34–47.
+                electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         Examples
         --------
@@ -440,7 +432,6 @@ class NativeEOS(EOS):
         # coefficint for reach, and average them into an effective osmotic
         # coefficient
         for item in salt_list:
-
             # ignore HOH in the salt list
             if item.formula == "HOH":
                 continue
@@ -473,7 +464,6 @@ class NativeEOS(EOS):
             db.search_parameters(item.formula)
 
             if db.has_parameter(item.formula, "pitzer_parameters_activity"):
-
                 param = db.get_parameter(item.formula, "pitzer_parameters_activity")
 
                 osmotic_coefficient = ac.get_osmotic_coefficient_pitzer(
@@ -493,8 +483,9 @@ class NativeEOS(EOS):
                 )
 
                 logger.info(
-                    "Calculated osmotic coefficient of water as %s based on salt %s using Pitzer model"
-                    % (osmotic_coefficient, item.formula)
+                    "Calculated osmotic coefficient of water as {} based on salt {} using Pitzer model".format(
+                        osmotic_coefficient, item.formula
+                    )
                 )
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
@@ -505,8 +496,7 @@ class NativeEOS(EOS):
                 )
                 effective_osmotic_sum += concentration * unit("1 dimensionless")
 
-        molal_phi = effective_osmotic_sum / molality_sum
-        return molal_phi
+        return effective_osmotic_sum / molality_sum
 
     def get_solute_volume(self, solution):
         """
@@ -525,17 +515,13 @@ class NativeEOS(EOS):
         pitzer_calc = False
 
         if db.has_parameter(Salt.formula, "pitzer_parameters_volume"):
-
             param = db.get_parameter(Salt.formula, "pitzer_parameters_volume")
 
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            molality = (
-                solution.get_amount(Salt.cation, "mol/kg")
-                + solution.get_amount(Salt.anion, "mol/kg")
-            ) / 2
+            molality = (solution.get_amount(Salt.cation, "mol/kg") + solution.get_amount(Salt.anion, "mol/kg")) / 2
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
@@ -579,15 +565,11 @@ class NativeEOS(EOS):
 
             pitzer_calc = True
 
-            logger.info(
-                "Updated solution volume using Pitzer model for solute %s"
-                % Salt.formula
-            )
+            logger.info("Updated solution volume using Pitzer model for solute %s" % Salt.formula)
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
         for item in solution.components:
-
             solute = solution.get_solute(item)
 
             # ignore water
@@ -599,13 +581,8 @@ class NativeEOS(EOS):
                 continue
 
             if db.has_parameter(item, "partial_molar_volume"):
-                solute_vol += (
-                    solute.get_parameter("partial_molar_volume") * solute.get_moles()
-                )
-                logger.info(
-                    "Updated solution volume using direct partial molar volume for solute %s"
-                    % item
-                )
+                solute_vol += solute.get_parameter("partial_molar_volume") * solute.get_moles()
+                logger.info("Updated solution volume using direct partial molar volume for solute %s" % item)
 
             else:
                 logger.warning(
@@ -619,4 +596,3 @@ class NativeEOS(EOS):
         """
         Adjust the speciation of a Solution object to achieve chemical equilibrium.
         """
-        pass

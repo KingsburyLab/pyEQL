@@ -8,8 +8,6 @@ computations of pyEQL
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
 
 # relative tolerance between experimental and computed properties for this test file
@@ -22,7 +20,7 @@ class Test_debye_length:
     ------------------------------------------------
 
     Reference: [1] M. Hu, B. Mi, Enabling graphene oxide nanosheets as water separation membranes,
-    Environ. Sci. Technol. 47 (2013) 3715–3723. doi:10.1021/es400571g.
+    Environ. Sci. Technol. 47 (2013) 3715-3723. doi:10.1021/es400571g.
 
     0.1 mM NaCl: 31nm
     10 mM NaCl: 3.1 nm

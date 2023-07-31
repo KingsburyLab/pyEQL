@@ -44,7 +44,7 @@ class Solute:
 
     """
 
-    def __init__(self, formula, amount, volume, solvent_mass, parameters={}):
+    def __init__(self, formula, amount, volume, solvent_mass):
         """
         Parameters
         ----------
@@ -58,8 +58,6 @@ class Solute:
                     The volume of the solution
         solvent_mass : pint Quantity
                     The mass of solvent in the parent solution.
-        parameters : dictionary, optional
-                    Dictionary of custom parameters, such as diffusion coefficients, transport numbers, etc. Specify parameters as key:value pairs separated by commas within curly braces, e.g. {diffusion_coeff:5e-10,transport_number:0.8}. The 'key' is the name that will be used to access the parameter, the value is its value.
         """
         # import the chemical formula interpreter module
         import pyEQL.chemical_formula as chem
@@ -67,30 +65,25 @@ class Solute:
         # check that 'formula' is a valid chemical formula
         if not chem.is_valid_formula:
             logger.error("Invalid chemical formula specified.")
-            return None
-        else:
-            self.formula = formula
+            return
+        self.formula = formula
 
-            # set molecular weight
-            self.mw = chem.get_molecular_weight(formula) * unit("g/mol")
+        # set molecular weight
+        self.mw = chem.get_molecular_weight(formula) * unit("g/mol")
 
-            # set formal charge
-            self.charge = chem.get_formal_charge(formula)
+        # set formal charge
+        self.charge = chem.get_formal_charge(formula)
 
-            # translate the 'amount' string into a pint Quantity
-            quantity = unit(amount)
+        # translate the 'amount' string into a pint Quantity
+        quantity = unit(amount)
 
-            self.moles = quantity.to(
-                "moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass
-            )
+        self.moles = quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
 
-            # trigger the function that checks whether parameters already exist for this species, and if not,
-            # searches the database files and creates them
-            db.search_parameters(self.formula)
+        # trigger the function that checks whether parameters already exist for this species, and if not,
+        # searches the database files and creates them
+        db.search_parameters(self.formula)
 
-    def get_parameter(
-        self, parameter, temperature=None, pressure=None, ionic_strength=None
-    ):
+    def get_parameter(self, parameter, temperature=None, pressure=None, ionic_strength=None):
         """
         Return the value of the parameter named 'parameter'
 
@@ -190,9 +183,7 @@ class Solute:
 
         """
         quantity = unit(amount)
-        self.moles += quantity.to(
-            "moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass
-        )
+        self.moles += quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
 
     def set_moles(self, amount, volume, solvent_mass):
         """
@@ -206,9 +197,7 @@ class Solute:
 
         """
         quantity = unit(amount)
-        self.moles = quantity.to(
-            "moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass
-        )
+        self.moles = quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
 
     # set output of the print() statement
     def __str__(self):

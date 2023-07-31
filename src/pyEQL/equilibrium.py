@@ -55,7 +55,7 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit("298.15 K")):
 
 
     """
-    pitzer_param = (
+    return (
         c1
         + c2 * (1 / temp + 1 / temp_ref)
         + c2 * math.log(temp / temp_ref)
@@ -64,13 +64,9 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit("298.15 K")):
         + c5 * (temp**-2 - temp_ref**-2)
     )
 
-    return pitzer_param
 
-
-def adjust_temp_vanthoff(
-    equilibrium_constant, enthalpy, temperature, reference_temperature=25 * unit("degC")
-):
-    """(float,float,number, optional number) -> float
+def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=25 * unit("degC")):
+    r"""(float,float,number, optional number) -> float
 
     Adjust a reaction equilibrium constant from one temperature to another.
 
@@ -117,18 +113,14 @@ def adjust_temp_vanthoff(
 
     """
     output = equilibrium_constant * math.exp(
-        enthalpy
-        / unit.R
-        * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+        enthalpy / unit.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
     logger.info(
         "Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output"
     )
 
-    logger.warning(
-        "Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest"
-    )
+    logger.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
     return output
 
 
@@ -138,7 +130,7 @@ def adjust_temp_arrhenius(
     temperature,
     reference_temperature=25 * unit("degC"),
 ):
-    """(float,float,number, optional number) -> float
+    r"""(float,float,number, optional number) -> float
 
     Adjust a reaction equilibrium constant from one temperature to another.
 
@@ -181,9 +173,7 @@ def adjust_temp_arrhenius(
 
     """
     output = rate_constant * math.exp(
-        activation_energy
-        / unit.R
-        * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+        activation_energy / unit.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
     logger.info(
@@ -221,7 +211,7 @@ def alpha(n, pH, pKa_list):
         The acid-base distribution coefficient is calculated as follows:[1]
 
         .. math::
-            \alpha_n = {term_n \over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
+            \alpha_n = {term_n \\over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
 
         Where :math: '\term_n' refers to the nth term in the denominator, starting from 0
 
@@ -261,9 +251,7 @@ def alpha(n, pH, pKa_list):
 
     # generate an error if n > number of pKa values
     if len(pKa_list) < n:
-        logger.error(
-            "Insufficient number of pKa values given. Cannot calculate distribution coeffiicent."
-        )
+        logger.error("Insufficient number of pKa values given. Cannot calculate distribution coeffiicent.")
         return None
 
     # convert pH to hydrogen ion concentration

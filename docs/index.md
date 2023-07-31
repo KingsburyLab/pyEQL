@@ -7,7 +7,7 @@ Add a short description here!
 
 > This is the main page of your project's [Sphinx] documentation. It is
 > formatted in [Markdown]. Add additional pages by creating md-files in
-> `docs` or rst-files (formated in [reStructuredText]) and adding links to
+> `docs` or rst-files (formatted in [reStructuredText]) and adding links to
 > them in the `Contents` section below.
 >
 > Please check [Sphinx], [recommonmark] and [autostructify] for more information

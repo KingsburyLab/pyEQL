@@ -12,8 +12,6 @@ by USGS(PHREEQC)
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
 
 

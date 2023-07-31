@@ -1,14 +1,14 @@
 Name	dielectric_parameter_water
 Description	Dielectric fit parameter alpha for ions in water
-Unit	
+Unit
 Reference	A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier, An empirical equation for the dielectric constant in aqueous and nonaqueous electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116-123.
-Temperature	
-Pressure	
-Ionic Strength	
-Uncertainty	
-Uncertainty Type	
+Temperature
+Pressure
+Ionic Strength
+Uncertainty
+Uncertainty Type
 Comment	"Independent of temperature, pressure, ionic strength"
-	
+
 Key	Value
 Al+3	2.87
 Ba+2	0.75

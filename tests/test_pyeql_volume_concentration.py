@@ -7,27 +7,26 @@ used by pyEQL's Solution class
 """
 
 import numpy as np
+import pyEQL
 import pytest
 
-import pyEQL
 
-
-@pytest.fixture
+@pytest.fixture()
 def s1():
     return pyEQL.Solution(volume="2 L")
 
 
-@pytest.fixture
+@pytest.fixture()
 def s2():
     return pyEQL.Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
 
 
-@pytest.fixture
+@pytest.fixture()
 def s3():
     return pyEQL.Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L")
 
 
-@pytest.fixture
+@pytest.fixture()
 def s4():
     return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
@@ -59,7 +58,7 @@ class Test_empty_solution:
         assert np.isclose(s1.pH, 7.0, atol=0.01)
         assert np.isclose(s1.pE, 8.5)
         # it should contain H2O, H+, and OH- species
-        assert set(s1.list_solutes()) == set(["H2O", "OH-", "H+"])
+        assert set(s1.list_solutes()) == {"H2O", "OH-", "H+"}
 
 
 class Test_solute_addition:
@@ -72,7 +71,6 @@ class Test_solute_addition:
     # create an empty and test solutions with the same volume using substance / volume,
     # substance/mass, and substance units
     def test_solute_addition(self, s2, s3, s4):
-
         # if solutes are added at creation-time with substance / volume units,
         # then the total volume of the solution should not change (should remain at 2 L)
         assert s2.get_volume().to("L").magnitude == 2

@@ -132,21 +132,10 @@ def _debye_parameter_activity(temperature="25 degC"):
     debyeparam = (
         unit.elementary_charge**3
         * (2 * math.pi * unit.N_A * water_substance.rho * unit("1 g/L")) ** 0.5
-        / (
-            4
-            * math.pi
-            * unit.epsilon_0
-            * water_substance.epsilon
-            * unit.boltzmann_constant
-            * unit(temperature)
-        )
-        ** 1.5
+        / (4 * math.pi * unit.epsilon_0 * water_substance.epsilon * unit.boltzmann_constant * unit(temperature)) ** 1.5
     )
 
-    logger.info(
-        "Computed Debye-Huckel Limiting Law Constant A^{\\gamma} = %s at %s"
-        % (debyeparam, temperature)
-    )
+    logger.info(f"Computed Debye-Huckel Limiting Law Constant A^{{\\gamma}} = {debyeparam} at {temperature}")
     return debyeparam.to("kg ** 0.5 / mol ** 0.5")
 
 
@@ -187,10 +176,7 @@ def _debye_parameter_osmotic(temperature="25 degC"):
     """
 
     output = 1 / 3 * _debye_parameter_activity(temperature)
-    logger.info(
-        "Computed Debye-Huckel Limiting slope for osmotic coefficient A^{\\phi} = %s at %s"
-        % (output, temperature)
-    )
+    logger.info(f"Computed Debye-Huckel Limiting slope for osmotic coefficient A^{{\\phi}} = {output} at {temperature}")
     return output.to("kg ** 0.5 /mol ** 0.5")
 
 
@@ -258,21 +244,14 @@ def _debye_parameter_volume(temperature="25 degC"):
     # result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
     if unit(temperature) != unit("25 degC"):
-        logger.warning(
-            "Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC"
-        )
+        logger.warning("Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC")
 
-    logger.info(
-        "Computed Debye-Huckel Limiting Slope for volume A^V = %s at %s"
-        % (result, temperature)
-    )
+    logger.info(f"Computed Debye-Huckel Limiting Slope for volume A^V = {result} at {temperature}")
 
     return result.to("cm ** 3 * kg ** 0.5 /  mol ** 1.5")
 
 
-def get_activity_coefficient_debyehuckel(
-    ionic_strength, formal_charge=1, temperature="25 degC"
-):
+def get_activity_coefficient_debyehuckel(ionic_strength, formal_charge=1, temperature="25 degC"):
     """
     Return the activity coefficient of solute in the parent solution according to the Debye-Huckel limiting law.
 
@@ -310,22 +289,14 @@ def get_activity_coefficient_debyehuckel(
     """
     # check if this method is valid for the given ionic strength
     if not ionic_strength.magnitude <= 0.005:
-        logger.warning(
-            "Ionic strength exceeds valid range of the Debye-Huckel limiting law"
-        )
+        logger.warning("Ionic strength exceeds valid range of the Debye-Huckel limiting law")
 
-    log_f = (
-        -_debye_parameter_activity(temperature)
-        * formal_charge**2
-        * ionic_strength**0.5
-    )
+    log_f = -_debye_parameter_activity(temperature) * formal_charge**2 * ionic_strength**0.5
 
     return math.exp(log_f) * unit("1 dimensionless")
 
 
-def get_activity_coefficient_guntelberg(
-    ionic_strength, formal_charge=1, temperature="25 degC"
-):
+def get_activity_coefficient_guntelberg(ionic_strength, formal_charge=1, temperature="25 degC"):
     """
     Return the activity coefficient of solute in the parent solution according to the Guntelberg approximation.
 
@@ -363,9 +334,7 @@ def get_activity_coefficient_guntelberg(
     """
     # check if this method is valid for the given ionic strength
     if not ionic_strength.magnitude <= 0.1:
-        logger.warning(
-            "Ionic strength exceeds valid range of the Guntelberg approximation"
-        )
+        logger.warning("Ionic strength exceeds valid range of the Guntelberg approximation")
 
     log_f = (
         -_debye_parameter_activity(temperature)
@@ -377,9 +346,7 @@ def get_activity_coefficient_guntelberg(
     return math.exp(log_f) * unit("1 dimensionless")
 
 
-def get_activity_coefficient_davies(
-    ionic_strength, formal_charge=1, temperature="25 degC"
-):
+def get_activity_coefficient_davies(ionic_strength, formal_charge=1, temperature="25 degC"):
     """
     Return the activity coefficient of solute in the parent solution according to the Davies equation.
 
@@ -423,10 +390,7 @@ def get_activity_coefficient_davies(
     log_f = (
         -_debye_parameter_activity(temperature).magnitude
         * formal_charge**2
-        * (
-            ionic_strength.magnitude**0.5 / (1 + ionic_strength.magnitude**0.5)
-            - 0.2 * ionic_strength.magnitude
-        )
+        * (ionic_strength.magnitude**0.5 / (1 + ionic_strength.magnitude**0.5) - 0.2 * ionic_strength.magnitude)
     )
 
     return math.exp(log_f) * unit("1 dimensionless")
@@ -513,15 +477,15 @@ def get_activity_coefficient_pitzer(
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+    Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 
     Beyer, R., & Steiger, M. (2010). Vapor Pressure Measurements of NaHCOO + H 2 O and KHCOO + H 2 O from 278 to 308 K
     and Representation with an Ion Interaction (Pitzer) Model.
-    Journal of Chemical & Engineering Data, 55(2), 830–838. doi:10.1021/je900487a
+    Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
 
     See Also
     --------
@@ -540,12 +504,8 @@ def get_activity_coefficient_pitzer(
     C_phi = C_phi * unit("kg ** 2 /mol ** 2")
 
     # assign units appropriate for the activity parameters
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit(
-        "kg/mol"
-    )
-    Bphi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit(
-        "kg/mol"
-    )
+    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
+    Bphi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
 
     loggamma = _pitzer_log_gamma(
         ionic_strength,
@@ -653,7 +613,7 @@ def get_apparent_volume_pitzer(
     ----------
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+    Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 
     Krumgalz, Boris S., Pogorelsky, Rita (1996).
     Volumetric Properties of Single Aqueous Electrolytes from Zero to Saturation Concentration at 298.15 K
@@ -676,15 +636,13 @@ def get_apparent_volume_pitzer(
     V_o = V_o * unit("cm ** 3 / mol")
 
     # assign units appropriate for the volume parameter
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit(
-        "kg /mol/dabar"
-    )
+    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg /mol/dabar")
 
     second_term = (
         (nu_cation + nu_anion)
         * abs(z_cation * z_anion)
         * (_debye_parameter_volume(temperature) / 2 / b)
-        * math.log((1 + b * ionic_strength**0.5))
+        * math.log(1 + b * ionic_strength**0.5)
     )
 
     third_term = (
@@ -702,7 +660,7 @@ def get_apparent_volume_pitzer(
 
 def _pitzer_f1(x):
     """
-    The function of ionic strength used to calculate \beta_MX in the Pitzer ion intercation model.
+    The function of ionic strength used to calculate \beta_MX in the Pitzer ion interaction model.
 
     .. math:: f(x) = 2 [ 1- (1+x) \\exp(-x)] / x ^ 2
 
@@ -713,19 +671,18 @@ def _pitzer_f1(x):
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     """
     # return 0 if the input is 0
     if x == 0:
         return 0
-    else:
-        return 2 * (1 - (1 + x) * math.exp(-x)) / x**2
+    return 2 * (1 - (1 + x) * math.exp(-x)) / x**2
 
 
 def _pitzer_f2(x):
     """
-    The function of ionic strength used to calculate \\beta_\\gamma in the Pitzer ion intercation model.
+    The function of ionic strength used to calculate \\beta_\\gamma in the Pitzer ion interaction model.
 
     .. math:: f(x) = -{2 \\over x ^ 2} [ 1 - ({1+x+ x^2 \\over 2}) \\exp(-x)]
 
@@ -736,14 +693,13 @@ def _pitzer_f2(x):
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     """
     # return 0 if the input is 0
     if x == 0:
         return 0
-    else:
-        return -2 * (1 - (1 + x + x**2 / 2) * math.exp(-x)) / x**2
+    return -2 * (1 - (1 + x + x**2 / 2) * math.exp(-x)) / x**2
 
 
 def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
@@ -774,7 +730,7 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     See Also
     --------
@@ -782,9 +738,7 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 
     """
     coeff = (
-        beta0
-        + beta1 * _pitzer_f1(alpha1 * ionic_strength**0.5)
-        + beta2 * _pitzer_f1(alpha2 * ionic_strength**0.5)
+        beta0 + beta1 * _pitzer_f1(alpha1 * ionic_strength**0.5) + beta2 * _pitzer_f1(alpha2 * ionic_strength**0.5)
     )
     return coeff.magnitude
 
@@ -817,7 +771,7 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 #    /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 #
 #    Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-#    Journal of Chemical and Engineering Data, (2), 177–184.
+#    Journal of Chemical and Engineering Data, (2), 177-184.
 #
 #    See Also
 #    --------
@@ -860,19 +814,14 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     Beyer, R., & Steiger, M. (2010). Vapor Pressure Measurements of NaHCOO + H 2 O and KHCOO + H 2 O from 278 to 308 K
     and Representation with an Ion Interaction (Pitzer) Model.
-    Journal of Chemical & Engineering Data, 55(2), 830–838. doi:10.1021/je900487a
+    Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
 
     """
-    coeff = (
-        beta0
-        + beta1 * math.exp(-alpha1 * ionic_strength**0.5)
-        + beta2 * math.exp(-alpha2 * ionic_strength**0.5)
-    )
-    return coeff
+    return beta0 + beta1 * math.exp(-alpha1 * ionic_strength**0.5) + beta2 * math.exp(-alpha2 * ionic_strength**0.5)
 
 
 # def _pitzer_C_MX(C_phi,z_cation,z_anion):
@@ -884,7 +833,7 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 #    Parameters
 #    ----------
 #    C_phi: number
-#                    The C_phi paramter for the Pitzer ion interaction model.
+#                    The C_phi parameter for the Pitzer ion interaction model.
 #    z_cation, z_anion: int
 #                    The formal charge on the cation and anion, respectively
 #
@@ -897,11 +846,11 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 #    ----------
 #    Kim, H., & Jr, W. F. (1988).
 #    Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-#    Journal of Chemical and Engineering Data, (2), 177–184.
+#    Journal of Chemical and Engineering Data, (2), 177-184.
 #
 #    May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
 #    A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-#    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+#    Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 #    '''
 #
 #    coeff = C_phi / ( 2 * abs(z_cation * z_anion) ** 0.5 )
@@ -936,7 +885,7 @@ def _pitzer_log_gamma(
     molality:       Quantity
                     The concentration of the salt, mol/kg
     B_MX,B_phi,C_phi: Quantity
-                    Calculated paramters for the Pitzer ion interaction model.
+                    Calculated parameters for the Pitzer ion interaction model.
     z_cation, z_anion: int
                     The formal charge on the cation and anion, respectively
     nu_cation, nu_anion: int
@@ -955,35 +904,22 @@ def _pitzer_log_gamma(
     ----------
     Kim, H., & Jr, W. F. (1988).
     Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+    Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
     """
     first_term = (
         -1
         * abs(z_cation * z_anion)
         * _debye_parameter_osmotic(temperature)
-        * (
-            ionic_strength**0.5 / (1 + b * ionic_strength**0.5)
-            + 2 / b * math.log(1 + b * ionic_strength**0.5)
-        )
+        * (ionic_strength**0.5 / (1 + b * ionic_strength**0.5) + 2 / b * math.log(1 + b * ionic_strength**0.5))
     )
-    second_term = (
-        2 * molality * nu_cation * nu_anion / (nu_cation + nu_anion) * (B_MX + B_phi)
-    )
-    third_term = (
-        3
-        * molality**2
-        * (nu_cation * nu_anion) ** 1.5
-        / (nu_cation + nu_anion)
-        * C_phi
-    )
+    second_term = 2 * molality * nu_cation * nu_anion / (nu_cation + nu_anion) * (B_MX + B_phi)
+    third_term = 3 * molality**2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion) * C_phi
 
-    ln_gamma = first_term + second_term + third_term
-
-    return ln_gamma
+    return first_term + second_term + third_term
 
 
 def get_osmotic_coefficient_pitzer(
@@ -1070,15 +1006,15 @@ def get_osmotic_coefficient_pitzer(
     /Journal of Chemical& Engineering Data (57), p. 1637-1647.
 
     Kim, H., & Jr, W. F. (1988). Evaluation of Pitzer ion interaction parameters of aqueous electrolytes at 25 degree C. 1. Single salt parameters.
-    Journal of Chemical and Engineering Data, (2), 177–184.
+    Journal of Chemical and Engineering Data, (2), 177-184.
 
     May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-    Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+    Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 
     Beyer, R., & Steiger, M. (2010). Vapor Pressure Measurements of NaHCOO + H 2 O and KHCOO + H 2 O from 278 to 308 K
     and Representation with an Ion Interaction (Pitzer) Model.
-    Journal of Chemical & Engineering Data, 55(2), 830–838. doi:10.1021/je900487a
+    Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
 
     See Also
     --------
@@ -1095,20 +1031,12 @@ def get_osmotic_coefficient_pitzer(
     alpha2 = alpha2 * unit("kg ** 0.5 / mol ** 0.5")
     b = b * unit("kg ** 0.5 / mol ** 0.5")
     C_phi = C_phi * unit("kg ** 2 /mol ** 2")
-    B_phi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit(
-        "kg/mol"
-    )
+    B_phi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
 
-    first_term = 1 - _debye_parameter_osmotic(temperature) * abs(
-        z_cation * z_anion
-    ) * ionic_strength**0.5 / (1 + b * ionic_strength**0.5)
+    first_term = 1 - _debye_parameter_osmotic(temperature) * abs(z_cation * z_anion) * ionic_strength**0.5 / (
+        1 + b * ionic_strength**0.5
+    )
     second_term = molality * 2 * nu_cation * nu_anion / (nu_cation + nu_anion) * B_phi
-    third_term = (
-        molality**2
-        * (2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion))
-        * C_phi
-    )
+    third_term = molality**2 * (2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion)) * C_phi
 
-    osmotic_coefficient = first_term + second_term + third_term
-
-    return osmotic_coefficient
+    return first_term + second_term + third_term

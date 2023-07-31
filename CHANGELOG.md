@@ -19,7 +19,7 @@
 - Add more comprehensive platform testing via `tox`
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace elements.py with `pymatgen.core.periodic_table`
-- Add `pymatgen` as a depedency
+- Add `pymatgen` as a dependency
 - Migrate all tests to `pytest`
 - Add pre-commit configuration and lint with `black`
 - Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
@@ -32,7 +32,7 @@
 - Added methods for calculating the osmolarity or osmolality of aSolution
 - Add the ability to filter list_concentrations() to show onlycations or anions
 - Add two medical solutions - normal saline and Ringer's lacate -to the autogenerate method
-- Add shorthand abbreviations for 'seawater' and 'wastewater' inthe autogenerate method
+- Add shorthand abbreviations for 'seawater' and 'wastewater' in the autogenerate method
 - Enhance automatic test suite to compare results withexperimental data based on relative error
 - Add test suites for the effective Pitzer model and amulticomponent salt solution
 - DEPRECATED get_mole_fraction. Use get_amount() instead

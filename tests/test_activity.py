@@ -13,7 +13,6 @@ by USGS(PHREEQC)
 
 import numpy as np
 import pytest
-
 from pyEQL.solution import Solution
 
 
@@ -79,9 +78,7 @@ class Test_activity_pitzer_nacl:
             sol.add_solute(anion, conc_a)
             act_cat = sol.get_activity_coefficient(cation)
             act_an = sol.get_activity_coefficient(anion)
-            result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                1 / (nu_cation + nu_anion)
-            )
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (1 / (nu_cation + nu_anion))
             expected = pub_activity_coeff[i]
 
             assert np.isclose(result, expected, rtol=0.05)
@@ -127,9 +124,7 @@ class Test_activity_pitzer_nacl:
             sol.add_solute(anion, conc_a)
             act_cat = sol.get_activity_coefficient(cation)
             act_an = sol.get_activity_coefficient(anion)
-            result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                1 / (nu_cation + nu_anion)
-            )
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (1 / (nu_cation + nu_anion))
             expected = pub_activity_coeff[i]
 
             assert np.isclose(result, expected, rtol=0.05)
@@ -298,9 +293,7 @@ class Test_activity_pitzer_nacl:
             sol.add_solute(anion, conc_a)
             act_cat = sol.get_activity_coefficient(cation)
             act_an = sol.get_activity_coefficient(anion)
-            result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                1 / (nu_cation + nu_anion)
-            )
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (1 / (nu_cation + nu_anion))
             expected = pub_activity_coeff[i]
 
             assert np.isclose(result, expected, rtol=0.05)
@@ -347,9 +340,7 @@ class Test_activity_pitzer_nacl:
             sol.add_solute(anion, conc_a)
             act_cat = sol.get_activity_coefficient(cation)
             act_an = sol.get_activity_coefficient(anion)
-            result = (act_cat**nu_cation * act_an**nu_anion) ** (
-                1 / (nu_cation + nu_anion)
-            )
+            result = (act_cat**nu_cation * act_an**nu_anion) ** (1 / (nu_cation + nu_anion))
             expected = pub_activity_coeff[i]
 
             assert np.isclose(result, expected, rtol=0.05)
@@ -430,9 +421,9 @@ class Test_activity_pitzer_nacl:
             assert np.isclose(result, expected, rtol=0.05)
 
     # The pitzer model diverges a bit from experimental data at high concentration
-    @pytest.mark.xfail
+    @pytest.mark.xfail()
     def test_water_activity_pitzer_nacl_1(self):
-        """
+        r"""
         calculate the water activity at each concentration and compare
         to experimental data
 

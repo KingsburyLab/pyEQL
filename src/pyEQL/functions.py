@@ -38,7 +38,7 @@ logger.addHandler(ch)
 
 
 def gibbs_mix(Solution1, Solution2):
-    """
+    r"""
     Return the Gibbs energy change associated with mixing two solutions.
 
     Parameters
@@ -86,20 +86,16 @@ def gibbs_mix(Solution1, Solution2):
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
         for solute in solution.components:
-            if not solution.get_amount(solute, "fraction") == 0:
-                term_list[solution] += solution.get_amount(solute, "mol") * math.log(
-                    solution.get_activity(solute)
-                )
+            if solution.get_amount(solute, "fraction") != 0:
+                term_list[solution] += solution.get_amount(solute, "mol") * math.log(solution.get_activity(solute))
 
-    return (
-        unit.R
-        * blend.temperature.to("K")
-        * (term_list[blend] - term_list[concentrate] - term_list[dilute])
-    ).to("J")
+    return (unit.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
+        "J"
+    )
 
 
 def entropy_mix(Solution1, Solution2):
-    """
+    r"""
     Return the ideal mixing entropy associated with mixing two solutions
 
     Parameters
@@ -147,16 +143,14 @@ def entropy_mix(Solution1, Solution2):
     # calculate the entropy change and number of moles solute for each solution
     for solution in term_list:
         for solute in solution.components:
-            if not solution.get_amount(solute, "fraction") == 0:
+            if solution.get_amount(solute, "fraction") != 0:
                 term_list[solution] += solution.get_amount(solute, "mol") * math.log(
                     solution.get_amount(solute, "fraction")
                 )
 
-    return (
-        unit.R
-        * blend.temperature.to("K")
-        * (term_list[blend] - term_list[concentrate] - term_list[dilute])
-    ).to("J")
+    return (unit.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
+        "J"
+    )
 
 
 def donnan_eql(solution, fixed_charge):
@@ -247,20 +241,12 @@ def donnan_eql(solution, fixed_charge):
     if db.has_parameter(salt.formula, "partial_molar_volume"):
         item = db.get_parameter(salt.formula, "partial_molar_volume")
         molar_volume = item.get_value()
-    elif db.has_parameter(salt.cation, "partial_molar_volume") and db.has_parameter(
-        salt.anion, "partial_molar_volume"
-    ):
-        cation_vol = solution.get_solute(salt.cation).get_parameter(
-            "partial_molar_volume"
-        )
-        anion_vol = solution.get_solute(salt.anion).get_parameter(
-            "partial_molar_volume"
-        )
+    elif db.has_parameter(salt.cation, "partial_molar_volume") and db.has_parameter(salt.anion, "partial_molar_volume"):
+        cation_vol = solution.get_solute(salt.cation).get_parameter("partial_molar_volume")
+        anion_vol = solution.get_solute(salt.anion).get_parameter("partial_molar_volume")
         molar_volume = cation_vol + anion_vol
     else:
-        logger.error(
-            "Required partial molar volume information not available. Aborting."
-        )
+        logger.error("Required partial molar volume information not available. Aborting.")
         return None
 
     # initialize the equilibrated solution - start with a direct copy of the
@@ -276,11 +262,7 @@ def donnan_eql(solution, fixed_charge):
 
     # the stuff in the term below doesn't change on iteration, so calculate it up-front
     # assign it the correct units and extract the magnitude for a performance gain
-    exp_term = (
-        (molar_volume / (unit.R * solution.temperature * z_cation * nu_cation))
-        .to("1/Pa")
-        .magnitude
-    )
+    exp_term = (molar_volume / (unit.R * solution.temperature * z_cation * nu_cation)).to("1/Pa").magnitude
 
     def donnan_solve(x):
         """Where x is the magnitude of co-ion concentration"""
@@ -289,15 +271,11 @@ def donnan_eql(solution, fixed_charge):
         if fixed_charge.magnitude >= 0:
             # counter-ion is the anion
             conc_cation_mem = x / abs(z_cation)
-            conc_anion_mem = (
-                -(conc_cation_mem * z_cation + fixed_charge.magnitude) / z_anion
-            )
+            conc_anion_mem = -(conc_cation_mem * z_cation + fixed_charge.magnitude) / z_anion
         elif fixed_charge.magnitude < 0:
             # counter-ion is the cation
             conc_anion_mem = x / abs(z_anion)
-            conc_cation_mem = (
-                -(conc_anion_mem * z_anion + fixed_charge.magnitude) / z_cation
-            )
+            conc_cation_mem = -(conc_anion_mem * z_anion + fixed_charge.magnitude) / z_cation
 
         # match the units given for fixed_charge
         units = str(fixed_charge.units)
@@ -313,14 +291,11 @@ def donnan_eql(solution, fixed_charge):
 
         # compute the difference in osmotic pressure
         # using the magnitudes here helps performance
-        delta_pi = (
-            donnan_soln.get_osmotic_pressure().magnitude
-            - solution.get_osmotic_pressure().magnitude
-        )
+        delta_pi = donnan_soln.get_osmotic_pressure().magnitude - solution.get_osmotic_pressure().magnitude
 
-        return (act_cation_mem / act_cation_soln) ** (1 / z_cation) * (
-            act_anion_soln / act_anion_mem
-        ) ** (1 / z_anion) - math.exp(delta_pi * exp_term)
+        return (act_cation_mem / act_cation_soln) ** (1 / z_cation) * (act_anion_soln / act_anion_mem) ** (
+            1 / z_anion
+        ) - math.exp(delta_pi * exp_term)
 
     # solve the function above using one of scipy's nonlinear solvers
 
@@ -363,12 +338,10 @@ def mix(Solution1, Solution2):
 
     """
     # check to see if the two solutions have the same solvent
-    if not Solution1.solvent_name == Solution2.solvent_name:
-        logger.error(
-            "mix() function does not support solutions with different solvents. Aborting."
-        )
+    if Solution1.solvent_name != Solution2.solvent_name:
+        logger.error("mix() function does not support solutions with different solvents. Aborting.")
 
-    if not Solution1.solvent_name == "H2O" or Solution1.solvent_name == "water":
+    if Solution1.solvent_name != "H2O" or Solution1.solvent_name == "water":
         logger.error("mix() function does not support non-water solvents. Aborting.")
 
     # set the pressure for the new solution
@@ -380,14 +353,14 @@ def mix(Solution1, Solution2):
     v2 = Solution2.get_volume()
 
     # check to see if the solutions have the same temperature and pressure
-    if not p1 == p2:
+    if p1 != p2:
         logger.info(
             "mix() function called between two solutions of different pressure. Pressures will be averaged (weighted by volume)"
         )
 
     blend_pressure = str((p1 * v1 + p2 * v2) / (v1 + v2))
 
-    if not t1 == t2:
+    if t1 != t2:
         logger.info(
             "mix() function called between two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
         )
@@ -410,7 +383,7 @@ def mix(Solution1, Solution2):
     Blend = pyEQL.Solution(temperature=blend_temperature, pressure=blend_pressure)
 
     # set or add the appropriate amount of all the components
-    for item in mix_species.keys():
+    for item in mix_species:
         if item in Blend.components:
             # if already present (e.g. H2O, H+), modify the amount
             Blend.set_amount(item, mix_species[item])
@@ -546,6 +519,4 @@ def autogenerate(solution=""):
         logger.error("Invalid solution entered - %s" % solution)
         return None
 
-    sol = pyEQL.Solution(solutes, temperature=temperature, pressure=pressure, pH=pH)
-
-    return sol
+    return pyEQL.Solution(solutes, temperature=temperature, pressure=pressure, pH=pH)

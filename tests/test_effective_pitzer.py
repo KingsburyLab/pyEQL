@@ -33,9 +33,8 @@ the paper, so perfect accuracy is not expected.
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
+import pytest
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.15
@@ -54,17 +53,12 @@ class Test_effective_pitzer:
         Multiple is a scale factor by which the base
         composition (regular seawater) is scaled.
         """
-        s1 = pyEQL.Solution(
+        return pyEQL.Solution(
             [
                 ["Na+", str(multiple * 0.4197 + multiple * 2 * 0.0288) + "mol/L"],
                 [
                     "Cl-",
-                    str(
-                        multiple * 0.4197
-                        + multiple * 2 * 0.0546
-                        + multiple * 2 * 0.01045
-                        + multiple * 0.00093
-                    )
+                    str(multiple * 0.4197 + multiple * 2 * 0.0546 + multiple * 2 * 0.01045 + multiple * 0.00093)
                     + "mol/L",
                 ],
                 ["Mg+2", str(multiple * 0.0546) + "mol/L"],
@@ -73,7 +67,6 @@ class Test_effective_pitzer:
                 ["K+", str(multiple * 0.00093) + "mol/L"],
             ]
         )
-        return s1
 
     def test_effective_pitzer_nacl_activity(self):
         # test the activity coefficient of NaCl
@@ -94,30 +87,25 @@ class Test_effective_pitzer:
             molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
-            activity_coefficient = (
-                pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.ionic_strength,
-                    molality,
-                    alpha1,
-                    alpha2,
-                    param.get_value()[0],
-                    param.get_value()[1],
-                    param.get_value()[2],
-                    param.get_value()[3],
-                    Salt.z_cation,
-                    Salt.z_anion,
-                    Salt.nu_cation,
-                    Salt.nu_anion,
-                    temperature,
-                )
+            activity_coefficient = pyEQL.activity_correction.get_activity_coefficient_pitzer(
+                s1.ionic_strength,
+                molality,
+                alpha1,
+                alpha2,
+                param.get_value()[0],
+                param.get_value()[1],
+                param.get_value()[2],
+                param.get_value()[3],
+                Salt.z_cation,
+                Salt.z_anion,
+                Salt.nu_cation,
+                Salt.nu_anion,
+                temperature,
             )
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1
-                + pyEQL.unit("0.018 kg/mol")
-                * s1.get_total_moles_solute()
-                / s1.get_solvent_mass()
+                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
             # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)
@@ -141,30 +129,25 @@ class Test_effective_pitzer:
             molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
-            activity_coefficient = (
-                pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.ionic_strength,
-                    molality,
-                    alpha1,
-                    alpha2,
-                    param.get_value()[0],
-                    param.get_value()[1],
-                    param.get_value()[2],
-                    param.get_value()[3],
-                    Salt.z_cation,
-                    Salt.z_anion,
-                    Salt.nu_cation,
-                    Salt.nu_anion,
-                    temperature,
-                )
+            activity_coefficient = pyEQL.activity_correction.get_activity_coefficient_pitzer(
+                s1.ionic_strength,
+                molality,
+                alpha1,
+                alpha2,
+                param.get_value()[0],
+                param.get_value()[1],
+                param.get_value()[2],
+                param.get_value()[3],
+                Salt.z_cation,
+                Salt.z_anion,
+                Salt.nu_cation,
+                Salt.nu_anion,
+                temperature,
             )
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1
-                + pyEQL.unit("0.018 kg/mol")
-                * s1.get_total_moles_solute()
-                / s1.get_solvent_mass()
+                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
             # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)
@@ -188,35 +171,30 @@ class Test_effective_pitzer:
             molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
-            activity_coefficient = (
-                pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.ionic_strength,
-                    molality,
-                    alpha1,
-                    alpha2,
-                    param.get_value()[0],
-                    param.get_value()[1],
-                    param.get_value()[2],
-                    param.get_value()[3],
-                    Salt.z_cation,
-                    Salt.z_anion,
-                    Salt.nu_cation,
-                    Salt.nu_anion,
-                    temperature,
-                )
+            activity_coefficient = pyEQL.activity_correction.get_activity_coefficient_pitzer(
+                s1.ionic_strength,
+                molality,
+                alpha1,
+                alpha2,
+                param.get_value()[0],
+                param.get_value()[1],
+                param.get_value()[2],
+                param.get_value()[3],
+                Salt.z_cation,
+                Salt.z_anion,
+                Salt.nu_cation,
+                Salt.nu_anion,
+                temperature,
             )
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1
-                + pyEQL.unit("0.018 kg/mol")
-                * s1.get_total_moles_solute()
-                / s1.get_solvent_mass()
+                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
             # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail()
     def test_effective_pitzer_na2so4_activity(self):
         # test the activity coefficient of Na2SO4
         # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m
@@ -236,30 +214,25 @@ class Test_effective_pitzer:
             molality = Salt.get_effective_molality(s1.ionic_strength)
             temperature = str(s1.temperature)
 
-            activity_coefficient = (
-                pyEQL.activity_correction.get_activity_coefficient_pitzer(
-                    s1.ionic_strength,
-                    molality,
-                    alpha1,
-                    alpha2,
-                    param.get_value()[0],
-                    param.get_value()[1],
-                    param.get_value()[2],
-                    param.get_value()[3],
-                    Salt.z_cation,
-                    Salt.z_anion,
-                    Salt.nu_cation,
-                    Salt.nu_anion,
-                    temperature,
-                )
+            activity_coefficient = pyEQL.activity_correction.get_activity_coefficient_pitzer(
+                s1.ionic_strength,
+                molality,
+                alpha1,
+                alpha2,
+                param.get_value()[0],
+                param.get_value()[1],
+                param.get_value()[2],
+                param.get_value()[3],
+                Salt.z_cation,
+                Salt.z_anion,
+                Salt.nu_cation,
+                Salt.nu_anion,
+                temperature,
             )
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1
-                + pyEQL.unit("0.018 kg/mol")
-                * s1.get_total_moles_solute()
-                / s1.get_solvent_mass()
+                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
             # print(result,expected[item])
             assert np.isclose(result, expected[item], RTOL)
@@ -271,7 +244,6 @@ class Test_effective_pitzer:
         expected = [1, 1, 0.95, 0.95]
 
         # import the parameters database
-        from pyEQL import paramsDB as db
 
         for item in range(len(multiple)):
             s1 = self.mock_seawater(multiple[item])

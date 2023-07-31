@@ -5,10 +5,7 @@ chemical_formula.py test suite
 This file contains tests for the chemical formula interpreter module of pyEQL.
 """
 
-import numpy as np
-import pytest
 
-import pyEQL
 from pyEQL import chemical_formula as cf
 
 
@@ -149,7 +146,7 @@ class Test_is_valid_formula:
         assert result == expected
 
     # Formulas must contain only valid atomic symbols that start with capital letters
-    def test_is_valid_formula_9(self):
+    def test_is_valid_formula_19(self):
         input = "naOH"
         result = cf.is_valid_formula(input)
         expected = False
@@ -221,7 +218,7 @@ class Test_is_valid_formula:
         assert result == expected
 
     # An open parenthesis must always precede the nearest closed parenthesis
-    def test_is_valid_formula_17(self):
+    def test_is_valid_formula_20(self):
         input = "CH3(CH)2(CH)2"
         result = cf.is_valid_formula(input)
         expected = True

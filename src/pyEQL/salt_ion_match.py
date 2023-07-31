@@ -124,13 +124,9 @@ class Salt:
         .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of
         composition and nonideal solution behavior on desalination calculations
         for mixed electrolyte solutions with comparison to seawater.
-        Desalination 2013, 318, 34–47.
+        Desalination 2013, 318, 34-47.
         """
-        m_effective = (
-            2
-            * ionic_strength
-            / (self.nu_cation * self.z_cation**2 + self.nu_anion * self.z_anion**2)
-        )
+        m_effective = 2 * ionic_strength / (self.nu_cation * self.z_cation**2 + self.nu_anion * self.z_anion**2)
 
         return m_effective.to("mol/kg")
 
@@ -162,9 +158,8 @@ def _sort_components(Solution, type="all"):
         elif type == "cations":
             if Solution.get_solute(item).get_formal_charge() > 0:
                 formula_list.append(item)
-        elif type == "anions":
-            if Solution.get_solute(item).get_formal_charge() < 0:
-                formula_list.append(item)
+        elif type == "anions" and Solution.get_solute(item).get_formal_charge() < 0:
+            formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs
     mol_list = {}
@@ -244,12 +239,8 @@ def generate_salt_list(Solution, unit="mol/kg"):
     index_an = 0
 
     # calculate the equivalent concentrations of each ion
-    c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(
-        cation_list[index_cat]
-    )
-    a1 = Solution.get_amount(anion_list[index_an], unit) * abs(
-        chem.get_formal_charge(anion_list[index_an])
-    )
+    c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
+    a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
 
     while index_cat < len_cat and index_an < len_an:
         # if the cation concentration is greater, there will be leftover cations
@@ -265,9 +256,7 @@ def generate_salt_list(Solution, unit="mol/kg"):
             # move to the next anion
             index_an += 1
             try:
-                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(
-                    chem.get_formal_charge(anion_list[index_an])
-                )
+                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
             except IndexError:
                 continue
         # if the anion concentration is greater, there will be leftover anions
@@ -283,9 +272,7 @@ def generate_salt_list(Solution, unit="mol/kg"):
             # move to the next cation
             index_cat += 1
             try:
-                c1 = Solution.get_amount(
-                    cation_list[index_cat], unit
-                ) * chem.get_formal_charge(cation_list[index_cat])
+                c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
             except IndexError:
                 continue
         if c1 == a1:
@@ -299,12 +286,8 @@ def generate_salt_list(Solution, unit="mol/kg"):
             index_an += 1
             index_cat += 1
             try:
-                c1 = Solution.get_amount(
-                    cation_list[index_cat], unit
-                ) * chem.get_formal_charge(cation_list[index_cat])
-                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(
-                    chem.get_formal_charge(anion_list[index_an])
-                )
+                c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
+                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
             except IndexError:
                 continue
 

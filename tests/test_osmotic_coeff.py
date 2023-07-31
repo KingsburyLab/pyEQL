@@ -10,8 +10,6 @@ data rather than the theoretical result of the respective functions.
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
 
 
@@ -36,7 +34,7 @@ class Test_osmotic_pitzer:
         ----------
         May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
         A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 
         """
         # list of concentrations to test, mol/kg
@@ -64,7 +62,7 @@ class Test_osmotic_pitzer:
         ----------
         May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
         A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-        Journal of Chemical & Engineering Data, 56(12), 5066–5077. doi:10.1021/je2009329
+        Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
 
         """
         # list of concentrations to test, mol/kg
