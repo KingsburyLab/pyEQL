@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'macos-latest']
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         package: ["."]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
@@ -28,10 +28,10 @@ jobs:
       - name: Upgrade Python dependencies
         shell: bash
         run: |
-          python${{ matrix.python-version }} -m pip install --upgrade pip pip-tools
+          python -m pip install --upgrade pip pip-tools
           cd ${{ matrix.package }}
-          python${{ matrix.python-version }} -m piptools compile -q --upgrade --resolver=backtracking -o requirements/${{ matrix.os }}_py${{ matrix.python-version }}.txt
-          python${{ matrix.python-version }} -m piptools compile -q --upgrade --resolver=backtracking --all-extras -o requirements/${{ matrix.os }}_py${{ matrix.python-version }}_extras.txt
+          python -m piptools compile -q --upgrade --resolver=backtracking -o requirements/${{ matrix.os }}_py${{ matrix.python-version }}.txt
+          python -m piptools compile -q --upgrade --resolver=backtracking --all-extras -o requirements/${{ matrix.os }}_py${{ matrix.python-version }}_extras.txt
       - name: Detect changes
         id: changes
         shell: bash
