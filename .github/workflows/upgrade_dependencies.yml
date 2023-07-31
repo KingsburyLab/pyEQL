@@ -14,8 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'macos-latest', windows-latest]
-        package: ["pyEQL"]
+        os: ['ubuntu-latest', 'macos-latest']
+        package: ["."]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
       - name: Open pull request if needed
         if: steps.changes.outputs.count > 0
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Only open a PR if the branch is not attached to an existing one
         run: |
           PR=$(gh pr list --head auto-dependency-upgrades --json number -q '.[0].number')
