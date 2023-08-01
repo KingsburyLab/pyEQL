@@ -8,9 +8,8 @@ computations of pyEQL
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
+import pytest
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.04
@@ -22,7 +21,7 @@ class Test_dielectric:
     ------------------------------------------------
 
     Reference: A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier, An empirical equation for the dielectric constant in aqueous and
-    nonaqueous electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116–123. doi:10.1016/j.fluid.2014.05.037.
+    nonaqueous electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116-123. doi:10.1016/j.fluid.2014.05.037.
 
     """
 
@@ -103,7 +102,7 @@ class Test_dielectric:
 
         assert np.isclose(result, expected, rtol=RTOL)
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail()
     def test_dielectric_constant8(self):
         """
         12 mol/kg LiCl = 24
@@ -126,7 +125,7 @@ class Test_dielectric:
 
         assert np.isclose(result, expected, rtol=RTOL)
 
-    def test_dielectric_constant9(self):
+    def test_dielectric_constant10(self):
         """
         2.1 mol/kg RbCl = 59
         """
@@ -137,7 +136,7 @@ class Test_dielectric:
 
         assert np.isclose(result, expected, rtol=RTOL)
 
-    def test_dielectric_constant9(self):
+    def test_dielectric_constant11(self):
         """
         0.5 mol/kg RbCl = 73
         """

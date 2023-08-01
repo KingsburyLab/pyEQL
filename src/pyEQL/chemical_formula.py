@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains classes, functions, and methods to facilitate the
 input, output, and parsing of chemical formulas for pyEQL.
@@ -23,7 +22,7 @@ atomic_numbers = {e.symbol: (e.Z, e.long_name) for e in Element}
 # by user-facing functions.
 def _invalid_formula(reason):
     raise ValueError("Invalid chemical formula specified - %s" % reason)
-    return None
+    return
 
 
 def _check_formula(formula):
@@ -68,9 +67,7 @@ def _check_formula(formula):
 
     # check that ionic formulas end with either a number of a charge symbol
     if "+" in formula:
-        if formula.count("+") == 1 and not (
-            formula[-1] == "+" or formula[-1].isnumeric()
-        ):
+        if formula.count("+") == 1 and not (formula[-1] == "+" or formula[-1].isnumeric()):
             _invalid_formula(
                 "ionic formulas must end with one or more charge symbols or a single charge symbol and a number"
             )
@@ -82,9 +79,7 @@ def _check_formula(formula):
                         "ionic formulas must end with one or more charge symbols or a single charge symbol and a number"
                     )
     elif "-" in formula:
-        if formula.count("-") == 1 and not (
-            formula[-1] == "-" or formula[-1].isnumeric()
-        ):
+        if formula.count("-") == 1 and not (formula[-1] == "-" or formula[-1].isnumeric()):
             _invalid_formula(
                 "ionic formulas must end with one or more charge symbols or a single charge symbol and a number"
             )
@@ -113,11 +108,7 @@ def _check_formula(formula):
             parentheses = ["(", ")"]
             charge_symbols = ["+", "-"]
 
-            if not (
-                input_list[i].isalnum()
-                or input_list[i] in parentheses
-                or input_list[i] in charge_symbols
-            ):
+            if not (input_list[i].isalnum() or input_list[i] in parentheses or input_list[i] in charge_symbols):
                 _invalid_formula("contains invalid character")
 
             elif input_list[i] == "(":
@@ -128,9 +119,7 @@ def _check_formula(formula):
                 # parenthesis
                 try:
                     if not i < input_list.index(")", i):
-                        _invalid_formula(
-                            "open parenthesis must precede closed parenthesis"
-                        )
+                        _invalid_formula("open parenthesis must precede closed parenthesis")
                 # add exception for ValueError, in case there is no closed parenthesis
                 # after index i
                 except ValueError:
@@ -189,9 +178,8 @@ def _check_formula(formula):
 
     # check that all elements are valid
     for item in input_list:
-        if item.isalpha():
-            if not is_valid_element(item):
-                _invalid_formula("invalid element symbol")
+        if item.isalpha() and not is_valid_element(item):
+            _invalid_formula("invalid element symbol")
 
     return input_list
 
@@ -277,10 +265,7 @@ def _consolidate_formula(formula):
         if input_list[i].isalpha():
             # is it followed by a number?
             try:
-                if input_list[i + 1].isnumeric():
-                    quantity = input_list[i + 1]
-                else:
-                    quantity = 1
+                quantity = input_list[i + 1] if input_list[i + 1].isnumeric() else 1
             except IndexError:
                 quantity = 1
 
@@ -330,9 +315,8 @@ def is_valid_element(formula):
     """
     if formula in atomic_numbers:
         return True
-    else:
-        _invalid_formula("invalid element symbol")
-        return False
+    _invalid_formula("invalid element symbol")
+    return False
 
 
 def is_valid_formula(formula):
@@ -415,10 +399,8 @@ def contains(formula, element):
     False
     """
     if is_valid_element(element):
-        if element in get_elements(formula):
-            return True
-        else:
-            return False
+        return element in get_elements(formula)
+    return None
 
 
 # Information Retrieval Functions
@@ -778,9 +760,7 @@ def get_element_weight_fraction(formula, element):
     wt = get_element_weight(formula, element)
 
     # calculate the fraction
-    frac = wt / get_molecular_weight(formula)
-
-    return frac
+    return wt / get_molecular_weight(formula)
 
 
 def get_molecular_weight(formula):

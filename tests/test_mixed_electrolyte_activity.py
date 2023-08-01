@@ -18,9 +18,8 @@ DOI: 10.1021/je9004432
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
+import pytest
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.25
@@ -55,7 +54,7 @@ class Test_nano3_kno3_activity:
 
             assert np.isclose(result, expected[item], RTOL)
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail()
     def test_activity_K_XNa_75(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
         # mole fraction of Na+ is 0.75

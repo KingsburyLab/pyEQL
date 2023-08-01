@@ -6,3 +6,83 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 # See configuration details in https://github.com/pypa/setuptools_scm
 version_scheme = "no-guess-dev"
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+target-version = "py37"
+line-length = 120
+exclude = ["src/pyEQL/parameter.py", "src/pyEQL/chemical_formula.py", "src/pyEQL/database.py", ".tsv"] # TODO - remove this line once files deprecated
+select = [
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "D",    # pydocstyle
+  "E",    # pycodestyle error
+  "EXE",  # flake8-executable
+  "F",    # pyflakes
+  "FA",   # flake8-future-annotations
+  "FLY",  # flynt
+  "I",    # isort
+  "ICN",  # flake8-import-conventions
+  "ISC",  # flake8-implicit-str-concat
+  "PD",   # pandas-vet
+  "PERF", # perflint
+  "PIE",  # flake8-pie
+  "PL",   # pylint
+  "PT",   # flake8-pytest-style
+  "PYI",  # flakes8-pyi
+  "Q",    # flake8-quotes
+  "RET",  # flake8-return
+  "RSE",  # flake8-raise
+  "RUF",  # Ruff-specific rules
+  "SIM",  # flake8-simplify
+  "SLOT", # flake8-slots
+  "TCH",  # flake8-type-checking
+  "TID",  # tidy imports
+  "TID",  # flake8-tidy-imports
+  "UP",   # pyupgrade
+  "W",    # pycodestyle warning
+  "YTT",  # flake8-2020
+]
+ignore = [
+  "B008",    # Do not perform function call `unit` in argument defaults
+  "B023",    # Function definition does not bind loop variable
+  "B028",    # No explicit stacklevel keyword argument found
+  "B904",    # Within an except clause, raise exceptions with ...
+  "C408",    # unnecessary-collection-call
+  "D105",    # Missing docstring in magic method
+  "D205",    # 1 blank line required between summary line and description
+  "D212",    # Multi-line docstring summary should start at the first line
+  "FA100",   # Missing `from __future__ import annotations`, but uses `typing.XXX` TODO
+  "PD011",   # pandas-use-of-dot-values
+  "PD901",   # pandas-df-variable-name
+  "PERF203", # try-except-in-loop
+  "PLR",     # pylint refactor
+  "PLW2901", # Outer for loop variable overwritten by inner assignment target
+  "PT013",   # pytest-incorrect-pytest-import
+  "RUF012",  # Disable checks for mutable class args. This is a non-problem.
+  "SIM105",  # Use contextlib.suppress(OSError) instead of try-except-pass
+]
+pydocstyle.convention = "google"
+isort.split-on-trailing-comma = false
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["D", "E501"] # TODO - remove E501
+
+[tool.pytest.ini_options]
+addopts = "--color=yes -p no:warnings --import-mode=importlib --durations=30"
+testpaths = [
+    "tests",
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+no_implicit_optional = false
+
+[tool.codespell]
+ignore-words-list = "nd"
+skip = 'tests/test_files/*'

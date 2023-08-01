@@ -19,7 +19,7 @@ following parameters for some common electrolytes:
 Basics
 ======
 
-The Paramsdb class creates a container for parameters. Each paramter
+The Paramsdb class creates a container for parameters. Each parameter
 is an object which contains not only the value, but also information about
 the units, the reference, and the conditions of measurement. paramsdb() also
 defines several methods that are helpful for retrieving parameters.

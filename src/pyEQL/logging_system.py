@@ -70,6 +70,5 @@ class Unique(logging.Filter):
         if msg in self.__logged:
             self.__logged[msg] += 1
             return False
-        else:
-            self.__logged[msg] = 1
-            return True
+        self.__logged[msg] = 1
+        return True

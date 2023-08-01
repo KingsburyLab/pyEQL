@@ -1,5 +1,8 @@
 import sys
 
+from pint import UnitRegistry
+from pkg_resources import resource_filename
+
 if sys.version_info[:2] >= (3, 8):
     # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
     from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
@@ -26,8 +29,6 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 
 """
-from pint import UnitRegistry
-from pkg_resources import resource_filename
 
 # Units handling
 # per the pint documentation, it's important that pint and its associated Unit
@@ -51,5 +52,5 @@ from pyEQL.database import Paramsdb  # noqa
 # initialize the parameters database
 paramsDB = Paramsdb()
 
-from pyEQL.functions import *  # noqa: F401, E402, F403
-from pyEQL.solution import Solution  # noqa: F401, E402
+from pyEQL.functions import *  # noqa: E402, F403
+from pyEQL.solution import Solution  # noqa: E402

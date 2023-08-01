@@ -14,8 +14,6 @@ in the testing are:
 """
 
 import numpy as np
-import pytest
-
 import pyEQL
 
 # relative tolerance between experimental and computed properties for this test file
@@ -30,9 +28,7 @@ class Test_transport_number:
 
     def test_transport_number(self):
         # create a test solution
-        s1 = pyEQL.Solution(
-            [["K+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"], ["FeO", "0.2 mol/L"]]
-        )
+        s1 = pyEQL.Solution([["K+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"], ["FeO", "0.2 mol/L"]])
 
         # The transport number of any ion should be between 0 and 1
         assert s1.get_transport_number("K+") >= 0
@@ -67,9 +63,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_potassium(self):
         # K+ - 73.48 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("K+").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("73.48e-4 m**2 * S / mol").magnitude
 
@@ -77,9 +71,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_sodium(self):
         # Na+ - 50.08 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Na+").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("50.08e-4 m**2 * S / mol").magnitude
 
@@ -87,9 +79,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_magnesium(self):
         # Mg+2 - 106 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Mg+2").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("106e-4 m**2 * S / mol").magnitude
 
@@ -97,9 +87,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_chloride(self):
         # Cl- - 76.31 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Cl-").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("76.31e-4 m**2 * S / mol").magnitude
 
@@ -107,9 +95,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_fluoride(self):
         # F- - 55.4 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["Na+", "0.001 mol/L"], ["F-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Na+", "0.001 mol/L"], ["F-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("F-").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("55.4e-4 m**2 * S / mol").magnitude
 
@@ -117,9 +103,7 @@ class Test_molar_conductivity:
 
     def test_molar_conductivity_sulfate(self):
         # SO4-2 - 160 x 10 ** -4 m ** 2 S / mol
-        s1 = pyEQL.Solution(
-            [["Na+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Na+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("SO4-2").to("m**2*S/mol").magnitude
         expected = pyEQL.unit("160.0e-4 m**2 * S / mol").magnitude
 
@@ -173,65 +157,41 @@ class Test_mobility:
     # relative error tolerance for assertWithinExperimentalError
 
     def test_mobility_potassium(self):
-        s1 = pyEQL.Solution(
-            [["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("K+").to("m**2*S/mol")
         expected = s1.get_mobility("K+").to("m**2/s/V").magnitude
         charge = s1.get_solute("K+").get_formal_charge()
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (
-            (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge)))
-            .to("m**2/s/V")
-            .magnitude
-        )
+        result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
     def test_mobility_chloride(self):
-        s1 = pyEQL.Solution(
-            [["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("Cl-").to("m**2*S/mol")
         expected = s1.get_mobility("Cl-").to("m**2/s/V").magnitude
         charge = s1.get_solute("Cl-").get_formal_charge()
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (
-            (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge)))
-            .to("m**2/s/V")
-            .magnitude
-        )
+        result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
     def test_mobility_magnesium(self):
-        s1 = pyEQL.Solution(
-            [["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("Mg+2").to("m**2*S/mol")
         expected = s1.get_mobility("Mg+2").to("m**2/s/V").magnitude
         charge = s1.get_solute("Mg+2").get_formal_charge()
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (
-            (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge)))
-            .to("m**2/s/V")
-            .magnitude
-        )
+        result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
     def test_mobility_sulfate(self):
-        s1 = pyEQL.Solution(
-            [["K+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC"
-        )
+        s1 = pyEQL.Solution([["K+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("SO4-2").to("m**2*S/mol")
         expected = s1.get_mobility("SO4-2").to("m**2/s/V").magnitude
         charge = s1.get_solute("SO4-2").get_formal_charge()
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (
-            (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge)))
-            .to("m**2/s/V")
-            .magnitude
-        )
+        result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)

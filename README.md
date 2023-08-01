@@ -13,7 +13,7 @@ pyEQL is a Python library that provides tools for modeling aqueous electrolyte
 solutions. It allows the user to manipulate solutions as Python
 objects, providing methods to populate them with solutes, calculate
 species-specific properties (such as activity and diffusion coefficients),
-and retreive bulk properties (such as density, conductivity, or volume).
+and retrieve bulk properties (such as density, conductivity, or volume).
 
 ![pyeql demo](pyeql-demo.png)
 

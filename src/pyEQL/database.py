@@ -26,7 +26,6 @@ class Paramsdb:
     """
 
     def __init__(self):
-
         self.parameters_database = {}
 
         # set the directory containing database files
@@ -84,14 +83,12 @@ class Paramsdb:
 
                     # look at only .csv files
                     if ".tsv" in file:
-
                         # open each file
                         current_file = open(directory + "/" + file, "r")
 
                         # read each line of the file, looking for the formula
                         try:
                             for line in current_file:
-
                                 line_num += 1
 
                                 try:
@@ -122,14 +119,12 @@ class Paramsdb:
                                         param_comment = _parse_line(line)[1]
 
                                     # use the hill_order() function to standardize the
-                                    # supplied formula. Then standardize teh formulas in the
+                                    # supplied formula. Then standardize the formulas in the
                                     # database and see if they match.
                                     # this allows a database entry for 'MgCl2' to be matched
                                     # even if the user enters 'Mg(Cl)2', for example
                                     elif chem.is_valid_formula(_parse_line(line)[0]):
-                                        if chem.hill_order(formula) == chem.hill_order(
-                                            _parse_line(line)[0]
-                                        ):
+                                        if chem.hill_order(formula) == chem.hill_order(_parse_line(line)[0]):
                                             # if there are multiple columns, pass the values as a list.
                                             # If a single column, then just pass the value
                                             if len(_parse_line(line)) > 2:
@@ -151,23 +146,15 @@ class Paramsdb:
                                             )
 
                                             # Add the parameter to the set for this species
-                                            self.parameters_database[formula].add(
-                                                parameter
-                                            )
+                                            self.parameters_database[formula].add(parameter)
 
                                 except ValueError:
-                                    logger.warning(
-                                        "Error encountered when reading line %s in %s"
-                                        % (line_num, file)
-                                    )
+                                    logger.warning("Error encountered when reading line %s in %s" % (line_num, file))
                                     continue
 
                         # log a warning if an invalid character prevents reading a line
                         except UnicodeDecodeError:
-                            logger.warning(
-                                "Invalid character found when reading %s. File skipped."
-                                % file
-                            )
+                            logger.warning("Invalid character found when reading %s. File skipped." % file)
 
                         current_file.close()
 
@@ -208,10 +195,7 @@ class Paramsdb:
                     return item
 
             if found is False:
-                logger.error(
-                    "Parameter %s for species %s not found in database"
-                    % (name, formula)
-                )
+                logger.error(f"Parameter {name} for species {formula} not found in database")
 
         except KeyError:
             logger.error("Species %s not found in database" % formula)
@@ -227,10 +211,7 @@ class Paramsdb:
         """
         Boolean test to determine whether a species is present in the database
         """
-        if formula in self.parameters_database:
-            return True
-        else:
-            return False
+        return formula in self.parameters_database
 
     def print_database(self, solute=None):
         """Function to generate a human-friendly summary of all the database parameters
@@ -254,7 +235,7 @@ class Paramsdb:
             except KeyError:
                 print("Species %s not found in database." % solute)
         else:
-            for key in self.parameters_database.keys():
+            for key in self.parameters_database:
                 print("Parameters for species %s:" % key)
                 print("--------------------------\n")
                 for item in self.parameters_database[key]:
@@ -275,7 +256,6 @@ def _parse_line(line):
     line = line.replace("\n", "")
 
     # separate the string at every tab stop
-    str_list = line.split("\t")
+    return line.split("\t")
 
     # return the list of string entries
-    return str_list

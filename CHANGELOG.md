@@ -19,7 +19,7 @@
 - Add more comprehensive platform testing via `tox`
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace elements.py with `pymatgen.core.periodic_table`
-- Add `pymatgen` as a depedency
+- Add `pymatgen` as a dependency
 - Migrate all tests to `pytest`
 - Add pre-commit configuration and lint with `black`
 - Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)

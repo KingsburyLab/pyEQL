@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module implements the Parameter() class, which is used to store
 values, units, uncertainties, and reference data for various quantities
@@ -80,7 +79,7 @@ class Parameter:
                     The ionic strength of the solution in which 'magnitude' was measured. Specify
                     the ionic strength as a string containing the magnitude and a unit. e.g. '2 mol/kg'
         description : str, optional
-                    A string contiaining a longer name describing the paramter. For example
+                    A string contiaining a longer name describing the parameter. For example
                     'Diffusion Coefficient' or 'Hydrated Ionic Radius'
         comments : str, optional
                     A string containing additional notes pertaining to the context,
@@ -110,12 +109,7 @@ class Parameter:
         use_units = ""
         # turn numeric parameters into quantities with associated units
         # if units were specified as 'None', convert into something pint will understand
-        if (
-            units == "None"
-            or units == "none"
-            or units == ""
-            or units == "dimensionless"
-        ):
+        if units == "None" or units == "none" or units == "" or units == "dimensionless":
             use_units = "dimensionless"
         else:
             use_units = units
@@ -131,10 +125,9 @@ class Parameter:
                 except ValueError:
                     print("Value Error on %s" % item)
                     # Throw an error if units are assigned to a non-numeric parameter
-                    if not (use_units == "dimensionless"):
+                    if use_units != "dimensionless":
                         logger.error(
-                            "A non-numeric parameter cannot have units, but units of %s were specified"
-                            % units
+                            "A non-numeric parameter cannot have units, but units of %s were specified" % units
                         )
                     temp_list.append(item)
 
@@ -148,11 +141,8 @@ class Parameter:
                 self.value = float(magnitude) * unit(use_units)
             except ValueError:
                 # Throw an error if units are assigned to a non-numeric parameter
-                if not (use_units == "dimensionless"):
-                    logger.error(
-                        "A non-numeric parameter cannot have units, but units of %s were specified"
-                        % units
-                    )
+                if use_units != "dimensionless":
+                    logger.error("A non-numeric parameter cannot have units, but units of %s were specified" % units)
 
                 self.value = magnitude
 
@@ -234,23 +224,13 @@ class Parameter:
         if temperature is None:
             temperature = self.base_temperature
             logger.info(
-                "Temperature not specified for "
-                + str(self.name)
-                + ". Returning value at "
-                + str(temperature)
-                + "."
+                "Temperature not specified for " + str(self.name) + ". Returning value at " + str(temperature) + "."
             )
         else:
             temperature = unit(temperature)
         if pressure is None:
             pressure = self.base_pressure
-            logger.info(
-                "Pressure not specified for "
-                + str(self.name)
-                + ". Returning value at "
-                + str(pressure)
-                + "."
-            )
+            logger.info("Pressure not specified for " + str(self.name) + ". Returning value at " + str(pressure) + ".")
         else:
             pressure = unit(pressure)
         if ionic_strength is None:

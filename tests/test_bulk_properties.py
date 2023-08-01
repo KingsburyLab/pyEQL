@@ -9,8 +9,6 @@ Solution class methods. Currently included methods are:
 
 """
 
-import numpy as np
-import pytest
 
 import pyEQL
 
