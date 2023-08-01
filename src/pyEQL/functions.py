@@ -223,8 +223,8 @@ def donnan_eql(solution, fixed_charge):
         item = db.get_parameter(salt.formula, "partial_molar_volume")
         molar_volume = item.get_value()
     elif db.has_parameter(salt.cation, "partial_molar_volume") and db.has_parameter(salt.anion, "partial_molar_volume"):
-        cation_vol = solution.get_solute(salt.cation).get_parameter("partial_molar_volume")
-        anion_vol = solution.get_solute(salt.anion).get_parameter("partial_molar_volume")
+        cation_vol = solution.get_property(salt.cation, "partial_molar_volume")
+        anion_vol = solution.get_property(salt.anion, "partial_molar_volume")
         molar_volume = cation_vol + anion_vol
     else:
         logger.error("Required partial molar volume information not available. Aborting.")

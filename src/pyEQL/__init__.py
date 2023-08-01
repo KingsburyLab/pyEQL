@@ -50,7 +50,8 @@ unit.default_format = "P~"
 from pyEQL.database import Paramsdb  # noqa
 
 # initialize the parameters database
-paramsDB = Paramsdb()
+# paramsDB = Paramsdb()
+paramsDB = None
 
 from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402

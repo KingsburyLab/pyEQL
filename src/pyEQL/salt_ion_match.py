@@ -135,12 +135,8 @@ def _sort_components(Solution, type="all"):
 
     # populate a list with component names
     for item in Solution.components:
-        if type == "all":
-            formula_list.append(item)
-        elif type == "cations":
-            if Solution.get_solute(item).charge > 0:
-                formula_list.append(item)
-        elif type == "anions" and Solution.get_solute(item).charge < 0:
+        z = Solution.get_property(item, "charge")
+        if type == "all" or (type == "cations" and z > 0) or (type == "anions" and z < 0):
             formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs

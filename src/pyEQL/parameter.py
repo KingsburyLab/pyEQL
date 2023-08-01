@@ -7,10 +7,15 @@ used throughout pyEQL.
 :license: LGPL, see LICENSE for more details.
 
 """
+from dataclasses import dataclass
+from pint import Quantity
+
 from pyEQL import unit
 from pyEQL.logging_system import logger
 
 
+# frozen=True makes the Parameter immutable
+# @dataclass(frozen=True)
 class Parameter:
     """
     Class for storing and retrieving measured parameter values together with their
@@ -92,18 +97,6 @@ class Parameter:
         to this fact and provide a levelof error-checking in calculations involving
         the parameter.
 
-        Examples
-        --------
-        # TODO fix this example
-        >>> sodium_diffusion = Parameter('diffusion coefficient',(1.334e-9,),'m2/s','CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79',(),25,101325,0)
-        >>> print(sodium_diffusion)
-        Parameter diffusion coefficient
-        <BLANKLINE>
-        -------------------------------------------
-        Value: (1.334e-09,) m2/s at 25 degrees C.
-        Notes:
-        Reference: CRC Handbook of Chemistry and Physics, 92nd Ed., pp. 5-77 to 5-79
-        <BLANKLINE>
         """
         self.name = name
         use_units = ""

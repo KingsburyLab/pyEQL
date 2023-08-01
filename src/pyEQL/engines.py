@@ -550,25 +550,23 @@ class NativeEOS(EOS):
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
-        for item in solution.components:
-            solute = solution.get_solute(item)
-
+        for solute, mol in solution.components.items():
             # ignore water
-            if item in ["H2O", "HOH"]:
+            if solute in ["H2O", "HOH"]:
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and item in [Salt.anion, Salt.cation]:
+            if pitzer_calc is True and solute in [Salt.anion, Salt.cation]:
                 continue
 
-            if db.has_parameter(item, "partial_molar_volume"):
-                solute_vol += solute.get_parameter("partial_molar_volume") * solute.moles
-                logger.info("Updated solution volume using direct partial molar volume for solute %s" % item)
+            if db.has_parameter(solute, "partial_molar_volume"):
+                solute_vol += solution.get_parameter(solute, "partial_molar_volume") * mol
+                logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
                 logger.warning(
                     "Partial molar volume data not available for solute %s. Solution volume will not be corrected."
-                    % item
+                    % solute
                 )
 
         return solute_vol.to("L")
