@@ -138,9 +138,9 @@ def _sort_components(Solution, type="all"):
         if type == "all":
             formula_list.append(item)
         elif type == "cations":
-            if Solution.get_solute(item).get_formal_charge() > 0:
+            if Solution.get_solute(item).charge > 0:
                 formula_list.append(item)
-        elif type == "anions" and Solution.get_solute(item).get_formal_charge() < 0:
+        elif type == "anions" and Solution.get_solute(item).charge < 0:
             formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs

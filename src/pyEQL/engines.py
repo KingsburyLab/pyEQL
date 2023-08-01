@@ -285,7 +285,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_debyehuckel(
                 solution.ionic_strength,
-                ion.get_formal_charge(),
+                ion.charge,
                 str(solution.temperature),
             )
 
@@ -296,7 +296,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_guntelberg(
                 solution.ionic_strength,
-                ion.get_formal_charge(),
+                ion.charge,
                 str(solution.temperature),
             )
 
@@ -308,7 +308,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_davies(
                 solution.ionic_strength,
-                ion.get_formal_charge(),
+                ion.charge,
                 str(solution.temperature),
             )
 
@@ -562,7 +562,7 @@ class NativeEOS(EOS):
                 continue
 
             if db.has_parameter(item, "partial_molar_volume"):
-                solute_vol += solute.get_parameter("partial_molar_volume") * solute.get_moles()
+                solute_vol += solute.get_parameter("partial_molar_volume") * solute.moles
                 logger.info("Updated solution volume using direct partial molar volume for solute %s" % item)
 
             else:

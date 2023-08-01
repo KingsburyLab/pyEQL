@@ -2,6 +2,8 @@
 
 ## 0.6.0 (in progress)
 
+- **BREAKING CHANGE** `Solute`: methods `get_formal_charge()`, `get_name()`, and `get_molecular_weight()` have been
+  replaced by direct access to the attributes `charge`, `formula`, and `mw`, respectively.
 - **DEPRECATION NOTICE** `Solution`: new properties `pressure`, `temperature`, `pE`,
 - `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`,
 - `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`,

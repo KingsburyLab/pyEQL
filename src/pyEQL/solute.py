@@ -11,6 +11,10 @@ that do depend on compsition are accessed via Solution class methods.
 :license: LGPL, see LICENSE for more details.
 
 """
+from dataclasses import dataclass
+
+from pint import Quantity
+
 # import the parameters database
 # the pint unit registry
 from pyEQL import paramsDB as db
@@ -18,17 +22,13 @@ from pyEQL import unit
 from pyEQL.logging_system import logger
 
 
+@dataclass
 class Solute:
     """
     represent each chemical species as an object containing its formal charge,
     transport numbers, concentration, activity, etc.
 
-    """
-
-    def __init__(self, formula, amount, volume, solvent_mass):
-        """
-        Parameters
-        ----------
+    Args:
         formula : str
                     Chemical formula for the solute.
                     Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
@@ -39,7 +39,14 @@ class Solute:
                     The volume of the solution
         solvent_mass : pint Quantity
                     The mass of solvent in the parent solution.
-        """
+    """
+
+    formula: str
+    amount: str
+    volume: Quantity
+    solvent_mass: Quantity
+
+    def __init__(self, formula, amount, volume, solvent_mass):
         # import the chemical formula interpreter module
         import pyEQL.chemical_formula as chem
 
@@ -87,54 +94,7 @@ class Solute:
         import pyEQL.parameter as pm
 
         newparam = pm.Parameter(name, magnitude, units, **kwargs)
-        db.add_parameter(self.get_name(), newparam)
-
-    def get_name(self):
-        """
-        Return the name (formula) of the solute
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        str
-            The chemical formula of the solute
-
-        """
-        return self.formula
-
-    def get_formal_charge(self):
-        """
-        Return the formal charge of the solute
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        int
-            The formal charge of the solute
-
-        """
-        return self.charge
-
-    def get_molecular_weight(self):
-        """
-        Return the molecular weight of the solute
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The molecular weight of the solute, in g/mol
-        """
-        return self.mw
+        db.add_parameter(self.formula, newparam)
 
     def get_moles(self):
         """
@@ -184,11 +144,11 @@ class Solute:
     def __str__(self):
         return (
             "Species "
-            + str(self.get_name())
+            + str(self.formula)
             + " MW="
-            + str(self.get_molecular_weight())
+            + str(self.mw)
             + " Formal Charge="
-            + str(self.get_formal_charge())
+            + str(self.charge)
             + " Amount= "
-            + str(self.get_moles())
+            + str(self.moles)
         )
