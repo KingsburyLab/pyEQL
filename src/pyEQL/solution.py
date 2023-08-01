@@ -8,6 +8,7 @@ pyEQL Solution Class
 
 # import libraries for scientific functions
 import math
+from functools import lru_cache
 from typing import Dict, List, Literal, Optional, Union
 
 from iapws import IAPWS95
@@ -91,6 +92,9 @@ class Solution:
         """
         # create a logger attached to this class
         # self.logger = logging.getLogger(type(self).__name__)
+
+        # per-instance cache of get_property calls
+        self.get_property = lru_cache(maxsize=None)(self._get_property)
 
         # initialize the volume with a flag to distinguish user-specified volume
         if volume is not None:
@@ -1768,7 +1772,7 @@ class Solution:
 
         return mobility.to("m**2/V/s")
 
-    def get_property(self, solute, name):
+    def _get_property(self, solute, name):
         """Retrieve a thermodynamic property (such as diffusion coefficient)
         for solute, and adjust it from the reference conditions to the conditions
         of the solution
