@@ -2,13 +2,13 @@ Name	ionic_radius
 Description	Ionic (crystal) radius
 Unit	nm
 Reference	B. Tansel, Significance of thermodynamic and physical characteristics on permeation of ions during membrane separation: Hydrated radius, hydration free energy and viscous effects, Sep. Purif. Technol. 86 (2012) 119-126.
-Temperature	
+Temperature
 Pressure	1 atm
 Ionic Strength	0
-Uncertainty	
-Uncertainty Type	
+Uncertainty
+Uncertainty Type
 Comment	Average of several values reported in the paper, weighted by the number of references for each
-	
+
 Key	Value
 Ag+	0.13
 Al+3	0.0605

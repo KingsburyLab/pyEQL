@@ -5,10 +5,10 @@ Reference	"B. Tansel, Significance of thermodynamic and physical characteristics
 Temperature	273 K
 Pressure	1 atm
 Ionic Strength	0
-Uncertainty	
-Uncertainty Type	
+Uncertainty
+Uncertainty Type
 Comment	"Average of several values reported in the paper, weighted by the number of references for each"
-	
+
 Key	Value
 Ag+	0.143
 Al+3	0.670

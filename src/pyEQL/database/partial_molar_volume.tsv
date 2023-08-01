@@ -5,10 +5,10 @@ Reference:	"Durchschlag, H., Zipper, P., 1994. ""Calculation of the Partial Mola
 Temperature:	25 degC
 Pressure:	1 atm
 Ionic Strength:	0
-Uncertainty:	
-Uncertainty Type:	
+Uncertainty:
+Uncertainty Type:
 Comment:	correction factor 5e-4 cm3/g-K
-	
+
 Key:	Value:
 H+	-3.8
 Na+	-5

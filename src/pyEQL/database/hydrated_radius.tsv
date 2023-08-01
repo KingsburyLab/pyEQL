@@ -2,13 +2,13 @@ Name	hydrated_radius
 Description	Hydrated radius
 Unit	nm
 Reference	B. Tansel, Significance of thermodynamic and physical characteristics on permeation of ions during membrane separation: Hydrated radius, hydration free energy and viscous effects, Sep. Purif. Technol. 86 (2012) 119-126.
-Temperature	
+Temperature
 Pressure	1 atm
 Ionic Strength	0
-Uncertainty	
-Uncertainty Type	
+Uncertainty
+Uncertainty Type
 Comment	Average of several values reported in the paper
-	
+
 Key	Value
 Ag+	0.212
 Al+3	0.48

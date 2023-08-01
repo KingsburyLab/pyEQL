@@ -90,33 +90,41 @@ class Paramsdb:
                         try:
                             for line in current_file:
                                 line_num += 1
+                                parsed = _parse_line(line)
 
                                 try:
                                     # look for keywords in the first column of each file. If found,
                                     # store the entry from the 2nd column
-                                    if "Name" in line:
-                                        param_name = _parse_line(line)[1]
+                                    if "Name" in parsed[0]:
+                                        param_name = parsed[1][0]
 
-                                    elif "Description" in line:
-                                        param_desc = _parse_line(line)[1]
+                                    elif "Description" in parsed[0]:
+                                        param_desc = parsed[1][0]
 
-                                    elif "Unit" in line:
-                                        param_unit = _parse_line(line)[1]
+                                    elif "Unit" in parsed[0]:
+                                        if parsed[1] == ["None"] or parsed[1] == []:
+                                            param_unit = "dimensionless"
+                                        else:
+                                            param_unit = parsed[1][0]
 
-                                    elif "Reference" in line:
-                                        param_ref = _parse_line(line)[1]
+                                    elif "Reference" in parsed[0]:
+                                        param_ref = parsed[1][0]
 
-                                    elif "Temperature" in line:
-                                        param_temp = _parse_line(line)[1]
+                                    elif "Temperature" in parsed[0]:
+                                        if len(parsed[1]) > 0:
+                                            param_temp = parsed[1][0]
 
-                                    elif "Pressure" in line:
-                                        param_press = _parse_line(line)[1]
+                                    elif "Pressure" in parsed[0]:
+                                        if len(parsed[1]) > 0:
+                                            param_press = parsed[1][0]
 
-                                    elif "Ionic Strength" in line:
-                                        param_ionic = _parse_line(line)[1]
+                                    elif "Ionic Strength" in parsed[0]:
+                                        if len(parsed[1]) > 0:
+                                            param_ionic = parsed[1][0]
 
-                                    elif "Comment" in line:
-                                        param_comment = _parse_line(line)[1]
+                                    elif "Comment" in parsed[0]:
+                                        if len(parsed[1]) > 0:
+                                            param_comment = parsed[1][0]
 
                                     # use the hill_order() function to standardize the
                                     # supplied formula. Then standardize the formulas in the
@@ -127,12 +135,13 @@ class Paramsdb:
                                         if chem.hill_order(formula) == chem.hill_order(_parse_line(line)[0]):
                                             # if there are multiple columns, pass the values as a list.
                                             # If a single column, then just pass the value
-                                            if len(_parse_line(line)) > 2:
-                                                param_value = _parse_line(line)[1:]
+                                            if len(parsed[1]) > 1:
+                                                param_value = parsed[1]
                                             else:
-                                                param_value = _parse_line(line)[1]
+                                                param_value = parsed[1][0]
 
                                             # Create a new parameter object
+                                            print(param_name, param_value, param_unit)
                                             parameter = pm.Parameter(
                                                 param_name,
                                                 param_value,
@@ -248,14 +257,15 @@ def _parse_line(line):
 
     This function accepts a string (a line read from a tab-separated
     input file). It removes the newline character and splits the string
-    at each tab stop, returning a list of the remaining substrings in which each
-    list entry corresponds to the contents of one cell in the file.
+    at each tab stop, returning a tuple of (first column, the remaining substrings)
+    in which each list entry corresponds to the contents of one cell in the file. If
+    there is nothing other than the first column in a given row, the 2nd element
+    of the tuple is an empty list.
 
     """
     # remove the newline character
     line = line.replace("\n", "")
 
     # separate the string at every tab stop
-    return line.split("\t")
-
-    # return the list of string entries
+    ret = line.split("\t")
+    return (ret[0], ret[1:])

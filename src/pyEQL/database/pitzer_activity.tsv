@@ -1,14 +1,14 @@
-Name:	pitzer_parameters_activity				
-Description:	"Beta0, Beta1, Beta2, and Cphi parameters for calculating activity and osmotic coefficients according to the Pitzer ion interaction model"				
-Unit:	None				
-Reference:	"May, P. M., Rowland, D., Hefter, G., & Kanigsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329"				
-Temperature:	25 degC				
-Pressure:	1 atm				
-Ionic Strength:					
-Uncertainty:					
-Uncertainty Type:					
-Comment:	Copyright 2011 American Chemical Society. Used with permission.				
-					
+Name:	pitzer_parameters_activity
+Description:	"Beta0, Beta1, Beta2, and Cphi parameters for calculating activity and osmotic coefficients according to the Pitzer ion interaction model"
+Unit:	None
+Reference:	"May, P. M., Rowland, D., Hefter, G., & Kanigsberger, E. (2011).   A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329"
+Temperature:	25 degC
+Pressure:	1 atm
+Ionic Strength:
+Uncertainty:
+Uncertainty Type:
+Comment:	Copyright 2011 American Chemical Society. Used with permission.
+
 Key:	Beta0	Beta1	Beta2	Cphi	Max_C
 Al2(SO4)3	0.822	21.12	-4813	-0.0799	1.1
 NH4Br	0.05921	0.2153	0	-0.00379	7.5

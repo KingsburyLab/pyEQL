@@ -5,10 +5,10 @@ Reference	"H.D.B. Jenkins, Y. Marcus, Viscosity B Coefficients of Ions in Soluti
 Temperature	298 K
 Pressure	1 atm
 Ionic Strength	0
-Uncertainty	
-Uncertainty Type	
+Uncertainty
+Uncertainty Type
 Comment	"Includes only the selected values summarized from review of other literature"
-	
+
 Key	Value
 H+	0.068
 Li+	0.146
