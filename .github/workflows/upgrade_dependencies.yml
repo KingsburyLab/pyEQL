@@ -77,6 +77,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Only open a PR if the branch is not attached to an existing one
+        # note that this auto-created PR will not trigger the testing workflow, which
+        # is an intentional limitation imposed by GitHub. See
+        # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
+        # The simplest workaround is to close and immediately re-open the Auto PR
         run: |
           PR=$(gh pr list --head auto-dependency-upgrades --json number -q '.[0].number')
           if [ -z $PR ]; then
