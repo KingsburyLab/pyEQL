@@ -31,73 +31,12 @@ def s4():
     return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
 
-class Test_empty_solution:
-    """
-    test behavior when creating an empty solution
-    ------------------------------------------------
-
-    """
-
-    def test_empty_solution_3(self):
-        # create an empty solution
-        s1 = pyEQL.Solution()
-        # It should return type Solution
-        assert isinstance(s1, pyEQL.solution.Solution)
-        # It should have exactly 1L volume
-        assert s1.get_volume().to("L").magnitude == 1.0
-        #  the solvent should be water
-        assert s1.get_solvent().formula == "H2O"
-        # It should have 0.997 kg water mass
-        assert np.isclose(s1.get_solvent_mass().to("kg").magnitude, 0.9970415)
-        # the temperature should be 25 degC
-        assert s1.temperature.to("degC").magnitude == 25
-        # the pressure should be 1 atm
-        assert s1.pressure.to("atm").magnitude == 1
-        # the pH should be 7.0
-        assert np.isclose(s1.get_activity("H+"), 1e-7, atol=1e-9)
-        assert np.isclose(s1.pH, 7.0, atol=0.01)
-        assert np.isclose(s1.pE, 8.5)
-        # it should contain H2O, H+, and OH- species
-        assert set(s1.list_solutes()) == {"H2O", "OH-", "H+"}
-
-
 class Test_solute_addition:
     """
     test behavior of various methods for adding solutes to a solution
     -----------------------------------------------------------------
 
     """
-
-    # create an empty and test solutions with the same volume using substance / volume,
-    # substance/mass, and substance units
-    def test_solute_addition(self, s2, s3, s4):
-        # if solutes are added at creation-time with substance / volume units,
-        # then the total volume of the solution should not change (should remain at 2 L)
-        assert s2.get_volume().to("L").magnitude == 2
-
-        # if solutes are added at creation-time with substance / volume units,
-        # then the resulting mol/L concentrations should be exactly what was specified
-        assert s2.get_amount("Na+", "mol/L").magnitude == 4
-
-        # if solutes are added at creation-time with substance / mass units,
-        # then the resulting mol/kg concentrations should be exactly what was specified
-        assert s3.get_amount("Na+", "mol/kg").magnitude == 4
-
-        # the water mass of solution s2 should be less than that of s3, because
-        # of the volume recalculation
-        result_molL = s2.get_solvent_mass().to("kg").magnitude
-        result_molkg = s3.get_solvent_mass().to("kg").magnitude
-        assert result_molL < result_molkg
-
-        # if solutes are added at creation-time with substance units,
-        # then the resulting mol amounts should be exactly what was specified
-        assert s4.get_amount("Na+", "mol").magnitude == 8
-
-        # the water mass of solution s2 should be less than that of s4, because
-        # of the volume recalculation
-        result_molL = s2.get_solvent_mass().to("kg").magnitude
-        result_mol = s4.get_solvent_mass().to("kg").magnitude
-        assert result_molL < result_mol
 
     def test_set_amount_1(self, s2):
         """

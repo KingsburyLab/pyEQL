@@ -101,7 +101,7 @@ expect certain parameter names. The following are the currently-used internal
 names:
 
  - 'diffusion_coefficient' - diffusion coefficient
- - 'pitzer_parameters_activity' - coefficients for the Pitzer model for activity correction
+ - 'model_parameters.activity_pitzer' - coefficients for the Pitzer model for activity correction
  - 'pitzer_parameters_volume'- coefficients for the Pitzer model for partial molar volume
  - 'erying_viscosity_coefficients' - coefficients for an Erying-type viscosity correction model
  - 'partial_molar_volume'- the partial molar volume (used if Pitzer parameters are not available)

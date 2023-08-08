@@ -35,6 +35,7 @@ the paper, so perfect accuracy is not expected.
 import numpy as np
 import pyEQL
 import pytest
+from pyEQL import unit
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.15
@@ -74,14 +75,10 @@ class Test_effective_pitzer:
         multiple = [1, 2, 5, 8]
         expected = [0.7, 0.7, 0.8, 1.1]
 
-        # import the parameters database
-        from pyEQL import paramsDB as db
-
         for item in range(len(multiple)):
             s1 = self.mock_seawater(multiple[item])
             Salt = pyEQL.salt_ion_match.Salt("Na+", "Cl-")
-            db.search_parameters(Salt.formula)
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
+            param = s1.get_property(Salt.formula, "model_parameters.activity_pitzer")
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.ionic_strength)
@@ -92,10 +89,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -116,14 +113,10 @@ class Test_effective_pitzer:
         multiple = [1, 2, 5, 8]
         expected = [0.5, 0.5, 0.67, 1.15]
 
-        # import the parameters database
-        from pyEQL import paramsDB as db
-
         for item in range(len(multiple)):
             s1 = self.mock_seawater(multiple[item])
             Salt = pyEQL.salt_ion_match.Salt("Mg+2", "Cl-")
-            db.search_parameters(Salt.formula)
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
+            param = s1.get_property(Salt.formula, "model_parameters.activity_pitzer")
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.ionic_strength)
@@ -134,10 +127,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -158,14 +151,10 @@ class Test_effective_pitzer:
         multiple = [1, 2, 5, 8]
         expected = [0.65, 0.61, 0.65, 0.7]
 
-        # import the parameters database
-        from pyEQL import paramsDB as db
-
         for item in range(len(multiple)):
             s1 = self.mock_seawater(multiple[item])
             Salt = pyEQL.salt_ion_match.Salt("K+", "Cl-")
-            db.search_parameters(Salt.formula)
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
+            param = s1.get_property(Salt.formula, "model_parameters.activity_pitzer")
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.ionic_strength)
@@ -176,10 +165,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -201,14 +190,10 @@ class Test_effective_pitzer:
         multiple = [1, 2, 5, 8]
         expected = [0.38, 0.3, 0.25, 0.2]
 
-        # import the parameters database
-        from pyEQL import paramsDB as db
-
         for item in range(len(multiple)):
             s1 = self.mock_seawater(multiple[item])
             Salt = pyEQL.salt_ion_match.Salt("Na+", "SO4-2")
-            db.search_parameters(Salt.formula)
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
+            param = s1.get_property(Salt.formula, "model_parameters.activity_pitzer")
             alpha1 = 2
             alpha2 = 0
             molality = Salt.get_effective_molality(s1.ionic_strength)
@@ -219,10 +204,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,

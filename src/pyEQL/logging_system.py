@@ -1,5 +1,5 @@
 # logging system
-""" Create a logging system using Python's built-in module.
+"""Create a logging system using Python's built-in module.
 
 Each module within pyEQL has its own logger, with a StreamHandler attached to it that
 directs formatted messages to standard output. This is intended to facilitate the use

@@ -1,7 +1,6 @@
 """
 Tests for the solute.py module
 """
-import numpy as np
 from pyEQL.solute import Solute
 
 
@@ -17,4 +16,4 @@ def test_from_formula():
     assert s.n_atoms == 1
     assert s.n_elements == 1
     assert s.oxi_state_guesses == ({"Mg": 2.0},)
-    assert np.isclose(s.molecular_weight, 24.305)
+    assert s.molecular_weight == "24.305 g/mol"

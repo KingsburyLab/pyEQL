@@ -1,5 +1,5 @@
 """
-pyEQL Solute class
+pyEQL Solute class.
 
 This file contains functions and methods for managing properties of
 individual solutes. The Solute class contains methods for accessing
@@ -12,17 +12,16 @@ that do depend on compsition are accessed via Solution class methods.
 
 """
 from dataclasses import asdict, dataclass, field
-from typing import Optional, Literal
-import numpy as np
+from typing import Literal, Optional
 
+import numpy as np
 from pymatgen.core.ion import Ion
 
 
 @dataclass
 class Datum:
-    """
-    Document containing data for a single computed or experimental property. 
-    """
+    """Document containing data for a single computed or experimental property."""
+
     value: str
     reference: Optional[str] = None
     data_type: Literal["computed", "experimental", "fitted", "unknown"] = "unknown"
@@ -39,8 +38,10 @@ class Datum:
     def uncertainty(self):
         if len(self.value.split(" ")) > 3:
             return float(self.value.split(" ")[2])
-        else:
-            return np.nan
+        return np.nan
+
+    def as_dict(self):
+        return dict(asdict(self).items())
 
 
 @dataclass
@@ -68,10 +69,30 @@ class Solute:
     oxi_state_guesses: tuple
     n_atoms: int
     n_elements: int
-    size: dict = field(default_factory=lambda: {"radius_ionic": None, "radius_hydrated": None, "radius_vdw": None, "molar_volume": None})
+    size: dict = field(
+        default_factory=lambda: {
+            "radius_ionic": None,
+            "radius_hydrated": None,
+            "radius_vdw": None,
+            "molar_volume": None,
+        }
+    )
     thermo: dict = field(default_factory=lambda: {"ΔG_hydration": None, "ΔG_formation": None})
     transport: dict = field(default_factory=lambda: {"diffusion_coefficient": None})
-    model_parameters: dict = field(default_factory=lambda: {"activity_pitzer": {"Beta0": None, "Beta1": None, "Beta2": None, "Cphi": None, "Max_C": None}, "molar_volume_pitzer": {"Beta0": None, "Beta1": None, "Beta2": None, "Cphi": None, "V_o": None, "Max_C": None}, "viscosity_jones_dole": {"B": None}})
+    model_parameters: dict = field(
+        default_factory=lambda: {
+            "activity_pitzer": {"Beta0": None, "Beta1": None, "Beta2": None, "Cphi": None, "Max_C": None},
+            "molar_volume_pitzer": {
+                "Beta0": None,
+                "Beta1": None,
+                "Beta2": None,
+                "Cphi": None,
+                "V_o": None,
+                "Max_C": None,
+            },
+            "viscosity_jones_dole": {"B": None},
+        }
+    )
 
     @classmethod
     def from_formula(cls, formula: str):
@@ -105,7 +126,7 @@ class Solute:
         )
 
     def as_dict(self):
-        return {k: str(v) for k, v in asdict(self).items()}
+        return dict(asdict(self).items())
 
     # set output of the print() statement
     def __str__(self):
