@@ -1,5 +1,5 @@
 """
-pyEQL functions that take Solution objects as inputs or return Solution objects
+pyEQL functions that take Solution objects as inputs or return Solution objects.
 
 :copyright: 2013-2023 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
@@ -12,8 +12,6 @@ import math
 import pyEQL
 
 # the pint unit registry
-# import the parameters database
-from pyEQL import paramsDB as db
 from pyEQL import unit
 from pyEQL.logging_system import logger
 
@@ -27,15 +25,14 @@ def gibbs_mix(Solution1, Solution2):
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns
+    Returns:
     -------
     Quantity
         The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes
+    Notes:
     -----
-
     The Gibbs energy of mixing is calculated as follows: [#]_
 
     .. math::
@@ -49,13 +46,12 @@ def gibbs_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
 
-    References
+    References:
     ----------
-
     .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
            A differential approach.* Elsevier, 2007, pp. 23-37.
 
-    Examples
+    Examples:
     --------
 
     """
@@ -77,22 +73,21 @@ def gibbs_mix(Solution1, Solution2):
 
 def entropy_mix(Solution1, Solution2):
     r"""
-    Return the ideal mixing entropy associated with mixing two solutions
+    Return the ideal mixing entropy associated with mixing two solutions.
 
     Parameters
     ----------
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns
+    Returns:
     -------
     Quantity
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes
+    Notes:
     -----
-
     The ideal entropy of mixing is calculated as follows:[#]_
 
     .. math::
@@ -106,13 +101,12 @@ def entropy_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
 
-    References
+    References:
     ----------
-
     .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
            A differential approach.* Elsevier, 2007, pp. 23-37.
 
-    Examples
+    Examples:
     --------
 
     """
@@ -136,7 +130,7 @@ def entropy_mix(Solution1, Solution2):
 
 def donnan_eql(solution, fixed_charge):
     """
-    Return a solution object in equilibrium with fixed_charge
+    Return a solution object in equilibrium with fixed_charge.
 
     Parameters
     ----------
@@ -147,15 +141,14 @@ def donnan_eql(solution, fixed_charge):
         String representing the concentration of fixed charges, including sign.
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
 
-    Returns
+    Returns:
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
 
-    Notes
+    Notes:
     -----
-
     The general equation representing the equilibrium between an external
     electrolyte solution and an ion-exchange medium containing fixed charges
     is:[#]_
@@ -186,18 +179,18 @@ def donnan_eql(solution, fixed_charge):
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
 
-    References
+    References:
     ----------
-
     .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
            Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
 
-    Examples
+    Examples:
     --------
-    TODO
 
-    See Also
+    Todo:
+
+    See Also:
     --------
     get_salt()
 
@@ -219,16 +212,15 @@ def donnan_eql(solution, fixed_charge):
 
     # get the partial molar volume for the salt, or calculate it from the ions
     # TODO - consider how to incorporate pitzer parameters
-    if db.has_parameter(salt.formula, "partial_molar_volume"):
-        item = db.get_parameter(salt.formula, "partial_molar_volume")
-        molar_volume = item.get_value()
-    elif db.has_parameter(salt.cation, "partial_molar_volume") and db.has_parameter(salt.anion, "partial_molar_volume"):
-        cation_vol = solution.get_solute(salt.cation).get_parameter("partial_molar_volume")
-        anion_vol = solution.get_solute(salt.anion).get_parameter("partial_molar_volume")
-        molar_volume = cation_vol + anion_vol
-    else:
-        logger.error("Required partial molar volume information not available. Aborting.")
-        return None
+    molar_volume = solution.get_property(salt.formula, "size.molar_volume")
+    if molar_volume is None:
+        cation_vol = solution.get_property(salt.cation, "size.molar_volume")
+        anion_vol = solution.get_property(salt.anion, "size.molar_volume")
+        if cation_vol is not None and anion_vol is not None:
+            molar_volume = cation_vol + anion_vol
+        else:
+            logger.error("Required partial molar volume information not available. Aborting.")
+            return None
 
     # initialize the equilibrated solution - start with a direct copy of the
     # input / external solution
@@ -246,7 +238,7 @@ def donnan_eql(solution, fixed_charge):
     exp_term = (molar_volume / (unit.R * solution.temperature * z_cation * nu_cation)).to("1/Pa").magnitude
 
     def donnan_solve(x):
-        """Where x is the magnitude of co-ion concentration"""
+        """Where x is the magnitude of co-ion concentration."""
         # solve for the counter-ion concentration by enforcing electroneutrality
         # using only floats / ints here instead of quantities helps performance
         if fixed_charge.magnitude >= 0:
@@ -302,7 +294,7 @@ def donnan_eql(solution, fixed_charge):
 
 def mix(Solution1, Solution2):
     """
-    Mix two solutions together
+    Mix two solutions together.
 
     Returns a new Solution object that results from the mixing of Solution1
     and Solution2
@@ -312,7 +304,7 @@ def mix(Solution1, Solution2):
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns
+    Returns:
     -------
     Solution
         A Solution object representing the mixed solution.
@@ -387,12 +379,12 @@ def autogenerate(solution=""):
                 Valid entries are 'seawater', 'rainwater',
                 'wastewater',and 'urine'
 
-    Returns
+    Returns:
     -------
     Solution
         A pyEQL Solution object.
 
-    Notes
+    Notes:
     -----
     The following sections explain the different solution options:
 
@@ -404,7 +396,7 @@ def autogenerate(solution=""):
     - 'normal saline' or 'NS' - normal saline solution used in medicine [#]_
     - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [#]_
 
-    References
+    References:
     ----------
     .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of
            the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
@@ -417,7 +409,6 @@ def autogenerate(solution=""):
     .. [#] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
     """
-
     if solution == "":
         temperature = "25 degC"
         pressure = "1 atm"

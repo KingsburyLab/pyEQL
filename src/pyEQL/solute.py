@@ -1,5 +1,5 @@
 """
-pyEQL Solute class
+pyEQL Solute class.
 
 This file contains functions and methods for managing properties of
 individual solutes. The Solute class contains methods for accessing
@@ -11,15 +11,37 @@ that do depend on compsition are accessed via Solution class methods.
 :license: LGPL, see LICENSE for more details.
 
 """
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
+from typing import Literal, Optional
 
-from pint import Quantity
+import numpy as np
+from pymatgen.core.ion import Ion
 
-# import the parameters database
-# the pint unit registry
-from pyEQL import paramsDB as db
-from pyEQL import unit
-from pyEQL.logging_system import logger
+
+@dataclass
+class Datum:
+    """Document containing data for a single computed or experimental property."""
+
+    value: str
+    reference: Optional[str] = None
+    data_type: Literal["computed", "experimental", "fitted", "unknown"] = "unknown"
+
+    @property
+    def magnitude(self):
+        return float(self.value.split(" ")[0])
+
+    @property
+    def unit(self):
+        return self.value.split(" ")[-1]
+
+    @property
+    def uncertainty(self):
+        if len(self.value.split(" ")) > 3:
+            return float(self.value.split(" ")[2])
+        return np.nan
+
+    def as_dict(self):
+        return dict(asdict(self).items())
 
 
 @dataclass
@@ -32,113 +54,79 @@ class Solute:
         formula : str
                     Chemical formula for the solute.
                     Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
-        amount : str
-                    The amount of substance in the specified unit system. The string should contain both a quantity and
-                    a pint-compatible representation of a unit. e.g. '5 mol/kg' or '0.1 g/L'
-        volume : pint Quantity
-                    The volume of the solution
-        solvent_mass : pint Quantity
-                    The mass of solvent in the parent solution.
     """
 
     formula: str
-    amount: str
-    volume: Quantity
-    solvent_mass: Quantity
+    charge: int
+    molecular_weight: str
+    elements: list
+    chemsys: str
+    pmg_ion: Ion
+    formula_html: str
+    formula_latex: str
+    formula_hill: str
+    formula_pretty: str
+    oxi_state_guesses: tuple
+    n_atoms: int
+    n_elements: int
+    size: dict = field(
+        default_factory=lambda: {
+            "radius_ionic": None,
+            "radius_hydrated": None,
+            "radius_vdw": None,
+            "molar_volume": None,
+        }
+    )
+    thermo: dict = field(default_factory=lambda: {"ΔG_hydration": None, "ΔG_formation": None})
+    transport: dict = field(default_factory=lambda: {"diffusion_coefficient": None})
+    model_parameters: dict = field(
+        default_factory=lambda: {
+            "activity_pitzer": {"Beta0": None, "Beta1": None, "Beta2": None, "Cphi": None, "Max_C": None},
+            "molar_volume_pitzer": {
+                "Beta0": None,
+                "Beta1": None,
+                "Beta2": None,
+                "Cphi": None,
+                "V_o": None,
+                "Max_C": None,
+            },
+            "viscosity_jones_dole": {"B": None},
+        }
+    )
 
-    def __init__(self, formula, amount, volume, solvent_mass):
-        # import the chemical formula interpreter module
-        import pyEQL.chemical_formula as chem
-
-        # check that 'formula' is a valid chemical formula
-        if not chem.is_valid_formula:
-            logger.error("Invalid chemical formula specified.")
-            return
-        self.formula = formula
-
-        # set molecular weight
-        self.mw = chem.get_molecular_weight(formula) * unit("g/mol")
-
-        # set formal charge
-        self.charge = chem.get_formal_charge(formula)
-
-        # translate the 'amount' string into a pint Quantity
-        quantity = unit(amount)
-
-        self.moles = quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
-
-        # trigger the function that checks whether parameters already exist for this species, and if not,
-        # searches the database files and creates them
-        db.search_parameters(self.formula)
-
-    def get_parameter(self, parameter, temperature=None, pressure=None, ionic_strength=None):
+    @classmethod
+    def from_formula(cls, formula: str):
         """
-        Return the value of the parameter named 'parameter'
-
+        Create an Ion document from a chemical formula. The formula is passed to
+        pymatgen.core.Ion.from_formula() and used to populate the basic chemical
+        informatics fields (e.g., formula, charge, molecular weight, elements, etc.)
+        of the IonDoc.
         """
-        # Search for this solute in the database of parameters
+        pmg_ion = Ion.from_formula(formula)
+        f = pmg_ion.reduced_formula
+        charge = int(pmg_ion.charge)
+        els = pmg_ion.elements
+        mw = f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
+        chemsys = pmg_ion.chemical_system
 
-        # TODO - handle the case where multiple parameters with same name exist. Need function
-        # to compare specified conditions and choose the most appropriate parameter
-        param = db.get_parameter(self.formula, parameter)
+        return cls(
+            f,
+            charge=charge,
+            molecular_weight=mw,
+            elements=els,
+            chemsys=chemsys,
+            pmg_ion=pmg_ion,
+            formula_html=pmg_ion.to_html_string(),
+            formula_latex=pmg_ion.to_latex_string(),
+            formula_hill=pmg_ion.hill_formula,
+            formula_pretty=pmg_ion.to_pretty_string(),
+            oxi_state_guesses=pmg_ion.oxi_state_guesses(),
+            n_atoms=int(pmg_ion.num_atoms),
+            n_elements=len(els),
+        )
 
-        return param.get_value(temperature, pressure, ionic_strength)
-
-    def add_parameter(self, name, magnitude, units="", **kwargs):
-        """
-        Add a parameter to the parameters database for a solute
-
-        See pyEQL.parameters documentation for a description of the arguments
-
-        """
-        import pyEQL.parameter as pm
-
-        newparam = pm.Parameter(name, magnitude, units, **kwargs)
-        db.add_parameter(self.formula, newparam)
-
-    def get_moles(self):
-        """
-        Return the moles of solute in the solution
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Quantity
-            The number of moles of solute
-
-        """
-        return self.moles
-
-    def add_moles(self, amount, volume, solvent_mass):
-        """
-        Increase or decrease the amount of a substance present in the solution
-
-        Parameters
-        ----------
-        amount: str quantity
-                Amount of substance to add. Must be in mass or substance units.
-                Negative values indicate subtraction of material.
-
-        """
-        quantity = unit(amount)
-        self.moles += quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
-
-    def set_moles(self, amount, volume, solvent_mass):
-        """
-        Set the amount of a substance present in the solution
-
-        Parameters
-        ----------
-        amount: str quantity
-                Desired amount of substance. Must be greater than or equal to
-                zero and given in mass or substance units.
-
-        """
-        quantity = unit(amount)
-        self.moles = quantity.to("moles", "chem", mw=self.mw, volume=volume, solvent_mass=solvent_mass)
+    def as_dict(self):
+        return dict(asdict(self).items())
 
     # set output of the print() statement
     def __str__(self):

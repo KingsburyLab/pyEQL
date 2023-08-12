@@ -1,5 +1,5 @@
 """
-pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.)
+pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 :copyright: 2013-2023 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
@@ -12,16 +12,13 @@ import pyEQL.activity_correction as ac
 
 # import the parameters database
 # the pint unit registry
-from pyEQL import paramsDB as db
 from pyEQL import unit
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list
 
 
 class EOS(ABC):
-    """
-    Abstract base class for pyEQL equation of state classes
-    """
+    """Abstract base class for pyEQL equation of state classes."""
 
     @abstractmethod
     def get_activity_coefficient(self, solution, solute):
@@ -60,7 +57,7 @@ class EOS(ABC):
     @abstractmethod
     def get_solute_volume(self):
         """
-        Return the volume of only the solutes
+        Return the volume of only the solutes.
 
         Args:
             solution: pyEQL Solution object
@@ -93,9 +90,7 @@ class EOS(ABC):
 
 
 class IdealEOS(EOS):
-    """
-    Ideal solution equation of state engine.
-    """
+    """Ideal solution equation of state engine."""
 
     def get_activity_coefficient(self, solution, solute):
         """
@@ -112,15 +107,11 @@ class IdealEOS(EOS):
         return unit("1 dimensionless")
 
     def get_solute_volume(self, solution):
-        """
-        Return the volume of the solutes
-        """
+        """Return the volume of the solutes."""
         return unit("0 L")
 
     def equilibrate(self, solution):
-        """
-        Adjust the speciation of a Solution object to achieve chemical equilibrium.
-        """
+        """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
 
 
 class NativeEOS(EOS):
@@ -134,7 +125,7 @@ class NativeEOS(EOS):
         """
         Whenever the appropriate parameters are available, the Pitzer model [#]_ is used.
         If no Pitzer parameters are available, then the appropriate equations are selected
-        according to the following logic: [#]_
+        according to the following logic: [#]_.
 
         I <= 0.0005: Debye-Huckel equation
         0.005 < I <= 0.1:  Guntelberg approximation
@@ -170,11 +161,11 @@ class NativeEOS(EOS):
                     that is being used for activity calculations. This option is
                     useful when modeling multicomponent solutions. False by default.
 
-        Returns
+        Returns:
         -------
         The mean ion activity coefficient of the solute in question on  the selected scale.
 
-        See Also
+        See Also:
         --------
         get_ionic_strength
         get_salt
@@ -183,7 +174,7 @@ class NativeEOS(EOS):
         activity_correction.get_activity_coefficient_davies
         activity_correction.get_activity_coefficient_pitzer
 
-        Notes
+        Notes:
         -----
         For multicomponent mixtures, pyEQL implements the "effective Pitzer model"
         presented by Mistry et al. [#]_. In this model, the activity coefficient
@@ -193,7 +184,7 @@ class NativeEOS(EOS):
 
         .. math:: m_effective = 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
 
-        References
+        References:
         ----------
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
@@ -206,7 +197,6 @@ class NativeEOS(EOS):
                Edition; Butterworths: London, 1968, p.32.
         """
         verbose = False
-        ion = solution.components[solute]
 
         # identify the predominant salt that this ion is a member of
         Salt = None
@@ -220,17 +210,13 @@ class NativeEOS(EOS):
             logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
             return unit("1 dimensionless")
 
-        # search the database for pitzer parameters for 'Salt'
-        db.search_parameters(Salt.formula)
-
         # use the Pitzer model for higher ionic strength, if the parameters are available
 
         # search for Pitzer parameters
-        if db.has_parameter(Salt.formula, "pitzer_parameters_activity"):
+        param = solution.get_property(Salt.formula, "model_parameters.activity_pitzer")
+        if param is not None:
             if verbose is True:
                 print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
-
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_activity")
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
@@ -260,10 +246,10 @@ class NativeEOS(EOS):
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -285,7 +271,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_debyehuckel(
                 solution.ionic_strength,
-                ion.charge,
+                solution.get_property(solute, "charge"),
                 str(solution.temperature),
             )
 
@@ -296,7 +282,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_guntelberg(
                 solution.ionic_strength,
-                ion.charge,
+                solution.get_property(solute, "charge"),
                 str(solution.temperature),
             )
 
@@ -308,7 +294,7 @@ class NativeEOS(EOS):
             )
             molal = ac.get_activity_coefficient_davies(
                 solution.ionic_strength,
-                ion.charge,
+                solution.get_property(solute, "charge"),
                 str(solution.temperature),
             )
 
@@ -346,18 +332,19 @@ class NativeEOS(EOS):
                     The concentration scale for the returned osmotic coefficient.
                     Valid options are "molal", "rational" (i.e., mole fraction),
                     and "fugacity".  By default, the molal scale osmotic coefficient is returned.
-        Returns
+
+        Returns:
         -------
         Quantity :
             The osmotic coefficient
 
-        See Also
+        See Also:
         --------
         get_water_activity
         get_ionic_strength
         get_salt
 
-        Notes
+        Notes:
         -----
         For multicomponent mixtures, pyEQL adopts the "effective Pitzer model"
         presented by Mistry et al. [#]_. In this approach, the osmotic coefficient of
@@ -378,7 +365,7 @@ class NativeEOS(EOS):
         the author confirmed that the weight factor should be the true molality, and
         that is what is implemented in pyEQL.)
 
-        References
+        References:
         ----------
         .. [#] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
@@ -390,7 +377,7 @@ class NativeEOS(EOS):
         .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on desalination calculations for mixed
                 electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
-        Examples
+        Examples:
         --------
         >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
         >>> s1.get_osmotic_coefficient()
@@ -441,21 +428,17 @@ class NativeEOS(EOS):
 
             molality_sum += concentration
 
-            # search the database for pitzer parameters for 'salt'
-            db.search_parameters(item.formula)
-
-            if db.has_parameter(item.formula, "pitzer_parameters_activity"):
-                param = db.get_parameter(item.formula, "pitzer_parameters_activity")
-
+            param = solution.get_property(item.formula, "model_parameters.activity_pitzer")
+            if param is not None:
                 osmotic_coefficient = ac.get_osmotic_coefficient_pitzer(
                     ionic_strength,
                     concentration,
                     alpha1,
                     alpha2,
-                    param.get_value()[0],
-                    param.get_value()[1],
-                    param.get_value()[2],
-                    param.get_value()[3],
+                    unit(param["Beta0"]["value"]).magnitude,
+                    unit(param["Beta1"]["value"]).magnitude,
+                    unit(param["Beta2"]["value"]).magnitude,
+                    unit(param["Cphi"]["value"]).magnitude,
                     item.z_cation,
                     item.z_anion,
                     item.nu_cation,
@@ -480,14 +463,9 @@ class NativeEOS(EOS):
         return effective_osmotic_sum / molality_sum
 
     def get_solute_volume(self, solution):
-        """
-        Return the volume of the solutes
-        """
+        """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         Salt = solution.get_salt()
-
-        # search the database for pitzer parameters for 'salt'
-        db.search_parameters(Salt.formula)
 
         solute_vol = 0 * unit("L")
 
@@ -495,9 +473,8 @@ class NativeEOS(EOS):
 
         pitzer_calc = False
 
-        if db.has_parameter(Salt.formula, "pitzer_parameters_volume"):
-            param = db.get_parameter(Salt.formula, "pitzer_parameters_volume")
-
+        param = solution.get_property(Salt.formula, "model_parameters.molar_volume_pitzer")
+        if param is not None:
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
@@ -523,11 +500,11 @@ class NativeEOS(EOS):
                 molality,
                 alpha1,
                 alpha2,
-                param.get_value()[0],
-                param.get_value()[1],
-                param.get_value()[2],
-                param.get_value()[3],
-                param.get_value()[4],
+                unit(param["Beta0"]["value"]).magnitude,
+                unit(param["Beta1"]["value"]).magnitude,
+                unit(param["Beta2"]["value"]).magnitude,
+                unit(param["Cphi"]["value"]).magnitude,
+                unit(param["V_o"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -550,30 +527,27 @@ class NativeEOS(EOS):
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
-        for item in solution.components:
-            solute = solution.get_solute(item)
-
+        for solute, mol in solution.components.items():
             # ignore water
-            if item in ["H2O", "HOH"]:
+            if solute in ["H2O", "HOH"]:
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and item in [Salt.anion, Salt.cation]:
+            if pitzer_calc is True and solute in [Salt.anion, Salt.cation]:
                 continue
 
-            if db.has_parameter(item, "partial_molar_volume"):
-                solute_vol += solute.get_parameter("partial_molar_volume") * solute.moles
-                logger.info("Updated solution volume using direct partial molar volume for solute %s" % item)
+            part_vol = solution.get_property(solute, "size.molar_volume")
+            if part_vol is not None:
+                solute_vol += part_vol * mol * unit("1 mol")
+                logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
                 logger.warning(
                     "Partial molar volume data not available for solute %s. Solution volume will not be corrected."
-                    % item
+                    % solute
                 )
 
         return solute_vol.to("L")
 
     def equilibrate(self, solution):
-        """
-        Adjust the speciation of a Solution object to achieve chemical equilibrium.
-        """
+        """Adjust the speciation of a Solution object to achieve chemical equilibrium."""

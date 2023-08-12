@@ -160,7 +160,7 @@ class Test_mobility:
         s1 = pyEQL.Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("K+").to("m**2*S/mol")
         expected = s1.get_mobility("K+").to("m**2/s/V").magnitude
-        charge = s1.get_solute("K+").charge
+        charge = s1.get_property("K+", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
         result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
@@ -170,7 +170,7 @@ class Test_mobility:
         s1 = pyEQL.Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("Cl-").to("m**2*S/mol")
         expected = s1.get_mobility("Cl-").to("m**2/s/V").magnitude
-        charge = s1.get_solute("Cl-").charge
+        charge = s1.get_property("Cl-", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
         result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
@@ -180,7 +180,7 @@ class Test_mobility:
         s1 = pyEQL.Solution([["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("Mg+2").to("m**2*S/mol")
         expected = s1.get_mobility("Mg+2").to("m**2/s/V").magnitude
-        charge = s1.get_solute("Mg+2").charge
+        charge = s1.get_property("Mg+2", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
         result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 
@@ -190,7 +190,7 @@ class Test_mobility:
         s1 = pyEQL.Solution([["K+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC")
         molar_conductivity = s1.get_molar_conductivity("SO4-2").to("m**2*S/mol")
         expected = s1.get_mobility("SO4-2").to("m**2/s/V").magnitude
-        charge = s1.get_solute("SO4-2").charge
+        charge = s1.get_property("SO4-2", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
         result = (molar_conductivity / (pyEQL.unit.N_A * pyEQL.unit.e * abs(charge))).to("m**2/s/V").magnitude
 

@@ -1,5 +1,5 @@
 """
-pyEQL salt matching library
+pyEQL salt matching library.
 
 This file contains functions that allow a pyEQL Solution object composed of
 individual species (usually ions) to be mapped to a solution of one or more
@@ -16,9 +16,7 @@ from pyEQL.logging_system import logger
 
 
 class Salt:
-    """
-    Class to represent a salt.
-    """
+    """Class to represent a salt."""
 
     def __init__(self, cation, anion):
         self.cation = cation
@@ -88,7 +86,7 @@ class Salt:
         self.formula = salt_formula
 
     def get_effective_molality(self, ionic_strength):
-        """Calculate the effective molality according to [#]_
+        """Calculate the effective molality according to [#]_.
 
         .. math:: 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
 
@@ -97,11 +95,11 @@ class Salt:
         ionic_strength: Quantity
                         The ionic strength of the parent solution, mol/kg
 
-        Returns
+        Returns:
         -------
         Quantity: the effective molality of the salt in the parent solution
 
-        References
+        References:
         ----------
         .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of
         composition and nonideal solution behavior on desalination calculations
@@ -135,12 +133,8 @@ def _sort_components(Solution, type="all"):
 
     # populate a list with component names
     for item in Solution.components:
-        if type == "all":
-            formula_list.append(item)
-        elif type == "cations":
-            if Solution.get_solute(item).charge > 0:
-                formula_list.append(item)
-        elif type == "anions" and Solution.get_solute(item).charge < 0:
+        z = Solution.get_property(item, "charge")
+        if type == "all" or (type == "cations" and z > 0) or (type == "anions" and z < 0):
             formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs
@@ -156,7 +150,7 @@ def identify_salt(Solution):
     Analyze the components of a solution and identify the salt that most closely
     approximates it.
     (e.g., if a solution contains 0.5 mol/kg of Na+ and Cl-, plus traces of H+
-    and OH-, the matched salt is 0.5 mol/kg NaCl)
+    and OH-, the matched salt is 0.5 mol/kg NaCl).
 
     Create a Salt object for this salt.
 
@@ -201,7 +195,8 @@ def generate_salt_list(Solution, unit="mol/kg"):
     Returns:
     -------
     dict
-        A dictionary of Salt objects, keyed to the formula of the salt.
+        A dictionary of Salt objects, where Salt objects are the keys and
+        the amounts are the values.
 
     """
     salt_list = {}
@@ -278,7 +273,7 @@ def generate_salt_list(Solution, unit="mol/kg"):
 
 def _trim_formal_charge(formula):
     """
-    remove the formal charge from a chemical formula
+    remove the formal charge from a chemical formula.
 
     Examples:
     --------

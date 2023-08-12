@@ -86,3 +86,4 @@ no_implicit_optional = false
 [tool.codespell]
 ignore-words-list = "nd"
 skip = 'tests/test_files/*'
+exclude = 'src/pyEQL/database/pyeql_db.json'

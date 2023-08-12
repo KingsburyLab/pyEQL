@@ -46,11 +46,5 @@ unit.enable_contexts("chem")
 # set the default string formatting for pint quantities
 unit.default_format = "P~"
 
-# this must be imported after instantiating the UnitRegistry()
-from pyEQL.database import Paramsdb  # noqa
-
-# initialize the parameters database
-paramsDB = Paramsdb()
-
 from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402
