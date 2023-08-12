@@ -174,11 +174,9 @@ class Solution:
         if isinstance(solutes, dict):
             for k, v in solutes.items():
                 self.add_solute(k, v)
-                # db.search_parameters(k)
         elif isinstance(solutes, list):
             for item in solutes:
                 self.add_solute(*item)
-                # db.search_parameters(k)
         elif solutes is not None:
             raise ValueError("Solutes must be given as a list or dict!")
 
@@ -194,7 +192,6 @@ class Solution:
                     The amount of substance in the specified unit system. The string should contain both a quantity and
                     a pint-compatible representation of a unit. e.g. '5 mol/kg' or '0.1 g/L'
         """
-        # db.search_parameters(formula)
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
@@ -539,9 +536,6 @@ class Solution:
         # identify the main salt in the solution
         salt = self.get_salt()
         cation = salt.cation
-
-        # search the database for parameters for 'salt'
-        # db.search_parameters(salt.formula)
 
         a0 = a1 = b0 = b1 = 0
 
