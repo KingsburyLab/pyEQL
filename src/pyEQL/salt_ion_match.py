@@ -11,7 +11,8 @@ species (e.g. Na+)
 :license: LGPL, see LICENSE for more details.
 
 """
-import pyEQL.chemical_formula as chem
+from pymatgen.core.ion import Ion
+
 from pyEQL.logging_system import logger
 
 
@@ -19,11 +20,8 @@ class Salt:
     """Class to represent a salt."""
 
     def __init__(self, cation, anion):
-        self.cation = cation
-        self.anion = anion
-
         """
-        Create a salt object based on its component ions
+        Create a Salt object based on its component ions.
 
         Parameters:
         ----------
@@ -43,14 +41,20 @@ class Salt:
         'MgCl2'
 
         """
+        # create pymatgen Ion objects
+        pmg_cat = Ion.from_formula(cation)
+        pmg_an = Ion.from_formula(anion)
+        # sanitize the cation and anion formulas
+        self.cation = pmg_cat.reduced_formula
+        self.anion = pmg_an.reduced_formula
 
         # get the charges on cation and anion
-        self.z_cation = chem.get_formal_charge(cation)
-        self.z_anion = chem.get_formal_charge(anion)
+        self.z_cation = pmg_cat.charge
+        self.z_anion = pmg_an.charge
 
         # assign stoichiometric coefficients by finding a common multiple
-        self.nu_cation = abs(self.z_anion)
-        self.nu_anion = abs(self.z_cation)
+        self.nu_cation = int(abs(self.z_anion))
+        self.nu_anion = int(abs(self.z_cation))
 
         # if both coefficients are the same, set each to one
         if self.nu_cation == self.nu_anion:
@@ -61,27 +65,27 @@ class Salt:
         salt_formula = ""
         if self.nu_cation > 1:
             # add parentheses if the cation is a polyatomic ion
-            if len(chem.get_elements(cation)) > 1:
+            if len(pmg_cat.elements) > 1:
                 salt_formula += "("
-                salt_formula += _trim_formal_charge(cation)
+                salt_formula += self.cation.split("[")[0]
                 salt_formula += ")"
             else:
-                salt_formula += _trim_formal_charge(cation)
+                salt_formula += self.cation.split("[")[0]
             salt_formula += str(self.nu_cation)
         else:
-            salt_formula += _trim_formal_charge(cation)
+            salt_formula += self.cation.split("[")[0]
 
         if self.nu_anion > 1:
             # add parentheses if the anion is a polyatomic ion
-            if len(chem.get_elements(anion)) > 1:
+            if len(pmg_an.elements) > 1:
                 salt_formula += "("
-                salt_formula += _trim_formal_charge(anion)
+                salt_formula += self.anion.split("[")[0]
                 salt_formula += ")"
             else:
-                salt_formula += _trim_formal_charge(anion)
+                salt_formula += self.anion.split("[")[0]
             salt_formula += str(self.nu_anion)
         else:
-            salt_formula += _trim_formal_charge(anion)
+            salt_formula += self.anion.split("[")[0]
 
         self.formula = salt_formula
 
@@ -145,7 +149,7 @@ def _sort_components(Solution, type="all"):
     return sorted(formula_list, key=mol_list.__getitem__, reverse=True)
 
 
-def identify_salt(Solution):
+def identify_salt(sol):
     """
     Analyze the components of a solution and identify the salt that most closely
     approximates it.
@@ -159,7 +163,7 @@ def identify_salt(Solution):
     A Salt object.
     """
     # sort the components by moles
-    sort_list = _sort_components(Solution)
+    sort_list = _sort_components(sol)
 
     # default to returning water as the salt
     cation = "H+"
@@ -176,9 +180,10 @@ def identify_salt(Solution):
 
     # take the dominant cation and anion and assemble a salt from them
     for item in sort_list:
-        if chem.get_formal_charge(item) > 0 and cation == "H+":
+        pmg_ion = Ion.from_formula(item)
+        if pmg_ion.charge > 0 and cation == "H+":
             cation = item
-        elif chem.get_formal_charge(item) < 0 and anion == "OH-":
+        elif pmg_ion.charge < 0 and anion == "OH-":
             anion = item
         else:
             pass
@@ -187,7 +192,7 @@ def identify_salt(Solution):
     return Salt(cation, anion)
 
 
-def generate_salt_list(Solution, unit="mol/kg"):
+def generate_salt_list(sol, unit="mol/kg"):
     """
     Generate a list of salts that represents the ionic composition of a
     solution.
@@ -202,8 +207,8 @@ def generate_salt_list(Solution, unit="mol/kg"):
     salt_list = {}
 
     # sort the cations and anions by moles
-    cation_list = _sort_components(Solution, type="cations")
-    anion_list = _sort_components(Solution, type="anions")
+    cation_list = _sort_components(sol, type="cations")
+    anion_list = _sort_components(sol, type="anions")
 
     # iterate through the lists of ions
     # create salts by matching the equivalent concentrations of cations
@@ -215,9 +220,10 @@ def generate_salt_list(Solution, unit="mol/kg"):
     index_cat = 0
     index_an = 0
 
+    # TODO - add an equivalent concnetration method to get_amount
     # calculate the equivalent concentrations of each ion
-    c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
-    a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+    c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
+    a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
 
     while index_cat < len_cat and index_an < len_an:
         # if the cation concentration is greater, there will be leftover cations
@@ -233,7 +239,7 @@ def generate_salt_list(Solution, unit="mol/kg"):
             # move to the next anion
             index_an += 1
             try:
-                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
             except IndexError:
                 continue
         # if the anion concentration is greater, there will be leftover anions
@@ -249,7 +255,7 @@ def generate_salt_list(Solution, unit="mol/kg"):
             # move to the next cation
             index_cat += 1
             try:
-                c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
+                c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
             except IndexError:
                 continue
         if c1 == a1:
@@ -263,39 +269,9 @@ def generate_salt_list(Solution, unit="mol/kg"):
             index_an += 1
             index_cat += 1
             try:
-                c1 = Solution.get_amount(cation_list[index_cat], unit) * chem.get_formal_charge(cation_list[index_cat])
-                a1 = Solution.get_amount(anion_list[index_an], unit) * abs(chem.get_formal_charge(anion_list[index_an]))
+                c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
+                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
             except IndexError:
                 continue
 
     return salt_list
-
-
-def _trim_formal_charge(formula):
-    """
-    remove the formal charge from a chemical formula.
-
-    Examples:
-    --------
-    >>> _trim_formal_charge('Fe+++')
-    'Fe'
-    >>> _trim_formal_charge('SO4-2')
-    'SO4'
-    >>> _trim_formal_charge('Na+')
-    'Na'
-
-    """
-    charge = chem.get_formal_charge(formula)
-    output = ""
-    if charge > 0:
-        output = formula.split("+")[0]
-    elif charge < 0:
-        output = formula.split("-")[0]
-
-    return output
-
-
-# TODO - turn doctest back on when the nosigint error is gone
-# if __name__ == "__main__":
-#   import doctest
-#  doctest.testmod()

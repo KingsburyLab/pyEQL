@@ -31,11 +31,11 @@ class Test_empty_solution(unittest.TestCase):
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "H+"
+        assert self.s1.get_salt().cation == "H[+1]"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "OH-"
+        assert self.s1.get_salt().anion == "OH[-1]"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
@@ -67,11 +67,11 @@ class Test_single_salt_mono(unittest.TestCase):
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "Na+"
+        assert self.s1.get_salt().cation == "Na[+1]"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "Cl-"
+        assert self.s1.get_salt().anion == "Cl[-1]"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
@@ -103,11 +103,11 @@ class Test_single_salt_di(unittest.TestCase):
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "Na+"
+        assert self.s1.get_salt().cation == "Na[+1]"
 
     # The anion should be 'SO4-2'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "SO4-2"
+        assert self.s1.get_salt().anion == "SO4[-2]"
 
     # The cation coefficient should be 2
     def test_salt_nu_cation(self):
@@ -139,11 +139,11 @@ class Test_single_salt_di2(unittest.TestCase):
 
     # The cation should be 'Fe+3+'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "Fe+3"
+        assert self.s1.get_salt().cation == "Fe[+3]"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "Cl-"
+        assert self.s1.get_salt().anion == "Cl[-1]"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
@@ -175,11 +175,11 @@ class Test_single_ion(unittest.TestCase):
 
     # The cation should be 'Fe+3'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "Fe+3"
+        assert self.s1.get_salt().cation == "Fe[+3]"
 
     # The anion should be 'OH-'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "OH-"
+        assert self.s1.get_salt().anion == "OH[-1]"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
@@ -211,11 +211,11 @@ class Test_salt_asymmetric(unittest.TestCase):
 
     # The cation should be 'Na+'
     def test_salt_cation(self):
-        assert self.s1.get_salt().cation == "Na+"
+        assert self.s1.get_salt().cation == "Na[+1]"
 
     # The anion should be 'Cl-'
     def test_salt_anion(self):
-        assert self.s1.get_salt().anion == "Cl-"
+        assert self.s1.get_salt().anion == "Cl[-1]"
 
     # The cation coefficient should be 1
     def test_salt_nu_cation(self):
