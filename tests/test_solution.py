@@ -86,7 +86,37 @@ def test_solute_addition(s2, s3, s4):
     assert result_molL < result_mol
 
 
-# def test_serialization(s1, s2, s3):
-#     assert isinstance(s1.as_dict(), dict)
-#     s1_new = Solution.from_dict(s1.as_dict())
-#     assert s1_new.volume.magnitude == 2
+def test_serialization(s1, s2, s3):
+    assert isinstance(s1.as_dict(), dict)
+    s1_new = Solution.from_dict(s1.as_dict())
+    assert s1_new.volume.magnitude == 2
+    assert s1_new.components == s1.components
+    assert np.isclose(s1_new.pH, s1.pH)
+    assert np.isclose(s1_new.pE, s1.pE)
+    assert s1_new.temperature == s1.temperature
+    assert s1_new.pressure == s1.pressure
+    assert s1_new.solvent == s1.solvent
+    assert s1_new._engine == s1._engine
+    # the solutions should point to different EOS instances
+    assert s1_new.engine != s1.engine
+    # also should point to different Store instances
+    # TODO currently this test will fail due to a bug in maggma's __eq__
+    # assert s1_new.database != s1.database
+
+    s2_new = Solution.from_dict(s2.as_dict())
+    assert s2_new.volume == s2.volume
+    # components concentrations should be the same
+    assert s2_new.components == s2.components
+    # but not point to the same instances
+    assert s2_new.components is not s2.components
+    assert np.isclose(s2_new.pH, s2.pH)
+    assert np.isclose(s2_new.pE, s2.pE)
+    assert s2_new.temperature == s2.temperature
+    assert s2_new.pressure == s2.pressure
+    assert s2_new.solvent == s2.solvent
+    assert s2_new._engine == s2._engine
+    # the solutions should point to different EOS instances
+    assert s2_new.engine != s2.engine
+    # also should point to different Store instances
+    # TODO currently this test will fail due to a bug in maggma's __eq__
+    # assert s2_new.database != s2.database
