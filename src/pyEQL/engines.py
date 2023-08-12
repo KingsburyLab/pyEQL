@@ -468,7 +468,14 @@ class NativeEOS(EOS):
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
-        Salt = solution.get_salt()
+        salt = solution.get_salt()
+        # reverse-convert the sanitized formula back to whatever was in self.components
+        for i in solution.components:
+            rform = Ion.from_formula(i)
+            if rform == salt.cation:
+                cation = i
+            if rform == salt.anion:
+                anion = i
 
         solute_vol = 0 * unit("L")
 
@@ -476,19 +483,19 @@ class NativeEOS(EOS):
 
         pitzer_calc = False
 
-        param = solution.get_property(Salt.formula, "model_parameters.molar_volume_pitzer")
+        param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
         if param is not None:
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            molality = (solution.get_amount(Salt.cation, "mol/kg") + solution.get_amount(Salt.anion, "mol/kg")) / 2
+            molality = (solution.get_amount(cation, "mol/kg") + solution.get_amount(anion, "mol/kg")) / 2
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion >= 2:
-                if Salt.nu_cation >= 3 or Salt.nu_anion >= 3:
+            if salt.nu_cation >= 2 and salt.nu_anion >= 2:
+                if salt.nu_cation >= 3 or salt.nu_anion >= 3:
                     alpha1 = 2
                     alpha2 = 50
                 else:
@@ -508,25 +515,25 @@ class NativeEOS(EOS):
                 unit(param["Beta2"]["value"]).magnitude,
                 unit(param["Cphi"]["value"]).magnitude,
                 unit(param["V_o"]["value"]).magnitude,
-                Salt.z_cation,
-                Salt.z_anion,
-                Salt.nu_cation,
-                Salt.nu_anion,
+                salt.z_cation,
+                salt.z_anion,
+                salt.nu_cation,
+                salt.nu_anion,
                 str(solution.temperature),
             )
 
             solute_vol += (
                 apparent_vol
                 * (
-                    solution.get_amount(Salt.cation, "mol") / Salt.nu_cation
-                    + solution.get_amount(Salt.anion, "mol") / Salt.nu_anion
+                    solution.get_amount(cation, "mol") / salt.nu_cation
+                    + solution.get_amount(anion, "mol") / salt.nu_anion
                 )
                 / 2
             )
 
             pitzer_calc = True
 
-            logger.info("Updated solution volume using Pitzer model for solute %s" % Salt.formula)
+            logger.info("Updated solution volume using Pitzer model for solute %s" % salt.formula)
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
@@ -536,7 +543,7 @@ class NativeEOS(EOS):
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and solute in [Salt.anion, Salt.cation]:
+            if pitzer_calc is True and solute in [anion, cation]:
                 continue
 
             part_vol = solution.get_property(solute, "size.molar_volume")
