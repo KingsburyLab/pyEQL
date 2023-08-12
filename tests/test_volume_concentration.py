@@ -242,3 +242,6 @@ class Test_get_amount:
 
         # get_amount() - fraction
         assert np.isclose(s1.get_amount("Na+", "fraction"), 0.01775457254)
+
+        # get_amount() - count
+        assert np.isclose(s1.get_amount("Na+", "count").magnitude, 6.02214e23)

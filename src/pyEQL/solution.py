@@ -999,11 +999,12 @@ class Solution:
 
         The amount of a solute can be given in a variety of unit types.
         1. substance per volume (e.g., 'mol/L')
-        1. substance per mass of solvent (e.g., 'mol/kg')
-        1. mass of substance (e.g., 'kg')
-        1. moles of substance ('mol')
-        1. mole fraction ('fraction')
-        1. percent by weight (%)
+        2. substance per mass of solvent (e.g., 'mol/kg')
+        3. mass of substance (e.g., 'kg')
+        4. moles of substance ('mol')
+        5. mole fraction ('fraction')
+        6. percent by weight (%)
+        7. number of molecules ('count')
 
         Parameters
         ----------
@@ -1047,6 +1048,10 @@ class Solution:
         # the logic tests here ensure that only the required arguments are
         # passed to pint for the unit conversion. This avoids unnecessary
         # function calls.
+        if units == "mol":
+            return moles
+        if units == "count":
+            return round((moles * unit.N_A).to("dimensionless"), 0)
         if units == "fraction":
             return moles / (self.get_moles_solvent() + self.get_total_moles_solute())
         mw = unit.Quantity(self.get_property(solute, "molecular_weight")).to("g/mol")
