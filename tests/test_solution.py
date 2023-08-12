@@ -39,7 +39,7 @@ def test_empty_solution_3():
     # It should have exactly 1L volume
     assert s1.get_volume().to("L").magnitude == 1.0
     #  the solvent should be water
-    assert s1.solvent_name == "H2O"
+    assert s1.solvent == "H2O"
     # It should have 0.997 kg water mass
     assert np.isclose(s1.get_solvent_mass().to("kg").magnitude, 0.9970415)
     # the temperature should be 25 degC

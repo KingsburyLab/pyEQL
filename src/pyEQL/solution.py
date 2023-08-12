@@ -40,9 +40,9 @@ class Solution:
         pressure: str = "1 atm",
         pH: float = 7,
         pE: float = 8.5,
+        solvent: Union[str, list] = "H2O",
         engine: Literal["native", "ideal"] = "native",
         database: Optional[Union[str, Path, Store]] = None,
-        **kwargs,
     ):
         """
 
@@ -76,6 +76,9 @@ class Solution:
                 higher values = more oxidizing. At pH 7, water is stable between approximately
                 -7 to +14. The default value corresponds to a pE value typical of natural
                 waters in equilibrium with the atmosphere.
+            solvent: Formula of the solvent. Solvents other than water are not supported at
+                this time.
+            engine:
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
 
@@ -95,11 +98,13 @@ class Solution:
 
         # initialize the volume with a flag to distinguish user-specified volume
         if volume is not None:
-            volume_set = True
+            # volume_set = True
             self.volume = unit.Quantity(volume).to("L")
         else:
-            volume_set = False
+            # volume_set = False
             self.volume = unit.Quantity("1 L")
+        # store the initial conditions as private variables in case they are
+        # changed later
         self._temperature = unit.Quantity(temperature)
         self._pressure = unit.Quantity(pressure)
         self.pE = pE
@@ -110,9 +115,8 @@ class Solution:
             P=self.pressure.to("MPa").magnitude,
         )
 
-        # create an empty dictionary of components
-        # TODO - components should be come a dict of {formula: moles} where moles
-        # is the number of moles in the solution. Nothing else.
+        # create an empty dictionary of components. This dict comprises {formula: moles}
+        #  where moles is the number of moles in the solution.
         self.components: dict = {}
 
         # initialize the volume recalculation flag
@@ -144,40 +148,46 @@ class Solution:
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 
-        # define the solvent
-        if "solvent" in kwargs:
-            self.solvent_name = kwargs["solvent"][0]
-            # warn if the solvent is anything besides water
-            if kwargs["solvent"][0] != "H2O" or kwargs["solvent"][0] == "water":
-                logger.error("Non-aqueous solvent detected. These are not yet supported!")
+        # define the solvent. Allow for list input to support future use of mixed solvents
+        if not isinstance(solvent, list):
+            solvent = [solvent]
+        if len(solvent) > 1:
+            raise ValueError("Multiple solvents are not yet supported!")
+        if solvent[0] not in ["H2O", "H2O(aq)", "water", "Water", "HOH"]:
+            raise ValueError("Non-aqueous solvent detected. These are not yet supported!")
+        self.solvent = solvent[0]
 
-            # raise an error if the solvent volume has also been given
-            if volume_set is True:
-                logger.error(
-                    "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
-                )
+        # TODO - do I need the ability to specify the solvent mass?
+        # # raise an error if the solvent volume has also been given
+        # if volume_set is True:
+        #     logger.error(
+        #         "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
+        #     )
+        # # add the solvent and the mass
+        # self.add_solvent(self.solvent, kwargs["solvent"][1])
 
-            # add the solvent and the mass
-            self.add_solvent(self.solvent_name, kwargs["solvent"][1])
-        else:
-            self.solvent_name = "H2O"
-
-            # calculate the moles of solvent (water) on the density and the solution volume
-            moles = self.volume / unit.Quantity("55.55 mol/L")
-            self.components["H2O"] = moles.magnitude
+        # calculate the moles of solvent (water) on the density and the solution volume
+        moles = self.volume / unit.Quantity("55.55 mol/L")
+        self.components["H2O"] = moles.magnitude
 
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
         self.add_solute("OH-", str(10 ** (-1 * (14 - pH))) + "mol/L")
 
         # populate the other solutes
-        if isinstance(solutes, dict):
-            for k, v in solutes.items():
+        self._solutes = solutes
+        if self._solutes is None:
+            self._solutes = {}
+        if isinstance(self._solutes, dict):
+            for k, v in self._solutes.items():
                 self.add_solute(k, v)
-        elif isinstance(solutes, list):
-            for item in solutes:
+        elif isinstance(self._solutes, list):
+            logger.warning(
+                'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input (e.g., {"Na+":"0.5 mol/L"} instead.)'
+            )
+            for item in self._solutes:
                 self.add_solute(*item)
-        elif solutes is not None:
+        elif self._solutes is not None:
             raise ValueError("Solutes must be given as a list or dict!")
 
     def add_solute(self, formula, amount):
@@ -218,13 +228,13 @@ class Solution:
             # density is returned in kg/m3 = g/L
             target_mass = target_vol.to("L").magnitude * self.water_substance.rho * unit.Quantity("1 g")
             # mw = unit.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
-            mw = self.get_property(self.solvent_name, "molecular_weight")
+            mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
                 raise ValueError(
-                    f"Molecular weight for solvent {self.solvent_name} not found in database. This is required to proceed."
+                    f"Molecular weight for solvent {self.solvent} not found in database. This is required to proceed."
                 )
             target_mol = target_mass.to("g") / mw.to("g/mol")
-            self.components[self.solvent_name] = target_mol.magnitude
+            self.components[self.solvent] = target_mol.magnitude
 
         else:
             # add the new solute
@@ -325,9 +335,9 @@ class Solution:
         get_amount()
         """
         # return the total mass (kg) of the solvent
-        mw = self.get_property(self.solvent_name, "molecular_weight").to("kg/mol").magnitude
+        mw = self.get_property(self.solvent, "molecular_weight").to("kg/mol").magnitude
 
-        return self.components[self.solvent_name] * mw * unit.Quantity("1 kg")
+        return self.components[self.solvent] * mw * unit.Quantity("1 kg")
 
     def get_volume(self):
         """
@@ -562,7 +572,7 @@ class Solution:
         MW = self.mass / (self.get_moles_solvent() + self.get_total_moles_solute())
 
         # get the MW of water
-        MW_w = unit.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
+        MW_w = unit.Quantity(self.get_property(self.solvent, "molecular_weight"))
 
         # calculate the cation mole fraction
         x_cat = self.get_amount(cation, "fraction")
@@ -1188,10 +1198,9 @@ class Solution:
             # volume in L, density in kg/m3 = g/L
             target_mass = target_vol.magnitude * self.water_substance.rho * unit.Quantity("1 g")
 
-            mw = unit.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
+            mw = unit.Quantity(self.get_property(self.solvent, "molecular_weight"))
             target_mol = target_mass / mw
-            self.components[self.solvent_name] = target_mol.magnitude
-            # self.get_solvent().moles = target_mol
+            self.components[self.solvent] = target_mol.magnitude
 
         else:
             # change the amount of the solute present
@@ -1285,9 +1294,9 @@ class Solution:
 
             # adjust the amount of solvent
             target_mass = target_vol.magnitude / 1000 * self.water_substance.rho * unit.Quantity("1 kg")
-            mw = self.get_property(self.solvent_name, "molecular_weight")
+            mw = self.get_property(self.solvent, "molecular_weight")
             target_mol = target_mass / mw
-            self.components[self.solvent_name] = target_mol.to("mol").magnitude
+            self.components[self.solvent] = target_mol.to("mol").magnitude
 
         else:
             # change the amount of the solute present
@@ -1343,7 +1352,7 @@ class Solution:
         """Return the total moles of all solute in the solution."""
         tot_mol = 0
         for item in self.components:
-            if item != self.solvent_name:
+            if item != self.solvent:
                 tot_mol += self.components[item]
         return unit.Quantity(tot_mol, "mol")
 
@@ -1361,7 +1370,7 @@ class Solution:
             The moles of solvent in the solution.
 
         """
-        return self.get_amount(self.solvent_name, "mol")
+        return self.get_amount(self.solvent, "mol")
 
     def get_salt(self):
         """
@@ -1589,18 +1598,17 @@ class Solution:
         if scale == "molal":
             return molal_phi
         if scale == "rational":
-            solvent = self.get_solvent().formula
             return (
                 -molal_phi
                 * unit.Quantity("0.018 kg/mol")
                 * self.get_total_moles_solute()
                 / self.get_solvent_mass()
-                / math.log(self.get_amount(solvent, "fraction"))
+                / math.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
             return math.exp(
                 -molal_phi * unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.get_solvent_mass()
-                - math.log(self.get_amount(self.solvent_name, "fraction"))
+                - math.log(self.get_amount(self.solvent, "fraction"))
             )
 
         logger.warning("Invalid scale argument. Returning molal-scale osmotic coefficient")
@@ -2069,14 +2077,14 @@ class Solution:
         # prepare to copy the bulk properties
         new_temperature = str(self.temperature)
         new_pressure = str(self.pressure)
-        new_solvent = self.solvent_name
+        new_solvent = self.solvent
         new_solvent_mass = str(self.get_solvent_mass())
 
         # create a list of solutes
         new_solutes = []
         for item in self.components:
             # ignore the solvent
-            if item == self.solvent_name:
+            if item == self.solvent:
                 pass
             else:
                 new_solutes.append([item, str(self.get_amount(item, "mol"))])
