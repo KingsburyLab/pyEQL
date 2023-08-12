@@ -266,16 +266,6 @@ class Solution:
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
         self.components[formula] = target_mol.to("moles").magnitude
 
-    # TODO - deprecate this method in favor of direct dict access.
-    def get_solute(self, i):
-        """Return the specified solute object."""
-        return self.components[i]
-
-    # TODO - deprecate this in favor of direct attribute access
-    def get_solvent(self):
-        """Return the solvent object."""
-        return self.components[self.solvent_name]
-
     @property
     def temperature(self) -> Quantity:
         """Return the temperature of the solution in Kelvin."""
@@ -2188,6 +2178,20 @@ class Solution:
     """
     Legacy methods to be deprecated in a future release.
     """
+
+    @deprecated(
+        message="get_solute() is deprecated and will be removed in the next release! Access solutes via the Solution.components attribute and their properties via Solution.get_property(solute, ...)"
+    )
+    def get_solute(self, i):
+        """Return the specified solute object."""
+        return self.components[i]
+
+    @deprecated(
+        message="get_solvent is deprecated and will be removed in the next release! Use Solution.solvent instead."
+    )
+    def get_solvent(self):
+        """Return the solvent object."""
+        return self.components[self.solvent]
 
     @deprecated(
         message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
