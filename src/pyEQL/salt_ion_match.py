@@ -223,7 +223,7 @@ def generate_salt_list(sol, unit="mol/kg"):
     # TODO - add an equivalent concnetration method to get_amount
     # calculate the equivalent concentrations of each ion
     c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
-    a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
+    a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an], "charge"))
 
     while index_cat < len_cat and index_an < len_an:
         # if the cation concentration is greater, there will be leftover cations
@@ -239,7 +239,7 @@ def generate_salt_list(sol, unit="mol/kg"):
             # move to the next anion
             index_an += 1
             try:
-                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
+                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an], "charge"))
             except IndexError:
                 continue
         # if the anion concentration is greater, there will be leftover anions
@@ -270,7 +270,7 @@ def generate_salt_list(sol, unit="mol/kg"):
             index_cat += 1
             try:
                 c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
-                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an]), "charge")
+                a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an], "charge"))
             except IndexError:
                 continue
 

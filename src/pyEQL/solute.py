@@ -105,7 +105,7 @@ class Solute:
         pmg_ion = Ion.from_formula(formula)
         f = pmg_ion.reduced_formula
         charge = int(pmg_ion.charge)
-        els = pmg_ion.elements
+        els = [str(el) for el in pmg_ion.elements]
         mw = f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
 

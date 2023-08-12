@@ -539,7 +539,10 @@ class Solution(MSONable):
         """
         # identify the main salt in the solution
         salt = self.get_salt()
-        cation = salt.cation
+        # reverse-convert the sanitized formula back to whatever was in self.components
+        for i in self.components:
+            if Ion.from_formula(i).reduced_formula == salt.cation:
+                cation = i
 
         a0 = a1 = b0 = b1 = 0
 
@@ -1102,16 +1105,20 @@ class Solution(MSONable):
         --------
         get_amount
         """
-        import pyEQL.chemical_formula as ch
+        from pymatgen.core import Element
+
+        el = str(Element(element))
 
         TOT = 0 * unit.Quantity(units)
 
         # loop through all the solutes, process each one containing element
         for item in self.components:
             # check whether the solute contains the element
-            if ch.contains(item, element):
+            # if ch.contains(item, element):
+            if el in self.get_property(item, "elements"):
                 # start with the amount of the solute in the desired units
                 amt = self.get_amount(item, units)
+                ion = Ion.from_formula(item)
 
                 # convert the solute amount into the amount of element by
                 # either the mole / mole or weight ratio
@@ -1120,14 +1127,14 @@ class Solution(MSONable):
                     "[substance]/[length]**3",
                     "[substance]/[mass]",
                 ):
-                    TOT += amt * ch.get_element_mole_ratio(item, element)
+                    TOT += amt * ion.get_el_amt_dict[el]  # returns {el: mol per formula unit}
 
                 elif unit.Quantity(units).dimensionality in (
                     "[mass]",
                     "[mass]/[length]**3",
                     "[mass]/[mass]",
                 ):
-                    TOT += amt * ch.get_element_weight_fraction(item, element)
+                    TOT += amt * ion.to_weight_dict["el"]  # returns {el: wt fraction}
 
         return TOT
 
