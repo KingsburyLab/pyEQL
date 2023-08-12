@@ -471,7 +471,7 @@ class NativeEOS(EOS):
         salt = solution.get_salt()
         # reverse-convert the sanitized formula back to whatever was in self.components
         for i in solution.components:
-            rform = Ion.from_formula(i)
+            rform = Ion.from_formula(i).reduced_formula
             if rform == salt.cation:
                 cation = i
             if rform == salt.anion:
