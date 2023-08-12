@@ -18,7 +18,7 @@ from pyEQL.logging_system import logger
 
 def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit("298.15 K")):
     """
-    Calculate a parameter for th e Pitzer model based on temperature-dependent
+    Calculate a parameter for the Pitzer model based on temperature-dependent
     coefficients c1,c2,c3,c4,and c5.
 
     Parameters
