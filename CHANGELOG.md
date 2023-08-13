@@ -26,6 +26,12 @@
 - Add pre-commit configuration and lint with `black`
 - Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
 
+## 0.5.2 (2020-04-21)
+
+ - Fix breaking bug introduced by upstream pint change to avogadro_number
+ - Format project with black
+ - Misc. linting and docstring changes
+
 ## 0.5.0 (2018-09-19)
 
 - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
