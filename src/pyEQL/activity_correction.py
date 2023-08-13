@@ -140,7 +140,8 @@ def _debye_parameter_osmotic(temperature="25 degC"):
 
     References:
     ----------
-    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
+    .. [#] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous \
+     Electrolytes at 25 C. 1. Single Salt Parameters,"
        *J. Chemical Engineering Data* 33, pp.177-184.
 
     .. [#] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
