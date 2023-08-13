@@ -1,15 +1,14 @@
 # pyEQL Changelog
 
-## 0.6.0 (in progress)
+All notable changes to this project will be documented in this file.
 
-- **BREAKING CHANGE** `Solute`: methods `get_formal_charge()`, `get_name()`, and `get_molecular_weight()` have been
-  replaced by direct access to the attributes `charge`, `formula`, and `mw`, respectively.
-- **DEPRECATION NOTICE** `Solution`: new properties `pressure`, `temperature`, `pE`,
-- `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`,
-- `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`,
-- `dielectric_constant`, `charge_balance` have replaced the corresponding get_XXX and
-  set_XXX (for temperature and pressure) methods, which will be removed in a future
-  release. `get_viscosity_relative` will be removed entirely.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation
   models. Models can be integrated into pyEQL by implementing an `EOS` class. The desired
@@ -17,22 +16,38 @@
   implementation of Pitzer, which decays gracefully into Debye-Huckel and other models if
   parameters are not available) or `ideal` for a dummy engine that returns unit activity
   coefficients. Support for additional external engines such as [`phreeqpython`](https://github.com/Vitens/phreeqpython) is planned.
-- **BREAKING CHANGE** disable 'verbose' kwarg in `get_activity` and `get_activity_coefficient`
+- Add `pymatgen`, `monty`, and `maggma` as dependencies
+- Add pre-commit configuration and lint with `ruff`
 - Add more comprehensive platform testing via `tox`
-- Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
-- Replace elements.py with `pymatgen.core.periodic_table`
-- Add `pymatgen` as a dependency
-- Migrate all tests to `pytest`
-- Add pre-commit configuration and lint with `black`
-- Update packaging to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
 
-## 0.5.2 (2020-04-21)
+### Changed
+
+- Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
+- Replace `elements.py`` with `pymatgen.core.periodic_table`
+- Migrate all tests to `pytest`
+- Update packaging format to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
+
+### Deprecated
+
+- `Solution`: new properties `pressure`, `temperature`, `pE`, `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`, `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`, `dielectric_constant`, `charge_balance` have replaced the corresponding get_XXX and set_XXX (for temperature and pressure) methods, which will be removed in a future release. `get_viscosity_relative` will be removed entirely.
+- `Solute`: methods `get_formal_charge()`, `get_name()`, and `get_molecular_weight()` have been
+  replaced by direct access to the attributes `charge`, `formula`, and `mw`, respectively.
+
+### Removed
+
+- disable 'verbose' kwarg in `get_activity` and `get_activity_coefficient`
+
+### Fixed
+
+- Fixed various documentation rendering issues
+
+## [0.5.2] - 2020-04-21
 
  - Fix breaking bug introduced by upstream pint change to avogadro_number
  - Format project with black
  - Misc. linting and docstring changes
 
-## 0.5.0 (2018-09-19)
+## [0.5.0] 2018-09-19
 
 - Implement the effective Pitzer model for improved activity calculations in multicomponent solutions
 - Add support for calculation of activity and osmotic coefficients on different scales
@@ -46,7 +61,7 @@
 - DEPRECATED get_mole_fraction. Use get_amount() instead
 - Fix bug causing get_activity_coefficient to fail if the solute concentration was zero
 
-## 0.4.0 (2016-07-14)
+## [0.4.0] 2016-07-14
 
 - Add ability to calculate dielectric constant based on solution composition for salts
 - Add database entries for the viscosity 'B' parameter for 63 more inorganic ions
@@ -59,12 +74,12 @@
 - Fix bug causing ValueError exceptions when a solute has zero concentration
 - Numerous fixes and corrections in the documentation
 
-## 0.3.1 (2016-02-24)
+## [0.3.1] 2016-02-24
 
 - Fix packaging problems preventing installation from PyPi
 - Fix character encoding issue in Erying_viscosity database file
 
-## 0.3.0 (2016-01-15)
+## [0.3.0] 2016-01-15
 
 - Add method to calculate the total concentration of an element in a solution
 - Add method to automatically generate certain solutions (like seawater)
@@ -81,11 +96,11 @@
 - Fix bug related to retrieval of water properties
 - Documentation enhancements and fixes
 
-## 0.2.2 (2015-08-28)
+## [0.2.2] 2015-08-28
 
 - Fix bug in get_amount() causing no output when mass-based units were specified.
 
-## 0.2.1 (2015-05-06)
+## [0.2.1] 2015-05-06
 
 - Add 93 entries to diffusion coefficient database
 - Add 93 entries to Pitzer partial molar volume parameters database
@@ -95,6 +110,6 @@
 - Uploaded to the Python Package Index for easier installation
 - Add this changelog
 
-## 0.2.0 (2015-03-26)
+## [0.2.0] 2015-03-26
 
 - First public release

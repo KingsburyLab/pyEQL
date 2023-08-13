@@ -1,5 +1,7 @@
+(license)=
+
 # License
 
-```{literalinclude} ../LICENSE.txt
-:language: text
+```{eval-rst}
+.. include:: ../LICENSE.txt
 ```

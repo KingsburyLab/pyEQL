@@ -8,8 +8,8 @@
 # serve to show the default.
 
 import os
-import shutil
 import sys
+import shutil
 
 # -- Path setup --------------------------------------------------------------
 
@@ -52,12 +52,15 @@ try:
 
     apidoc.main(args)
 except Exception as e:
-    print(f"Running `sphinx-apidoc` failed!\n{e}")
+    print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -73,10 +76,6 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
 ]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
-
 
 # Enable markdown
 extensions.append("myst_parser")
@@ -114,7 +113,7 @@ copyright = "2023, Ryan Kingsbury"
 #
 # version: The short X.Y version.
 # release: The full version, including alpha/beta/rc tags.
-# If you don`t need the separation provided between version and release,
+# If you don’t need the separation provided between version and release,
 # just set them both to the same value.
 try:
     from pyEQL import __version__ as version
@@ -171,14 +170,25 @@ todo_emit_warnings = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "alabaster"
+html_theme = "sphinx_material"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
     "sidebar_width": "300px",
-    "page_width": "1200px"
+    "page_width": "1200px",
+    'base_url': 'https://pyeql.readthedocs.io/en/latest/',
+    'repo_url': 'https://github.com/rkingsbury/pyEQL/',
+    'repo_name': 'pyEQL',
+    'html_minify': True,
+    'css_minify': True,
+    'nav_title': 'pyEQL',
+    'color_primary': "blue",
+    'color_accent': "light-blue",
+}
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

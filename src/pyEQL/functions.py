@@ -5,13 +5,9 @@ pyEQL functions that take Solution objects as inputs or return Solution objects.
 :license: LGPL, see LICENSE for more details.
 
 """
-# import libraries for scientific functions
 import math
 
-# internal pyEQL imports
 import pyEQL
-
-# the pint unit registry
 from pyEQL import unit
 from pyEQL.logging_system import logger
 
@@ -25,18 +21,19 @@ def gibbs_mix(Solution1, Solution2):
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns:
+    Returns
     -------
     Quantity
         The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes:
+    Notes
     -----
-    The Gibbs energy of mixing is calculated as follows: [#]_
+    The Gibbs energy of mixing is calculated as follows
 
     .. math::
-        \Delta_{mix} G = \sum_i (n_c + n_d) R T \ln a_b - \sum_i n_c R T \ln a_c - \sum_i n_d R T \ln a_d
+
+        \\Delta_{mix} G = \\sum_i (n_c + n_d) R T \\ln a_b - \\sum_i n_c R T \\ln a_c - \\sum_i n_d R T \\ln a_d
 
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
@@ -46,13 +43,10 @@ def gibbs_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
 
-    References:
+    References
     ----------
-    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-           A differential approach.* Elsevier, 2007, pp. 23-37.
-
-    Examples:
-    --------
+    Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
+        A differential approach.* Elsevier, 2007, pp. 23-37.
 
     """
     concentrate = Solution1
@@ -80,18 +74,19 @@ def entropy_mix(Solution1, Solution2):
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns:
+    Returns
     -------
     Quantity
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes:
+    Notes
     -----
-    The ideal entropy of mixing is calculated as follows:[#]_
+    The ideal entropy of mixing is calculated as follows
 
     .. math::
-        \Delta_{mix} S = \sum_i (n_c + n_d) R T \ln x_b - \sum_i n_c R T \ln x_c - \sum_i n_d R T \ln x_d
+
+        \\Delta_{mix} S = \\sum_i (n_c + n_d) R T \\ln x_b - \\sum_i n_c R T \\ln x_c - \\sum_i n_d R T \\ln x_d
 
     Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
     and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
@@ -101,13 +96,10 @@ def entropy_mix(Solution1, Solution2):
     so a simple salt dissolved in water is a three component solution (cation,
     anion, and water).
 
-    References:
+    References
     ----------
-    .. [#] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-           A differential approach.* Elsevier, 2007, pp. 23-37.
-
-    Examples:
-    --------
+    Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
+        A differential approach.* Elsevier, 2007, pp. 23-37.
 
     """
     concentrate = Solution1
@@ -134,27 +126,29 @@ def donnan_eql(solution, fixed_charge):
 
     Parameters
     ----------
-    Solution : Solution object
+    solution : Solution object
         The external solution to be brought into equilibrium with the fixed
         charges
     fixed_charge : str quantity
         String representing the concentration of fixed charges, including sign.
         May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
 
-    Returns:
+    Returns
     -------
     Solution
         A solution that has established Donnan equilibrium with the external
         (input) Solution
 
-    Notes:
+    Notes
     -----
     The general equation representing the equilibrium between an external
     electrolyte solution and an ion-exchange medium containing fixed charges
-    is:[#]_
+    is
 
-    .. math:: {a_- \\over \\bar a_-}^{1 \\over z_-} {\\bar a_+ \\over a_+}^{1 \\over z_+} \
-    = exp({\\Delta \\pi \\bar V \\over {RT z_+ \\nu_+}})
+    .. math::
+
+        \\frac{a_{-}}{\\bar a_{-}}^{\\frac{1}{z_{-}} \\frac{\\bar a_{+}}{a_{+}}^{\\frac{1}{z_{+}} \
+        = exp(\\frac{\\Delta \\pi \\bar V}{{RT z_{+} \\nu_{+}}})
 
     Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
     the overbar indicates the membrane phase,
@@ -165,7 +159,7 @@ def donnan_eql(solution, fixed_charge):
 
     In addition, electroneutrality must prevail within the membrane phase:
 
-    .. math:: \\bar C_+ z_+ + \\bar X + \\bar C_- z_- = 0
+    .. math:: \\bar C_{+} z_{+} + \\bar X + \\bar C_{-} z_{-} = 0
 
     Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
     in the membrane or ion exchange phase.
@@ -179,16 +173,10 @@ def donnan_eql(solution, fixed_charge):
     NOTE that this treatment is only capable of equilibrating a single salt.
     This salt is identified by the get_salt() method.
 
-    References:
+    References
     ----------
-    .. [#] Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. \
-           Chapter 2, p. 51. http://dx.doi.org/10.1016/S0927-5193(04)80033-0
-
-
-    Examples:
-    --------
-
-    Todo:
+    Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. Chapter 2, p. 51.
+           http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     See Also:
     --------
@@ -304,7 +292,7 @@ def mix(Solution1, Solution2):
     Solution1, Solution2 : Solution objects
         The two solutions to be mixed.
 
-    Returns:
+    Returns
     -------
     Solution
         A Solution object representing the mixed solution.
@@ -379,34 +367,34 @@ def autogenerate(solution=""):
                 Valid entries are 'seawater', 'rainwater',
                 'wastewater',and 'urine'
 
-    Returns:
+    Returns
     -------
     Solution
         A pyEQL Solution object.
 
-    Notes:
+    Notes
     -----
     The following sections explain the different solution options:
 
     - '' - empty solution, equivalent to pyEQL.Solution()
     - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-    - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [#]_
-    - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [#]_
-    - 'urine' - typical human urine. See Table 3-15 of [#]_
-    - 'normal saline' or 'NS' - normal saline solution used in medicine [#]_
-    - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [#]_
+    - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
+    - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
+    - 'urine' - typical human urine. See Table 3-15 of [2]_
+    - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
+    - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
 
     References:
     ----------
-    .. [#] Millero, Frank J. "The composition of Standard Seawater and the definition of
-           the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+        .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
+            the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
 
-    .. [#] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
-            McGraw-Hill, 2013.
+        .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+                McGraw-Hill, 2013.
 
-    .. [#] https://en.wikipedia.org/wiki/Saline_(medicine)
+        .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
 
-    .. [#] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+        .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
     """
     if solution == "":
