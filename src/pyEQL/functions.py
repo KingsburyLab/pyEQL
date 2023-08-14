@@ -320,10 +320,10 @@ def mix(Solution1, Solution2):
     # set the pressure for the new solution
     p1 = Solution1.pressure
     t1 = Solution1.temperature
-    v1 = Solution1.get_volume()
+    v1 = Solution1.volume
     p2 = Solution2.pressure
     t2 = Solution2.temperature
-    v2 = Solution2.get_volume()
+    v2 = Solution2.volume
 
     # check to see if the solutions have the same temperature and pressure
     if p1 != p2:

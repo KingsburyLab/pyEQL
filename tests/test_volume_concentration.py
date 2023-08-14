@@ -46,7 +46,7 @@ class Test_solute_addition:
         # unit, the volume should not change
         s2.set_amount("Na+", "5 mol/L")
         s2.set_amount("Cl-", "5 mol/L")
-        assert s2.get_volume().to("L").magnitude == 2
+        assert s2.volume.to("L").magnitude == 2
 
     def test_set_amount_2(self, s2):
         # If the concentration of a solute is directly set with a substance / volume
@@ -66,10 +66,10 @@ class Test_solute_addition:
     def test_set_amount_4(self, s2):
         # If the concentration of a solute is directly set with a substance / mass
         # unit, the volume should increase
-        original = s2.get_volume().to("L").magnitude
+        original = s2.volume.to("L").magnitude
         s2.set_amount("Na+", "5 mol/kg")
         s2.set_amount("Cl-", "5 mol/kg")
-        assert s2.get_volume().to("L").magnitude > original
+        assert s2.volume.to("L").magnitude > original
 
     def test_set_amount_5(self, s2):
         # If the concentration of a solute is directly set with a substance / mass
@@ -89,10 +89,10 @@ class Test_solute_addition:
     def test_set_amount_7(self, s2):
         # If the concentration of a solute is directly set with a substance
         # unit, the volume should increase
-        original = s2.get_volume().to("L").magnitude
+        original = s2.volume.to("L").magnitude
         s2.set_amount("Na+", "10 mol")
         s2.set_amount("Cl-", "10 mol")
-        assert s2.get_volume().to("L").magnitude > original
+        assert s2.volume.to("L").magnitude > original
 
     def test_set_amount_8(self, s2):
         # If the concentration of a solute is directly set with a substance
@@ -118,7 +118,7 @@ class Test_solute_addition:
         # unit, the volume should not change
         s2.add_amount("Na+", "1 mol/L")
         s2.add_amount("Cl-", "1 mol/L")
-        assert np.allclose(s2.get_volume().to("L").magnitude, 2)
+        assert np.allclose(s2.volume.to("L").magnitude, 2)
 
     def test_add_amount_2(self, s2):
         # If the concentration of a solute is directly increased with a substance / volume
@@ -140,10 +140,10 @@ class Test_solute_addition:
 
         # If the concentration of a solute is directly increased with a substance / mass
         # unit, the volume should increase
-        original = s3.get_volume().to("L").magnitude
+        original = s3.volume.to("L").magnitude
         s3.add_amount("Na+", "1 mol/kg")
         s3.add_amount("Cl-", "1 mol/kg")
-        assert s3.get_volume().to("L").magnitude > original
+        assert s3.volume.to("L").magnitude > original
 
     def test_add_amount_5(self, s3):
         # If the concentration of a solute is directly increased with a substance / mass
@@ -167,10 +167,10 @@ class Test_solute_addition:
 
         # If the concentration of a solute is directly increased with a substance
         # unit, the volume should increase
-        original = s2.get_volume().to("L").magnitude
+        original = s2.volume.to("L").magnitude
         s2.add_amount("Na+", "2 mol")
         s2.add_amount("Cl-", "2 mol")
-        assert s2.get_volume().to("L").magnitude > original
+        assert s2.volume.to("L").magnitude > original
 
     def test_add_amount_7(self, s2):
         # If the concentration of a solute is directly increased with a substance
@@ -191,10 +191,10 @@ class Test_solute_addition:
         # negative substance units
         # If the concentration of a solute is directly decreased with a substance
         # unit, the volume should decrease
-        original = s2.get_volume().to("L").magnitude
+        original = s2.volume.to("L").magnitude
         s2.add_amount("Na+", "-2 mol")
         s2.add_amount("Cl-", "-2 mol")
-        assert s2.get_volume().to("L").magnitude < original
+        assert s2.volume.to("L").magnitude < original
 
     def test_add_amount_10(self, s2):
         # If the concentration of a solute is directly changed with a substance
