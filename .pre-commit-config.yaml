@@ -1,0 +1,41 @@
+exclude: '^docs/conf.py'
+
+default_stages: [commit]
+
+default_install_hook_types: [pre-commit, commit-msg]
+
+ci:
+  autoupdate_schedule: monthly
+  # skip: [mypy]
+  autofix_commit_msg: pre-commit auto-fixes
+  autoupdate_commit_msg: pre-commit autoupdate
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.280
+    hooks:
+      - id: ruff
+        args: [--fix, --ignore, "D,E501"]
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        stages: [commit, commit-msg]
+        exclude_types: [html]
+        additional_dependencies: [tomli] # needed to read pyproject.toml below py3.11
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace

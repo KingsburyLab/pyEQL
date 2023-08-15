@@ -1,0 +1,26 @@
+name: Post-process
+
+on:
+  workflow_run:
+    types:
+      - completed
+    workflows:
+      # List all required workflow names here.
+      - 'testing'
+
+jobs:
+# https://github.com/marketplace/actions/tag-release-on-push-action
+  auto-gen-release:
+    name: Tag/Release on merge of labeled PRs
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - # It is often a desired behavior to merge only when a workflow execution
+        # succeeds. This can be changed as needed.
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: rymndhng/release-on-push-action@v0.27.0
+        with:
+          # loonly release when PRs with release:major/minor/patch labels are merged
+          bump_version_scheme: norelease
+          use_github_release_notes: true
