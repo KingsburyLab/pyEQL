@@ -374,11 +374,11 @@ class NativeEOS(EOS):
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.get_osmotic_coefficient()
-            <Quantity(0.9235996615888572, 'dimensionless')>
+            <Quantity(0.923715281, 'dimensionless')>
 
             >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
             >>> s1.get_osmotic_coefficient()
-            <Quantity(0.891154788474231, 'dimensionless')>
+            <Quantity(0.891409618, 'dimensionless')>
 
         """
         ionic_strength = solution.ionic_strength
@@ -387,14 +387,14 @@ class NativeEOS(EOS):
         molality_sum = 0
 
         # organize the composition into a dictionary of salts
-        salt_list = solution.get_salt_list()
+        salts_dict = solution.get_salt_dict()
 
         # loop through all the salts in the solution, calculate the osmotic
         # coefficint for reach, and average them into an effective osmotic
         # coefficient
-        for item in salt_list:
+        for item in salts_dict:
             # ignore HOH in the salt list
-            if item.formula == "HOH":
+            if item == "HOH":
                 continue
 
             # determine alpha1 and alpha2 based on the type of salt
@@ -417,7 +417,7 @@ class NativeEOS(EOS):
             # solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = salt_list[item]
+            concentration = salts_dict[item]
 
             molality_sum += concentration
 

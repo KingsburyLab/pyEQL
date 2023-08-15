@@ -86,12 +86,12 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
 
     Examples:
     --------
-    >>> adjust_temp_vanthoff(0.15,-197.6*unit.Quantity('kJ/mol'),42*unit.Quantity('degC'),25*unit.Quantity('degC')) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,unit.Quantity('-197.6 kJ/mol'),unit.Quantity('42 degC'),unit.Quantity(' 25degC')) #doctest: +ELLIPSIS
     0.00203566...
 
     If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
 
-    >>> adjust_temp_vanthoff(0.15,-197.6*unit.Quantity('kJ/mol'),42*unit.Quantity('degC')) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,unit.Quantity('-197.6 kJ/mol'),unit.Quantity('42 degC')) #doctest: +ELLIPSIS
     0.00203566...
 
     """

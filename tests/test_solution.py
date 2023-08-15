@@ -86,7 +86,7 @@ def test_solute_addition(s2, s3, s4):
     assert result_molL < result_mol
 
 
-def test_serialization(s1, s2, s3):
+def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
     s1_new = Solution.from_dict(s1.as_dict())
     assert s1_new.volume.magnitude == 2

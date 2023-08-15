@@ -216,7 +216,7 @@ def generate_salt_list(sol, unit="mol/kg"):
     index_cat = 0
     index_an = 0
 
-    # TODO - add an equivalent concnetration method to get_amount
+    # TODO - add an equivalent concentration method to get_amount
     # calculate the equivalent concentrations of each ion
     c1 = sol.get_amount(cation_list[index_cat], unit) * sol.get_property(cation_list[index_cat], "charge")
     a1 = sol.get_amount(anion_list[index_an], unit) * abs(sol.get_property(anion_list[index_an], "charge"))

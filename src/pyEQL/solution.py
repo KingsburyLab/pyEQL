@@ -341,12 +341,6 @@ class Solution(MSONable):
         Quantity
             The negative log10 of the activity (or molar concentration if
             activity = False) of the solute.
-
-        Examples:
-        --------
-
-        Todo:
-
         """
         try:
             if activity is True:
@@ -886,8 +880,7 @@ class Solution(MSONable):
             >>> soln.osmotic_pressure
             <Quantity(906516.7318131207, 'pascal')>
         """
-        # TODO - tie this into parameter() and solvent() objects
-        partial_molar_volume_water = 1.82e-5 * unit.Quantity("m ** 3/mol")
+        partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
 
         osmotic_pressure = (
             -1 * unit.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
@@ -993,12 +986,13 @@ class Solution(MSONable):
         -----
         There is currently no way to distinguish between different oxidation
         states of the same element (e.g. TOTFe(II) vs. TOTFe(III)). This
-        is planned for a future release. (TODO)
+        is planned for a future release.
 
         See Also
         --------
         get_amount
         """
+        # TODO - is it important to distinguish different oxidation states here? See docstring.
         from pymatgen.core import Element
 
         el = str(Element(element))
@@ -1098,7 +1092,7 @@ class Solution(MSONable):
     def add_solvent(self, formula, amount):
         """Same as add_solute but omits the need to pass solvent mass to pint."""
         quantity = unit.Quantity(amount)
-        mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
+        mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
 
@@ -1389,7 +1383,7 @@ class Solution(MSONable):
         # identify the predominant salt in the solution
         return identify_salt(self)
 
-    def get_salt_list(self):
+    def get_salt_dict(self) -> dict:
         """
         Determine the predominant salt in a solution of ions.
 
@@ -1399,7 +1393,7 @@ class Solution(MSONable):
         containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
         these quantities.
 
-        The get_salt_list() method examines the ionic composition of a solution and
+        The get_salt_dict() method examines the ionic composition of a solution and
         simplifies it into a list of salts. The method returns a dictionary of
         Salt objects where the keys are the salt formulas (e.g., 'NaCl'). The
         Salt object contains information about the stoichiometry of the salt to
@@ -1423,7 +1417,6 @@ class Solution(MSONable):
         :py:meth:`get_osmotic_coefficient`
         :py:meth:`get_osmotic_pressure`
         :py:meth:`get_viscosity_kinematic`
-
         """
         # identify the predominant salt in the solution
         return generate_salt_list(self, unit="mol/kg")
@@ -1607,35 +1600,22 @@ class Solution(MSONable):
         >>> s1.get_water_activity()
         <Quantity(0.9900944932888518, 'dimensionless')>
         """
-        """
-        pseudo code
-
-        identify predominant salt for coefficients
-        check if coefficients exist for that salt
-        if so => calc osmotic coefficient and log an info message
-
-        if not = > return mole fraction and log a warning message
-
-        """
         osmotic_coefficient = self.get_osmotic_coefficient()
 
         if osmotic_coefficient == 1:
             logger.warning("Pitzer parameters not found. Water activity set equal to mole fraction")
             return self.get_amount("H2O", "fraction")
 
-        concentration_sum = unit.Quantity("0 mol/kg")
+        concentration_sum = 0
         for item in self.components:
             if item == "H2O":
                 pass
             else:
-                # TODO - use magnitude instead of quantity; add unit at end of loop
-                concentration_sum += self.get_amount(item, "mol/kg")
+                concentration_sum += self.get_amount(item, "mol/kg").magnitude
 
         logger.info("Calculated water activity using osmotic coefficient")
 
-        return math.exp(-osmotic_coefficient * 0.018015 * unit.Quantity("kg/mol") * concentration_sum) * unit.Quantity(
-            "1 dimensionless"
-        )
+        return math.exp(-osmotic_coefficient * 0.018015 * concentration_sum) * unit.Quantity("1 dimensionless")
 
     def get_chemical_potential_energy(self, activity_correction=True):
         """
@@ -2002,9 +1982,8 @@ class Solution(MSONable):
         return self.engine.get_solute_volume(self)
 
     def copy(self):
-        """Return a copy of the solution.
-        """
-        return Solution.from_dict((self.as_dict()))
+        """Return a copy of the solution."""
+        return Solution.from_dict(self.as_dict())
 
     def as_dict(self) -> dict:
         """
@@ -2722,3 +2701,14 @@ class Solution(MSONable):
         :meta private:
         """
         return self.osmotic_pressure
+
+    @deprecated(message="get_salt_list() will be removed in the next release. Use get_salt_dict() instead.")
+    def get_salt_list(self):
+        """
+        See get_salt_dict()
+
+        See Also:
+        --------
+        :py:meth:`get_salt_dict`
+        """
+        return self.get_salt_dict()

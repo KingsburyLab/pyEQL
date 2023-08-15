@@ -205,12 +205,6 @@ def _debye_parameter_volume(temperature="25 degC"):
 
     .. [2] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
 
-    Examples:
-    --------
-
-    Todo:
-
-
     See Also:
     --------
     _debye_parameter_osmotic
