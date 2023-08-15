@@ -37,7 +37,7 @@ def test_empty_solution_3():
     # It should return type Solution
     assert isinstance(s1, Solution)
     # It should have exactly 1L volume
-    assert s1.get_volume().to("L").magnitude == 1.0
+    assert s1.volume.to("L").magnitude == 1.0
     #  the solvent should be water
     assert s1.solvent == "H2O"
     # It should have 0.997 kg water mass
@@ -59,7 +59,7 @@ def test_empty_solution_3():
 def test_solute_addition(s2, s3, s4):
     # if solutes are added at creation-time with substance / volume units,
     # then the total volume of the solution should not change (should remain at 2 L)
-    assert s2.get_volume().to("L").magnitude == 2
+    assert s2.volume.to("L").magnitude == 2
 
     # if solutes are added at creation-time with substance / volume units,
     # then the resulting mol/L concentrations should be exactly what was specified

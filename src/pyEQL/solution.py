@@ -96,13 +96,16 @@ class Solution(MSONable):
         # per-instance cache of get_property calls
         self.get_property = lru_cache(maxsize=None)(self._get_property)
 
+        # initialize the volume recalculation flag
+        self.volume_update_required = False
+
         # initialize the volume with a flag to distinguish user-specified volume
         if volume is not None:
             # volume_set = True
-            self.volume = unit.Quantity(volume).to("L")
+            self._volume = unit.Quantity(volume).to("L")
         else:
             # volume_set = False
-            self.volume = unit.Quantity("1 L")
+            self._volume = unit.Quantity("1 L")
         # store the initial conditions as private variables in case they are
         # changed later
         self._temperature = unit.Quantity(temperature)
@@ -120,9 +123,6 @@ class Solution(MSONable):
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
         self.components: dict = {}
-
-        # initialize the volume recalculation flag
-        self.volume_update_required = False
 
         # connect to the desired property database
         if not isinstance(database, Store):
@@ -213,7 +213,7 @@ class Solution(MSONable):
             "[mass]/[length]**3",
         ):
             # store the original volume for later
-            orig_volume = self.get_volume()
+            orig_volume = self.volume
 
             # add the new solute
             quantity = unit.Quantity(amount)
@@ -326,15 +326,12 @@ class Solution(MSONable):
 
         return self.components[self.solvent] * mw * unit.Quantity("1 kg")
 
-    def get_volume(self):
+    @property
+    def volume(self) -> Quantity:
         """
         Return the volume of the solution.
 
-        Parameters
-        ----------
-        None
-
-        Returns
+        Returns:
         -------
         Quantity: the volume of the solution, in L
         """
@@ -343,40 +340,39 @@ class Solution(MSONable):
             self._update_volume()
             self.volume_update_required = False
 
-        return self.volume.to("L")
+        return self._volume.to("L")
 
-    def set_volume(self, volume):
+    @volume.setter
+    def volume(self, volume: str):
         """Change the total solution volume to volume, while preserving
         all component concentrations.
 
-        Parameters
-        ----------
-        volume : str quantity
-                Total volume of the solution, including the unit, e.g. '1 L'
+        Args:
+            volume : Total volume of the solution, including the unit, e.g. '1 L'
 
         Examples:
         ---------
         >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
-        >>> print(mysol.get_volume())
+        >>> print(mysol.volume)
         0.5000883925072983 l
         >>> mysol.list_concentrations()
         {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
-        >>> mysol.set_volume('200 mL')
-        >>> print(mysol.get_volume())
+        >>> mysol.volume = '200 mL')
+        >>> print(mysol.volume)
         0.2 l
         >>> mysol.list_concentrations()
         {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
 
         """
         # figure out the factor to multiply the old concentrations by
-        scale_factor = unit.Quantity(volume) / self.get_volume()
+        scale_factor = unit.Quantity(volume) / self.volume
 
         # scale down the amount of all the solutes according to the factor
         for solute in self.components:
             self.components[solute] *= scale_factor.magnitude
 
         # update the solution volume
-        self.volume = unit.Quantity(volume)
+        self._volume *= scale_factor.magnitude
 
     @property
     def mass(self) -> Quantity:
@@ -409,7 +405,7 @@ class Solution(MSONable):
         -------
         Quantity: The density of the solution.
         """
-        return self.mass / self.get_volume()
+        return self.mass / self.volume
 
     @property
     def dielectric_constant(self) -> Quantity:
@@ -1136,7 +1132,7 @@ class Solution(MSONable):
             "[mass]/[length]**3",
         ):
             # store the original volume for later
-            orig_volume = self.get_volume()
+            orig_volume = self.volume
 
             # change the amount of the solute present to match the desired amount
             self.components[solute] += (
@@ -1242,7 +1238,7 @@ class Solution(MSONable):
             "[mass]/[length]**3",
         ):
             # store the original volume for later
-            orig_volume = self.get_volume()
+            orig_volume = self.volume
 
             # change the amount of the solute present to match the desired amount
             self.components[solute] = (
@@ -1303,7 +1299,7 @@ class Solution(MSONable):
             depression. Defaults to FALSE if omitted.
         """
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
-        return factor * self.get_total_moles_solute() / self.get_volume().to("L")
+        return factor * self.get_total_moles_solute() / self.volume.to("L")
 
     def get_osmolality(self, activity_correction=False):
         """Return the osmolality of the solution in Osm/kg.
@@ -1473,7 +1469,7 @@ class Solution(MSONable):
             return molal
         if scale == "molar":
             total_molality = self.get_total_moles_solute() / self.get_solvent_mass()
-            total_molarity = self.get_total_moles_solute() / self.get_volume()
+            total_molarity = self.get_total_moles_solute() / self.volume
             return (molal * self.water_substance.rho * unit.Quantity("1 g/L") * total_molality / total_molarity).to(
                 "dimensionless"
             )
@@ -1994,7 +1990,7 @@ class Solution(MSONable):
 
     def _update_volume(self):
         """Recalculate the solution volume based on composition."""
-        self.volume = self._get_solvent_volume() + self._get_solute_volume()
+        self._volume = self._get_solvent_volume() + self._get_solute_volume()
 
     def _get_solvent_volume(self):
         """Return the volume of the pure solvent."""
@@ -2038,9 +2034,10 @@ class Solution(MSONable):
     def as_dict(self) -> dict:
         """
         Convert the Solution into a dict representation that can be serialized to .json or other format.
-
-        This method is mostly inherited from MSONable
         """
+        # clear the volume update flag, if required
+        if self.volume_update_required:
+            self._update_volume()
         d = super().as_dict()
         # replace solutes with the current composition
         d["solutes"] = {k: v * unit.Quantity("1 mol") for k, v in self.components.items()}
@@ -2052,10 +2049,25 @@ class Solution(MSONable):
     def from_dict(cls, d: dict) -> "Solution":
         """
         Instantiate a Solution from a dictionary generated by as_dict().
-
-        This method is inherited from MSONable
         """
-        return super().from_dict(d)
+        # because of the automatic volume updating that takes place during the __init__ process,
+        # care must be taken here to recover the exact quantities of solute and volume
+        # first we store the volume of the serialized solution
+        orig_volume = unit.Quantity(d["volume"])
+        # then instantiate a new one
+        new_sol = super().from_dict(d)
+        # now determine how different the new solution volume is from the original
+        scale_factor = (orig_volume / new_sol.volume).magnitude
+        # reset the new solution volume to that of the original. In the process of
+        # doing this, all the solute amounts are scaled by new_sol.volume / volume
+        new_sol.volume = str(orig_volume)
+        # undo the scaling by diving by that scale factor
+        for sol in new_sol.components:
+            new_sol.components[sol] /= scale_factor
+        # ensure that another volume update won't be triggered by these changes
+        # (this line should in principle be unnecessary, but it doesn't hurt anything)
+        new_sol.volume_update_required = False
+        return new_sol
 
     # informational methods
     def list_solutes(self):
@@ -2139,7 +2151,7 @@ class Solution(MSONable):
 
     def __str__(self):
         # set output of the print() statement for the solution
-        str1 = f"Volume: {self.get_volume():.3f~}\n"
+        str1 = f"Volume: {self.volume:.3f~}\n"
         str2 = f"Pressure: {self.pressure:.3f~}\n"
         str3 = f"Temperature: {self.temperature:.3f~}\n"
         str4 = f"Components: {self.list_solutes():}\n"
@@ -2237,6 +2249,20 @@ class Solution(MSONable):
         :meta private:
         """
         self._pressure = unit.Quantity(pressure)
+
+    @deprecated(
+        message="get_volume() will be removed in the next release. Access the volume directly via Solution.volume"
+    )
+    def get_volume(self):
+        """ """
+        return self.volume
+
+    @deprecated(
+        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
+    )
+    def set_volume(self, volume: str):
+        """ """
+        self.volume = volume
 
     @deprecated(message="get_mass() will be removed in the next release. Use the Solution.mass property instead.")
     def get_mass(self):

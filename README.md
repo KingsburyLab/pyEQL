@@ -6,7 +6,7 @@
 
 ![pyeql logo](pyeql-logo.png)
 
-A Python library for solution chemistry
+A human-friendly python interface for solution chemistry
 
 
 ## Description
@@ -44,7 +44,7 @@ pyEQL runs on Python 3.8+ and is licensed under LGPL.
 
 ### Documentation
 
-Detailed documentation is available at [](https://pyeql.readthedocs.io/)
+Detailed documentation is available at [https://pyeql.readthedocs.io/](https://pyeql.readthedocs.io/)
 
 ### Dependencies
 
@@ -52,10 +52,11 @@ Detailed documentation is available at [](https://pyeql.readthedocs.io/)
   [NEP 29](https://numpy.org/neps/nep-0029-deprecation_policy.html) deprecation policy
   for older version of Python.
 - [pint](https://github.com/hgrecco/pint) - for units-awarecalculations
-- [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
 - [pymatgen](https://github.com/materialsproject/pymatgen) - periodic table and chemical formula information
 - [iapws](https://github.com/jjgomera/iapws/) - equations of state for water
 - [monty](https://github.com/materialsvirtuallab/monty) - serialization and deserialization utilities
+- [maggma](https://materialsproject.github.io/maggma/) - interface for accessing the property database
+- [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
 
 <!-- pyscaffold-notes -->
 
