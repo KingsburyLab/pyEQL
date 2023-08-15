@@ -199,7 +199,7 @@ def donnan_eql(solution, fixed_charge):
     salt = solution.get_salt()
 
     # convert fixed_charge in to a quantity
-    fixed_charge = unit(fixed_charge)
+    fixed_charge = unit.Quantity(fixed_charge)
 
     # identify variables from the external solution
     conc_cation_soln = solution.get_amount(salt.cation, str(fixed_charge.units))
@@ -347,7 +347,7 @@ def mix(Solution1, Solution2):
         mix_species.update({item: str(Solution1.get_amount(item, "mol"))})
     for item in Solution2.components:
         if item in mix_species:
-            new_amt = str(unit(mix_species[item]) + Solution2.get_amount(item, "mol"))
+            new_amt = str(unit.Quantity(mix_species[item]) + Solution2.get_amount(item, "mol"))
             mix_species.update({item: new_amt})
         else:
             mix_species.update({item: Solution2.get_amount(item, "mol")})

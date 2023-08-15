@@ -45,8 +45,8 @@ def _debye_parameter_B(temperature="25 degC"):
 
     """
     water_substance = IAPWS95(
-        T=unit(temperature).magnitude,
-        P=unit("1 atm").to("MPa").magnitude,
+        T=unit.Quantity(temperature).magnitude,
+        P=unit.Quantity("1 atm").to("MPa").magnitude,
     )
 
     param_B = (
@@ -56,11 +56,11 @@ def _debye_parameter_B(temperature="25 degC"):
         * unit.elementary_charge**2
         / (
             water_substance.mu
-            * unit("1 g/L")  # in g/L
+            * unit.Quantity("1 g/L")  # in g/L
             * unit.epsilon_0
             * water_substance.epsilon
             * unit.boltzmann_constant
-            * unit(temperature)
+            * unit.Quantity(temperature)
         )
     ) ** 0.5
     return param_B.to_base_units()
@@ -107,14 +107,22 @@ def _debye_parameter_activity(temperature="25 degC"):
 
     """
     water_substance = IAPWS95(
-        T=unit(temperature).magnitude,
-        P=unit("1 atm").to("MPa").magnitude,
+        T=unit.Quantity(temperature).magnitude,
+        P=unit.Quantity("1 atm").to("MPa").magnitude,
     )
 
     debyeparam = (
         unit.elementary_charge**3
-        * (2 * math.pi * unit.N_A * water_substance.rho * unit("1 g/L")) ** 0.5
-        / (4 * math.pi * unit.epsilon_0 * water_substance.epsilon * unit.boltzmann_constant * unit(temperature)) ** 1.5
+        * (2 * math.pi * unit.N_A * water_substance.rho * unit.Quantity("1 g/L")) ** 0.5
+        / (
+            4
+            * math.pi
+            * unit.epsilon_0
+            * water_substance.epsilon
+            * unit.boltzmann_constant
+            * unit.Quantity(temperature)
+        )
+        ** 1.5
     )
 
     logger.info(f"Computed Debye-Huckel Limiting Law Constant A^{{\\gamma}} = {debyeparam} at {temperature}")
@@ -210,23 +218,23 @@ def _debye_parameter_volume(temperature="25 degC"):
 
     """
     water_substance = IAPWS95(
-        T=unit(temperature).magnitude,
-        P=unit("1 atm").to("MPa").magnitude,
+        T=unit.Quantity(temperature).magnitude,
+        P=unit.Quantity("1 atm").to("MPa").magnitude,
     )
 
     # TODO - add partial derivatives to calculation
     epsilon = water_substance.epsilon
-    dedp = unit("-0.01275 1/MPa")
+    dedp = unit.Quantity("-0.01275 1/MPa")
     result = (
         -2
         * _debye_parameter_osmotic(temperature)
         * unit.R
-        * unit(temperature)
-        * (3 / epsilon * dedp - 1 / unit("2.2 GPa"))
+        * unit.Quantity(temperature)
+        * (3 / epsilon * dedp - 1 / unit.Quantity("2.2 GPa"))
     )
-    # result = unit('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
+    # result = unit.Quantity('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
-    if unit(temperature) != unit("25 degC"):
+    if unit.Quantity(temperature) != unit.Quantity("25 degC"):
         logger.warning("Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC")
 
     logger.info(f"Computed Debye-Huckel Limiting Slope for volume A^V = {result} at {temperature}")
@@ -276,7 +284,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength, formal_charge=1, temper
 
     log_f = -_debye_parameter_activity(temperature) * formal_charge**2 * ionic_strength**0.5
 
-    return math.exp(log_f) * unit("1 dimensionless")
+    return math.exp(log_f) * unit.Quantity("1 dimensionless")
 
 
 def get_activity_coefficient_guntelberg(ionic_strength, formal_charge=1, temperature="25 degC"):
@@ -326,7 +334,7 @@ def get_activity_coefficient_guntelberg(ionic_strength, formal_charge=1, tempera
         / (1 + ionic_strength.magnitude**0.5)
     )
 
-    return math.exp(log_f) * unit("1 dimensionless")
+    return math.exp(log_f) * unit.Quantity("1 dimensionless")
 
 
 def get_activity_coefficient_davies(ionic_strength, formal_charge=1, temperature="25 degC"):
@@ -376,7 +384,7 @@ def get_activity_coefficient_davies(ionic_strength, formal_charge=1, temperature
         * (ionic_strength.magnitude**0.5 / (1 + ionic_strength.magnitude**0.5) - 0.2 * ionic_strength.magnitude)
     )
 
-    return math.exp(log_f) * unit("1 dimensionless")
+    return math.exp(log_f) * unit.Quantity("1 dimensionless")
 
 
 def get_activity_coefficient_pitzer(
@@ -429,10 +437,10 @@ def get_activity_coefficient_pitzer(
 
     Examples:
     --------
-    >>> get_activity_coefficient_pitzer(0.5*unit('mol/kg'),0.5*unit('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
+    >>> get_activity_coefficient_pitzer(0.5*unit.Quantity('mol/kg'),0.5*unit.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
     ￼0.61915...
 
-    >>> get_activity_coefficient_pitzer(5.6153*unit('mol/kg'),5.6153*unit('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
+    >>> get_activity_coefficient_pitzer(5.6153*unit.Quantity('mol/kg'),5.6153*unit.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
     ￼0.76331...
 
     NOTE: the examples below are for comparison with experimental and modeling data presented in
@@ -440,17 +448,17 @@ def get_activity_coefficient_pitzer(
 
     10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725
 
-    >>> get_activity_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_activity_coefficient_pitzer(10*unit.Quantity('mol/kg'),10*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.22595 ...
 
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.3011
 
-    >>> get_activity_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_activity_coefficient_pitzer(5*unit.Quantity('mol/kg'),5*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.30249 ...
 
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.1653
 
-    >>> get_activity_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_activity_coefficient_pitzer(18*unit.Quantity('mol/kg'),18*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.16241 ...
 
     References:
@@ -481,14 +489,14 @@ def get_activity_coefficient_pitzer(
 
     """
     # assign proper units to alpha1, alpha2, and b
-    alpha1 = alpha1 * unit("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * unit("kg ** 0.5 / mol ** 0.5")
-    b = b * unit("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * unit("kg ** 2 /mol ** 2")
+    alpha1 = alpha1 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    alpha2 = alpha2 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    b = b * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    C_phi = C_phi * unit.Quantity("kg ** 2 /mol ** 2")
 
     # assign units appropriate for the activity parameters
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
-    Bphi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
+    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit.Quantity("kg/mol")
+    Bphi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit.Quantity("kg/mol")
 
     loggamma = _pitzer_log_gamma(
         ionic_strength,
@@ -504,7 +512,7 @@ def get_activity_coefficient_pitzer(
         b,
     )
 
-    return math.exp(loggamma) * unit("1 dimensionless")
+    return math.exp(loggamma) * unit.Quantity("1 dimensionless")
 
 
 def get_apparent_volume_pitzer(
@@ -565,22 +573,22 @@ def get_apparent_volume_pitzer(
 
     0.25 mol/kg CuSO4. Expected result (from graph) = 0.5 cm ** 3 / mol
 
-    >>> get_apparent_volume_pitzer(1.0*unit('mol/kg'),0.25*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    >>> get_apparent_volume_pitzer(1.0*unit.Quantity('mol/kg'),0.25*unit.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     0.404...
 
     1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol
 
-    >>> get_apparent_volume_pitzer(4.0*unit('mol/kg'),1.0*unit('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
+    >>> get_apparent_volume_pitzer(4.0*unit.Quantity('mol/kg'),1.0*unit.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
     4.424...
 
     10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol
 
-    >>> get_apparent_volume_pitzer(10.0*unit('mol/kg'),10.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
+    >>> get_apparent_volume_pitzer(10.0*unit.Quantity('mol/kg'),10.0*unit.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     50.286...
 
     20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol
 
-    >>> get_apparent_volume_pitzer(20.0*unit('mol/kg'),20.0*unit('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
+    >>> get_apparent_volume_pitzer(20.0*unit.Quantity('mol/kg'),20.0*unit.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
     51.145...
 
     NOTE: the examples below are for comparison with experimental and modeling data presented in
@@ -588,7 +596,7 @@ def get_apparent_volume_pitzer(
 
     0.8 mol/kg NaF. Expected result = 0.03
 
-    >>> get_apparent_volume_pitzer(0.8*unit('mol/kg'),0.8*unit('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
+    >>> get_apparent_volume_pitzer(0.8*unit.Quantity('mol/kg'),0.8*unit.Quantity('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
     0.22595 ...
 
 
@@ -612,14 +620,14 @@ def get_apparent_volume_pitzer(
     """
     # TODO - find a cleaner way to make sure coefficients are assigned the proper units
     # if they aren't, the calculation gives very wrong results
-    alpha1 = alpha1 * unit("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * unit("kg ** 0.5 / mol ** 0.5")
-    b = b * unit("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * unit("kg ** 2 /mol ** 2 / dabar")
-    V_o = V_o * unit("cm ** 3 / mol")
+    alpha1 = alpha1 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    alpha2 = alpha2 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    b = b * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    C_phi = C_phi * unit.Quantity("kg ** 2 /mol ** 2 / dabar")
+    V_o = V_o * unit.Quantity("cm ** 3 / mol")
 
     # assign units appropriate for the volume parameter
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg /mol/dabar")
+    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit.Quantity("kg /mol/dabar")
 
     second_term = (
         (nu_cation + nu_anion)
@@ -632,7 +640,7 @@ def get_apparent_volume_pitzer(
         nu_cation
         * nu_anion
         * unit.R
-        * unit(temperature)
+        * unit.Quantity(temperature)
         * (2 * molality * BMX + molality**2 * C_phi * (nu_cation * nu_anion) ** 0.5)
     )
 
@@ -762,7 +770,7 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 #
 #    '''
 #    coeff = (beta1 * _pitzer_f2(alpha1 * ionic_strength ** 0.5) + beta2 * _pitzer_f2(alpha2 * ionic_strength ** 0.5)) / ionic_strength
-#    return coeff * unit('kg/mol')
+#    return coeff * unit.Quantity('kg/mol')
 
 
 def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
@@ -837,7 +845,7 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
 #    '''
 #
 #    coeff = C_phi / ( 2 * abs(z_cation * z_anion) ** 0.5 )
-#    return coeff * unit('kg ** 2 /mol ** 2')
+#    return coeff * unit.Quantity('kg ** 2 /mol ** 2')
 
 
 def _pitzer_log_gamma(
@@ -851,7 +859,7 @@ def _pitzer_log_gamma(
     nu_cation,
     nu_anion,
     temperature="25 degC",
-    b=unit("1.2 kg**0.5/mol**0.5"),
+    b=unit.Quantity("1.2 kg**0.5/mol**0.5"),
 ):
     """
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
@@ -956,12 +964,12 @@ def get_osmotic_coefficient_pitzer(
     --------
     Experimental value according to Beyer and Stieger reference is 1.3550
 
-    >>> get_osmotic_coefficient_pitzer(10.175*unit('mol/kg'),10.175*unit('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
+    >>> get_osmotic_coefficient_pitzer(10.175*unit.Quantity('mol/kg'),10.175*unit.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
     1.3552 ...
 
     Experimental value according to Beyer and Stieger reference is 1.084
 
-    >>> get_osmotic_coefficient_pitzer(5.6153*unit('mol/kg'),5.6153*unit('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
+    >>> get_osmotic_coefficient_pitzer(5.6153*unit.Quantity('mol/kg'),5.6153*unit.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
     1.0850 ...
 
     NOTE: the examples below are for comparison with experimental and modeling data presented in
@@ -969,17 +977,17 @@ def get_osmotic_coefficient_pitzer(
 
     10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.62
 
-    >>> get_osmotic_coefficient_pitzer(10*unit('mol/kg'),10*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_osmotic_coefficient_pitzer(10*unit.Quantity('mol/kg'),10*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6143 ...
 
     5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.7
 
-    >>> get_osmotic_coefficient_pitzer(5*unit('mol/kg'),5*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_osmotic_coefficient_pitzer(5*unit.Quantity('mol/kg'),5*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.6925 ...
 
     18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.555
 
-    >>> get_osmotic_coefficient_pitzer(18*unit('mol/kg'),18*unit('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
+    >>> get_osmotic_coefficient_pitzer(18*unit.Quantity('mol/kg'),18*unit.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
     0.5556 ...
 
     References:
@@ -1010,11 +1018,11 @@ def get_osmotic_coefficient_pitzer(
 
     """
     # assign proper units to alpha1, alpha2, and b
-    alpha1 = alpha1 * unit("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * unit("kg ** 0.5 / mol ** 0.5")
-    b = b * unit("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * unit("kg ** 2 /mol ** 2")
-    B_phi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit("kg/mol")
+    alpha1 = alpha1 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    alpha2 = alpha2 * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    b = b * unit.Quantity("kg ** 0.5 / mol ** 0.5")
+    C_phi = C_phi * unit.Quantity("kg ** 2 /mol ** 2")
+    B_phi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * unit.Quantity("kg/mol")
 
     first_term = 1 - _debye_parameter_osmotic(temperature) * abs(z_cation * z_anion) * ionic_strength**0.5 / (
         1 + b * ionic_strength**0.5

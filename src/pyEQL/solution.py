@@ -242,9 +242,6 @@ class Solution(MSONable):
 
         else:
             # add the new solute
-            # new_solute = sol.Solute(formula, amount, self.get_volume(), self.get_solvent_mass())
-            # self.components.update({new_solute.formula: new_solute})
-
             quantity = unit.Quantity(amount)
             mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
             target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
@@ -262,9 +259,6 @@ class Solution(MSONable):
     # and solvent_name will track which component it is.
     def add_solvent(self, formula, amount):
         """Same as add_solute but omits the need to pass solvent mass to pint."""
-        # new_solvent = sol.Solute(formula, amount, self.get_volume(), amount)
-        # self.components.update({new_solvent.formula: new_solvent})
-
         quantity = unit.Quantity(amount)
         mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
@@ -285,7 +279,7 @@ class Solution(MSONable):
         """
         self._temperature = unit.Quantity(temperature)
         # recalculate the volume
-        self._update_volume()
+        self.volume_update_required = True
 
     @property
     def pH(self) -> Quantity:
@@ -307,7 +301,7 @@ class Solution(MSONable):
         """
         self._pressure = unit.Quantity(pressure)
         # recalculate the volume
-        self._update_volume()
+        self.volume_update_required = True
 
     def get_solvent_mass(self):
         """
@@ -379,8 +373,8 @@ class Solution(MSONable):
         scale_factor = unit.Quantity(volume) / self.get_volume()
 
         # scale down the amount of all the solutes according to the factor
-        for solute, mol in self.components.items():
-            self.components[solute] = mol * scale_factor
+        for solute in self.components:
+            self.components[solute] *= scale_factor.magnitude
 
         # update the solution volume
         self.volume = unit.Quantity(volume)
@@ -549,10 +543,10 @@ class Solution(MSONable):
         # retrieve the parameters for the delta G equations
         params = self.get_property(salt.formula, "model_parameters.viscosity_eyring")
         if params is not None:
-            a0 = unit(params["a0"]["value"]).magnitude
-            a1 = unit(params["a1"]["value"]).magnitude
-            b0 = unit(params["b0"]["value"]).magnitude
-            b1 = unit(params["b1"]["value"]).magnitude
+            a0 = unit.Quantity(params["a0"]["value"]).magnitude
+            a1 = unit.Quantity(params["a1"]["value"]).magnitude
+            b0 = unit.Quantity(params["b0"]["value"]).magnitude
+            b1 = unit.Quantity(params["b1"]["value"]).magnitude
         else:
             # proceed with the coefficients equal to zero and log a warning
             logger.warning("Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula)
@@ -1055,8 +1049,6 @@ class Solution(MSONable):
         # the logic tests here ensure that only the required arguments are
         # passed to pint for the unit conversion. This avoids unnecessary
         # function calls.
-        if units == "mol":
-            return moles
         if units == "count":
             return round((moles * unit.N_A).to("dimensionless"), 0)
         if units == "fraction":
@@ -1064,17 +1056,15 @@ class Solution(MSONable):
         mw = unit.Quantity(self.get_property(solute, "molecular_weight")).to("g/mol")
         if units == "%":
             return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
-        if unit.Quantity(units).dimensionality in (
-            "[substance]/[length]**3",
-            "[mass]/[length]**3",
-        ):
-            return moles.to(units, "chem", mw=mw, volume=self.get_volume())
-        if unit.Quantity(units).dimensionality in ("[substance]/[mass]", "[mass]/[mass]"):
-            return moles.to(units, "chem", mw=mw, solvent_mass=self.get_solvent_mass())
-        if unit.Quantity(units).dimensionality == "[mass]":
-            return moles.to(units, "chem", mw=mw)
-        if unit.Quantity(units).dimensionality == "[substance]":
+        if unit.Quantity(units).check("[substance]"):
             return moles.to(units)
+        qty = unit.Quantity(units)
+        if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
+            return moles.to(units, "chem", mw=mw, volume=self.volume)
+        if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
+            return moles.to(units, "chem", mw=mw, solvent_mass=self.get_solvent_mass())
+        if qty.check("[mass]"):
+            return moles.to(units, "chem", mw=mw)
 
         logger.error("Unsupported unit specified for get_amount")
         return None
@@ -1800,7 +1790,7 @@ class Solution(MSONable):
                 D * (unit.e * unit.N_A) ** 2 * self.get_property(solute, "charge") ** 2 / (unit.R * self.temperature)
             )
         else:
-            molar_cond = unit("0 mS / cm / (mol/L)")
+            molar_cond = unit.Quantity("0 mS / cm / (mol/L)")
 
         logger.info(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
@@ -1898,7 +1888,7 @@ class Solution(MSONable):
             # where :math:`\mu` is the dynamic viscosity
             # assume that the base viscosity is that of pure water
             return (
-                unit(base_value)
+                unit.Quantity(base_value)
                 * self.temperature
                 / base_temperature
                 * self.water_substance.mu
@@ -2256,9 +2246,6 @@ class Solution(MSONable):
             String representing the temperature, e.g. '25 degC'
         """
         self.temperature = unit.Quantity(temperature)
-
-        # recalculate the volume
-        self._update_volume()
 
         # recalculate the volume
         self._update_volume()

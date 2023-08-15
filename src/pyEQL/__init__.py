@@ -34,7 +34,8 @@ and performing chemical thermodynamics computations.
 # per the pint documentation, it's important that pint and its associated Unit
 # Registry are only instantiated once.
 # here we assign the identifier 'unit' to the UnitRegistry
-unit = UnitRegistry()
+# the cache_folder arg is added to speed up registry instantiation
+unit = UnitRegistry(cache_folder=":auto:")
 # use this to enable legacy handling of offset units
 # TODO fix this to handle offsets the way pint wants us to since 0.7
 unit.autoconvert_offset_to_baseunit = True

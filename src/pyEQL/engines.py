@@ -99,18 +99,18 @@ class IdealEOS(EOS):
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
-        return unit("1 dimensionless")
+        return unit.Quantity("1 dimensionless")
 
     def get_osmotic_coefficient(self, solution):
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
         """
-        return unit("1 dimensionless")
+        return unit.Quantity("1 dimensionless")
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
-        return unit("0 L")
+        return unit.Quantity("0 L")
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
@@ -211,7 +211,7 @@ class NativeEOS(EOS):
         # show an error if no salt can be found that contains the solute
         if Salt is None:
             logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
-            return unit("1 dimensionless")
+            return unit.Quantity("1 dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
 
@@ -249,10 +249,10 @@ class NativeEOS(EOS):
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -307,7 +307,7 @@ class NativeEOS(EOS):
                 % solute
             )
 
-            molal = unit("1 dimensionless")
+            molal = unit.Quantity("1 dimensionless")
 
         return molal
 
@@ -438,10 +438,10 @@ class NativeEOS(EOS):
                     concentration,
                     alpha1,
                     alpha2,
-                    unit(param["Beta0"]["value"]).magnitude,
-                    unit(param["Beta1"]["value"]).magnitude,
-                    unit(param["Beta2"]["value"]).magnitude,
-                    unit(param["Cphi"]["value"]).magnitude,
+                    unit.Quantity(param["Beta0"]["value"]).magnitude,
+                    unit.Quantity(param["Beta1"]["value"]).magnitude,
+                    unit.Quantity(param["Beta2"]["value"]).magnitude,
+                    unit.Quantity(param["Cphi"]["value"]).magnitude,
                     item.z_cation,
                     item.z_anion,
                     item.nu_cation,
@@ -461,7 +461,7 @@ class NativeEOS(EOS):
                     "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
                     % item.formula
                 )
-                effective_osmotic_sum += concentration * unit("1 dimensionless")
+                effective_osmotic_sum += concentration * unit.Quantity("1 dimensionless")
 
         return effective_osmotic_sum / molality_sum
 
@@ -477,7 +477,7 @@ class NativeEOS(EOS):
             if rform == salt.anion:
                 anion = i
 
-        solute_vol = 0 * unit("L")
+        solute_vol = 0 * unit.Quantity("L")
 
         # use the pitzer approach if parameters are available
 
@@ -510,11 +510,11 @@ class NativeEOS(EOS):
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
-                unit(param["V_o"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["V_o"]["value"]).magnitude,
                 salt.z_cation,
                 salt.z_anion,
                 salt.nu_cation,
@@ -539,7 +539,7 @@ class NativeEOS(EOS):
         # or the parent salt, which is already accounted for by the Pitzer parameters
         for solute, mol in solution.components.items():
             # ignore water
-            if solute in ["H2O", "HOH"]:
+            if solute in ["H2O", "HOH", "H2O(aq)"]:
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
@@ -548,7 +548,7 @@ class NativeEOS(EOS):
 
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
-                solute_vol += part_vol * mol * unit("1 mol")
+                solute_vol += part_vol * mol * unit.Quantity("1 mol")
                 logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
