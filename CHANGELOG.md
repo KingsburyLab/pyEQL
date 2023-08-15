@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Solution`: add tests to confirm that solution density changes with temperature and pressure
 - `Solution`: add tests for `charge_balance`, `alkalinity`, `hardness`, `osmotic_pressure`, `p()`, and `conductivity`
+- `Solution`: `pE` attribute and kwarg
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation
   models. Models can be integrated into pyEQL by implementing an `EOS` class. The desired
@@ -19,20 +20,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parameters are not available) or `ideal` for a dummy engine that returns unit activity
   coefficients. Support for additional external engines such as [`phreeqpython`](https://github.com/Vitens/phreeqpython) is planned.
 - Add `pymatgen`, `monty`, and `maggma` as dependencies
-- Add pre-commit configuration and lint with `ruff`
+- Add `pre-commit` configuration
+- Add pull request template, new GitHub actions, and `tox -e autodocs` environment to serve and update docs in real time
+- Add pre-commit configuration and lint with `ruff` using  rulesets mostly borrowed from `pymatgen`
 - Add more comprehensive platform testing via `tox`
 
 ### Changed
 
-- `Solution.charge_balance` now returns in equivalents instead of Coulombs
+- Complete overhaul of the property database. The database is now distributed in a .json file containing serialize `Solute` objects. `Solution` can now be connected to this database (by default) or to any other `maggma` `Store` containing properly formatted data. `database.py`, `parameter.py`, and all the `.tsv` data files have been removed and replaced with `pyeql_db.json`.
+- Docs: update, change theme, convert to .md format, and adopt Keep a Changelog format
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace `elements.py`` with `pymatgen.core.periodic_table`
+- `Solution.charge_balance` now returns in equivalents instead of Coulombs
 - Migrate all tests to `pytest`
 - Update packaging format to use [pyscaffold](https://pyscaffold.org/en/stable/index.html)
 
 ### Deprecated
 
-- `Solution`: new properties `pressure`, `temperature`, `pE`, `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`, `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`, `dielectric_constant`, `charge_balance` have replaced the corresponding get_XXX and set_XXX (for temperature and pressure) methods, which will be removed in a future release. `get_viscosity_relative` will be removed entirely.
+- `Solution`: new properties `pressure`, `temperature`, `volume`, `pH`, `mass`, `density`, `viscosity_dynamic`, `viscosity_kinematic`, `ionic_strength`, `conductivity`, `debye_length`, `bjerrum_length`, `alkalinity`, `hardness`, `dielectric_constant`, `osmotic_pressure`, `solvent_mass`, `charge_balance` have replaced the corresponding get_XXX and set_XXX (for temperature and pressure) methods, which will be removed in a future release. `get_viscosity_relative` will be removed entirely.
 - `Solute`: methods `get_formal_charge()`, `get_name()`, and `get_molecular_weight()` have been
   replaced by direct access to the attributes `charge`, `formula`, and `mw`, respectively.
 
@@ -43,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed various documentation rendering issues
+- bug in `alkalinity`
 
 ## [0.5.2] - 2020-04-21
 
