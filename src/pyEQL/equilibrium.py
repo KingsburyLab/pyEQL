@@ -63,12 +63,12 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
     reference_temperature : Quantity, optional
                       the temperature at which equilibrium_constant is valid. (25 degrees C if omitted).
 
-    Returns:
+    Returns
     -------
     float
         adjusted reaction equilibrium constant
 
-    Notes:
+    Notes
     -----
     This function implements the Van't Hoff equation to adjust measured
     equilibrium constants to other temperatures.
@@ -77,9 +77,11 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
         ln(K2 / K1) = {\delta H \over R} ( {1 \over T_1} - {1 \over T_2} )
 
     This implementation assumes that the enthalpy is independent of temperature
-    over the range of interest.[1]
+    over the range of interest.
 
-    .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53.
+    References
+    ----------
+    Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53.
         Wiley Interscience, 1996.
 
     Examples:
@@ -127,7 +129,7 @@ def adjust_temp_arrhenius(
                       the temperature at which equilibrium_constant is valid
                       Defaults to 25 degrees C if omitted.
 
-    Returns:
+    Returns
     -------
     Quantity
         The adjusted reaction equilibrium constant
@@ -136,16 +138,20 @@ def adjust_temp_arrhenius(
     --------
     kelvin
 
-    Notes:
+    Notes
     -----
     This function implements the Arrhenius equation to adjust measured rate
-    constants to other temperatures. [1]
+    constants to other temperatures.
+    TODO - add better reference
 
     .. math::
-        ln(K2 / K1) = {E_a \over R} ( {1 \over T_1} - {1 \over T_2} )
+        ln(\\frac{K2}{K1} = \\frac{E_a}{R} ( \\frac{1}{T_{1}} - {\\frac{1}{T_2}} )
 
-    .. [1] http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
-    TODO - add better reference
+    References
+    ----------
+
+    http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
+
 
     Examples:
     --------
@@ -165,64 +171,59 @@ def adjust_temp_arrhenius(
 
 
 def alpha(n, pH, pKa_list):
-    """(int,number,list of numbers)
-        Returns the acid-base distribution coefficient (alpha) of an acid in the
+    """Returns the acid-base distribution coefficient (alpha) of an acid in the
         n-deprotonated form at a given pH.
 
-        Parameters
-        ----------
-        n : int
-            The number of protons that have been lost by the desired form of the
-            acid. Also the subscript on the alpha value. E.g. for bicarbonate
-            (HCO3-), n=1 because 1 proton has been lost from the fully-protonated
-            carbonic acid (H2CO3) form.
-        pH : float or int
-             The pH of the solution.
-        pKa_list : list of floats or ints
-                   The pKa values (negative log of equilibrium constants) for the acid
-                   of interest. There must be a minimum of n pKa values in the list.
+    Parameters
+    ----------
+    n : int
+        The number of protons that have been lost by the desired form of the
+        acid. Also the subscript on the alpha value. E.g. for bicarbonate
+        (HCO3-), n=1 because 1 proton has been lost from the fully-protonated
+        carbonic acid (H2CO3) form.
+    pH : float or int
+            The pH of the solution.
+    pKa_list : list of floats or ints
+                The pKa values (negative log of equilibrium constants) for the acid
+                of interest. There must be a minimum of n pKa values in the list.
 
-    Returns:
-        -------
+    Returns
+    -------
         float
             The fraction of total acid present in the specified form.
 
-    Notes:
-        -----
-        The acid-base distribution coefficient is calculated as follows:[1]
+    Notes
+    -----
+        The acid-base cient is calculated as follows: [stm]_
 
         .. math::
-            \alpha_n = {term_n \\over [H+]^n + k_{a1}[H+]^n-1 + k_{a1}k_{a2}[H+]^n-2 ... k_{a1}k_{a2}...k_{an} }
+
+            \\alpha_n = \\frac{term_n}{[H+]^n + k_{a1}[H+]^{n-1} + k_{a1}k_{a2}[H+]^{n-2} ... k_{a1}k_{a2}...k_{an} }
 
         Where :math: '\term_n' refers to the nth term in the denominator, starting from 0
 
-        .. [1] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
-            pp 127-130. Wiley Interscience, 1996.
+    References
+    ----------
+        .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 127-130. Wiley Interscience, 1996.
 
     Examples:
-        --------
-        >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
-        0.999...
+    --------
+    >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
+    0.999...
 
-        The sum of all alpha values should equal 1
+    The sum of all alpha values should equal 1
 
-        >>> alpha(0,8,[6.35,10.33]) #doctest: +ELLIPSIS
-        0.021...
-        >>> alpha(1,8,[6.35,10.33]) #doctest: +ELLIPSIS
-        0.979...
-        >>> alpha(2,8,[6.35,10.33]) #doctest: +ELLIPSIS
-        2.043...e-09
+    >>> alpha(0,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    0.021...
+    >>> alpha(1,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    0.979...
+    >>> alpha(2,8,[6.35,10.33]) #doctest: +ELLIPSIS
+    2.043...e-09
 
-        If pH is equal to one of the pKa values the function should return 0.5.
+    If pH is equal to one of the pKa values the function should return 0.5.
 
-        >>> alpha(1,6.35,[6.35,10.33])
-        0.5
-
-    #     The function will return an error if the number ofpKa's is less than n.
-    #
-    #     >>> alpha(2,8,[])
-    #     ERROR: insufficient number of pKa values given
-    #     0.5
+    >>> alpha(1,6.35,[6.35,10.33])
+    0.5
 
     """
     # generate an error if no pKa values are specified
