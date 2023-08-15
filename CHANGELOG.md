@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: add tests for `charge_balance`, `alkalinity`, `hardness`
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation
   models. Models can be integrated into pyEQL by implementing an `EOS` class. The desired
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Solution.charge_balance` now returns in equivalents instead of Coulombs
 - Replace `water_properties.py` with [iapws](https://github.com/jjgomera/iapws) package
 - Replace `elements.py`` with `pymatgen.core.periodic_table`
 - Migrate all tests to `pytest`

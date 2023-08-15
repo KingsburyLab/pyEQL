@@ -30,6 +30,24 @@ def s3():
 def s4():
     return Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
+@pytest.fixture()
+def s5():
+    # 100 mg/L as CaCO3
+    return Solution([["Ca+2", "40 mg/L"], ["CO3-2", "60 mg/L"]], volume="1 L")
+
+@pytest.fixture()
+def s6():
+    # non-electroneutral solution with lots of hardness
+    # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
+    # charge balance = 2+10+10+10-120-20-12 = -120 meq/L
+    return Solution([["Ca+2", "1 mM"], # 2 meq/L
+                     ["Mg+2", "5 mM"], # 10 meq/L
+                     ["Na+1", "10 mM"], # 10 meq/L
+                     ["Ag+1", "10 mM"], # no contribution to alk or hardness
+                     ["CO3-2", "6 mM"], # no contribution to alk or hardness
+                     ["SO4-2", "60 mM"], # -120 meq/L
+                     ["Br-", "20 mM"]], # -20 meq/L
+                     volume="1 L") 
 
 def test_empty_solution_3():
     # create an empty solution
@@ -85,6 +103,18 @@ def test_solute_addition(s2, s3, s4):
     result_mol = s4.solvent_mass.to("kg").magnitude
     assert result_molL < result_mol
 
+def test_alkalinity_hardness_chargebalance(s3, s5, s6):
+    assert np.isclose(s3.charge_balance, 0)
+    assert np.isclose(s3.hardness, 0)
+    assert np.isclose(s3.alkalinity, 0)
+
+    assert np.isclose(s5.alkalinity.magnitude, 100, rtol=0.005)
+    assert np.isclose(s5.hardness.magnitude, 100, rtol=0.005)
+    assert np.isclose(s5.charge_balance, 0, atol=1e-5)
+
+    assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
+    assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
+    assert np.isclose(s6.charge_balance, -0.12)
 
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)

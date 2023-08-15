@@ -25,6 +25,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
+EQUIV_WT_CACO3 = 100.09 / 2 * unit.Quantity("g/mol")
 
 class Solution(MSONable):
     """
@@ -650,24 +651,23 @@ class Solution(MSONable):
         on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
         have a small nonzero value. It is calculated according to:
 
-        .. math:: CB = F \\sum_i n_i z_i
+        .. math:: CB = \\sum_i n_i z_i
 
-        where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
+        where :math:`n_i` is the number of moles, and :math:`z_i` is the charge on species i.
 
         Returns
         -------
         float :
-            The charge balance of the solution, in equivalents.
+            The charge balance of the solution, in equivalents (mol of charge).
 
         """
         charge_balance = 0
-        F = (unit.e * unit.N_A).magnitude
         for solute in self.components:
-            charge_balance += self.get_amount(solute, "mol").magnitude * self.get_property(solute, "charge") * F
+            charge_balance += self.get_amount(solute, "mol").magnitude * self.get_property(solute, "charge")
 
-        return charge_balance
+        return charge_balance.magnitude
 
-    # TODO - need tests for alkalinity
+    # TODO - consider adding guard statements to prevent alkalinity from being negative
     @property
     def alkalinity(self):
         """
@@ -682,10 +682,10 @@ class Solution(MSONable):
         -----
         The alkalinity is calculated according to [stm]_
 
-        .. math::   Alk = F \\sum_{i} z_{i} C_{B} - \\sum_{i} z_{i} C_{A}
+        .. math::   Alk = \\sum_{i} z_{i} C_{B} + \\sum_{i} z_{i} C_{A}
 
         Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and anions, respectively
-        (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their charge.
+        (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
         In this method, the set of conservative cations is all Group I and Group II cations, and the
         conservative anions are all the anions of strong acids.
 
@@ -696,34 +696,32 @@ class Solution(MSONable):
 
         """
         alkalinity = 0 * unit.Quantity("mol/L")
-        equiv_wt_CaCO3 = 100.09 / 2 * unit.Quantity("g/mol")
-
-        base_cations = [
-            "Li+",
-            "Na+",
-            "K+",
-            "Rb+",
-            "Cs+",
-            "Fr+",
-            "Be+2",
-            "Mg+2",
-            "Ca+2",
-            "Sr+2",
-            "Ba+2",
-            "Ra+2",
-        ]
-        acid_anions = ["Cl-", "Br-", "I-", "SO4-2", "NO3-", "ClO4-", "ClO3-"]
+ 
+        base_cations = {
+            "Li[+1]",
+            "Na[+1]",
+            "K[+1]",
+            "Rb[+1]",
+            "Cs[+1]",
+            "Fr[+1]",
+            "Be[+2]",
+            "Mg[+2]",
+            "Ca[+2]",
+            "Sr[+2]",
+            "Ba[+2]",
+            "Ra[+2]",
+        }
+        acid_anions = {"Cl[-1]", "Br[-1]", "I[-1]", "SO4[-2]", "NO3[-1]", "ClO4[-1]", "ClO3[-1]"}
 
         for item in self.components:
-            if item in base_cations:
+            # sanitize the formulas
+            rform = Ion.from_formula(item).reduced_formula
+            if rform in base_cations.union(acid_anions):
                 z = self.get_property(item, "charge")
                 alkalinity += self.get_amount(item, "mol/L") * z
-            if item in acid_anions:
-                z = self.get_property(item, "charge")
-                alkalinity -= self.get_amount(item, "mol/L") * z
 
         # convert the alkalinity to mg/L as CaCO3
-        return (alkalinity * equiv_wt_CaCO3).to("mg/L")
+        return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
     @property
     def hardness(self):
@@ -747,7 +745,7 @@ class Solution(MSONable):
 
         """
         hardness = 0 * unit.Quantity("mol/L")
-        equiv_wt_CaCO3 = 100.09 / 2 * unit.Quantity("g/mol")
+        
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -755,7 +753,7 @@ class Solution(MSONable):
                 hardness += z * self.get_amount(item, "mol/L")
 
         # convert the hardness to mg/L as CaCO3
-        return (hardness * equiv_wt_CaCO3).to("mg/L")
+        return (hardness * EQUIV_WT_CACO3).to("mg/L")
 
     @property
     def debye_length(self) -> Quantity:
