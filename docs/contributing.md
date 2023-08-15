@@ -13,7 +13,7 @@ using the [issue tracker](https://github.com/rkingsbury/pyEQL/issues) on [github
 To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow) workflow model.
 
 
-### Hacking pyEQL in Six Easy Steps:
+### Hacking pyEQL, step by step
 
 1. [Fork the pyEQL repository](https://help.github.com/articles/fork-a-repo/) on Github
 
@@ -23,7 +23,13 @@ To contribute bug fixes, documentation enhancements, or new code, please fork py
    git clone https://github.com/<username>/pyEQL
    ```
 
-3. Create a branch for your work. Preferably, start your branch name with "feature-", "fix-", or "doc-" depending on whether you are contributing **bug fixes**, **documentation** or a **new feature**, e.g.
+3. Install the package and the test dependencies by running the following command from the repository directory:
+
+   ```
+   pip install -e '.[testing]``
+   ```
+
+4. Create a branch for your work. Preferably, start your branch name with "feature-", "fix-", or "doc-" depending on whether you are contributing **bug fixes**, **documentation** or a **new feature**, e.g.
    prefix your branch with "fix-" or "doc-" as appropriate:
 
    ```
@@ -38,15 +44,15 @@ To contribute bug fixes, documentation enhancements, or new code, please fork py
    git checkout -b feature-myfeature
    ```
 
-4. Hack away until you're satisfied.
+5. Make changes to the code until you're satisfied.
 
-5. Push your work back to Github:
+6. Push your work back to Github:
 
    ```
    git push origin feature-myfeature
    ```
 
-6. Create a pull request with your changes. See [this tutorial](https://yangsu.github.io/pull-request-tutorial) for instructions.
+7. Create a pull request with your changes. See [this tutorial](https://yangsu.github.io/pull-request-tutorial) for instructions.
 
 
 ## Guidelines
@@ -65,9 +71,13 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 - Update the `CHANGELOG.md` file.
 
-- Ask questions and be open to feedback! 
+- Ask questions and be open to feedback!
+
+## Documentation
+
+Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to http://localhost:8000/ so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
 
 
 ## Changelog
 
-We keep a CHANGELOG.md file in the base directory of the repository. Before submitting your PR, be sure to update the CHANGELOG.md file under the "Unreleased" section with a brief description of your changes. Our CHANGELOG.md file lossely follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, beginning with `v0.6.0`.
+We keep a `CHANGELOG.md` file in the base directory of the repository. Before submitting your PR, be sure to update the `CHANGELOG.md` file under the "Unreleased" section with a brief description of your changes. Our `CHANGELOG.md` file lossely follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, beginning with `v0.6.0`.

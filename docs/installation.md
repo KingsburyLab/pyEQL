@@ -31,7 +31,6 @@ This should automatically pull in the required [dependencies](#other-dependencie
 :::{important}
 If you are NOT using a `conda` environment, may have to run 'pip3' rather than 'pip'. This will be the case if Python 2.x and Python 3.x are installed side-by-side on your system.
 You can tell if this is the case by typing the following command:
-:::
 
 ```
 $ python --version

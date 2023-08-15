@@ -176,14 +176,15 @@ html_theme = "sphinx_material"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "sidebar_width": "300px",
-    "page_width": "1200px",
+    # "sidebar_width": "300px",
+    # "page_width": "1200px",
     'base_url': 'https://pyeql.readthedocs.io/en/latest/',
     'repo_url': 'https://github.com/rkingsbury/pyEQL/',
     'repo_name': 'pyEQL',
+    'logo_icon': '&#xf876',
     'html_minify': True,
     'css_minify': True,
-    'nav_title': 'pyEQL',
+    'nav_title': 'pyEQL: a human-friendly python interface for solution chemistry',
     'color_primary': "blue",
     'color_accent': "light-blue",
 }
@@ -203,7 +204,7 @@ html_sidebars = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = ""
+# html_logo = "../pyeql-logo.svg"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
