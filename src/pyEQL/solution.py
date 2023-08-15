@@ -298,6 +298,13 @@ class Solution(MSONable):
             temperature: pint-compatible string, e.g. '25 degC'
         """
         self._temperature = unit.Quantity(temperature)
+
+        # update the water substance
+        self.water_substance = IAPWS95(
+            T=self.temperature.magnitude,
+            P=self.pressure.to("MPa").magnitude,
+        )
+
         # recalculate the volume
         self.volume_update_required = True
 
@@ -315,6 +322,13 @@ class Solution(MSONable):
             pressure: pint-compatible string, e.g. '1.2 atmC'
         """
         self._pressure = unit.Quantity(pressure)
+
+        # update the water substance
+        self.water_substance = IAPWS95(
+            T=self.temperature.magnitude,
+            P=self.pressure.to("MPa").magnitude,
+        )
+
         # recalculate the volume
         self.volume_update_required = True
 

@@ -8,7 +8,7 @@ used by pyEQL's Solution class
 
 import numpy as np
 import pytest
-from pyEQL import Solution
+from pyEQL import Solution, unit
 
 
 @pytest.fixture()
@@ -115,6 +115,16 @@ def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
     assert np.isclose(s6.charge_balance, -0.12)
+
+def test_pressure_temperature(s5):
+    orig_V = s5.volume
+    s5.temperature = '50 degC'
+    assert s5.temperature == unit.Quantity('50 degC')
+    assert s5.volume > orig_V
+    intermediate_V = s5.volume
+    s5.pressure = '2 atm'
+    assert s5.pressure == unit.Quantity('2 atm')
+    assert s5.volume < intermediate_V
 
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
