@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Solution`: add tests to confirm that solution density changes with temperature and pressure
-- `Solution`: add tests for `charge_balance`, `alkalinity`, `hardness`
+- `Solution`: add tests for `charge_balance`, `alkalinity`, `hardness`, `osmotic_pressure`, `p()`, and `conductivity`
 - `Solution`: add support for passing solutes as a `dict`
 - Implement extensible system for connecting `Solution` to various activity and speciation
   models. Models can be integrated into pyEQL by implementing an `EOS` class. The desired

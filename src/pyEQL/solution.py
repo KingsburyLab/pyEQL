@@ -591,7 +591,7 @@ class Solution(MSONable):
         EC = 0 * unit.Quantity("S/m")
 
         for item in self.components:
-            z = abs(z=self.get_property(item, "charge"))
+            z = abs(self.get_property(item, "charge"))
             # ignore uncharged species
             if z != 0:
                 # determine the value of the exponent alpha
@@ -893,6 +893,7 @@ class Solution(MSONable):
             <Quantity(906516.7318131207, 'pascal')>
         """
         partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
+        print(partial_molar_volume_water)
 
         osmotic_pressure = (
             -1 * unit.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
@@ -1477,7 +1478,7 @@ class Solution(MSONable):
                 "dimensionless"
             )
         if scale == "rational":
-            return molal * (1 + unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
+            return molal * (1 + unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
         logger.warning("Invalid scale argument. Returning molal-scale activity coefficient")
         return molal
@@ -1560,14 +1561,14 @@ class Solution(MSONable):
         if scale == "rational":
             return (
                 -molal_phi
-                * unit.Quantity("0.018 kg/mol")
+                * unit.Quantity("0.018015 kg/mol")
                 * self.get_total_moles_solute()
                 / self.solvent_mass
                 / math.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
             return math.exp(
-                -molal_phi * unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.solvent_mass
+                -molal_phi * unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
             )
 
@@ -1732,6 +1733,17 @@ class Solution(MSONable):
                 return Ion.from_formula(solute).charge
             if name == "molecular_weight":
                 return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
+            if name == "size.molar_volume" and rform == "H2O(aq)":
+                # calculate the partial molar volume for water since it isn't in the database
+                vol = (
+                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
+                    / (self.water_substance.rho
+                    * unit.Quantity("1 g/L"))
+                )
+
+                return vol.to("cm **3 / mol")
+
+                
 
             logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
@@ -1761,19 +1773,8 @@ class Solution(MSONable):
         # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
         # return unit.Quantity("0 m**2/s")
 
-        # just return the base-value molar volume for now; find a way to adjust for
-        # concentration later
+        # just return the base-value molar volume for now; find a way to adjust for concentration later
         if name == "size.molar_volume":
-            # calculate the partial molar volume for water since it isn't in the database
-            if rform == "H2O(aq)":
-                vol = (
-                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
-                    / self.water_substance.rho
-                    * unit.Quantity("1 g/L")
-                )
-
-                return vol.to("cm **3 / mol")
-
             base_value = unit.Quantity(data["size"]["molar_volume"]["value"])
             if self.temperature != base_temperature:
                 logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)

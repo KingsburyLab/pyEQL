@@ -537,11 +537,11 @@ class Test_activity_pitzer_nacl:
         ]
 
         for i, conc in enumerate(conc_list):
-            conc = str(conc) + "mol/kg"
-            sol = Solution()
-            sol.add_solute("Na+", conc)
-            sol.add_solute("Cl-", conc)
+            sol = Solution({"Na+": f"{conc} mol/kg", "Cl-": f"{conc} mol/kg",})
             result = sol.get_water_activity()
             expected = phreeqc_pitzer_water_activity[i]
 
             assert np.isclose(result, expected, rtol=0.05)
+            # to get pi in Pa, need V_w in m3/mol
+            osmotic_pressure = -8.314*298.15/0.000018015 * np.log(result)
+            assert np.isclose(sol.osmotic_pressure.to('Pa').magnitude, osmotic_pressure, rtol=0.05), f"{osmotic_pressure}"

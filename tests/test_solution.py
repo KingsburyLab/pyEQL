@@ -126,6 +126,29 @@ def test_pressure_temperature(s5):
     assert s5.pressure == unit.Quantity('2 atm')
     assert s5.volume < intermediate_V
 
+def test_p(s2):
+    assert np.isclose(s2.p('Na+'), -1*np.log10(s2.get_activity('Na+')))
+    assert np.isclose(s2.p('Na+', activity=False), -1*np.log10(s2.get_amount('Na+','M').magnitude))
+    assert np.isclose(s2.p('Mg++'), 0)
+
+def test_conductivity(s1, s2):
+    # even an empty solution should have some conductivity
+    assert s1.conductivity > 0
+    # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
+    s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02) #conductivity is in S/m
+
+    # TODO - expected failures due to limited temp adjustment of diffusion coeff
+    # s_kcl.temperature = '5 degC'
+    # assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+
+    # s_kcl.temperature = '50 degC'
+    # assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.02)
+
+    # TODO - conductivity model not very accurate at high conc.
+    s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
+    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
     s1_new = Solution.from_dict(s1.as_dict())

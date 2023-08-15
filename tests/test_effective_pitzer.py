@@ -102,7 +102,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -140,7 +140,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -178,7 +178,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -217,7 +217,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)

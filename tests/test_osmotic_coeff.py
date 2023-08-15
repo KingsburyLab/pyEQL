@@ -13,6 +13,16 @@ import numpy as np
 import pyEQL
 
 
+def test_osmotic_pressure():
+    """
+    The osmotic pressure of seawater is approximately 27 atm
+    """
+    # TODO - at present this test is inaccurate because in the complex matrix
+    # of seawater, pyEQL falls back to using an ideal solution model with
+    # unit osmotic coefficient.
+    sea = pyEQL.autogenerate('seawater')
+    assert np.isclose(sea.osmotic_pressure.to('atm').magnitude, 27, rtol=0.15)
+
 class Test_osmotic_pitzer:
     """
     test osmotic coefficient based on the Pitzer model
