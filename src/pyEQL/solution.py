@@ -193,125 +193,33 @@ class Solution(MSONable):
         elif self._solutes is not None:
             raise ValueError("Solutes must be given as a list or dict!")
 
-    def add_solute(self, formula, amount):
-        """Primary method for adding substances to a pyEQL solution.
-
-        Parameters
-        ----------
-        formula : str
-                    Chemical formula for the solute.
-                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
-        amount : str
-                    The amount of substance in the specified unit system. The string should contain both a quantity and
-                    a pint-compatible representation of a unit. e.g. '5 mol/kg' or '0.1 g/L'
-        """
-        # if units are given on a per-volume basis,
-        # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration
-        if unit.Quantity(amount).dimensionality in (
-            "[substance]/[length]**3",
-            "[mass]/[length]**3",
-        ):
-            # store the original volume for later
-            orig_volume = self.volume
-
-            # add the new solute
-            quantity = unit.Quantity(amount)
-            mw = self.get_property(formula, "molecular_weight")  # returns a quantity
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
-            self.components[formula] = target_mol.to("moles").magnitude
-
-            # calculate the volume occupied by all the solutes
-            solute_vol = self._get_solute_volume()
-
-            # determine the volume of solvent that will preserve the original volume
-            target_vol = orig_volume - solute_vol
-
-            # adjust the amount of solvent
-            # density is returned in kg/m3 = g/L
-            target_mass = target_vol.to("L").magnitude * self.water_substance.rho * unit.Quantity("1 g")
-            # mw = unit.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
-            mw = self.get_property(self.solvent, "molecular_weight")
-            if mw is None:
-                raise ValueError(
-                    f"Molecular weight for solvent {self.solvent} not found in database. This is required to proceed."
-                )
-            target_mol = target_mass.to("g") / mw.to("g/mol")
-            self.components[self.solvent] = target_mol.magnitude
-
-        else:
-            # add the new solute
-            quantity = unit.Quantity(amount)
-            mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
-            self.components[formula] = target_mol.to("moles").magnitude
-
-            # update the volume to account for the space occupied by all the solutes
-            # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit.Quantity("0 kg"):
-                logger.error("All solvent has been depleted from the solution")
-                return
-            # set the volume recalculation flag
-            self.volume_update_required = True
-
-    # TODO - deprecate this method. Solvent should be added to the dict like anything else
-    # and solvent_name will track which component it is.
-    def add_solvent(self, formula, amount):
-        """Same as add_solute but omits the need to pass solvent mass to pint."""
-        quantity = unit.Quantity(amount)
-        mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
-        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.get_solvent_mass())
-        self.components[formula] = target_mol.to("moles").magnitude
-
     @property
-    def temperature(self) -> Quantity:
-        """Return the temperature of the solution in Kelvin."""
-        return self._temperature.to("K")
-
-    @temperature.setter
-    def temperature(self, temperature: str):
+    def mass(self) -> Quantity:
         """
-        Set the solution temperature.
+        Return the total mass of the solution.
 
-        Args:
-            temperature: pint-compatible string, e.g. '25 degC'
-        """
-        self._temperature = unit.Quantity(temperature)
-        # recalculate the volume
-        self.volume_update_required = True
-
-    @property
-    def pH(self) -> Quantity:
-        """Return the pH of the solution."""
-        return self.p("H+", activity=True)
-
-    @property
-    def pressure(self) -> Quantity:
-        """Return the hydrostatic pressure of the solution in atm."""
-        return self._pressure.to("atm")
-
-    @pressure.setter
-    def pressure(self, pressure: str):
-        """
-        Set the solution pressure.
-
-        Args:
-            pressure: pint-compatible string, e.g. '1.2 atmC'
-        """
-        self._pressure = unit.Quantity(pressure)
-        # recalculate the volume
-        self.volume_update_required = True
-
-    def get_solvent_mass(self):
-        """
-        Return the mass of the solvent.
-
-        This method is used whenever mol/kg (or similar) concentrations
-        are requested by get_amount()
-
+        The mass is calculated each time this method is called.
         Parameters
         ----------
         None
+
+        Returns
+        -------
+        Quantity: the mass of the solution, in kg
+
+        """
+        total_mass = 0
+        for item in self.components:
+            total_mass += self.get_amount(item, "kg")
+        return total_mass.to("kg")
+
+    @property
+    def solvent_mass(self):
+        """
+        Return the mass of the solvent.
+
+        This property is used whenever mol/kg (or similar) concentrations
+        are requested by get_amount()
 
         Returns
         -------
@@ -322,9 +230,10 @@ class Solution(MSONable):
         :py:meth:`get_amount()`
         """
         # return the total mass (kg) of the solvent
-        mw = self.get_property(self.solvent, "molecular_weight").to("kg/mol").magnitude
+        # mw = self.get_property(self.solvent, "molecular_weight").to("kg/mol").magnitude
 
-        return self.components[self.solvent] * mw * unit.Quantity("1 kg")
+        # return self.components[self.solvent] * mw * unit.Quantity("1 kg")
+        return self.get_amount(self.solvent, "kg")
 
     @property
     def volume(self) -> Quantity:
@@ -375,24 +284,78 @@ class Solution(MSONable):
         self._volume *= scale_factor.magnitude
 
     @property
-    def mass(self) -> Quantity:
-        """
-        Return the total mass of the solution.
+    def temperature(self) -> Quantity:
+        """Return the temperature of the solution in Kelvin."""
+        return self._temperature.to("K")
 
-        The mass is calculated each time this method is called.
+    @temperature.setter
+    def temperature(self, temperature: str):
+        """
+        Set the solution temperature.
+
+        Args:
+            temperature: pint-compatible string, e.g. '25 degC'
+        """
+        self._temperature = unit.Quantity(temperature)
+        # recalculate the volume
+        self.volume_update_required = True
+
+    @property
+    def pressure(self) -> Quantity:
+        """Return the hydrostatic pressure of the solution in atm."""
+        return self._pressure.to("atm")
+
+    @pressure.setter
+    def pressure(self, pressure: str):
+        """
+        Set the solution pressure.
+
+        Args:
+            pressure: pint-compatible string, e.g. '1.2 atmC'
+        """
+        self._pressure = unit.Quantity(pressure)
+        # recalculate the volume
+        self.volume_update_required = True
+
+    @property
+    def pH(self) -> Quantity:
+        """Return the pH of the solution."""
+        return self.p("H+", activity=True)
+
+    def p(self, solute, activity=True):
+        """
+        Return the negative log of the activity of solute.
+
+        Generally used for expressing concentration of hydrogen ions (pH)
+
         Parameters
         ----------
-        None
+        solute : str
+            String representing the formula of the solute
+        activity: bool, optional
+            If False, the function will use the molar concentration rather
+            than the activity to calculate p. Defaults to True.
 
         Returns
         -------
-        Quantity: the mass of the solution, in kg
+        Quantity
+            The negative log10 of the activity (or molar concentration if
+            activity = False) of the solute.
+
+        Examples:
+        --------
+
+        Todo:
 
         """
-        total_mass = 0
-        for item in self.components:
-            total_mass += self.get_amount(item, "kg")
-        return total_mass.to("kg")
+        try:
+            if activity is True:
+                return -1 * math.log10(self.get_activity(solute))
+            if activity is False:
+                return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
+        # if the solute has zero concentration, the log will generate a ValueError
+        except ValueError:
+            return 0
 
     @property
     def density(self) -> Quantity:
@@ -886,7 +849,8 @@ class Solution(MSONable):
         )
         return bjerrum_length.to("nm")
 
-    def get_osmotic_pressure(self):
+    @property
+    def osmotic_pressure(self):
         """
         Return the osmotic pressure of the solution relative to pure water.
 
@@ -915,11 +879,11 @@ class Solution(MSONable):
 
         Examples:
             >>> s1=pyEQL.Solution()
-            >>> s1.get_osmotic_pressure()
+            >>> s1.osmotic_pressure
             0.0
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-            >>> soln.get_osmotic_pressure()
+            >>> soln.osmotic_pressure
             <Quantity(906516.7318131207, 'pascal')>
         """
         # TODO - tie this into parameter() and solvent() objects
@@ -934,41 +898,6 @@ class Solution(MSONable):
         return osmotic_pressure.to("Pa")
 
     # Concentration  Methods
-
-    def p(self, solute, activity=True):
-        """
-        Return the negative log of the activity of solute.
-
-        Generally used for expressing concentration of hydrogen ions (pH)
-
-        Parameters
-        ----------
-        solute : str
-            String representing the formula of the solute
-        activity: bool, optional
-            If False, the function will use the molar concentration rather
-            than the activity to calculate p. Defaults to True.
-
-        Returns
-        -------
-        Quantity
-            The negative log10 of the activity (or molar concentration if
-            activity = False) of the solute.
-
-        Examples:
-        --------
-
-        Todo:
-
-        """
-        try:
-            if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            if activity is False:
-                return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
-        # if the solute has zero concentration, the log will generate a ValueError
-        except ValueError:
-            return 0
 
     def get_amount(self, solute, units):
         """
@@ -1005,7 +934,6 @@ class Solution(MSONable):
         get_total_amount
         get_osmolarity
         get_osmolality
-        get_solvent_mass
         get_mass
         get_total_moles_solute
         """
@@ -1038,7 +966,7 @@ class Solution(MSONable):
         if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
             return moles.to(units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
-            return moles.to(units, "chem", mw=mw, solvent_mass=self.get_solvent_mass())
+            return moles.to(units, "chem", mw=mw, solvent_mass=self.solvent_mass)
         if qty.check("[mass]"):
             return moles.to(units, "chem", mw=mw)
 
@@ -1104,6 +1032,76 @@ class Solution(MSONable):
 
         return TOT
 
+    def add_solute(self, formula, amount):
+        """Primary method for adding substances to a pyEQL solution.
+
+        Parameters
+        ----------
+        formula : str
+                    Chemical formula for the solute.
+                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+        amount : str
+                    The amount of substance in the specified unit system. The string should contain both a quantity and
+                    a pint-compatible representation of a unit. e.g. '5 mol/kg' or '0.1 g/L'
+        """
+        # if units are given on a per-volume basis,
+        # iteratively solve for the amount of solute that will preserve the
+        # original volume and result in the desired concentration
+        if unit.Quantity(amount).dimensionality in (
+            "[substance]/[length]**3",
+            "[mass]/[length]**3",
+        ):
+            # store the original volume for later
+            orig_volume = self.volume
+
+            # add the new solute
+            quantity = unit.Quantity(amount)
+            mw = self.get_property(formula, "molecular_weight")  # returns a quantity
+            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+            self.components[formula] = target_mol.to("moles").magnitude
+
+            # calculate the volume occupied by all the solutes
+            solute_vol = self._get_solute_volume()
+
+            # determine the volume of solvent that will preserve the original volume
+            target_vol = orig_volume - solute_vol
+
+            # adjust the amount of solvent
+            # density is returned in kg/m3 = g/L
+            target_mass = target_vol.to("L").magnitude * self.water_substance.rho * unit.Quantity("1 g")
+            # mw = unit.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
+            mw = self.get_property(self.solvent, "molecular_weight")
+            if mw is None:
+                raise ValueError(
+                    f"Molecular weight for solvent {self.solvent} not found in database. This is required to proceed."
+                )
+            target_mol = target_mass.to("g") / mw.to("g/mol")
+            self.components[self.solvent] = target_mol.magnitude
+
+        else:
+            # add the new solute
+            quantity = unit.Quantity(amount)
+            mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
+            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+            self.components[formula] = target_mol.to("moles").magnitude
+
+            # update the volume to account for the space occupied by all the solutes
+            # make sure that there is still solvent present in the first place
+            if self.solvent_mass <= unit.Quantity("0 kg"):
+                logger.error("All solvent has been depleted from the solution")
+                return
+            # set the volume recalculation flag
+            self.volume_update_required = True
+
+    # TODO - deprecate this method. Solvent should be added to the dict like anything else
+    # and solvent_name will track which component it is.
+    def add_solvent(self, formula, amount):
+        """Same as add_solute but omits the need to pass solvent mass to pint."""
+        quantity = unit.Quantity(amount)
+        mw = unit.Quantity(self.get_property(formula, "molecular_weight"))
+        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+        self.components[formula] = target_mol.to("moles").magnitude
+
     def add_amount(self, solute, amount):
         """
         Add the amount of 'solute' to the parent solution.
@@ -1142,7 +1140,7 @@ class Solution(MSONable):
                     "chem",
                     mw=unit.Quantity(self.get_property(solute, "molecular_weight")),
                     volume=self.volume,
-                    solvent_mass=self.get_solvent_mass(),
+                    solvent_mass=self.solvent_mass,
                 )
                 .magnitude
             )
@@ -1178,7 +1176,7 @@ class Solution(MSONable):
                     "chem",
                     mw=unit.Quantity(self.get_property(solute, "molecular_weight")),
                     volume=self.volume,
-                    solvent_mass=self.get_solvent_mass(),
+                    solvent_mass=self.solvent_mass,
                 )
                 .magnitude
             )
@@ -1193,7 +1191,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit.Quantity("0 kg"):
+            if self.solvent_mass <= unit.Quantity("0 kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
@@ -1248,7 +1246,7 @@ class Solution(MSONable):
                     "chem",
                     mw=unit.Quantity(self.get_property(solute, "molecular_weight")),
                     volume=self.volume,
-                    solvent_mass=self.get_solvent_mass(),
+                    solvent_mass=self.solvent_mass,
                 )
                 .magnitude
             )
@@ -1274,18 +1272,36 @@ class Solution(MSONable):
                     "chem",
                     mw=unit.Quantity(self.get_property(solute, "molecular_weight")),
                     volume=self.volume,
-                    solvent_mass=self.get_solvent_mass(),
+                    solvent_mass=self.solvent_mass,
                 )
                 .magnitude
             )
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.get_solvent_mass() <= unit.Quantity("0 kg"):
+            if self.solvent_mass <= unit.Quantity("0 kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
             self._update_volume()
+
+    def get_total_moles_solute(self) -> Quantity:
+        """Return the total moles of all solute in the solution."""
+        tot_mol = 0
+        for item in self.components:
+            if item != self.solvent:
+                tot_mol += self.components[item]
+        return unit.Quantity(tot_mol, "mol")
+
+    def get_moles_solvent(self) -> Quantity:
+        """
+        Return the moles of solvent present in the solution.
+
+        Returns
+            The moles of solvent in the solution.
+
+        """
+        return self.get_amount(self.solvent, "mol")
 
     def get_osmolarity(self, activity_correction=False):
         """Return the osmolarity of the solution in Osm/L.
@@ -1313,25 +1329,7 @@ class Solution(MSONable):
             depression. Defaults to FALSE if omitted.
         """
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
-        return factor * self.get_total_moles_solute() / self.get_solvent_mass().to("kg")
-
-    def get_total_moles_solute(self) -> Quantity:
-        """Return the total moles of all solute in the solution."""
-        tot_mol = 0
-        for item in self.components:
-            if item != self.solvent:
-                tot_mol += self.components[item]
-        return unit.Quantity(tot_mol, "mol")
-
-    def get_moles_solvent(self) -> Quantity:
-        """
-        Return the moles of solvent present in the solution.
-
-        Returns
-            The moles of solvent in the solution.
-
-        """
-        return self.get_amount(self.solvent, "mol")
+        return factor * self.get_total_moles_solute() / self.solvent_mass.to("kg")
 
     def get_salt(self):
         """
@@ -1468,13 +1466,13 @@ class Solution(MSONable):
         if scale == "molal":
             return molal
         if scale == "molar":
-            total_molality = self.get_total_moles_solute() / self.get_solvent_mass()
+            total_molality = self.get_total_moles_solute() / self.solvent_mass
             total_molarity = self.get_total_moles_solute() / self.volume
             return (molal * self.water_substance.rho * unit.Quantity("1 g/L") * total_molality / total_molarity).to(
                 "dimensionless"
             )
         if scale == "rational":
-            return molal * (1 + unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.get_solvent_mass())
+            return molal * (1 + unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
         logger.warning("Invalid scale argument. Returning molal-scale activity coefficient")
         return molal
@@ -1559,12 +1557,12 @@ class Solution(MSONable):
                 -molal_phi
                 * unit.Quantity("0.018 kg/mol")
                 * self.get_total_moles_solute()
-                / self.get_solvent_mass()
+                / self.solvent_mass
                 / math.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
             return math.exp(
-                -molal_phi * unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.get_solvent_mass()
+                -molal_phi * unit.Quantity("0.018 kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
             )
 
@@ -1638,6 +1636,178 @@ class Solution(MSONable):
         return math.exp(-osmotic_coefficient * 0.018015 * unit.Quantity("kg/mol") * concentration_sum) * unit.Quantity(
             "1 dimensionless"
         )
+
+    def get_chemical_potential_energy(self, activity_correction=True):
+        """
+        Return the total chemical potential energy of a solution (not including
+        pressure or electric effects).
+
+        Parameters
+        ----------
+        activity_correction : bool, optional
+            If True, activities will be used to calculate the true chemical
+            potential. If False, mole fraction will be used, resulting in
+            a calculation of the ideal chemical potential.
+
+        Returns
+        -------
+        Quantity
+            The actual or ideal chemical potential energy of the solution, in Joules.
+
+        Notes
+        -----
+        The chemical potential energy (related to the Gibbs mixing energy) is
+        calculated as follows: [koga]_
+
+        .. math::      E = R T \\sum_i n_i  \\ln a_i
+
+        or
+
+        .. math::      E = R T \\sum_i n_i \\ln x_i
+
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
+        each component.
+
+        Note that dissociated ions must be counted as separate components,
+        so a simple salt dissolved in water is a three component solution (cation,
+        anion, and water).
+
+        References
+        ----------
+        .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
+
+        """
+        E = unit.Quantity("0 J")
+
+        # loop through all the components and add their potential energy
+        for item in self.components:
+            try:
+                if activity_correction is True:
+                    E += (
+                        unit.R
+                        * self.temperature.to("K")
+                        * self.get_amount(item, "mol")
+                        * math.log(self.get_activity(item))
+                    )
+                else:
+                    E += (
+                        unit.R
+                        * self.temperature.to("K")
+                        * self.get_amount(item, "mol")
+                        * math.log(self.get_amount(item, "fraction"))
+                    )
+            # If we have a solute with zero concentration, we will get a ValueError
+            except ValueError:
+                continue
+
+        return E.to("J")
+
+    def _get_property(self, solute: str, name: str) -> Optional[Quantity]:
+        """Retrieve a thermodynamic property (such as diffusion coefficient)
+        for solute, and adjust it from the reference conditions to the conditions
+        of the solution.
+
+        Parameters
+        ----------
+        solute: str
+            String representing the chemical formula of the solute species
+        name: str
+            The name of the property needed, e.g.
+            'diffusion coefficient'
+
+        Returns
+        -------
+        Quantity: The desired parameter or None if not found
+
+        """
+        base_temperature = unit.Quantity("25 degC")
+        # base_pressure = unit.Quantity("1 atm")
+
+        # query the database using the sanitized formula
+        rform = Ion.from_formula(solute).reduced_formula
+        # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
+        # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
+        # also $exists:True does not properly return dot notated fields.
+        # for now, just set properties=[] to return everything
+        # data = list(self.database.query({"formula": rform, name: {"$ne": None}}, properties=["formula", name]))
+        data = list(self.database.query({"formula": rform, name: {"$ne": None}}))
+        # formulas should always be unique in the database. len==0 indicates no
+        # data. len>1 indicates duplicate data.
+        if len(data) == 0:
+            # try to determine basic properties using pymatgen
+            if name == "charge":
+                return Ion.from_formula(solute).charge
+            if name == "molecular_weight":
+                return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
+
+            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
+            return None
+        if len(data) > 1:
+            logger.warning(f"Duplicate database entries for solute {solute} found!")
+
+        data = data[0]
+
+        # perform temperature-corrections or other adjustments for certain
+        # parameter types
+        if name == "transport.diffusion_coefficient":
+            base_value = data["transport"]["diffusion_coefficient"]["value"]
+
+            # correct for temperature and viscosity
+            # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
+            # where :math:`\mu` is the dynamic viscosity
+            # assume that the base viscosity is that of pure water
+            return (
+                unit.Quantity(base_value)
+                * self.temperature
+                / base_temperature
+                * self.water_substance.mu
+                * unit.Quantity("1 Pa*s")
+                / self.get_viscosity_dynamic()
+            )
+
+        # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
+        # return unit.Quantity("0 m**2/s")
+
+        # just return the base-value molar volume for now; find a way to adjust for
+        # concentration later
+        if name == "size.molar_volume":
+            # calculate the partial molar volume for water since it isn't in the database
+            if rform == "H2O(aq)":
+                vol = (
+                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
+                    / self.water_substance.rho
+                    * unit.Quantity("1 g/L")
+                )
+
+                return vol.to("cm **3 / mol")
+
+            base_value = unit.Quantity(data["size"]["molar_volume"]["value"])
+            if self.temperature != base_temperature:
+                logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
+            return base_value
+
+        if name == "model_parameters.dielectric_zuber":
+            return unit.Quantity(data["model_parameters"]["dielectric_zuber"]["value"])
+
+        if name == "model_parameters.activity_pitzer":
+            # return a dict
+            if data["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
+                return data["model_parameters"]["activity_pitzer"]
+            return None
+
+        if name == "model_parameters.molar_volume_pitzer":
+            # return a dict
+            if data["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
+                return data["model_parameters"]["molar_volume_pitzer"]
+            return None
+
+        # for parameters not named above, just return the base value
+        val = data.get(name) if not isinstance(data.get(name), dict) else data[name].get("value")
+        # logger.warning("%s has not been corrected for solution conditions" % name)
+        if val is not None:
+            return unit.Quantity(val)
+        return None
 
     def get_transport_number(self, solute, activity_correction=False):
         """Calculate the transport number of the solute in the solution.
@@ -1779,178 +1949,6 @@ class Solution(MSONable):
 
         return mobility.to("m**2/V/s")
 
-    def _get_property(self, solute: str, name: str) -> Optional[Quantity]:
-        """Retrieve a thermodynamic property (such as diffusion coefficient)
-        for solute, and adjust it from the reference conditions to the conditions
-        of the solution.
-
-        Parameters
-        ----------
-        solute: str
-            String representing the chemical formula of the solute species
-        name: str
-            The name of the property needed, e.g.
-            'diffusion coefficient'
-
-        Returns
-        -------
-        Quantity: The desired parameter or None if not found
-
-        """
-        base_temperature = unit.Quantity("25 degC")
-        # base_pressure = unit.Quantity("1 atm")
-
-        # query the database using the sanitized formula
-        rform = Ion.from_formula(solute).reduced_formula
-        # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
-        # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
-        # also $exists:True does not properly return dot notated fields.
-        # for now, just set properties=[] to return everything
-        # data = list(self.database.query({"formula": rform, name: {"$ne": None}}, properties=["formula", name]))
-        data = list(self.database.query({"formula": rform, name: {"$ne": None}}))
-        # formulas should always be unique in the database. len==0 indicates no
-        # data. len>1 indicates duplicate data.
-        if len(data) == 0:
-            # try to determine basic properties using pymatgen
-            if name == "charge":
-                return Ion.from_formula(solute).charge
-            if name == "molecular_weight":
-                return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
-
-            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
-            return None
-        if len(data) > 1:
-            logger.warning(f"Duplicate database entries for solute {solute} found!")
-
-        data = data[0]
-
-        # perform temperature-corrections or other adjustments for certain
-        # parameter types
-        if name == "transport.diffusion_coefficient":
-            base_value = data["transport"]["diffusion_coefficient"]["value"]
-
-            # correct for temperature and viscosity
-            # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-            # where :math:`\mu` is the dynamic viscosity
-            # assume that the base viscosity is that of pure water
-            return (
-                unit.Quantity(base_value)
-                * self.temperature
-                / base_temperature
-                * self.water_substance.mu
-                * unit.Quantity("1 Pa*s")
-                / self.get_viscosity_dynamic()
-            )
-
-        # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
-        # return unit.Quantity("0 m**2/s")
-
-        # just return the base-value molar volume for now; find a way to adjust for
-        # concentration later
-        if name == "size.molar_volume":
-            # calculate the partial molar volume for water since it isn't in the database
-            if rform == "H2O(aq)":
-                vol = (
-                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
-                    / self.water_substance.rho
-                    * unit.Quantity("1 g/L")
-                )
-
-                return vol.to("cm **3 / mol")
-
-            base_value = unit.Quantity(data["size"]["molar_volume"]["value"])
-            if self.temperature != base_temperature:
-                logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
-            return base_value
-
-        if name == "model_parameters.dielectric_zuber":
-            return unit.Quantity(data["model_parameters"]["dielectric_zuber"]["value"])
-
-        if name == "model_parameters.activity_pitzer":
-            # return a dict
-            if data["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
-                return data["model_parameters"]["activity_pitzer"]
-            return None
-
-        if name == "model_parameters.molar_volume_pitzer":
-            # return a dict
-            if data["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
-                return data["model_parameters"]["molar_volume_pitzer"]
-            return None
-
-        # for parameters not named above, just return the base value
-        val = data.get(name) if not isinstance(data.get(name), dict) else data[name].get("value")
-        # logger.warning("%s has not been corrected for solution conditions" % name)
-        if val is not None:
-            return unit.Quantity(val)
-        return None
-
-    def get_chemical_potential_energy(self, activity_correction=True):
-        """
-        Return the total chemical potential energy of a solution (not including
-        pressure or electric effects).
-
-        Parameters
-        ----------
-        activity_correction : bool, optional
-            If True, activities will be used to calculate the true chemical
-            potential. If False, mole fraction will be used, resulting in
-            a calculation of the ideal chemical potential.
-
-        Returns
-        -------
-        Quantity
-            The actual or ideal chemical potential energy of the solution, in Joules.
-
-        Notes
-        -----
-        The chemical potential energy (related to the Gibbs mixing energy) is
-        calculated as follows: [koga]_
-
-        .. math::      E = R T \\sum_i n_i  \\ln a_i
-
-        or
-
-        .. math::      E = R T \\sum_i n_i \\ln x_i
-
-        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
-        :math:`R` the ideal gas constant, :math:`x` the mole fraction, and :math:`a` the activity of
-        each component.
-
-        Note that dissociated ions must be counted as separate components,
-        so a simple salt dissolved in water is a three component solution (cation,
-        anion, and water).
-
-        References
-        ----------
-        .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
-
-        """
-        E = unit.Quantity("0 J")
-
-        # loop through all the components and add their potential energy
-        for item in self.components:
-            try:
-                if activity_correction is True:
-                    E += (
-                        unit.R
-                        * self.temperature.to("K")
-                        * self.get_amount(item, "mol")
-                        * math.log(self.get_activity(item))
-                    )
-                else:
-                    E += (
-                        unit.R
-                        * self.temperature.to("K")
-                        * self.get_amount(item, "mol")
-                        * math.log(self.get_amount(item, "fraction"))
-                    )
-            # If we have a solute with zero concentration, we will get a ValueError
-            except ValueError:
-                continue
-
-        return E.to("J")
-
     def get_lattice_distance(self, solute):
         """
         Calculate the average distance between molecules.
@@ -1995,7 +1993,7 @@ class Solution(MSONable):
     def _get_solvent_volume(self):
         """Return the volume of the pure solvent."""
         # calculate the volume of the pure solvent
-        solvent_vol = self.get_solvent_mass() / (self.water_substance.rho * unit.Quantity("1 g/L"))
+        solvent_vol = self.solvent_mass / (self.water_substance.rho * unit.Quantity("1 g/L"))
 
         return solvent_vol.to("L")
 
@@ -2012,7 +2010,7 @@ class Solution(MSONable):
         new_temperature = str(self.temperature)
         new_pressure = str(self.pressure)
         new_solvent = self.solvent
-        new_solvent_mass = str(self.get_solvent_mass())
+        new_solvent_mass = str(self.solvent_mass)
 
         # create a list of solutes
         new_solutes = []
@@ -2712,3 +2710,38 @@ class Solution(MSONable):
         :meta private:
         """
         return self.dielectric_constant
+
+    @deprecated(
+        message="get_solvent_mass() will be removed in the next release. Access directly via the property Solution.solvent_mass"
+    )
+    def get_solvent_mass(self):
+        """
+        Return the mass of the solvent.
+
+        This method is used whenever mol/kg (or similar) concentrations
+        are requested by get_amount()
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Quantity: the mass of the solvent, in kg
+
+        See Also
+        --------
+        :py:meth:`get_amount()`
+
+        :meta private:
+        """
+        return self.solvent_mass
+
+    @deprecated(
+        message="osmotic_pressure will be removed in the next release. Access directly via the property Solution.osmotic_pressure"
+    )
+    def get_osmotic_pressure(self):
+        """
+        :meta private:
+        """
+        return self.osmotic_pressure

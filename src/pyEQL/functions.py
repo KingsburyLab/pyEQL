@@ -252,7 +252,7 @@ def donnan_eql(solution, fixed_charge):
 
         # compute the difference in osmotic pressure
         # using the magnitudes here helps performance
-        delta_pi = donnan_soln.get_osmotic_pressure().magnitude - solution.get_osmotic_pressure().magnitude
+        delta_pi = donnan_soln.osmotic_pressure.magnitude - solution.osmotic_pressure.magnitude
 
         return (act_cation_mem / act_cation_soln) ** (1 / z_cation) * (act_anion_soln / act_anion_mem) ** (
             1 / z_anion

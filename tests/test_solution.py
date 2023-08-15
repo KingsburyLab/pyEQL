@@ -41,7 +41,7 @@ def test_empty_solution_3():
     #  the solvent should be water
     assert s1.solvent == "H2O"
     # It should have 0.997 kg water mass
-    assert np.isclose(s1.get_solvent_mass().to("kg").magnitude, 0.9970415)
+    assert np.isclose(s1.solvent_mass.to("kg").magnitude, 0.9970415)
     # the temperature should be 25 degC
     assert s1.temperature.to("degC").magnitude == 25
     # the pressure should be 1 atm
@@ -71,8 +71,8 @@ def test_solute_addition(s2, s3, s4):
 
     # the water mass of solution s2 should be less than that of s3, because
     # of the volume recalculation
-    result_molL = s2.get_solvent_mass().to("kg").magnitude
-    result_molkg = s3.get_solvent_mass().to("kg").magnitude
+    result_molL = s2.solvent_mass.to("kg").magnitude
+    result_molkg = s3.solvent_mass.to("kg").magnitude
     assert result_molL < result_molkg
 
     # if solutes are added at creation-time with substance units,
@@ -81,8 +81,8 @@ def test_solute_addition(s2, s3, s4):
 
     # the water mass of solution s2 should be less than that of s4, because
     # of the volume recalculation
-    result_molL = s2.get_solvent_mass().to("kg").magnitude
-    result_mol = s4.get_solvent_mass().to("kg").magnitude
+    result_molL = s2.solvent_mass.to("kg").magnitude
+    result_mol = s4.solvent_mass.to("kg").magnitude
     assert result_molL < result_mol
 
 
