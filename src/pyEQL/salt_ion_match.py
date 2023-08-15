@@ -28,7 +28,7 @@ class Salt:
         cation, anion : str
                 Chemical formula of the cation and anion, respectively
 
-        Returns:
+        Returns
         -------
         Salt : An object representing the properties of the salt
 
@@ -90,7 +90,7 @@ class Salt:
         self.formula = salt_formula
 
     def get_effective_molality(self, ionic_strength):
-        """Calculate the effective molality according to [#]_.
+        """Calculate the effective molality according to [mistry]_.
 
         .. math:: 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
 
@@ -99,16 +99,15 @@ class Salt:
         ionic_strength: Quantity
                         The ionic strength of the parent solution, mol/kg
 
-        Returns:
+        Returns
         -------
         Quantity: the effective molality of the salt in the parent solution
 
-        References:
+        References
         ----------
-        .. [#] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of
-        composition and nonideal solution behavior on desalination calculations
-        for mixed electrolyte solutions with comparison to seawater.
-        Desalination 2013, 318, 34-47.
+        .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior
+               on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination
+               2013, 318, 34-47.
         """
         m_effective = 2 * ionic_strength / (self.nu_cation * self.z_cation**2 + self.nu_anion * self.z_anion**2)
 
@@ -119,18 +118,17 @@ def _sort_components(Solution, type="all"):
     """
     Sort the components of a solution in descending order (by mol).
 
-    Parameters:
+    Parameters
     ----------
     Solution : Solution object
     type     : The type of component to be sorted. Defaults to 'all' for all
-                solutes. Other valid arguments are 'cations' and 'anions' which
-                return sorted lists of cations and anions, respectively.
+        solutes. Other valid arguments are 'cations' and 'anions' which
+        return sorted lists of cations and anions, respectively.
 
-    Returns:
+    Returns
     -------
     A list whose keys are the component names (formulas) and whose
     values are the component objects themselves
-
 
     """
     formula_list = []
@@ -142,9 +140,7 @@ def _sort_components(Solution, type="all"):
             formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs
-    mol_list = {}
-    for item in formula_list:
-        mol_list.update({item: Solution.get_amount(item, "mol")})
+    mol_list = {item: Solution.get_amount(item, "mol") for item in formula_list}
 
     return sorted(formula_list, key=mol_list.__getitem__, reverse=True)
 
@@ -158,7 +154,7 @@ def identify_salt(sol):
 
     Create a Salt object for this salt.
 
-    Returns:
+    Returns
     -------
     A Salt object.
     """
@@ -197,7 +193,7 @@ def generate_salt_list(sol, unit="mol/kg"):
     Generate a list of salts that represents the ionic composition of a
     solution.
 
-    Returns:
+    Returns
     -------
     dict
         A dictionary of Salt objects, where Salt objects are the keys and

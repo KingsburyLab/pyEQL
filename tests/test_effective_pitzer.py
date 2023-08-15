@@ -89,10 +89,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -102,7 +102,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
+                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -127,10 +127,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -140,7 +140,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
+                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -165,10 +165,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -178,7 +178,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
+                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -204,10 +204,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit(param["Beta0"]["value"]).magnitude,
-                unit(param["Beta1"]["value"]).magnitude,
-                unit(param["Beta2"]["value"]).magnitude,
-                unit(param["Cphi"]["value"]).magnitude,
+                unit.Quantity(param["Beta0"]["value"]).magnitude,
+                unit.Quantity(param["Beta1"]["value"]).magnitude,
+                unit.Quantity(param["Beta2"]["value"]).magnitude,
+                unit.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -217,7 +217,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + pyEQL.unit("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
+                1 + unit.Quantity("0.018 kg/mol") * s1.get_total_moles_solute() / s1.get_solvent_mass()
             )
 
             assert np.isclose(result, expected[item], RTOL)
