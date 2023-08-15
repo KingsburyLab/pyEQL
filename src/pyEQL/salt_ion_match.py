@@ -142,9 +142,7 @@ def _sort_components(Solution, type="all"):
             formula_list.append(item)
 
     # populate a dictionary with formula:concentration pairs
-    mol_list = {}
-    for item in formula_list:
-        mol_list.update({item: Solution.get_amount(item, "mol")})
+    mol_list = {item: Solution.get_amount(item, "mol") for item in formula_list}
 
     return sorted(formula_list, key=mol_list.__getitem__, reverse=True)
 
