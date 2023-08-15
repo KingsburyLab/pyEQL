@@ -10,8 +10,9 @@ jobs:
   # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
 
   deploy:
+    name: Upload release to PyPI
     runs-on: ubuntu-latest
-    environment: publish
+    environment:
       name: pypi
       url: https://pypi.org/p/pyEQL
 
