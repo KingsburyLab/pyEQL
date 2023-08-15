@@ -3,14 +3,16 @@ name: testing
 on:
   push:
     branches:
-      - main, develop
+      - main
+      - develop
     paths-ignore:
       - 'docs/'
       - CHANGELOG.md
 
   pull_request:
     branches:
-      - main, develop
+      - main
+      - develop
 
 jobs:
   lint:
