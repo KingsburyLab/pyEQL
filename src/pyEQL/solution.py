@@ -2003,31 +2003,8 @@ class Solution(MSONable):
 
     def copy(self):
         """Return a copy of the solution.
-
-        TODO - clarify whether this is a deep or shallow copy
         """
-        # prepare to copy the bulk properties
-        new_temperature = str(self.temperature)
-        new_pressure = str(self.pressure)
-        new_solvent = self.solvent
-        new_solvent_mass = str(self.solvent_mass)
-
-        # create a list of solutes
-        new_solutes = []
-        for item in self.components:
-            # ignore the solvent
-            if item == self.solvent:
-                pass
-            else:
-                new_solutes.append([item, str(self.get_amount(item, "mol"))])
-
-        # create the new solution
-        return Solution(
-            new_solutes,
-            solvent=[new_solvent, new_solvent_mass],
-            temperature=new_temperature,
-            pressure=new_pressure,
-        )
+        return Solution.from_dict((self.as_dict()))
 
     def as_dict(self) -> dict:
         """
