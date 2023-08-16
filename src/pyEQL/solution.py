@@ -27,6 +27,7 @@ from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
 EQUIV_WT_CACO3 = 100.09 / 2 * unit.Quantity("g/mol")
 
+
 class Solution(MSONable):
     """
     Class representing the properties of a solution. Instances of this class
@@ -710,7 +711,7 @@ class Solution(MSONable):
 
         """
         alkalinity = 0 * unit.Quantity("mol/L")
- 
+
         base_cations = {
             "Li[+1]",
             "Na[+1]",
@@ -759,7 +760,6 @@ class Solution(MSONable):
 
         """
         hardness = 0 * unit.Quantity("mol/L")
-        
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -1735,15 +1735,11 @@ class Solution(MSONable):
                 return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
             if name == "size.molar_volume" and rform == "H2O(aq)":
                 # calculate the partial molar volume for water since it isn't in the database
-                vol = (
-                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
-                    / (self.water_substance.rho
-                    * unit.Quantity("1 g/L"))
+                vol = unit.Quantity(self.get_property("H2O", "molecular_weight")) / (
+                    self.water_substance.rho * unit.Quantity("1 g/L")
                 )
 
                 return vol.to("cm **3 / mol")
-
-                
 
             logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
@@ -1994,6 +1990,7 @@ class Solution(MSONable):
         """Return the volume of only the solutes."""
         return self.engine.get_solute_volume(self)
 
+    # copying and serialization
     def copy(self):
         """Return a copy of the solution."""
         return Solution.from_dict(self.as_dict())
@@ -2035,6 +2032,31 @@ class Solution(MSONable):
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
         return new_sol
+
+    # arithmetic operations
+    def __add__(self, other: "Solution"):
+        """
+        Solution addition: mix two solutions together.
+        """
+
+    def __sub__(self, other: "Solution"):
+        raise NotImplementedError("Subtraction of solutions is not implemented.")
+
+    def __mul__(self, factor: Union[float, int]):
+        """
+        Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
+        every component (including solvent). No other properties will change.
+        """
+        self.volume *= factor
+        return self
+
+    def __truediv__(self, factor: Union[float, int]):
+        """
+        Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
+        of every compoonents (including solvent). No other properties will change.
+        """
+        self.volume /= factor
+        return self
 
     # informational methods
     def list_solutes(self):
