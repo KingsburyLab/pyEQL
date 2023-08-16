@@ -131,6 +131,28 @@ def test_p(s2):
     assert np.isclose(s2.p('Na+', activity=False), -1*np.log10(s2.get_amount('Na+','M').magnitude))
     assert np.isclose(s2.p('Mg++'), 0)
 
+def test_get_amount(s3):
+    TEST_UNITS = ["mol/L", "mmol/L", "umol/L", "M", 
+                  "eq/L", "meq/L", "ueq/L", "eq", "meq",
+                  "mol/kg", "mmol/kg", "umol/kg", "m",
+                  "fraction", "count", "%",
+                  "g/L", "mg/L", "ug/L", "ng/L",
+                  "g", "ng", "mg", "ug", "kg",
+                  "ppm", "ppb", "ppt"]
+    # TODO - make this test more precise i.e. test numerical values
+    for u in TEST_UNITS:
+        qty = s3.get_amount('Na+', u)
+        assert isinstance(qty, unit.Quantity), f"get_amount() failed for unit {u}"
+        assert qty.magnitude > 0
+    assert s3.get_amount('Na+', "ppm") == s3.get_amount('Na+', "mg/L")
+    assert s3.get_amount('Na+', "ppb") == s3.get_amount('Na+', "ug/L")
+    assert s3.get_amount('Na+', "ppt") == s3.get_amount('Na+', "ng/L")
+    assert s3.get_amount('Na+', "eq/L") == s3.get_amount('Na+', "M")
+    assert s3.get_amount('Na+', "meq/L") == s3.get_amount('Na+', "mmol/L")
+    # TODO - pint does not consider "mM" and "mmol/L" equivalent. Consider filing bug report? Or perhaps an issue with
+    # my unit definition file
+    # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
+
 def test_conductivity(s1, s2):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0

@@ -905,18 +905,20 @@ class Solution(MSONable):
 
     # Concentration  Methods
 
-    def get_amount(self, solute, units):
+    def get_amount(self, solute: str, units: str = "mol/L"):
         """
         Return the amount of 'solute' in the parent solution.
 
         The amount of a solute can be given in a variety of unit types.
-        1. substance per volume (e.g., 'mol/L')
-        2. substance per mass of solvent (e.g., 'mol/kg')
-        3. mass of substance (e.g., 'kg')
-        4. moles of substance ('mol')
-        5. mole fraction ('fraction')
-        6. percent by weight (%)
-        7. number of molecules ('count')
+        1. substance per volume (e.g., 'mol/L', 'M')
+        2. equivalents (i.e., moles of charge) per volume (e.g., 'eq/L', 'meq/L')
+        3. substance per mass of solvent (e.g., 'mol/kg', 'm')
+        4. mass of substance (e.g., 'kg')
+        5. moles of substance ('mol')
+        6. mole fraction ('fraction')
+        7. percent by weight (%)
+        8. number of molecules ('count')
+        9. "parts-per-x" units, where ppm = mg/L, ppb = ug/L ppt = ng/L
 
         Parameters
         ----------
@@ -943,6 +945,19 @@ class Solution(MSONable):
         get_mass
         get_total_moles_solute
         """
+        # sanitized unit to be passed to pint
+        _units = units
+        if "eq" in units:
+            _units = units.replace("eq","mol")
+        elif units == "m": # molal
+            _units = "mol/kg"
+        elif units == "ppm":
+            _units = "mg/L"
+        elif units == "ppb":
+            _units = "ug/L"
+        elif units == "ppt":
+            _units = "ng/L"
+
         # retrieve the number of moles of solute and its molecular weight
         try:
             moles = unit.Quantity(self.components[solute], "mol")
@@ -950,9 +965,9 @@ class Solution(MSONable):
         # In that case, the amount is zero
         except KeyError:
             try:
-                return 0 * unit.Quantity(units)
+                return 0 * unit.Quantity(_units)
             except DimensionalityError:
-                logger.error("Unsupported unit specified for get_amount")
+                logger.warning(f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0.")
                 return 0
 
         # with pint unit conversions enabled, we just pass the unit to pint
@@ -966,18 +981,20 @@ class Solution(MSONable):
         mw = unit.Quantity(self.get_property(solute, "molecular_weight")).to("g/mol")
         if units == "%":
             return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
-        if unit.Quantity(units).check("[substance]"):
-            return moles.to(units)
-        qty = unit.Quantity(units)
+        if unit.Quantity(_units).check("[substance]"):
+            return moles.to(_units)
+        qty = unit.Quantity(_units)
         if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
-            return moles.to(units, "chem", mw=mw, volume=self.volume)
+            z = 1
+            if "eq" in units:
+                z = self.get_property(solute, "charge")
+            return z*moles.to(_units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
-            return moles.to(units, "chem", mw=mw, solvent_mass=self.solvent_mass)
+            return moles.to(_units, "chem", mw=mw, solvent_mass=self.solvent_mass)
         if qty.check("[mass]"):
-            return moles.to(units, "chem", mw=mw)
+            return moles.to(_units, "chem", mw=mw)
 
-        logger.error("Unsupported unit specified for get_amount")
-        return None
+        raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
     def get_total_amount(self, element, units):
         """
