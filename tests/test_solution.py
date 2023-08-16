@@ -161,7 +161,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
 
 
-def test_arithmetic_and_copy(s6):
+def test_arithmetic_and_copy(s2, s6):
     s6_scale = s6.copy()
     s6_scale *= 1.5
     assert s6_scale.volume == 1.5 * s6.volume
@@ -177,7 +177,28 @@ def test_arithmetic_and_copy(s6):
     with pytest.raises(NotImplementedError):
         s6 - s6_scale
 
-    # TODO - test addition
+    # TODO - test pH and pE
+    s2.temperature = "35 degC"
+    s2.pressure = "1.1 atm"
+    initial_mix_vol = s2.volume.to("L").magnitude + s6.volume.to("L").magnitude
+    mix = s2 + s6
+    assert isinstance(mix, Solution)
+    # TODO - currently solute names are not sanitized in Solution.components, leading to the following issue when
+    # solutions are mixed and the same solute has been specified differently in each
+    # assert mix.get_amount("Na+", "mol").magnitude == 8.01 # 4 M x 2 L + 10 mM x 1 L # <- will fail
+    assert mix.get_amount("Na+", "mol").magnitude == 8.0
+    assert mix.get_amount("Na+1", "mol").magnitude == 0.01
+    assert mix.get_amount("Cl-", "mol").magnitude == 8.0
+    assert mix.get_amount("Br-", "mol").magnitude == 0.02
+    assert np.isclose(
+        mix.volume.to("L").magnitude, initial_mix_vol, atol=0.15
+    )  # 0.15 L tolerance; deviation is due to non-idealities
+    assert np.isclose(
+        mix.temperature.to("K").magnitude, (np.sum([(273.15 + 35) * 2, (273.15 + 25) * 1]) / initial_mix_vol), atol=1
+    )  # 1 K tolerance
+    assert np.isclose(
+        mix.pressure.to("atm").magnitude, np.sum([1.1 * 2, 1 * 1]) / initial_mix_vol, atol=0.01
+    )  # 0.01 atm tolerance
 
 
 def test_serialization(s1, s2):
