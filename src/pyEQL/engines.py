@@ -467,7 +467,7 @@ class NativeEOS(EOS):
             if rform == salt.anion:
                 anion = i
 
-        solute_vol = 0 * unit.Quantity("L")
+        solute_vol = unit.Quantity("0 L")
 
         # use the pitzer approach if parameters are available
 
