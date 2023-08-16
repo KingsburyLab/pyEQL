@@ -30,24 +30,31 @@ def s3():
 def s4():
     return Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
+
 @pytest.fixture()
 def s5():
     # 100 mg/L as CaCO3
     return Solution([["Ca+2", "40 mg/L"], ["CO3-2", "60 mg/L"]], volume="1 L")
+
 
 @pytest.fixture()
 def s6():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
     # charge balance = 2+10+10+10-120-20-12 = -120 meq/L
-    return Solution([["Ca+2", "1 mM"], # 2 meq/L
-                     ["Mg+2", "5 mM"], # 10 meq/L
-                     ["Na+1", "10 mM"], # 10 meq/L
-                     ["Ag+1", "10 mM"], # no contribution to alk or hardness
-                     ["CO3-2", "6 mM"], # no contribution to alk or hardness
-                     ["SO4-2", "60 mM"], # -120 meq/L
-                     ["Br-", "20 mM"]], # -20 meq/L
-                     volume="1 L") 
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Mg+2", "5 mM"],  # 10 meq/L
+            ["Na+1", "10 mM"],  # 10 meq/L
+            ["Ag+1", "10 mM"],  # no contribution to alk or hardness
+            ["CO3-2", "6 mM"],  # no contribution to alk or hardness
+            ["SO4-2", "60 mM"],  # -120 meq/L
+            ["Br-", "20 mM"],
+        ],  # -20 meq/L
+        volume="1 L",
+    )
+
 
 def test_empty_solution_3():
     # create an empty solution
@@ -103,6 +110,7 @@ def test_solute_addition(s2, s3, s4):
     result_mol = s4.solvent_mass.to("kg").magnitude
     assert result_molL < result_mol
 
+
 def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s3.hardness, 0)
@@ -116,49 +124,80 @@ def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
     assert np.isclose(s6.charge_balance, -0.12)
 
+
 def test_pressure_temperature(s5):
     orig_V = s5.volume
-    s5.temperature = '50 degC'
-    assert s5.temperature == unit.Quantity('50 degC')
+    s5.temperature = "50 degC"
+    assert s5.temperature == unit.Quantity("50 degC")
     assert s5.volume > orig_V
     intermediate_V = s5.volume
-    s5.pressure = '2 atm'
-    assert s5.pressure == unit.Quantity('2 atm')
+    s5.pressure = "2 atm"
+    assert s5.pressure == unit.Quantity("2 atm")
     assert s5.volume < intermediate_V
 
-def test_p(s2):
-    assert np.isclose(s2.p('Na+'), -1*np.log10(s2.get_activity('Na+')))
-    assert np.isclose(s2.p('Na+', activity=False), -1*np.log10(s2.get_amount('Na+','M').magnitude))
-    assert np.isclose(s2.p('Mg++'), 0)
 
-def test_get_amount(s3):
-    TEST_UNITS = ["mol/L", "mmol/L", "umol/L", "M", 
-                  "eq/L", "meq/L", "ueq/L", "eq", "meq",
-                  "mol/kg", "mmol/kg", "umol/kg", "m",
-                  "fraction", "count", "%",
-                  "g/L", "mg/L", "ug/L", "ng/L",
-                  "g", "ng", "mg", "ug", "kg",
-                  "ppm", "ppb", "ppt"]
+def test_p(s2):
+    assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
+    assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
+    assert np.isclose(s2.p("Mg++"), 0)
+
+
+def test_get_amount(s3, s5):
+    TEST_UNITS = [
+        "mol/L",
+        "mmol/L",
+        "umol/L",
+        "M",
+        "eq/L",
+        "meq/L",
+        "ueq/L",
+        "eq",
+        "meq",
+        "mol/kg",
+        "mmol/kg",
+        "umol/kg",
+        "m",
+        "fraction",
+        "count",
+        "%",
+        "g/L",
+        "mg/L",
+        "ug/L",
+        "ng/L",
+        "g",
+        "ng",
+        "mg",
+        "ug",
+        "kg",
+        "ppm",
+        "ppb",
+        "ppt",
+        "mol",
+        "eq",
+    ]
     # TODO - make this test more precise i.e. test numerical values
     for u in TEST_UNITS:
-        qty = s3.get_amount('Na+', u)
+        qty = s3.get_amount("Na+", u)
         assert isinstance(qty, unit.Quantity), f"get_amount() failed for unit {u}"
         assert qty.magnitude > 0
-    assert s3.get_amount('Na+', "ppm") == s3.get_amount('Na+', "mg/L")
-    assert s3.get_amount('Na+', "ppb") == s3.get_amount('Na+', "ug/L")
-    assert s3.get_amount('Na+', "ppt") == s3.get_amount('Na+', "ng/L")
-    assert s3.get_amount('Na+', "eq/L") == s3.get_amount('Na+', "M")
-    assert s3.get_amount('Na+', "meq/L") == s3.get_amount('Na+', "mmol/L")
+    assert s3.get_amount("Na+", "ppm") == s3.get_amount("Na+", "mg/L")
+    assert s3.get_amount("Na+", "ppb") == s3.get_amount("Na+", "ug/L")
+    assert s3.get_amount("Na+", "ppt") == s3.get_amount("Na+", "ng/L")
+    assert s3.get_amount("Na+", "eq/L") == s3.get_amount("Na+", "M")
+    assert s3.get_amount("Na+", "meq/L") == s3.get_amount("Na+", "mmol/L")
+    assert s5.get_amount("CO3-2", "eq/L") == -2 * s5.get_amount("CO3-2", "M")
+    assert s5.get_amount("CO3-2", "eq") == -2 * s5.get_amount("CO3-2", "mol")
     # TODO - pint does not consider "mM" and "mmol/L" equivalent. Consider filing bug report? Or perhaps an issue with
     # my unit definition file
     # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
+
 
 def test_conductivity(s1, s2):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
     # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02) #conductivity is in S/m
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
     # TODO - expected failures due to limited temp adjustment of diffusion coeff
     # s_kcl.temperature = '5 degC'
@@ -170,6 +209,7 @@ def test_conductivity(s1, s2):
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+
 
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)

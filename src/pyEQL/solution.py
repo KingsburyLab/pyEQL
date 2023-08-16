@@ -210,7 +210,7 @@ class Solution(MSONable):
         Quantity: the mass of the solution, in kg
 
         """
-        total_mass = 0
+        total_mass = unit.Quantity("0 kg")
         for item in self.components:
             total_mass += self.get_amount(item, "kg")
         return total_mass.to("kg")
@@ -589,7 +589,7 @@ class Solution(MSONable):
         :py:meth:`get_activity_coefficient()`
 
         """
-        EC = 0 * unit.Quantity("S/m")
+        EC = unit.Quantity("0 S/m")
 
         for item in self.components:
             z = abs(self.get_property(item, "charge"))
@@ -651,7 +651,7 @@ class Solution(MSONable):
         >>> s1.ionic_strength
         <Quantity(1.0000001004383303, 'mole / kilogram')>
         """
-        ionic_strength = 0
+        ionic_strength = unit.Quantity("0 mol/kg")
         for solute in self.components:
             ionic_strength += 0.5 * self.get_amount(solute, "mol/kg") * self.get_property(solute, "charge") ** 2
 
@@ -678,9 +678,10 @@ class Solution(MSONable):
         """
         charge_balance = 0
         for solute in self.components:
-            charge_balance += self.get_amount(solute, "mol").magnitude * self.get_property(solute, "charge")
+            # charge_balance += self.get_amount(solute, "eq/L").magnitude * self.get_property(solute, "charge")
+            charge_balance += self.get_amount(solute, "eq").magnitude
 
-        return charge_balance.magnitude
+        return charge_balance
 
     # TODO - consider adding guard statements to prevent alkalinity from being negative
     @property
@@ -710,7 +711,7 @@ class Solution(MSONable):
         .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = 0 * unit.Quantity("mol/L")
+        alkalinity = unit.Quantity("0 mol/L")
 
         base_cations = {
             "Li[+1]",
@@ -759,7 +760,7 @@ class Solution(MSONable):
             The hardness of the solution in mg/L as CaCO3
 
         """
-        hardness = 0 * unit.Quantity("mol/L")
+        hardness = unit.Quantity("0 mol/L")
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -945,10 +946,14 @@ class Solution(MSONable):
         get_mass
         get_total_moles_solute
         """
+        z = 1
         # sanitized unit to be passed to pint
         _units = units
         if "eq" in units:
             _units = units.replace("eq", "mol")
+            z = self.get_property(solute, "charge")
+            if z == 0:  # uncharged solutes have zero equiv concentration
+                return unit.Quantity(f"0 {_units}")
         elif units == "m":  # molal
             _units = "mol/kg"
         elif units == "ppm":
@@ -984,15 +989,12 @@ class Solution(MSONable):
         if units == "%":
             return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
         if unit.Quantity(_units).check("[substance]"):
-            return moles.to(_units)
+            return z * moles.to(_units)
         qty = unit.Quantity(_units)
         if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
-            z = 1
-            if "eq" in units:
-                z = self.get_property(solute, "charge")
             return z * moles.to(_units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
-            return moles.to(_units, "chem", mw=mw, solvent_mass=self.solvent_mass)
+            return z * moles.to(_units, "chem", mw=mw, solvent_mass=self.solvent_mass)
         if qty.check("[mass]"):
             return moles.to(_units, "chem", mw=mw)
 
@@ -1029,7 +1031,7 @@ class Solution(MSONable):
 
         el = str(Element(element))
 
-        TOT = 0 * unit.Quantity(units)
+        TOT = unit.Quantity(f"0 {units}")
 
         # loop through all the solutes, process each one containing element
         for item in self.components:
