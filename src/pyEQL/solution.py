@@ -27,6 +27,7 @@ from pyEQL.salt_ion_match import generate_salt_list, identify_salt
 
 EQUIV_WT_CACO3 = 100.09 / 2 * unit.Quantity("g/mol")
 
+
 class Solution(MSONable):
     """
     Class representing the properties of a solution. Instances of this class
@@ -710,7 +711,7 @@ class Solution(MSONable):
 
         """
         alkalinity = 0 * unit.Quantity("mol/L")
- 
+
         base_cations = {
             "Li[+1]",
             "Na[+1]",
@@ -759,7 +760,6 @@ class Solution(MSONable):
 
         """
         hardness = 0 * unit.Quantity("mol/L")
-        
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -948,8 +948,8 @@ class Solution(MSONable):
         # sanitized unit to be passed to pint
         _units = units
         if "eq" in units:
-            _units = units.replace("eq","mol")
-        elif units == "m": # molal
+            _units = units.replace("eq", "mol")
+        elif units == "m":  # molal
             _units = "mol/kg"
         elif units == "ppm":
             _units = "mg/L"
@@ -967,7 +967,9 @@ class Solution(MSONable):
             try:
                 return 0 * unit.Quantity(_units)
             except DimensionalityError:
-                logger.warning(f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0.")
+                logger.warning(
+                    f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0."
+                )
                 return 0
 
         # with pint unit conversions enabled, we just pass the unit to pint
@@ -988,7 +990,7 @@ class Solution(MSONable):
             z = 1
             if "eq" in units:
                 z = self.get_property(solute, "charge")
-            return z*moles.to(_units, "chem", mw=mw, volume=self.volume)
+            return z * moles.to(_units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
             return moles.to(_units, "chem", mw=mw, solvent_mass=self.solvent_mass)
         if qty.check("[mass]"):
@@ -1752,15 +1754,11 @@ class Solution(MSONable):
                 return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
             if name == "size.molar_volume" and rform == "H2O(aq)":
                 # calculate the partial molar volume for water since it isn't in the database
-                vol = (
-                    unit.Quantity(self.get_property("H2O", "molecular_weight"))
-                    / (self.water_substance.rho
-                    * unit.Quantity("1 g/L"))
+                vol = unit.Quantity(self.get_property("H2O", "molecular_weight")) / (
+                    self.water_substance.rho * unit.Quantity("1 g/L")
                 )
 
                 return vol.to("cm **3 / mol")
-
-                
 
             logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
@@ -1785,7 +1783,7 @@ class Solution(MSONable):
                 * self.water_substance.mu
                 * unit.Quantity("1 Pa*s")
                 / self.get_viscosity_dynamic()
-            )
+            ).to("m**2/s")
 
         # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
         # return unit.Quantity("0 m**2/s")
