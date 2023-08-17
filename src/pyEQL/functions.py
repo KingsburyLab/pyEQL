@@ -280,79 +280,23 @@ def donnan_eql(solution, fixed_charge):
     return donnan_soln
 
 
-def mix(Solution1, Solution2):
+def mix(s1, s2):
     """
     Mix two solutions together.
 
-    Returns a new Solution object that results from the mixing of Solution1
-    and Solution2
+    Args:
+        s1, s2: The two solutions to be mixed.
 
-    Parameters
-    ----------
-    Solution1, Solution2 : Solution objects
-        The two solutions to be mixed.
+    Returns:
+        A Solution object that represents the result of mixing s1 and s2.
 
-    Returns
-    -------
-    Solution
-        A Solution object representing the mixed solution.
-
+    Notes:
+        The initial volume of the mixed solution is set as the sum of the volumes of s1 and s2. The pressure and
+        temperature are volume-weighted averages. The pH and pE values are currently APPROXIMATE because they are
+        calculated assuming H+ and e- mix conservatively (i.e., the mixing process does not incorporate any
+        equilibration reactions or buffering). Such support is planned in a future release.
     """
-    # check to see if the two solutions have the same solvent
-    if Solution1.solvent_name != Solution2.solvent_name:
-        logger.error("mix() function does not support solutions with different solvents. Aborting.")
-
-    if Solution1.solvent_name != "H2O" or Solution1.solvent_name == "water":
-        logger.error("mix() function does not support non-water solvents. Aborting.")
-
-    # set the pressure for the new solution
-    p1 = Solution1.pressure
-    t1 = Solution1.temperature
-    v1 = Solution1.volume
-    p2 = Solution2.pressure
-    t2 = Solution2.temperature
-    v2 = Solution2.volume
-
-    # check to see if the solutions have the same temperature and pressure
-    if p1 != p2:
-        logger.info(
-            "mix() function called between two solutions of different pressure. Pressures will be averaged (weighted by volume)"
-        )
-
-    blend_pressure = str((p1 * v1 + p2 * v2) / (v1 + v2))
-
-    if t1 != t2:
-        logger.info(
-            "mix() function called between two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
-        )
-
-    blend_temperature = str((t1 * v1 + t2 * v2) / (v1 + v2))
-
-    # retrieve the amount of each component in the parent solution and
-    # store in a list.
-    mix_species = {}
-    for item in Solution1.components:
-        mix_species.update({item: str(Solution1.get_amount(item, "mol"))})
-    for item in Solution2.components:
-        if item in mix_species:
-            new_amt = str(unit.Quantity(mix_species[item]) + Solution2.get_amount(item, "mol"))
-            mix_species.update({item: new_amt})
-        else:
-            mix_species.update({item: Solution2.get_amount(item, "mol")})
-
-    # create an empty solution for the mixture
-    Blend = pyEQL.Solution(temperature=blend_temperature, pressure=blend_pressure)
-
-    # set or add the appropriate amount of all the components
-    for item in mix_species:
-        if item in Blend.components:
-            # if already present (e.g. H2O, H+), modify the amount
-            Blend.set_amount(item, mix_species[item])
-        else:
-            # if not already present, add the component
-            Blend.add_solute(item, mix_species[item])
-
-    return Blend
+    return s1 + s2
 
 
 def autogenerate(solution=""):

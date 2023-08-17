@@ -7,6 +7,7 @@ pyEQL Solution Class.
 """
 
 import math
+import warnings
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
@@ -2010,6 +2011,7 @@ class Solution(MSONable):
         """Return the volume of only the solutes."""
         return self.engine.get_solute_volume(self)
 
+    # copying and serialization
     def copy(self) -> "Solution":
         """Return a copy of the solution."""
         return Solution.from_dict(self.as_dict())
@@ -2051,6 +2053,112 @@ class Solution(MSONable):
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
         return new_sol
+
+    # arithmetic operations
+    def __add__(self, other: "Solution"):
+        """
+        Solution addition: mix two solutions together.
+
+        Args:
+            other: The Solutions to be mixed with this solution.
+
+        Returns:
+            A Solution object that represents the result of mixing this solution and other.
+
+        Notes:
+            The initial volume of the mixed solution is set as the sum of the volumes of this solution and other.
+            The pressure and temperature are volume-weighted averages. The pH and pE values are currently APPROXIMATE
+            because they are calculated assuming H+ and e- mix conservatively (i.e., the mixing process does not
+            incorporate any equilibration reactions or buffering). Such support is planned in a future release.
+        """
+        # check to see if the two solutions have the same solvent
+        if self.solvent != other.solvent:
+            raise ValueError("Cannot add Solution with different solvents!")
+
+        if self._engine != other._engine:
+            raise ValueError("Cannot add Solution with different engines!")
+
+        if self.database != other.database:
+            raise ValueError("Cannot add Solution with different databases!")
+
+        # set the pressure for the new solution
+        p1 = self.pressure
+        t1 = self.temperature
+        v1 = self.volume
+        p2 = other.pressure
+        t2 = other.temperature
+        v2 = other.volume
+
+        # set the initial volume as the sum of the volumes
+        mix_vol = v1 + v2
+
+        # check to see if the solutions have the same temperature and pressure
+        if p1 != p2:
+            logger.info("Adding two solutions of different pressure. Pressures will be averaged (weighted by volume)")
+
+        mix_pressure = (p1 * v1 + p2 * v2) / (mix_vol)
+
+        if t1 != t2:
+            logger.info(
+                "Adding two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
+            )
+
+        # do all temperature conversions in Kelvin to avoid ambiguity associated with "offset units". See pint docs.
+        mix_temperature = (t1.to("K") * v1 + t2.to("K") * v2) / (mix_vol)
+
+        # retrieve the amount of each component in the parent solution and
+        # store in a list.
+        mix_species = {}
+        for sol, amt in self.components.items():
+            mix_species.update({sol: f"{amt} mol"})
+        for sol2, amt2 in other.components.items():
+            if mix_species.get(sol2):
+                orig_amt = float(mix_species[sol2].split(" ")[0])
+                mix_species[sol2] = f"{orig_amt+amt2} mol"
+            else:
+                mix_species.update({sol2: f"{amt2} mol"})
+
+        # TODO - call equilibrate() here once the method is functional to get new pH and pE, instead of the below
+        warnings.warn(
+            "The pH and pE value of the mixed solution is approximate! More accurate addition (mixing) of"
+            "this property is planned for a future release."
+        )
+        # calculate the new pH and pE (before reactions) by mixing
+        mix_pH = -math.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
+
+        # pE = -log[e-], so calculate the moles of e- in each solution and mix them
+        mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
+        mol_e_other = 10 ** (-1 * other.pE) * other.volume.to("L").magnitude
+        mix_pE = -math.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
+
+        # create a new solution
+        return Solution(
+            mix_species,
+            volume=str(mix_vol),
+            pressure=str(mix_pressure),
+            temperature=str(mix_temperature.to("K")),
+            pH=mix_pH,
+            pE=mix_pE,
+        )
+
+    def __sub__(self, other: "Solution"):
+        raise NotImplementedError("Subtraction of solutions is not implemented.")
+
+    def __mul__(self, factor: Union[float, int]):
+        """
+        Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
+        every component (including solvent). No other properties will change.
+        """
+        self.volume *= factor
+        return self
+
+    def __truediv__(self, factor: Union[float, int]):
+        """
+        Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
+        of every compoonents (including solvent). No other properties will change.
+        """
+        self.volume /= factor
+        return self
 
     # informational methods
     def list_solutes(self):

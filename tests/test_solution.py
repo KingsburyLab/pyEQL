@@ -211,6 +211,62 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
 
 
+def test_arithmetic_and_copy(s2, s6):
+    s6_scale = s6.copy()
+    s6_scale *= 1.5
+    assert s6_scale.volume == 1.5 * s6.volume
+    assert s6_scale.pressure == s6.pressure
+    for s, amt in s6_scale.components.items():
+        assert amt == 1.5 * s6.components[s]
+    s6_scale /= 2
+    assert s6_scale.volume == 1.5 / 2 * s6.volume
+    assert s6_scale.pressure == s6.pressure
+    for s, amt in s6_scale.components.items():
+        assert amt == 1.5 / 2 * s6.components[s]
+
+    with pytest.raises(NotImplementedError):
+        s6 - s6_scale
+
+    # TODO - test pH and pE
+    s2.temperature = "35 degC"
+    s2.pressure = "1.1 atm"
+    initial_mix_vol = s2.volume.to("L").magnitude + s6.volume.to("L").magnitude
+    mix = s2 + s6
+    assert isinstance(mix, Solution)
+    # TODO - currently solute names are not sanitized in Solution.components, leading to the following issue when
+    # solutions are mixed and the same solute has been specified differently in each
+    # assert mix.get_amount("Na+", "mol").magnitude == 8.01 # 4 M x 2 L + 10 mM x 1 L # <- will fail
+    assert mix.get_amount("Na+", "mol").magnitude == 8.0
+    assert mix.get_amount("Na+1", "mol").magnitude == 0.01
+    assert mix.get_amount("Cl-", "mol").magnitude == 8.0
+    assert mix.get_amount("Br-", "mol").magnitude == 0.02
+    assert np.isclose(
+        mix.volume.to("L").magnitude, initial_mix_vol, atol=0.15
+    )  # 0.15 L tolerance; deviation is due to non-idealities
+    assert np.isclose(
+        mix.temperature.to("K").magnitude, (np.sum([(273.15 + 35) * 2, (273.15 + 25) * 1]) / initial_mix_vol), atol=1
+    )  # 1 K tolerance
+    assert np.isclose(
+        mix.pressure.to("atm").magnitude, np.sum([1.1 * 2, 1 * 1]) / initial_mix_vol, atol=0.01
+    )  # 0.01 atm tolerance
+
+    s_bad = Solution()
+    # workaround necessary b/c it's not currently possible to init a solution with a non-water solvent
+    s_bad.solvent = "D2O"
+    with pytest.raises(ValueError, match="Cannot add Solution with different solvents!"):
+        s2 + s_bad
+
+    s_bad = Solution(engine="ideal")
+    with pytest.raises(ValueError, match="Cannot add Solution with different engines!"):
+        s2 + s_bad
+
+    s_bad = Solution()
+    # bad workaround
+    s_bad.database = "random_database.json"
+    with pytest.raises(ValueError, match="Cannot add Solution with different databases!"):
+        s2 + s_bad
+
+
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
     s1_new = Solution.from_dict(s1.as_dict())
