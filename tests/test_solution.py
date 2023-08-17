@@ -30,24 +30,31 @@ def s3():
 def s4():
     return Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
+
 @pytest.fixture()
 def s5():
     # 100 mg/L as CaCO3
     return Solution([["Ca+2", "40 mg/L"], ["CO3-2", "60 mg/L"]], volume="1 L")
+
 
 @pytest.fixture()
 def s6():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
     # charge balance = 2+10+10+10-120-20-12 = -120 meq/L
-    return Solution([["Ca+2", "1 mM"], # 2 meq/L
-                     ["Mg+2", "5 mM"], # 10 meq/L
-                     ["Na+1", "10 mM"], # 10 meq/L
-                     ["Ag+1", "10 mM"], # no contribution to alk or hardness
-                     ["CO3-2", "6 mM"], # no contribution to alk or hardness
-                     ["SO4-2", "60 mM"], # -120 meq/L
-                     ["Br-", "20 mM"]], # -20 meq/L
-                     volume="1 L") 
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Mg+2", "5 mM"],  # 10 meq/L
+            ["Na+1", "10 mM"],  # 10 meq/L
+            ["Ag+1", "10 mM"],  # no contribution to alk or hardness
+            ["CO3-2", "6 mM"],  # no contribution to alk or hardness
+            ["SO4-2", "60 mM"],  # -120 meq/L
+            ["Br-", "20 mM"],
+        ],  # -20 meq/L
+        volume="1 L",
+    )
+
 
 def test_empty_solution_3():
     # create an empty solution
@@ -103,6 +110,7 @@ def test_solute_addition(s2, s3, s4):
     result_mol = s4.solvent_mass.to("kg").magnitude
     assert result_molL < result_mol
 
+
 def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s3.hardness, 0)
@@ -116,27 +124,30 @@ def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
     assert np.isclose(s6.charge_balance, -0.12)
 
+
 def test_pressure_temperature(s5):
     orig_V = s5.volume
-    s5.temperature = '50 degC'
-    assert s5.temperature == unit.Quantity('50 degC')
+    s5.temperature = "50 degC"
+    assert s5.temperature == unit.Quantity("50 degC")
     assert s5.volume > orig_V
     intermediate_V = s5.volume
-    s5.pressure = '2 atm'
-    assert s5.pressure == unit.Quantity('2 atm')
+    s5.pressure = "2 atm"
+    assert s5.pressure == unit.Quantity("2 atm")
     assert s5.volume < intermediate_V
 
+
 def test_p(s2):
-    assert np.isclose(s2.p('Na+'), -1*np.log10(s2.get_activity('Na+')))
-    assert np.isclose(s2.p('Na+', activity=False), -1*np.log10(s2.get_amount('Na+','M').magnitude))
-    assert np.isclose(s2.p('Mg++'), 0)
+    assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
+    assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
+    assert np.isclose(s2.p("Mg++"), 0)
+
 
 def test_conductivity(s1, s2):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
     # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02) #conductivity is in S/m
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
     # TODO - expected failures due to limited temp adjustment of diffusion coeff
     # s_kcl.temperature = '5 degC'
@@ -148,6 +159,63 @@ def test_conductivity(s1, s2):
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+
+
+def test_arithmetic_and_copy(s2, s6):
+    s6_scale = s6.copy()
+    s6_scale *= 1.5
+    assert s6_scale.volume == 1.5 * s6.volume
+    assert s6_scale.pressure == s6.pressure
+    for s, amt in s6_scale.components.items():
+        assert amt == 1.5 * s6.components[s]
+    s6_scale /= 2
+    assert s6_scale.volume == 1.5 / 2 * s6.volume
+    assert s6_scale.pressure == s6.pressure
+    for s, amt in s6_scale.components.items():
+        assert amt == 1.5 / 2 * s6.components[s]
+
+    with pytest.raises(NotImplementedError):
+        s6 - s6_scale
+
+    # TODO - test pH and pE
+    s2.temperature = "35 degC"
+    s2.pressure = "1.1 atm"
+    initial_mix_vol = s2.volume.to("L").magnitude + s6.volume.to("L").magnitude
+    mix = s2 + s6
+    assert isinstance(mix, Solution)
+    # TODO - currently solute names are not sanitized in Solution.components, leading to the following issue when
+    # solutions are mixed and the same solute has been specified differently in each
+    # assert mix.get_amount("Na+", "mol").magnitude == 8.01 # 4 M x 2 L + 10 mM x 1 L # <- will fail
+    assert mix.get_amount("Na+", "mol").magnitude == 8.0
+    assert mix.get_amount("Na+1", "mol").magnitude == 0.01
+    assert mix.get_amount("Cl-", "mol").magnitude == 8.0
+    assert mix.get_amount("Br-", "mol").magnitude == 0.02
+    assert np.isclose(
+        mix.volume.to("L").magnitude, initial_mix_vol, atol=0.15
+    )  # 0.15 L tolerance; deviation is due to non-idealities
+    assert np.isclose(
+        mix.temperature.to("K").magnitude, (np.sum([(273.15 + 35) * 2, (273.15 + 25) * 1]) / initial_mix_vol), atol=1
+    )  # 1 K tolerance
+    assert np.isclose(
+        mix.pressure.to("atm").magnitude, np.sum([1.1 * 2, 1 * 1]) / initial_mix_vol, atol=0.01
+    )  # 0.01 atm tolerance
+
+    s_bad = Solution()
+    # workaround necessary b/c it's not currently possible to init a solution with a non-water solvent
+    s_bad.solvent = "D2O"
+    with pytest.raises(ValueError, match="Cannot add Solution with different solvents!"):
+        s2 + s_bad
+
+    s_bad = Solution(engine="ideal")
+    with pytest.raises(ValueError, match="Cannot add Solution with different engines!"):
+        s2 + s_bad
+
+    s_bad = Solution()
+    # bad workaround
+    s_bad.database = "random_database.json"
+    with pytest.raises(ValueError, match="Cannot add Solution with different databases!"):
+        s2 + s_bad
+
 
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
