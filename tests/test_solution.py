@@ -200,6 +200,22 @@ def test_arithmetic_and_copy(s2, s6):
         mix.pressure.to("atm").magnitude, np.sum([1.1 * 2, 1 * 1]) / initial_mix_vol, atol=0.01
     )  # 0.01 atm tolerance
 
+    s_bad = Solution()
+    # workaround necessary b/c it's not currently possible to init a solution with a non-water solvent
+    s_bad.solvent = "D2O"
+    with pytest.raises(ValueError, match="Cannot add Solution with different solvents!"):
+        s2 + s_bad
+
+    s_bad = Solution(engine="ideal")
+    with pytest.raises(ValueError, match="Cannot add Solution with different engines!"):
+        s2 + s_bad
+
+    s_bad = Solution()
+    # bad workaround
+    s_bad.database = "random_database.json"
+    with pytest.raises(ValueError, match="Cannot add Solution with different databases!"):
+        s2 + s_bad
+
 
 def test_serialization(s1, s2):
     assert isinstance(s1.as_dict(), dict)
