@@ -30,8 +30,20 @@ class Test_activity_pitzer_nacl:
         assert s1.get_activity_coefficient("Na+").dimensionality == ""
         assert s1.get_activity_coefficient("Na+", scale="molar").dimensionality == ""
         assert s1.get_activity_coefficient("Na+", scale="rational").dimensionality == ""
+
+        assert s1.get_activity("Na+").dimensionality == ""
+        assert s1.get_activity("Na+", scale="molar").dimensionality == ""
+        assert s1.get_activity("Na+", scale="rational").dimensionality == ""
+
+        assert s1.get_osmotic_coefficient(scale="molal").dimensionality == ""
+        assert s1.get_osmotic_coefficient(scale="rational").dimensionality == ""
+        assert s1.get_osmotic_coefficient(scale="fugacity").dimensionality == ""
         with pytest.raises(ValueError, match="Invalid scale argument"):
             s1.get_activity_coefficient("Na+", scale="random")
+        with pytest.raises(ValueError, match="Invalid scale argument"):
+            s1.get_activity("Na+", scale="random")
+        with pytest.raises(ValueError, match="Invalid scale argument"):
+            s1.get_osmotic_coefficient(scale="random")
 
         # the activity should be dimensionless
         assert s1.get_activity("Na+").dimensionality == ""

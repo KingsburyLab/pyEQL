@@ -1551,9 +1551,7 @@ class Solution(MSONable):
             elif scale == "rational":
                 units = "fraction"
             else:
-                logger.error("Invalid scale argument. Returning molal-scale activity.")
-                units = "mol/kg"
-                scale = "molal"
+                raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
             activity = (
                 self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)
@@ -1586,10 +1584,9 @@ class Solution(MSONable):
             return math.exp(
                 -molal_phi * unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
-            )
+            ) * unit.Quantity("1 dimensionless")
 
-        logger.warning("Invalid scale argument. Returning molal-scale osmotic coefficient")
-        return molal_phi
+        raise ValueError("Invalid scale argument. Pass 'molal', 'rational', or 'fugacity'.")
 
     def get_water_activity(self) -> Quantity:
         """
