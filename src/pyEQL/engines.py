@@ -154,9 +154,6 @@ class NativeEOS(EOS):
             scale: The concentration scale for the returned activity coefficient.
                 Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                 By default, the molal scale activity coefficient is returned.
-            verbose: If True, pyEQL will print a message indicating the parent salt
-                that is being used for activity calculations. This option is
-                useful when modeling multicomponent solutions. False by default.
 
         Returns
             The mean ion activity coefficient of the solute in question on  the selected scale.
@@ -193,8 +190,6 @@ class NativeEOS(EOS):
         .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
         """
-        verbose = False
-
         # identify the predominant salt that this ion is a member of
         Salt = None
         rform = Ion.from_formula(solute).reduced_formula
@@ -213,8 +208,10 @@ class NativeEOS(EOS):
         # search for Pitzer parameters
         param = solution.get_property(Salt.formula, "model_parameters.activity_pitzer")
         if param is not None:
-            if verbose is True:
-                print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
+            # TODO - consider re-enabling a log message recording what salt(s) are used as basis for activity
+            # calculation
+            # if verbose is True:
+            #     print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine

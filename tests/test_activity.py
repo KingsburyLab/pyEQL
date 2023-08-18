@@ -25,11 +25,17 @@ class Test_activity_pitzer_nacl:
     def test_units_and_equality(self):
         s1 = Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
 
+        # TODO - add a quantitative test for molal, molar, and rational conversion
         # the activity coefficient should be dimensionless
         assert s1.get_activity_coefficient("Na+").dimensionality == ""
+        assert s1.get_activity_coefficient("Na+", scale="molar").dimensionality == ""
+        assert s1.get_activity_coefficient("Na+", scale="rational").dimensionality == ""
+        with pytest.raises(ValueError, match="Invalid scale argument"):
+            s1.get_activity_coefficient("Na+", scale="random")
 
         # the activity should be dimensionless
         assert s1.get_activity("Na+").dimensionality == ""
+        assert s1.get_activity("H2O").dimensionality == ""
 
         # the activity coefficient of both the Na+ and Cl- should be the same
         a1 = s1.get_activity_coefficient("Na+")
@@ -537,11 +543,18 @@ class Test_activity_pitzer_nacl:
         ]
 
         for i, conc in enumerate(conc_list):
-            sol = Solution({"Na+": f"{conc} mol/kg", "Cl-": f"{conc} mol/kg",})
+            sol = Solution(
+                {
+                    "Na+": f"{conc} mol/kg",
+                    "Cl-": f"{conc} mol/kg",
+                }
+            )
             result = sol.get_water_activity()
             expected = phreeqc_pitzer_water_activity[i]
 
             assert np.isclose(result, expected, rtol=0.05)
             # to get pi in Pa, need V_w in m3/mol
-            osmotic_pressure = -8.314*298.15/0.000018015 * np.log(result)
-            assert np.isclose(sol.osmotic_pressure.to('Pa').magnitude, osmotic_pressure, rtol=0.05), f"{osmotic_pressure}"
+            osmotic_pressure = -8.314 * 298.15 / 0.000018015 * np.log(result)
+            assert np.isclose(
+                sol.osmotic_pressure.to("Pa").magnitude, osmotic_pressure, rtol=0.05
+            ), f"{osmotic_pressure}"

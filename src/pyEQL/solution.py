@@ -1458,7 +1458,6 @@ class Solution(MSONable):
         self,
         solute: str,
         scale: Literal["molal", "molar", "fugacity", "rational"] = "molal",
-        verbose: bool = False,
     ) -> Quantity:
         """
         Return the activity coefficient of a solute in solution.
@@ -1499,16 +1498,14 @@ class Solution(MSONable):
         if scale == "rational":
             return molal * (1 + unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
-        logger.warning("Invalid scale argument. Returning molal-scale activity coefficient")
-        return molal
+        raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
-    # TODO - return type is inconsistent, sometimes Quantity, sometimes float
     def get_activity(
         self,
         solute: str,
         scale: Literal["molal", "molar", "rational"] = "molal",
         verbose: bool = False,
-    ):
+    ) -> Quantity:
         """
         Return the thermodynamic activity of the solute in solution on the chosen concentration scale.
 
@@ -1525,7 +1522,7 @@ class Solution(MSONable):
                 useful when modeling multicomponent solutions. False by default.
 
         Returns
-            The thermodynamic activity of the solute in question (dimensionless)
+            The thermodynamic activity of the solute in question (dimensionless Quantity)
 
         Notes:
             The thermodynamic activity depends on the concentration scale used [rs]_ .
@@ -1548,20 +1545,19 @@ class Solution(MSONable):
         else:
             # determine the concentration units to use based on the desired scale
             if scale == "molal":
-                unit = "mol/kg"
+                units = "mol/kg"
             elif scale == "molar":
-                unit = "mol/L"
+                units = "mol/L"
             elif scale == "rational":
-                unit = "fraction"
+                units = "fraction"
             else:
                 logger.error("Invalid scale argument. Returning molal-scale activity.")
-                unit = "mol/kg"
+                units = "mol/kg"
                 scale = "molal"
 
             activity = (
-                self.get_activity_coefficient(solute, scale=scale, verbose=verbose)
-                * self.get_amount(solute, unit).magnitude
-            )
+                self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)
+            ).magnitude * unit.Quantity("1 dimensionless")
             logger.info(f"Calculated {scale} scale activity of solute {solute} as {activity}")
 
         return activity
