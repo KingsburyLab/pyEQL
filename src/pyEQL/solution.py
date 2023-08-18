@@ -5,12 +5,13 @@ pyEQL Solution Class.
 :license: LGPL, see LICENSE for more details.
 
 """
+from __future__ import annotations
 
 import math
 import warnings
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
@@ -37,15 +38,15 @@ class Solution(MSONable):
 
     def __init__(
         self,
-        solutes: Optional[Union[List[List[str]], Dict[str, str]]] = None,
-        volume: Optional[str] = None,
+        solutes: list[list[str]] | dict[str, str] | None = None,
+        volume: str | None = None,
         temperature: str = "298.15 K",
         pressure: str = "1 atm",
         pH: float = 7,
         pE: float = 8.5,
-        solvent: Union[str, list] = "H2O",
+        solvent: str | list = "H2O",
         engine: Literal["native", "ideal"] = "native",
-        database: Optional[Union[str, Path, Store]] = None,
+        database: str | Path | Store | None = None,
     ):
         """
 
@@ -128,15 +129,14 @@ class Solution(MSONable):
         self.components: dict = {}
 
         # connect to the desired property database
-        if not isinstance(database, Store):
-            if database is None:
-                from pkg_resources import resource_filename
+        if database is None:
+            from pkg_resources import resource_filename
 
-                database_dir = resource_filename("pyEQL", "database")
-                json = Path(database_dir) / "pyeql_db.json"
-            else:
-                json = database if isinstance(database, str) else str(database)
-            db_store = JSONStore(json, key="formula")
+            database_dir = resource_filename("pyEQL", "database")
+            json = Path(database_dir) / "pyeql_db.json"
+            db_store = JSONStore(str(json), key="formula")
+        elif isinstance(database, (str, Path)):
+            db_store = JSONStore(str(database), key="formula")
             logger.info(f"Created maggma JSONStore from .json file {database}")
         else:
             db_store = database
@@ -193,8 +193,6 @@ class Solution(MSONable):
             )
             for item in self._solutes:
                 self.add_solute(*item)
-        elif self._solutes is not None:
-            raise ValueError("Solutes must be given as a list or dict!")
 
     @property
     def mass(self) -> Quantity:
@@ -211,13 +209,13 @@ class Solution(MSONable):
         Quantity: the mass of the solution, in kg
 
         """
-        total_mass = 0
+        total_mass = unit.Quantity("0 kg")
         for item in self.components:
             total_mass += self.get_amount(item, "kg")
         return total_mass.to("kg")
 
     @property
-    def solvent_mass(self):
+    def solvent_mass(self) -> Quantity:
         """
         Return the mass of the solvent.
 
@@ -335,11 +333,11 @@ class Solution(MSONable):
         self.volume_update_required = True
 
     @property
-    def pH(self) -> Quantity:
+    def pH(self) -> float | None:
         """Return the pH of the solution."""
         return self.p("H+", activity=True)
 
-    def p(self, solute, activity=True):
+    def p(self, solute: str, activity=True) -> float | None:
         """
         Return the negative log of the activity of solute.
 
@@ -362,8 +360,7 @@ class Solution(MSONable):
         try:
             if activity is True:
                 return -1 * math.log10(self.get_activity(solute))
-            if activity is False:
-                return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
+            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
         # if the solute has zero concentration, the log will generate a ValueError
         except ValueError:
             return 0
@@ -465,7 +462,7 @@ class Solution(MSONable):
     #     self.viscosity_dynamic / self.water_substance.mu * unit.Quantity("1 Pa*s")
     # )
     @property
-    def viscosity_kinematic(self):
+    def viscosity_kinematic(self) -> Quantity:
         """
         Return the kinematic viscosity of the solution.
 
@@ -542,7 +539,7 @@ class Solution(MSONable):
 
     # TODO - need tests of conductivity
     @property
-    def conductivity(self):
+    def conductivity(self) -> Quantity:
         """
         Compute the electrical conductivity of the solution.
 
@@ -590,7 +587,7 @@ class Solution(MSONable):
         :py:meth:`get_activity_coefficient()`
 
         """
-        EC = 0 * unit.Quantity("S/m")
+        EC = unit.Quantity("0 S/m")
 
         for item in self.components:
             z = abs(self.get_property(item, "charge"))
@@ -652,7 +649,7 @@ class Solution(MSONable):
         >>> s1.ionic_strength
         <Quantity(1.0000001004383303, 'mole / kilogram')>
         """
-        ionic_strength = 0
+        ionic_strength = unit.Quantity("0 mol/kg")
         for solute in self.components:
             ionic_strength += 0.5 * self.get_amount(solute, "mol/kg") * self.get_property(solute, "charge") ** 2
 
@@ -679,13 +676,14 @@ class Solution(MSONable):
         """
         charge_balance = 0
         for solute in self.components:
-            charge_balance += self.get_amount(solute, "mol").magnitude * self.get_property(solute, "charge")
+            # charge_balance += self.get_amount(solute, "eq/L").magnitude * self.get_property(solute, "charge")
+            charge_balance += self.get_amount(solute, "eq").magnitude
 
-        return charge_balance.magnitude
+        return charge_balance
 
     # TODO - consider adding guard statements to prevent alkalinity from being negative
     @property
-    def alkalinity(self):
+    def alkalinity(self) -> Quantity:
         """
         Return the alkalinity or acid neutralizing capacity of a solution.
 
@@ -711,7 +709,7 @@ class Solution(MSONable):
         .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = 0 * unit.Quantity("mol/L")
+        alkalinity = unit.Quantity("0 mol/L")
 
         base_cations = {
             "Li[+1]",
@@ -740,7 +738,7 @@ class Solution(MSONable):
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
     @property
-    def hardness(self):
+    def hardness(self) -> Quantity:
         """
         Return the hardness of a solution.
 
@@ -760,7 +758,7 @@ class Solution(MSONable):
             The hardness of the solution in mg/L as CaCO3
 
         """
-        hardness = 0 * unit.Quantity("mol/L")
+        hardness = unit.Quantity("0 mol/L")
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -857,7 +855,7 @@ class Solution(MSONable):
         return bjerrum_length.to("nm")
 
     @property
-    def osmotic_pressure(self):
+    def osmotic_pressure(self) -> Quantity:
         """
         Return the osmotic pressure of the solution relative to pure water.
 
@@ -906,18 +904,20 @@ class Solution(MSONable):
 
     # Concentration  Methods
 
-    def get_amount(self, solute, units):
+    def get_amount(self, solute: str, units: str = "mol/L") -> Quantity:
         """
         Return the amount of 'solute' in the parent solution.
 
         The amount of a solute can be given in a variety of unit types.
-        1. substance per volume (e.g., 'mol/L')
-        2. substance per mass of solvent (e.g., 'mol/kg')
-        3. mass of substance (e.g., 'kg')
-        4. moles of substance ('mol')
-        5. mole fraction ('fraction')
-        6. percent by weight (%)
-        7. number of molecules ('count')
+        1. substance per volume (e.g., 'mol/L', 'M')
+        2. equivalents (i.e., moles of charge) per volume (e.g., 'eq/L', 'meq/L')
+        3. substance per mass of solvent (e.g., 'mol/kg', 'm')
+        4. mass of substance (e.g., 'kg')
+        5. moles of substance ('mol')
+        6. mole fraction ('fraction')
+        7. percent by weight (%)
+        8. number of molecules ('count')
+        9. "parts-per-x" units, where ppm = mg/L, ppb = ug/L ppt = ng/L
 
         Parameters
         ----------
@@ -944,6 +944,23 @@ class Solution(MSONable):
         get_mass
         get_total_moles_solute
         """
+        z = 1
+        # sanitized unit to be passed to pint
+        _units = units
+        if "eq" in units:
+            _units = units.replace("eq", "mol")
+            z = self.get_property(solute, "charge")
+            if z == 0:  # uncharged solutes have zero equiv concentration
+                return unit.Quantity(f"0 {_units}")
+        elif units == "m":  # molal
+            _units = "mol/kg"
+        elif units == "ppm":
+            _units = "mg/L"
+        elif units == "ppb":
+            _units = "ug/L"
+        elif units == "ppt":
+            _units = "ng/L"
+
         # retrieve the number of moles of solute and its molecular weight
         try:
             moles = unit.Quantity(self.components[solute], "mol")
@@ -951,10 +968,12 @@ class Solution(MSONable):
         # In that case, the amount is zero
         except KeyError:
             try:
-                return 0 * unit.Quantity(units)
+                return 0 * unit.Quantity(_units)
             except DimensionalityError:
-                logger.error("Unsupported unit specified for get_amount")
-                return 0
+                logger.warning(
+                    f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0."
+                )
+                return unit.Quantity("0 dimensionless")
 
         # with pint unit conversions enabled, we just pass the unit to pint
         # the logic tests here ensure that only the required arguments are
@@ -967,20 +986,19 @@ class Solution(MSONable):
         mw = unit.Quantity(self.get_property(solute, "molecular_weight")).to("g/mol")
         if units == "%":
             return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
-        if unit.Quantity(units).check("[substance]"):
-            return moles.to(units)
-        qty = unit.Quantity(units)
+        if unit.Quantity(_units).check("[substance]"):
+            return z * moles.to(_units)
+        qty = unit.Quantity(_units)
         if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
-            return moles.to(units, "chem", mw=mw, volume=self.volume)
+            return z * moles.to(_units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):
-            return moles.to(units, "chem", mw=mw, solvent_mass=self.solvent_mass)
+            return z * moles.to(_units, "chem", mw=mw, solvent_mass=self.solvent_mass)
         if qty.check("[mass]"):
-            return moles.to(units, "chem", mw=mw)
+            return moles.to(_units, "chem", mw=mw)
 
-        logger.error("Unsupported unit specified for get_amount")
-        return None
+        raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_total_amount(self, element, units):
+    def get_total_amount(self, element: str, units) -> Quantity:
         """
         Return the total amount of 'element' (across all solutes) in the solution.
 
@@ -1011,7 +1029,7 @@ class Solution(MSONable):
 
         el = str(Element(element))
 
-        TOT = 0 * unit.Quantity(units)
+        TOT = unit.Quantity(f"0 {units}")
 
         # loop through all the solutes, process each one containing element
         for item in self.components:
@@ -1040,7 +1058,7 @@ class Solution(MSONable):
 
         return TOT
 
-    def add_solute(self, formula, amount):
+    def add_solute(self, formula: str, amount: str):
         """Primary method for adding substances to a pyEQL solution.
 
         Parameters
@@ -1103,14 +1121,14 @@ class Solution(MSONable):
 
     # TODO - deprecate this method. Solvent should be added to the dict like anything else
     # and solvent_name will track which component it is.
-    def add_solvent(self, formula, amount):
+    def add_solvent(self, formula: str, amount: str):
         """Same as add_solute but omits the need to pass solvent mass to pint."""
         quantity = unit.Quantity(amount)
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
 
-    def add_amount(self, solute, amount):
+    def add_amount(self, solute: str, amount: str):
         """
         Add the amount of 'solute' to the parent solution.
 
@@ -1206,7 +1224,7 @@ class Solution(MSONable):
             # set the volume recalculation flag
             self.volume_update_required = True
 
-    def set_amount(self, solute, amount):
+    def set_amount(self, solute: str, amount: str):
         """
         Set the amount of 'solute' in the parent solution.
 
@@ -1311,7 +1329,7 @@ class Solution(MSONable):
         """
         return self.get_amount(self.solvent, "mol")
 
-    def get_osmolarity(self, activity_correction=False):
+    def get_osmolarity(self, activity_correction=False) -> Quantity:
         """Return the osmolarity of the solution in Osm/L.
 
         Parameters
@@ -1325,7 +1343,7 @@ class Solution(MSONable):
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
         return factor * self.get_total_moles_solute() / self.volume.to("L")
 
-    def get_osmolality(self, activity_correction=False):
+    def get_osmolality(self, activity_correction=False) -> Quantity:
         """Return the osmolality of the solution in Osm/kg.
 
         Parameters
@@ -1440,8 +1458,7 @@ class Solution(MSONable):
         self,
         solute: str,
         scale: Literal["molal", "molar", "fugacity", "rational"] = "molal",
-        verbose: bool = False,
-    ):
+    ) -> Quantity:
         """
         Return the activity coefficient of a solute in solution.
 
@@ -1481,15 +1498,13 @@ class Solution(MSONable):
         if scale == "rational":
             return molal * (1 + unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
-        logger.warning("Invalid scale argument. Returning molal-scale activity coefficient")
-        return molal
+        raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
     def get_activity(
         self,
         solute: str,
         scale: Literal["molal", "molar", "rational"] = "molal",
-        verbose: bool = False,
-    ):
+    ) -> Quantity:
         """
         Return the thermodynamic activity of the solute in solution on the chosen concentration scale.
 
@@ -1506,7 +1521,7 @@ class Solution(MSONable):
                 useful when modeling multicomponent solutions. False by default.
 
         Returns
-            The thermodynamic activity of the solute in question (dimensionless)
+            The thermodynamic activity of the solute in question (dimensionless Quantity)
 
         Notes:
             The thermodynamic activity depends on the concentration scale used [rs]_ .
@@ -1529,26 +1544,23 @@ class Solution(MSONable):
         else:
             # determine the concentration units to use based on the desired scale
             if scale == "molal":
-                unit = "mol/kg"
+                units = "mol/kg"
             elif scale == "molar":
-                unit = "mol/L"
+                units = "mol/L"
             elif scale == "rational":
-                unit = "fraction"
+                units = "fraction"
             else:
-                logger.error("Invalid scale argument. Returning molal-scale activity.")
-                unit = "mol/kg"
-                scale = "molal"
+                raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
             activity = (
-                self.get_activity_coefficient(solute, scale=scale, verbose=verbose)
-                * self.get_amount(solute, unit).magnitude
-            )
+                self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)
+            ).magnitude * unit.Quantity("1 dimensionless")
             logger.info(f"Calculated {scale} scale activity of solute {solute} as {activity}")
 
         return activity
 
     # TODO - engine method
-    def get_osmotic_coefficient(self, scale: Literal["molal", "molar", "rational"] = "molal"):
+    def get_osmotic_coefficient(self, scale: Literal["molal", "molar", "rational"] = "molal") -> Quantity:
         """
         Return the osmotic coefficient of an aqueous solution.
 
@@ -1571,12 +1583,11 @@ class Solution(MSONable):
             return math.exp(
                 -molal_phi * unit.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
-            )
+            ) * unit.Quantity("1 dimensionless")
 
-        logger.warning("Invalid scale argument. Returning molal-scale osmotic coefficient")
-        return molal_phi
+        raise ValueError("Invalid scale argument. Pass 'molal', 'rational', or 'fugacity'.")
 
-    def get_water_activity(self):
+    def get_water_activity(self) -> Quantity:
         """
         Return the water activity.
 
@@ -1631,7 +1642,7 @@ class Solution(MSONable):
 
         return math.exp(-osmotic_coefficient * 0.018015 * concentration_sum) * unit.Quantity("1 dimensionless")
 
-    def get_chemical_potential_energy(self, activity_correction=True):
+    def get_chemical_potential_energy(self, activity_correction: bool = True) -> Quantity:
         """
         Return the total chemical potential energy of a solution (not including
         pressure or electric effects).
@@ -1697,7 +1708,7 @@ class Solution(MSONable):
 
         return E.to("J")
 
-    def _get_property(self, solute: str, name: str) -> Optional[Quantity]:
+    def _get_property(self, solute: str, name: str) -> Any | None:
         """Retrieve a thermodynamic property (such as diffusion coefficient)
         for solute, and adjust it from the reference conditions to the conditions
         of the solution.
@@ -1747,12 +1758,12 @@ class Solution(MSONable):
         if len(data) > 1:
             logger.warning(f"Duplicate database entries for solute {solute} found!")
 
-        data = data[0]
+        doc: dict = data[0]
 
         # perform temperature-corrections or other adjustments for certain
         # parameter types
         if name == "transport.diffusion_coefficient":
-            base_value = data["transport"]["diffusion_coefficient"]["value"]
+            base_value = doc["transport"]["diffusion_coefficient"]["value"]
 
             # correct for temperature and viscosity
             # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
@@ -1765,41 +1776,41 @@ class Solution(MSONable):
                 * self.water_substance.mu
                 * unit.Quantity("1 Pa*s")
                 / self.get_viscosity_dynamic()
-            )
+            ).to("m**2/s")
 
         # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
         # return unit.Quantity("0 m**2/s")
 
         # just return the base-value molar volume for now; find a way to adjust for concentration later
         if name == "size.molar_volume":
-            base_value = unit.Quantity(data["size"]["molar_volume"]["value"])
+            base_value = unit.Quantity(doc["size"]["molar_volume"]["value"])
             if self.temperature != base_temperature:
                 logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
             return base_value
 
         if name == "model_parameters.dielectric_zuber":
-            return unit.Quantity(data["model_parameters"]["dielectric_zuber"]["value"])
+            return unit.Quantity(doc["model_parameters"]["dielectric_zuber"]["value"])
 
         if name == "model_parameters.activity_pitzer":
             # return a dict
-            if data["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
-                return data["model_parameters"]["activity_pitzer"]
+            if doc["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
+                return doc["model_parameters"]["activity_pitzer"]
             return None
 
         if name == "model_parameters.molar_volume_pitzer":
             # return a dict
-            if data["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
-                return data["model_parameters"]["molar_volume_pitzer"]
+            if doc["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
+                return doc["model_parameters"]["molar_volume_pitzer"]
             return None
 
         # for parameters not named above, just return the base value
-        val = data.get(name) if not isinstance(data.get(name), dict) else data[name].get("value")
+        val = doc.get(name) if not isinstance(doc.get(name), dict) else doc[name].get("value")
         # logger.warning("%s has not been corrected for solution conditions" % name)
         if val is not None:
             return unit.Quantity(val)
         return None
 
-    def get_transport_number(self, solute, activity_correction=False):
+    def get_transport_number(self, solute, activity_correction=False) -> Quantity:
         """Calculate the transport number of the solute in the solution.
 
         Args:
@@ -1865,7 +1876,7 @@ class Solution(MSONable):
 
         return (numerator / denominator).to("dimensionless")
 
-    def get_molar_conductivity(self, solute):
+    def get_molar_conductivity(self, solute: str) -> Quantity:
         """
         Calculate the molar (equivalent) conductivity for a solute.
 
@@ -1902,7 +1913,7 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def get_mobility(self, solute):
+    def get_mobility(self, solute: str) -> Quantity:
         """
         Calculate the ionic mobility of the solute.
 
@@ -1939,7 +1950,7 @@ class Solution(MSONable):
 
         return mobility.to("m**2/V/s")
 
-    def get_lattice_distance(self, solute):
+    def get_lattice_distance(self, solute: str) -> Quantity:
         """
         Calculate the average distance between molecules.
 
@@ -1992,7 +2003,7 @@ class Solution(MSONable):
         return self.engine.get_solute_volume(self)
 
     # copying and serialization
-    def copy(self):
+    def copy(self) -> Solution:
         """Return a copy of the solution."""
         return Solution.from_dict(self.as_dict())
 
@@ -2011,7 +2022,7 @@ class Solution(MSONable):
         return d
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Solution":
+    def from_dict(cls, d: dict) -> Solution:
         """
         Instantiate a Solution from a dictionary generated by as_dict().
         """
@@ -2035,7 +2046,7 @@ class Solution(MSONable):
         return new_sol
 
     # arithmetic operations
-    def __add__(self, other: "Solution"):
+    def __add__(self, other: Solution):
         """
         Solution addition: mix two solutions together.
 
@@ -2121,10 +2132,10 @@ class Solution(MSONable):
             pE=mix_pE,
         )
 
-    def __sub__(self, other: "Solution"):
+    def __sub__(self, other: Solution):
         raise NotImplementedError("Subtraction of solutions is not implemented.")
 
-    def __mul__(self, factor: Union[float, int]):
+    def __mul__(self, factor: float | int):
         """
         Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
         every component (including solvent). No other properties will change.
@@ -2132,7 +2143,7 @@ class Solution(MSONable):
         self.volume *= factor
         return self
 
-    def __truediv__(self, factor: Union[float, int]):
+    def __truediv__(self, factor: float | int):
         """
         Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
         of every compoonents (including solvent). No other properties will change.
@@ -2235,7 +2246,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_solute() is deprecated and will be removed in the next release! Access solutes via the Solution.components attribute and their properties via Solution.get_property(solute, ...)"
     )
-    def get_solute(self, i):
+    def get_solute(self, i):  # pragma: no cover
         """Return the specified solute object.
 
         :meta private:
@@ -2245,7 +2256,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_solvent is deprecated and will be removed in the next release! Use Solution.solvent instead."
     )
-    def get_solvent(self):
+    def get_solvent(self):  # pragma: no cover
         """Return the solvent object.
 
         :meta private:
@@ -2255,7 +2266,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
     )
-    def get_temperature(self):
+    def get_temperature(self):  # pragma: no cover
         """
         Return the temperature of the solution.
 
@@ -2274,7 +2285,7 @@ class Solution(MSONable):
     @deprecated(
         message="set_temperature() will be removed in the next release. Set the temperature directly via the property Solution.temperature"
     )
-    def set_temperature(self, temperature):
+    def set_temperature(self, temperature):  # pragma: no cover
         """
         Set the solution temperature.
 
@@ -2293,7 +2304,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_pressure() will be removed in the next release. Access the pressure directly via the property Solution.pressure"
     )
-    def get_pressure(self):
+    def get_pressure(self):  # pragma: no cover
         """
         Return the hydrostatic pressure of the solution.
 
@@ -2308,7 +2319,7 @@ class Solution(MSONable):
     @deprecated(
         message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
     )
-    def set_pressure(self, pressure):
+    def set_pressure(self, pressure):  # pragma: no cover
         """
         Set the hydrostatic pressure of the solution.
 
@@ -2324,19 +2335,19 @@ class Solution(MSONable):
     @deprecated(
         message="get_volume() will be removed in the next release. Access the volume directly via Solution.volume"
     )
-    def get_volume(self):
+    def get_volume(self):  # pragma: no cover
         """ """
         return self.volume
 
     @deprecated(
         message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
     )
-    def set_volume(self, volume: str):
+    def set_volume(self, volume: str):  # pragma: no cover
         """ """
-        self.volume = volume
+        self.volume = volume  # type: ignore
 
     @deprecated(message="get_mass() will be removed in the next release. Use the Solution.mass property instead.")
-    def get_mass(self):
+    def get_mass(self):  # pragma: no cover
         """
         Return the total mass of the solution.
 
@@ -2355,7 +2366,7 @@ class Solution(MSONable):
         return self.mass
 
     @deprecated(message="get_density() will be removed in the next release. Use the Solution.density property instead.")
-    def get_density(self):
+    def get_density(self):  # pragma: no cover
         """
         Return the density of the solution.
 
@@ -2370,7 +2381,7 @@ class Solution(MSONable):
         return self.density
 
     @deprecated(message="get_viscosity_relative() will be removed in the next release.")
-    def get_viscosity_relative(self):
+    def get_viscosity_relative(self):  # pragma: no cover
         """
         Return the viscosity of the solution relative to that of water.
 
@@ -2406,7 +2417,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
     )
-    def get_viscosity_dynamic(self):
+    def get_viscosity_dynamic(self):  # pragma: no cover
         """
         Return the dynamic (absolute) viscosity of the solution.
 
@@ -2423,7 +2434,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_viscosity_kinematic() will be removed in the next release. Access directly via the property Solution.viscosity_kinematic."
     )
-    def get_viscosity_kinematic(self):
+    def get_viscosity_kinematic(self):  # pragma: no cover
         """
         Return the kinematic viscosity of the solution.
 
@@ -2466,7 +2477,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_conductivity() will be removed in the next release. Access directly via the property Solution.conductivity."
     )
-    def get_conductivity(self):
+    def get_conductivity(self):  # pragma: no cover
         """
         Compute the electrical conductivity of the solution.
 
@@ -2518,7 +2529,7 @@ class Solution(MSONable):
         replacement=get_amount,
         message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead.",
     )
-    def get_mole_fraction(self, solute):
+    def get_mole_fraction(self, solute):  # pragma: no cover
         """
         Return the mole fraction of 'solute' in the solution.
 
@@ -2533,7 +2544,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"
     )
-    def get_ionic_strength(self):
+    def get_ionic_strength(self):  # pragma: no cover
         """
         Return the ionic strength of the solution.
 
@@ -2575,7 +2586,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_charge_balance() will be removed in the next release. Access directly via the property Solution.charge_balance"
     )
-    def get_charge_balance(self):
+    def get_charge_balance(self):  # pragma: no cover
         """
         Return the charge balance of the solution.
 
@@ -2604,7 +2615,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_alkalinity() will be removed in the next release. Access directly via the property Solution.alkalinity"
     )
-    def get_alkalinity(self):
+    def get_alkalinity(self):  # pragma: no cover
         """
         Return the alkalinity or acid neutralizing capacity of a solution.
 
@@ -2636,7 +2647,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_hardness() will be removed in the next release. Access directly via the property Solution.hardness"
     )
-    def get_hardness(self):
+    def get_hardness(self):  # pragma: no cover
         """
         Return the hardness of a solution.
 
@@ -2663,7 +2674,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_debye_length() will be removed in the next release. Access directly via the property Solution.debye_length"
     )
-    def get_debye_length(self):
+    def get_debye_length(self):  # pragma: no cover
         """
         Return the Debye length of a solution.
 
@@ -2704,7 +2715,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_bjerrum_length() will be removed in the next release. Access directly via the property Solution.bjerrum_length"
     )
-    def get_bjerrum_length(self):
+    def get_bjerrum_length(self):  # pragma: no cover
         """
         Return the Bjerrum length of a solution.
 
@@ -2751,7 +2762,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_dielectric_constant() will be removed in the next release. Access directly via the property Solution.dielectric_constant"
     )
-    def get_dielectric_constant(self):
+    def get_dielectric_constant(self):  # pragma: no cover
         """
         Returns the dielectric constant of the solution.
 
@@ -2787,7 +2798,7 @@ class Solution(MSONable):
     @deprecated(
         message="get_solvent_mass() will be removed in the next release. Access directly via the property Solution.solvent_mass"
     )
-    def get_solvent_mass(self):
+    def get_solvent_mass(self):  # pragma: no cover
         """
         Return the mass of the solvent.
 
@@ -2813,14 +2824,14 @@ class Solution(MSONable):
     @deprecated(
         message="osmotic_pressure will be removed in the next release. Access directly via the property Solution.osmotic_pressure"
     )
-    def get_osmotic_pressure(self):
+    def get_osmotic_pressure(self):  # pragma: no cover
         """
         :meta private:
         """
         return self.osmotic_pressure
 
     @deprecated(message="get_salt_list() will be removed in the next release. Use get_salt_dict() instead.")
-    def get_salt_list(self):
+    def get_salt_list(self):  # pragma: no cover
         """
         See get_salt_dict()
 

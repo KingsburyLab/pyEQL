@@ -11,8 +11,10 @@ that do depend on compsition are accessed via Solution class methods.
 :license: LGPL, see LICENSE for more details.
 
 """
+from __future__ import annotations
+
 from dataclasses import asdict, dataclass, field
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 from pymatgen.core.ion import Ion
@@ -23,7 +25,7 @@ class Datum:
     """Document containing data for a single computed or experimental property."""
 
     value: str
-    reference: Optional[str] = None
+    reference: str | None = None
     data_type: Literal["computed", "experimental", "fitted", "unknown"] = "unknown"
 
     @property
@@ -66,7 +68,7 @@ class Solute:
     formula_latex: str
     formula_hill: str
     formula_pretty: str
-    oxi_state_guesses: tuple
+    oxi_state_guesses: list[dict[str, float]]
     n_atoms: int
     n_elements: int
     size: dict = field(

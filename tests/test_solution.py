@@ -79,6 +79,15 @@ def test_empty_solution_3():
     assert set(s1.list_solutes()) == {"H2O", "OH-", "H+"}
 
 
+def test_init_raises():
+    with pytest.raises(ValueError, match="random is not a valid value"):
+        Solution(engine="random")
+    with pytest.raises(ValueError, match="Non-aqueous solvent detected"):
+        Solution(solvent="D2O")
+    with pytest.raises(ValueError, match="Multiple solvents"):
+        Solution(solvent=["D2O", "MeOH"])
+
+
 # create an empty and test solutions with the same volume using substance / volume,
 # substance/mass, and substance units
 def test_solute_addition(s2, s3, s4):
@@ -111,6 +120,14 @@ def test_solute_addition(s2, s3, s4):
     assert result_molL < result_mol
 
 
+def test_chempot_energy(s1, s2):
+    # TODO - double check calculation formula and update with quantitative tests
+    # in an empty solution, chempot should be zero
+    # assert np.isclose(s1.get_chemical_potential_energy().magnitude, 0)
+    # assert np.isclose(s1.get_chemical_potential_energy(activity_correction = False).magnitude, 0)
+    pass
+
+
 def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s3.hardness, 0)
@@ -140,6 +157,56 @@ def test_p(s2):
     assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
     assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
     assert np.isclose(s2.p("Mg++"), 0)
+
+
+def test_get_amount(s3, s5):
+    TEST_UNITS = [
+        "mol/L",
+        "mmol/L",
+        "umol/L",
+        "M",
+        "eq/L",
+        "meq/L",
+        "ueq/L",
+        "eq",
+        "meq",
+        "mol/kg",
+        "mmol/kg",
+        "umol/kg",
+        "m",
+        "fraction",
+        "count",
+        "%",
+        "g/L",
+        "mg/L",
+        "ug/L",
+        "ng/L",
+        "g",
+        "ng",
+        "mg",
+        "ug",
+        "kg",
+        "ppm",
+        "ppb",
+        "ppt",
+        "mol",
+        "eq",
+    ]
+    # TODO - make this test more precise i.e. test numerical values
+    for u in TEST_UNITS:
+        qty = s3.get_amount("Na+", u)
+        assert isinstance(qty, unit.Quantity), f"get_amount() failed for unit {u}"
+        assert qty.magnitude > 0
+    assert s3.get_amount("Na+", "ppm") == s3.get_amount("Na+", "mg/L")
+    assert s3.get_amount("Na+", "ppb") == s3.get_amount("Na+", "ug/L")
+    assert s3.get_amount("Na+", "ppt") == s3.get_amount("Na+", "ng/L")
+    assert s3.get_amount("Na+", "eq/L") == s3.get_amount("Na+", "M")
+    assert s3.get_amount("Na+", "meq/L") == s3.get_amount("Na+", "mmol/L")
+    assert s5.get_amount("CO3-2", "eq/L") == -2 * s5.get_amount("CO3-2", "M")
+    assert s5.get_amount("CO3-2", "eq") == -2 * s5.get_amount("CO3-2", "mol")
+    # TODO - pint does not consider "mM" and "mmol/L" equivalent. Consider filing bug report? Or perhaps an issue with
+    # my unit definition file
+    # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
 
 
 def test_conductivity(s1, s2):
