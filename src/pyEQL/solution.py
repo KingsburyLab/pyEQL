@@ -193,8 +193,6 @@ class Solution(MSONable):
             )
             for item in self._solutes:
                 self.add_solute(*item)
-        elif self._solutes is not None:
-            raise ValueError("Solutes must be given as a list or dict!")
 
     @property
     def mass(self) -> Quantity:

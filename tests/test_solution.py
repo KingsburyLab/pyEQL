@@ -79,6 +79,15 @@ def test_empty_solution_3():
     assert set(s1.list_solutes()) == {"H2O", "OH-", "H+"}
 
 
+def test_init_raises():
+    with pytest.raises(ValueError, match="random is not a valid value"):
+        Solution(engine="random")
+    with pytest.raises(ValueError, match="Non-aqueous solvent detected"):
+        Solution(solvent="D2O")
+    with pytest.raises(ValueError, match="Multiple solvents"):
+        Solution(solvent=["D2O", "MeOH"])
+
+
 # create an empty and test solutions with the same volume using substance / volume,
 # substance/mass, and substance units
 def test_solute_addition(s2, s3, s4):
