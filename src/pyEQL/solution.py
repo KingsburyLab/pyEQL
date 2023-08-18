@@ -204,7 +204,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: the mass of the solution, in kg
 
@@ -222,11 +222,11 @@ class Solution(MSONable):
         This property is used whenever mol/kg (or similar) concentrations
         are requested by get_amount()
 
-        Returns
+        Returns:
         -------
         Quantity: the mass of the solvent, in kg
 
-        See Also
+        See Also:
         --------
         :py:meth:`get_amount()`
         """
@@ -351,7 +351,7 @@ class Solution(MSONable):
             If False, the function will use the molar concentration rather
             than the activity to calculate p. Defaults to True.
 
-        Returns
+        Returns:
         -------
         Quantity
             The negative log10 of the activity (or molar concentration if
@@ -372,7 +372,7 @@ class Solution(MSONable):
 
         Density is calculated from the mass and volume each time this method is called.
 
-        Returns
+        Returns:
         -------
         Quantity: The density of the solution.
         """
@@ -387,11 +387,11 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: the dielectric constant of the solution, dimensionless.
 
-        Notes
+        Notes:
         -----
         Implements the following equation as given by Zuber et al.
 
@@ -401,7 +401,7 @@ class Solution(MSONable):
         is the mole fraction of the ion in solution.
 
 
-        References
+        References:
         ----------
         .A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier,
         An empirical equation for the dielectric constant in aqueous and nonaqueous
@@ -466,7 +466,7 @@ class Solution(MSONable):
         """
         Return the kinematic viscosity of the solution.
 
-        Notes
+        Notes:
         -----
         The calculation is based on a model derived from the Eyring equation
         and presented in
@@ -487,7 +487,7 @@ class Solution(MSONable):
         The a and b fitting parameters for a variety of common salts are included in the
         database.
 
-        References
+        References:
         ----------
         Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension of the McAllister model to correlate kinematic viscosity of electrolyte solutions. Fluid Phase Equilib. 2013, 358, 44-49.
 
@@ -547,12 +547,12 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The electrical conductivity of the solution in Siemens / meter.
 
-        Notes
+        Notes:
         -----
         Conductivity is calculated by summing the molar conductivities of the respective
         solutes, but they are activity-corrected and adjusted using an empricial exponent.
@@ -575,12 +575,12 @@ class Solution(MSONable):
         Note: PHREEQC uses the molal rather than molar concentration according to
         http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
 
-        References
+        References:
         ----------
         .. [aq] https://www.aqion.de/site/electrical-conductivity
         .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
 
-        See Also
+        See Also:
         --------
         :py:attr:`ionic_strength`
         :py:meth:`get_molar_conductivity()`
@@ -621,7 +621,7 @@ class Solution(MSONable):
 
         Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
 
-        Returns
+        Returns:
         -------
         Quantity :
             The ionic strength of the parent solution, mol/kg.
@@ -631,7 +631,7 @@ class Solution(MSONable):
         :py:meth:`get_activity`
         :py:meth:`get_water_activity`
 
-        Notes
+        Notes:
         -----
         The ionic strength is calculated according to:
 
@@ -668,7 +668,7 @@ class Solution(MSONable):
 
         where :math:`n_i` is the number of moles, and :math:`z_i` is the charge on species i.
 
-        Returns
+        Returns:
         -------
         float :
             The charge balance of the solution, in equivalents (mol of charge).
@@ -687,12 +687,12 @@ class Solution(MSONable):
         """
         Return the alkalinity or acid neutralizing capacity of a solution.
 
-        Returns
+        Returns:
         -------
         Quantity :
             The alkalinity of the solution in mg/L as CaCO3
 
-        Notes
+        Notes:
         -----
         The alkalinity is calculated according to [stm]_
 
@@ -703,9 +703,8 @@ class Solution(MSONable):
         In this method, the set of conservative cations is all Group I and Group II cations, and the
         conservative anions are all the anions of strong acids.
 
-        References
+        References:
         ----------
-
         .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
@@ -752,7 +751,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The hardness of the solution in mg/L as CaCO3
@@ -786,7 +785,7 @@ class Solution(MSONable):
 
         Returns The Debye length, in nanometers.
 
-        References
+        References:
         .. [wk3] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
 
         See Also:
@@ -829,22 +828,22 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The Bjerrum length, in nanometers.
 
-        References
+        References:
         ----------
         https://en.wikipedia.org/wiki/Bjerrum_length
 
-        Examples
+        Examples:
         --------
         >>> s1 = pyEQL.Solution()
         >>> s1.bjerrum_length
         <Quantity(0.7152793009386953, 'nanometer')>
 
-        See Also
+        See Also:
         --------
         :attr:`dielectric_constant`
 
@@ -859,7 +858,7 @@ class Solution(MSONable):
         """
         Return the osmotic pressure of the solution relative to pure water.
 
-        Returns
+        Returns:
             The osmotic pressure of the solution relative to pure water in Pa
 
         See Also:
@@ -876,7 +875,7 @@ class Solution(MSONable):
             molar volume of water (18.2 cm**3/mol), and :math:`a_{w}` is the water
             activity.
 
-        References
+        References:
             .. [sata] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification.
                 Royal Society of Chemistry, 2004, p. 10.
 
@@ -929,12 +928,12 @@ class Solution(MSONable):
                     Use 'fraction' to return the mole fraction.
                     Use '%' to return the mass percent
 
-        Returns
+        Returns:
         -------
         The amount of the solute in question, in the specified units
 
 
-        See Also
+        See Also:
         --------
         add_amount
         set_amount
@@ -1010,17 +1009,17 @@ class Solution(MSONable):
                     Units desired for the output. Examples of valid units are
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
 
-        Returns
+        Returns:
         -------
         The total amount of the element in the solution, in the specified units
 
-        Notes
+        Notes:
         -----
         There is currently no way to distinguish between different oxidation
         states of the same element (e.g. TOTFe(II) vs. TOTFe(III)). This
         is planned for a future release.
 
-        See Also
+        See Also:
         --------
         get_amount
         """
@@ -1144,7 +1143,7 @@ class Solution(MSONable):
             per-substance basis, then the solution volume is recalculated
             based on the new composition
 
-        Returns
+        Returns:
         -------
         Nothing. The concentration of solute is modified.
         """
@@ -1245,7 +1244,7 @@ class Solution(MSONable):
             other components are not altered, while the molar concentrations
             are modified.
 
-        Returns
+        Returns:
         -------
         Nothing. The concentration of solute is modified.
 
@@ -1323,7 +1322,7 @@ class Solution(MSONable):
         """
         Return the moles of solvent present in the solution.
 
-        Returns
+        Returns:
             The moles of solvent in the solution.
 
         """
@@ -1378,12 +1377,12 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Salt
             Salt object containing information about the parent salt.
 
-        See Also
+        See Also:
         --------
         :py:meth:`get_activity`
         :py:meth:`get_activity_coefficient`
@@ -1392,7 +1391,7 @@ class Solution(MSONable):
         :py:meth:`get_osmotic_pressure`
         :py:meth:`get_viscosity_kinematic`
 
-        Examples
+        Examples:
         --------
         >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
         >>> s1.get_salt()
@@ -1436,7 +1435,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         dict
             A dictionary of Salt objects, keyed to the salt formula
@@ -1472,7 +1471,7 @@ class Solution(MSONable):
                      that is being used for activity calculations. This option is
                      useful when modeling multicomponent solutions. False by default.
 
-        Returns
+        Returns:
             Quantity: the activity coefficient as a dimensionless pint Quantity
         """
         # return unit activity coefficient if the concentration of the solute is zero
@@ -1520,7 +1519,7 @@ class Solution(MSONable):
                 that is being used for activity calculations. This option is
                 useful when modeling multicomponent solutions. False by default.
 
-        Returns
+        Returns:
             The thermodynamic activity of the solute in question (dimensionless Quantity)
 
         Notes:
@@ -1591,18 +1590,18 @@ class Solution(MSONable):
         """
         Return the water activity.
 
-        Returns
+        Returns:
         -------
         Quantity :
             The thermodynamic activity of water in the solution.
 
-        See Also
+        See Also:
         --------
         :py:meth:`get_activity_coefficient`
         :attr:`ionic_strength`
         :py:meth:`get_salt`
 
-        Notes
+        Notes:
         -----
         Water activity is related to the osmotic coefficient in a solution containing i solutes by:
 
@@ -1614,7 +1613,7 @@ class Solution(MSONable):
         If appropriate Pitzer model parameters are not available, the
         water activity is assumed equal to the mole fraction of water.
 
-        References
+        References:
         ----------
         Blandamer, Mike J., Engberts, Jan B. F. N., Gleeson, Peter T., Reis, Joao Carlos R., 2005. "Activity of
         water in aqueous systems: A frequently neglected property." *Chemical Society Review* 34, 440-458.
@@ -1654,12 +1653,12 @@ class Solution(MSONable):
             potential. If False, mole fraction will be used, resulting in
             a calculation of the ideal chemical potential.
 
-        Returns
+        Returns:
         -------
         Quantity
             The actual or ideal chemical potential energy of the solution, in Joules.
 
-        Notes
+        Notes:
         -----
         The chemical potential energy (related to the Gibbs mixing energy) is
         calculated as follows: [koga]_
@@ -1678,7 +1677,7 @@ class Solution(MSONable):
         so a simple salt dissolved in water is a three component solution (cation,
         anion, and water).
 
-        References
+        References:
         ----------
         .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
 
@@ -1721,7 +1720,7 @@ class Solution(MSONable):
             The name of the property needed, e.g.
             'diffusion coefficient'
 
-        Returns
+        Returns:
         -------
         Quantity: The desired parameter or None if not found
 
@@ -1820,10 +1819,10 @@ class Solution(MSONable):
             activity_correction: If True, the transport number will be corrected for activity following
                 the same method used for solution conductivity. Defaults to False if omitted.
 
-            Returns
+        Returns:
                 The transport number of `solute`
 
-            Notes:
+        Notes:
                 Transport number is calculated according to :
 
                 .. math::
@@ -1838,7 +1837,7 @@ class Solution(MSONable):
                 transport number is corrected with an activity factor. See the documentation
                 for Solution.conductivity for an explanation of this correction.
 
-            References:
+        References:
                 Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
                 ion effects on membrane potential and the permselectivity of ion exchange membranes.""
                 *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
@@ -1884,7 +1883,7 @@ class Solution(MSONable):
             solute: String identifying the solute for which the molar conductivity is
                 to be calculated.
 
-        Returns
+        Returns:
             The molar or equivalent conductivity of the species in the solution.
             Zero if the solute is not charged.
 
@@ -1923,12 +1922,12 @@ class Solution(MSONable):
             String identifying the solute for which the mobility is
             to be calculated.
 
-        Returns
+        Returns:
         -------
         float : The ionic mobility. Zero if the solute is not charged.
 
 
-        Notes
+        Notes:
         -----
         This function uses the Einstein relation to convert a diffusion coefficient
         into an ionic mobility [smed]_
@@ -1937,7 +1936,7 @@ class Solution(MSONable):
 
             \\mu_i = {F |z_i| D_i \\over RT}
 
-        References
+        References:
         ----------
         .. [smed] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
 
@@ -1963,17 +1962,17 @@ class Solution(MSONable):
         solute : str
             String representing the name of the solute of interest
 
-        Returns
+        Returns:
         -------
         Quantity : The average distance between solute molecules
 
-        Examples
+        Examples:
         --------
         >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
         >>> soln.get_lattice_distance('Na+')
         1.492964.... nanometer
 
-        Notes
+        Notes:
         -----
         The lattice distance is related to the molar concentration as follows:
 
@@ -2008,9 +2007,7 @@ class Solution(MSONable):
         return Solution.from_dict(self.as_dict())
 
     def as_dict(self) -> dict:
-        """
-        Convert the Solution into a dict representation that can be serialized to .json or other format.
-        """
+        """Convert the Solution into a dict representation that can be serialized to .json or other format."""
         # clear the volume update flag, if required
         if self.volume_update_required:
             self._update_volume()
@@ -2023,9 +2020,7 @@ class Solution(MSONable):
 
     @classmethod
     def from_dict(cls, d: dict) -> Solution:
-        """
-        Instantiate a Solution from a dictionary generated by as_dict().
-        """
+        """Instantiate a Solution from a dictionary generated by as_dict()."""
         # because of the automatic volume updating that takes place during the __init__ process,
         # care must be taken here to recover the exact quantities of solute and volume
         # first we store the volume of the serialized solution
@@ -2156,6 +2151,64 @@ class Solution(MSONable):
         """List all the solutes in the solution."""
         return list(self.components.keys())
 
+    def list_salts(self, unit="mol/kg", decimals=4):
+        list = generate_salt_list(self, unit)
+        for item in list:
+            print(item.formula + "\t {:0.{decimals}f}".format(list[item], decimals=decimals))
+
+    def print(
+        self,
+        mode: Literal["all", "ions", "cations", "anions", "neutrals"] = "all",
+        units: Literal["ppm", "mol", "mol/kg", "mol/L", "%", "activity"] = "mol",
+        places=4,
+    ):
+        """
+        Print details about the Solution.
+
+        Args:
+            mode: Whether to list the amounts of all solutes, or only anions, cations, any ion, or any neutral solute.
+            units: The units to list solute amounts in. "activity" will list dimensionless activities instead of concentrations.
+            places: The number of decimal places to round the solute amounts.
+        """
+        print(self)
+        str1 = "Activities" if units == "activity" else "Amounts"
+        str2 = f" ({units})" if units != "activity" else ""
+        header = f"\nComponent {str1}{str2}:"
+        print(header)
+        print("=" * (len(header) - 1))
+        for i in self.components:
+            if mode != "all":
+                z = self.get_property(i, "charge")
+                if (
+                    (z != 0 and mode == "neutrals")
+                    or (z >= 0 and mode == "anions")
+                    or (z <= 0 and mode == "cations")
+                    or (z == 0 and mode == "ions")
+                ):
+                    continue
+
+            amt = self.get_activity(i).magnitude if units == "activity" else self.get_amount(i, units).magnitude
+
+            print(f"{i}:\t {amt:0.{places}f}")
+
+    def __str__(self):
+        # set output of the print() statement for the solution
+        l1 = f"Volume: {self.volume:.3f~}"
+        l2 = f"Temperature: {self.temperature:.3f~}"
+        l3 = f"Pressure: {self.pressure:.3f~}"
+        l4 = f"pH: {self.pH:.1f}"
+        l5 = f"pE: {self.pE:.1f}"
+        l6 = f"Solvent: {self.solvent}"
+        l7 = f"Components: {self.list_solutes():}"
+        return f"{l1}\n{l2}\n{l3}\n{l4}\n{l5}\n{l6}\n{l7}"
+
+    """
+    Legacy methods to be deprecated in a future release.
+    """
+
+    @deprecated(
+        message="list_concentrations() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
+    )
     def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):
         """
         List the concentration of each species in a solution.
@@ -2171,11 +2224,11 @@ class Solution(MSONable):
             solutes. Other valid arguments are 'cations' and 'anions' which
             return lists of cations and anions, respectively.
 
-        Returns
+        Returns:
         -------
         dict
             Dictionary containing a list of the species in solution paired with their amount in the specified units
-
+        :meta private:
         """
         result_list = []
         # populate a list with component names
@@ -2206,12 +2259,10 @@ class Solution(MSONable):
 
         return result_list
 
-    def list_salts(self, unit="mol/kg", decimals=4):
-        list = generate_salt_list(self, unit)
-        for item in list:
-            print(item.formula + "\t {:0.{decimals}f}".format(list[item], decimals=decimals))
-
-    def list_activities(self, decimals=4):
+    @deprecated(
+        message="list_activities() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
+    )
+    def list_activities(self, decimals=4):  # pragma: no cover
         """
         List the activity of each species in a solution.
 
@@ -2220,28 +2271,17 @@ class Solution(MSONable):
         decimals: int
             The number of decimal places to display. Defaults to 4.
 
-        Returns
+        Returns:
         -------
         dict
             Dictionary containing a list of the species in solution paired with their activity
 
+        :meta private:
         """
         print("Component Activities:\n")
         print("=====================\n")
         for i in self.components:
             print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
-
-    def __str__(self):
-        # set output of the print() statement for the solution
-        str1 = f"Volume: {self.volume:.3f~}\n"
-        str2 = f"Pressure: {self.pressure:.3f~}\n"
-        str3 = f"Temperature: {self.temperature:.3f~}\n"
-        str4 = f"Components: {self.list_solutes():}\n"
-        return str1 + str2 + str3 + str4
-
-    """
-    Legacy methods to be deprecated in a future release.
-    """
 
     @deprecated(
         message="get_solute() is deprecated and will be removed in the next release! Access solutes via the Solution.components attribute and their properties via Solution.get_property(solute, ...)"
@@ -2274,7 +2314,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: The temperature of the solution, in Kelvin.
 
@@ -2308,7 +2348,7 @@ class Solution(MSONable):
         """
         Return the hydrostatic pressure of the solution.
 
-        Returns
+        Returns:
         -------
         Quantity: The hydrostatic pressure of the solution, in atm.
 
@@ -2356,7 +2396,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: the mass of the solution, in kg
 
@@ -2372,7 +2412,7 @@ class Solution(MSONable):
 
         Density is calculated from the mass and volume each time this method is called.
 
-        Returns
+        Returns:
         -------
         Quantity: The density of the solution.
 
@@ -2438,7 +2478,7 @@ class Solution(MSONable):
         """
         Return the kinematic viscosity of the solution.
 
-        Notes
+        Notes:
         -----
         The calculation is based on a model derived from the Eyring equation
         and presented by Vásquez-Castillo et al.
@@ -2459,7 +2499,7 @@ class Solution(MSONable):
         The a and b fitting parameters for a variety of common salts are included in the
         database.
 
-        References
+        References:
         ----------
         Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
         of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
@@ -2485,12 +2525,12 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The electrical conductivity of the solution in Siemens / meter.
 
-        Notes
+        Notes:
         -----
         Conductivity is calculated by summing the molar conductivities of the respective
         solutes, but they are activity-corrected and adjusted using an empricial exponent.
@@ -2509,7 +2549,7 @@ class Solution(MSONable):
         Note: PHREEQC uses the molal rather than molar concentration according to
         http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
 
-        References
+        References:
         ----------
         .. [#] https://www.aqion.de/site/electrical-conductivity
         .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
@@ -2533,7 +2573,7 @@ class Solution(MSONable):
         """
         Return the mole fraction of 'solute' in the solution.
 
-        Notes
+        Notes:
         -----
         This function is DEPRECATED.
         Use get_amount() instead and specify 'fraction' as the unit type.
@@ -2551,7 +2591,7 @@ class Solution(MSONable):
         Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
         Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
 
-        Returns
+        Returns:
         -------
         Quantity :
             The ionic strength of the parent solution, mol/kg.
@@ -2561,7 +2601,7 @@ class Solution(MSONable):
         get_activity
         get_water_activity
 
-        Notes
+        Notes:
         -----
         The ionic strength is calculated according to:
 
@@ -2594,12 +2634,12 @@ class Solution(MSONable):
         on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
         have a small nonzero value.
 
-        Returns
+        Returns:
         -------
         float :
             The charge balance of the solution, in equivalents.
 
-        Notes
+        Notes:
         -----
         The charge balance is calculated according to:
 
@@ -2619,12 +2659,12 @@ class Solution(MSONable):
         """
         Return the alkalinity or acid neutralizing capacity of a solution.
 
-        Returns
+        Returns:
         -------
         Quantity :
             The alkalinity of the solution in mg/L as CaCO3
 
-        Notes
+        Notes:
         -----
         The alkalinity is calculated according to:
 
@@ -2634,7 +2674,7 @@ class Solution(MSONable):
         (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
         In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions are all the anions of strong acids.
 
-        References
+        References:
         ----------
         Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
                pp 165. Wiley Interscience, 1996.
@@ -2661,7 +2701,7 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The hardness of the solution in mg/L as CaCO3
@@ -2693,12 +2733,12 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The Debye length, in nanometers.
 
-        References
+        References:
         ----------
         https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
 
@@ -2735,12 +2775,12 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity
             The Bjerrum length, in nanometers.
 
-        References
+        References:
         ----------
         https://en.wikipedia.org/wiki/Bjerrum_length
 
@@ -2770,11 +2810,11 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: the dielectric constant of the solution, dimensionless.
 
-        Notes
+        Notes:
         -----
         Implements the following equation as given by [zub]_
 
@@ -2784,7 +2824,7 @@ class Solution(MSONable):
         is the mole fraction of the ion in solution.
 
 
-        References
+        References:
         ----------
         .. [zub] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier,
         An empirical equation for the dielectric constant in aqueous and nonaqueous
@@ -2809,11 +2849,11 @@ class Solution(MSONable):
         ----------
         None
 
-        Returns
+        Returns:
         -------
         Quantity: the mass of the solvent, in kg
 
-        See Also
+        See Also:
         --------
         :py:meth:`get_amount()`
 
@@ -2825,15 +2865,13 @@ class Solution(MSONable):
         message="osmotic_pressure will be removed in the next release. Access directly via the property Solution.osmotic_pressure"
     )
     def get_osmotic_pressure(self):  # pragma: no cover
-        """
-        :meta private:
-        """
+        """:meta private:"""
         return self.osmotic_pressure
 
     @deprecated(message="get_salt_list() will be removed in the next release. Use get_salt_dict() instead.")
     def get_salt_list(self):  # pragma: no cover
         """
-        See get_salt_dict()
+        See get_salt_dict().
 
         See Also:
         --------
