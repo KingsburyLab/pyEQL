@@ -120,6 +120,14 @@ def test_solute_addition(s2, s3, s4):
     assert result_molL < result_mol
 
 
+def test_chempot_energy(s1, s2):
+    # TODO - double check calculation formula and update with quantitative tests
+    # in an empty solution, chempot should be zero
+    # assert np.isclose(s1.get_chemical_potential_energy().magnitude, 0)
+    # assert np.isclose(s1.get_chemical_potential_energy(activity_correction = False).magnitude, 0)
+    pass
+
+
 def test_alkalinity_hardness_chargebalance(s3, s5, s6):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s3.hardness, 0)

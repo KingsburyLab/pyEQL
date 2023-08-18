@@ -337,7 +337,7 @@ class Solution(MSONable):
         """Return the pH of the solution."""
         return self.p("H+", activity=True)
 
-    def p(self, solute, activity=True) -> float | None:
+    def p(self, solute: str, activity=True) -> float | None:
         """
         Return the negative log of the activity of solute.
 
@@ -998,7 +998,7 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_total_amount(self, element, units) -> Quantity:
+    def get_total_amount(self, element: str, units) -> Quantity:
         """
         Return the total amount of 'element' (across all solutes) in the solution.
 
@@ -1058,7 +1058,7 @@ class Solution(MSONable):
 
         return TOT
 
-    def add_solute(self, formula, amount):
+    def add_solute(self, formula: str, amount: str):
         """Primary method for adding substances to a pyEQL solution.
 
         Parameters
@@ -1121,14 +1121,14 @@ class Solution(MSONable):
 
     # TODO - deprecate this method. Solvent should be added to the dict like anything else
     # and solvent_name will track which component it is.
-    def add_solvent(self, formula, amount):
+    def add_solvent(self, formula: str, amount: str):
         """Same as add_solute but omits the need to pass solvent mass to pint."""
         quantity = unit.Quantity(amount)
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
 
-    def add_amount(self, solute, amount):
+    def add_amount(self, solute: str, amount: str):
         """
         Add the amount of 'solute' to the parent solution.
 
@@ -1224,7 +1224,7 @@ class Solution(MSONable):
             # set the volume recalculation flag
             self.volume_update_required = True
 
-    def set_amount(self, solute, amount):
+    def set_amount(self, solute: str, amount: str):
         """
         Set the amount of 'solute' in the parent solution.
 
@@ -1504,7 +1504,6 @@ class Solution(MSONable):
         self,
         solute: str,
         scale: Literal["molal", "molar", "rational"] = "molal",
-        verbose: bool = False,
     ) -> Quantity:
         """
         Return the thermodynamic activity of the solute in solution on the chosen concentration scale.
@@ -1643,7 +1642,7 @@ class Solution(MSONable):
 
         return math.exp(-osmotic_coefficient * 0.018015 * concentration_sum) * unit.Quantity("1 dimensionless")
 
-    def get_chemical_potential_energy(self, activity_correction=True):
+    def get_chemical_potential_energy(self, activity_correction: bool = True) -> Quantity:
         """
         Return the total chemical potential energy of a solution (not including
         pressure or electric effects).
@@ -1877,7 +1876,7 @@ class Solution(MSONable):
 
         return (numerator / denominator).to("dimensionless")
 
-    def get_molar_conductivity(self, solute) -> Quantity:
+    def get_molar_conductivity(self, solute: str) -> Quantity:
         """
         Calculate the molar (equivalent) conductivity for a solute.
 
@@ -1914,7 +1913,7 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def get_mobility(self, solute) -> Quantity:
+    def get_mobility(self, solute: str) -> Quantity:
         """
         Calculate the ionic mobility of the solute.
 
@@ -1951,7 +1950,7 @@ class Solution(MSONable):
 
         return mobility.to("m**2/V/s")
 
-    def get_lattice_distance(self, solute) -> Quantity:
+    def get_lattice_distance(self, solute: str) -> Quantity:
         """
         Calculate the average distance between molecules.
 
