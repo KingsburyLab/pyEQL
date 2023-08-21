@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Solution` now more robustly converts any user-supplied formulas into unique values using `pymatgen.core.ion.Ion.reduced_formula`. This means that the `.components` or `solvent` attributes may now differ slightly from whatever is entered during `__init__`. For example, `Solution(solvent='H2O').solvent` gives `H2O(aq)`. This behavior resolved a small bug that could occur when mixing solutions. User supplied formulas passed to `get_amount` or `Solution.components[xxx]` can still be any valid formula. E.g., `Solution.components["Na+"]`, `Solution.components["Na+1"]`, and `Solution.components["Na[+]"]` will all return the same thing.
 - `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
 
 ## [v0.6.0] - 2023-08-15
