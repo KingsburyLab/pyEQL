@@ -10,6 +10,7 @@ and performing chemical thermodynamics computations.
 """
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 
+from monty.dev import deprecated
 from pint import UnitRegistry
 from pkg_resources import resource_filename
 
@@ -38,6 +39,17 @@ ureg.load_definitions(fname)
 ureg.enable_contexts("chem")
 # set the default string formatting for pint quantities
 ureg.default_format = "P~"
+
+
+# deprecation machinery to transition from unit to ureg
+@deprecated(
+    message="The pyEQL UnitRegistry has been renamed from unit to ureg. Change 'from pyEQL import unit' to 'from pyEQL import ureg'!"
+)
+def unitdeprecator():
+    return ureg
+
+
+globals()["unit"] = unitdeprecator()
 
 from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402
