@@ -12,11 +12,11 @@ NOTE: these methods are not currently used but are here for the future.
 import math
 
 # the pint unit registry
-from pyEQL import unit
+from pyEQL import ureg
 from pyEQL.logging_system import logger
 
 
-def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit.Quantity("298.15 K")):
+def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 K")):
     """
     Calculate a parameter for the Pitzer model based on temperature-dependent
     coefficients c1,c2,c3,c4,and c5.
@@ -46,7 +46,7 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=unit.Quantity("298.15 
     )
 
 
-def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=25 * unit.Quantity("degC")):
+def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=25 * ureg.Quantity("degC")):
     r"""(float,float,number, optional number) -> float.
 
     Adjust a reaction equilibrium constant from one temperature to another.
@@ -86,17 +86,17 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
 
     Examples:
     --------
-    >>> adjust_temp_vanthoff(0.15,unit.Quantity('-197.6 kJ/mol'),unit.Quantity('42 degC'),unit.Quantity(' 25degC')) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC')) #doctest: +ELLIPSIS
     0.00203566...
 
     If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
 
-    >>> adjust_temp_vanthoff(0.15,unit.Quantity('-197.6 kJ/mol'),unit.Quantity('42 degC')) #doctest: +ELLIPSIS
+    >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC')) #doctest: +ELLIPSIS
     0.00203566...
 
     """
     output = equilibrium_constant * math.exp(
-        enthalpy / unit.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+        enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
     logger.info(
@@ -111,7 +111,7 @@ def adjust_temp_arrhenius(
     rate_constant,
     activation_energy,
     temperature,
-    reference_temperature=25 * unit.Quantity("degC"),
+    reference_temperature=25 * ureg.Quantity("degC"),
 ):
     r"""(float,float,number, optional number) -> float.
 
@@ -155,12 +155,12 @@ def adjust_temp_arrhenius(
 
     Examples:
     --------
-    >>> adjust_temp_arrhenius(7,900*unit.Quantity('kJ/mol'),37*unit.Quantity('degC'),97*unit.Quantity('degC')) #doctest: +ELLIPSIS
+    >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC')) #doctest: +ELLIPSIS
     1.8867225...e-24
 
     """
     output = rate_constant * math.exp(
-        activation_energy / unit.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
+        activation_energy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
     logger.info(

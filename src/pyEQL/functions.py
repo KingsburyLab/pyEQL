@@ -8,7 +8,7 @@ pyEQL functions that take Solution objects as inputs or return Solution objects.
 import math
 
 import pyEQL
-from pyEQL import unit
+from pyEQL import ureg
 from pyEQL.logging_system import logger
 
 
@@ -60,7 +60,7 @@ def gibbs_mix(Solution1, Solution2):
             if solution.get_amount(solute, "fraction") != 0:
                 term_list[solution] += solution.get_amount(solute, "mol") * math.log(solution.get_activity(solute))
 
-    return (unit.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
+    return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
     )
 
@@ -115,7 +115,7 @@ def entropy_mix(Solution1, Solution2):
                     solution.get_amount(solute, "fraction")
                 )
 
-    return (unit.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
+    return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
     )
 
@@ -187,7 +187,7 @@ def donnan_eql(solution, fixed_charge):
     salt = solution.get_salt()
 
     # convert fixed_charge in to a quantity
-    fixed_charge = unit.Quantity(fixed_charge)
+    fixed_charge = ureg.Quantity(fixed_charge)
 
     # identify variables from the external solution
     conc_cation_soln = solution.get_amount(salt.cation, str(fixed_charge.units))
@@ -223,7 +223,7 @@ def donnan_eql(solution, fixed_charge):
 
     # the stuff in the term below doesn't change on iteration, so calculate it up-front
     # assign it the correct units and extract the magnitude for a performance gain
-    exp_term = (molar_volume / (unit.R * solution.temperature * z_cation * nu_cation)).to("1/Pa").magnitude
+    exp_term = (molar_volume / (ureg.R * solution.temperature * z_cation * nu_cation)).to("1/Pa").magnitude
 
     def donnan_solve(x):
         """Where x is the magnitude of co-ion concentration."""
