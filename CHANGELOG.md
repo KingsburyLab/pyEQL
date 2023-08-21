@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: new properties `total_dissolved_solids` and alias `TDS`
 - `Solution`: support new units in `get_amount` - ppm, ppb, eq/L, etc.
 - `Solution`: implemented arithmetic operations `+` (for mixing two solutions), `*` and `\` for scaling their amounts
 
