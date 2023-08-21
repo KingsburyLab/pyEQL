@@ -166,12 +166,12 @@ def identify_salt(sol):
     anion = "OH-"
 
     # return water if there are no solutes
-    if len(sort_list) < 3 and sort_list[0] == "H2O":
+    if len(sort_list) < 3 and sort_list[0] == "H2O(aq)":
         logger.info("Salt matching aborted because there are not enough solutes.")
         return Salt(cation, anion)
 
     # warn if something other than water is the predominant component
-    if sort_list[0] != "H2O":
+    if sort_list[0] != "H2O(aq)":
         logger.warning("H2O is not the most prominent component")
 
     # take the dominant cation and anion and assemble a salt from them
