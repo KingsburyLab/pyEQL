@@ -8,7 +8,7 @@ used by pyEQL's Solution class
 
 import numpy as np
 import pytest
-from pyEQL import Solution, unit
+from pyEQL import Solution, ureg
 
 
 @pytest.fixture()
@@ -145,11 +145,11 @@ def test_alkalinity_hardness_chargebalance(s3, s5, s6):
 def test_pressure_temperature(s5):
     orig_V = s5.volume
     s5.temperature = "50 degC"
-    assert s5.temperature == unit.Quantity("50 degC")
+    assert s5.temperature == ureg.Quantity("50 degC")
     assert s5.volume > orig_V
     intermediate_V = s5.volume
     s5.pressure = "2 atm"
-    assert s5.pressure == unit.Quantity("2 atm")
+    assert s5.pressure == ureg.Quantity("2 atm")
     assert s5.volume < intermediate_V
 
 
@@ -195,7 +195,7 @@ def test_get_amount(s3, s5):
     # TODO - make this test more precise i.e. test numerical values
     for u in TEST_UNITS:
         qty = s3.get_amount("Na+", u)
-        assert isinstance(qty, unit.Quantity), f"get_amount() failed for unit {u}"
+        assert isinstance(qty, ureg.Quantity), f"get_amount() failed for unit {u}"
         assert qty.magnitude > 0
     assert s3.get_amount("Na+", "ppm") == s3.get_amount("Na+", "mg/L")
     assert s3.get_amount("Na+", "ppb") == s3.get_amount("Na+", "ug/L")

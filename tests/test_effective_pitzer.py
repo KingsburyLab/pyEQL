@@ -35,7 +35,7 @@ the paper, so perfect accuracy is not expected.
 import numpy as np
 import pyEQL
 import pytest
-from pyEQL import unit
+from pyEQL import ureg
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.15
@@ -89,10 +89,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -102,7 +102,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + ureg.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -127,10 +127,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -140,7 +140,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + ureg.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -165,10 +165,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -178,7 +178,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + ureg.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)
@@ -204,10 +204,10 @@ class Test_effective_pitzer:
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
                 Salt.z_cation,
                 Salt.z_anion,
                 Salt.nu_cation,
@@ -217,7 +217,7 @@ class Test_effective_pitzer:
 
             # convert the result to a rational activity coefficient
             result = activity_coefficient * (
-                1 + unit.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
+                1 + ureg.Quantity("0.018015 kg/mol") * s1.get_total_moles_solute() / s1.solvent_mass
             )
 
             assert np.isclose(result, expected[item], RTOL)

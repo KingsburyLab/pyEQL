@@ -14,7 +14,7 @@ in the testing are:
 """
 
 import numpy as np
-from pyEQL import Solution, unit
+from pyEQL import Solution, ureg
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.05
@@ -65,7 +65,7 @@ class Test_molar_conductivity:
         # K+ - 73.48 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("K+").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("73.48e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("73.48e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -73,7 +73,7 @@ class Test_molar_conductivity:
         # Na+ - 50.08 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Na+").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("50.08e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("50.08e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -81,7 +81,7 @@ class Test_molar_conductivity:
         # Mg+2 - 106 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Mg+2").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("106e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("106e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -89,7 +89,7 @@ class Test_molar_conductivity:
         # Cl- - 76.31 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("Cl-").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("76.31e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("76.31e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -97,7 +97,7 @@ class Test_molar_conductivity:
         # F- - 55.4 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["Na+", "0.001 mol/L"], ["F-", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("F-").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("55.4e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("55.4e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -105,7 +105,7 @@ class Test_molar_conductivity:
         # SO4-2 - 160 x 10 ** -4 m ** 2 S / mol
         s1 = Solution([["Na+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("SO4-2").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("160.0e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("160.0e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -113,7 +113,7 @@ class Test_molar_conductivity:
         # OH- - 198 x 10 ** -4 m ** 2 S / mol
         s1 = Solution(temperature="25 degC")
         result = s1.get_molar_conductivity("OH-").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("198e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("198e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -121,7 +121,7 @@ class Test_molar_conductivity:
         # H+ - 349.65 x 10 ** -4 m ** 2 S / mol
         s1 = Solution(temperature="25 degC")
         result = s1.get_molar_conductivity("H+").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("349.65e-4 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("349.65e-4 m**2 * S / mol").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -129,7 +129,7 @@ class Test_molar_conductivity:
     def test_molar_conductivity_neutral(self):
         s1 = Solution([["FeCl3", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("FeCl3").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("0 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("0 m**2 * S / mol").magnitude
 
         assert round(abs(result - expected), 5) == 0
 
@@ -137,7 +137,7 @@ class Test_molar_conductivity:
     def test_molar_conductivity_water(self):
         s1 = Solution(temperature="25 degC")
         result = s1.get_molar_conductivity("H2O").to("m**2*S/mol").magnitude
-        expected = unit.Quantity("0 m**2 * S / mol").magnitude
+        expected = ureg.Quantity("0 m**2 * S / mol").magnitude
 
         assert round(abs(result - expected), 5) == 0
 
@@ -162,7 +162,7 @@ class Test_mobility:
         expected = s1.get_mobility("K+").to("m**2/s/V").magnitude
         charge = s1.get_property("K+", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (molar_conductivity / (unit.N_A * unit.e * abs(charge))).to("m**2/s/V").magnitude
+        result = (molar_conductivity / (ureg.N_A * ureg.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -172,7 +172,7 @@ class Test_mobility:
         expected = s1.get_mobility("Cl-").to("m**2/s/V").magnitude
         charge = s1.get_property("Cl-", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (molar_conductivity / (unit.N_A * unit.e * abs(charge))).to("m**2/s/V").magnitude
+        result = (molar_conductivity / (ureg.N_A * ureg.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -182,7 +182,7 @@ class Test_mobility:
         expected = s1.get_mobility("Mg+2").to("m**2/s/V").magnitude
         charge = s1.get_property("Mg+2", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (molar_conductivity / (unit.N_A * unit.e * abs(charge))).to("m**2/s/V").magnitude
+        result = (molar_conductivity / (ureg.N_A * ureg.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
 
@@ -192,6 +192,6 @@ class Test_mobility:
         expected = s1.get_mobility("SO4-2").to("m**2/s/V").magnitude
         charge = s1.get_property("SO4-2", "charge")
         # calculate the mobility from get_molar_conductivity, then compare with get_mobility
-        result = (molar_conductivity / (unit.N_A * unit.e * abs(charge))).to("m**2/s/V").magnitude
+        result = (molar_conductivity / (ureg.N_A * ureg.e * abs(charge))).to("m**2/s/V").magnitude
 
         assert np.isclose(result, expected, rtol=RTOL)
