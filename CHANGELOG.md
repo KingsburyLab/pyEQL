@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution`: support new units in `get_amount` - ppm, ppb, eq/L, etc.
 - `Solution`: implemented arithmetic operations `+` (for mixing two solutions), `*` and `\` for scaling their amounts
 
+### Changed
+
+- `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
+
 ## [v0.6.0] - 2023-08-15
 
 ### Added
