@@ -33,7 +33,7 @@ jobs:
 
     - name: Build packages for distribution
       run: |
-        tox -e build
+        pipx run tox -e clean,build
 
     - name: Upload to PyPi
       uses: pypa/gh-action-pypi-publish@v1.8.8
