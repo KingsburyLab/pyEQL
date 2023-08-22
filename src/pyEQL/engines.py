@@ -7,8 +7,6 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 """
 from abc import ABC, abstractmethod
 
-from pymatgen.core.ion import Ion
-
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
 
@@ -17,6 +15,7 @@ import pyEQL.activity_correction as ac
 from pyEQL import ureg
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list
+from pyEQL.utils import standardize_formula
 
 
 class EOS(ABC):
@@ -192,7 +191,7 @@ class NativeEOS(EOS):
         """
         # identify the predominant salt that this ion is a member of
         Salt = None
-        rform = Ion.from_formula(solute).reduced_formula
+        rform = standardize_formula(solute)
         salt_list = generate_salt_list(solution, unit="mol/kg")
         for item in salt_list:
             if rform == item.cation or rform == item.anion:

@@ -14,6 +14,7 @@ species (e.g. Na+)
 from pymatgen.core.ion import Ion
 
 from pyEQL.logging_system import logger
+from pyEQL.utils import standardize_formula
 
 
 class Salt:
@@ -45,8 +46,8 @@ class Salt:
         pmg_cat = Ion.from_formula(cation)
         pmg_an = Ion.from_formula(anion)
         # sanitize the cation and anion formulas
-        self.cation = pmg_cat.reduced_formula
-        self.anion = pmg_an.reduced_formula
+        self.cation = standardize_formula(cation)
+        self.anion = standardize_formula(anion)
 
         # get the charges on cation and anion
         self.z_cation = pmg_cat.charge

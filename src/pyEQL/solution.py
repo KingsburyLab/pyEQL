@@ -26,7 +26,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS
 # logging system
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list, identify_salt
-from pyEQL.utils import FormulaDict
+from pyEQL.utils import FormulaDict, standardize_formula
 
 EQUIV_WT_CACO3 = 100.09 / 2 * ureg.Quantity("g/mol")
 
@@ -162,7 +162,7 @@ class Solution(MSONable):
             raise ValueError("Multiple solvents are not yet supported!")
         if solvent[0] not in ["H2O", "H2O(aq)", "water", "Water", "HOH"]:
             raise ValueError("Non-aqueous solvent detected. These are not yet supported!")
-        self.solvent = Ion.from_formula(solvent[0]).reduced_formula
+        self.solvent = standardize_formula(solvent[0])
 
         # TODO - do I need the ability to specify the solvent mass?
         # # raise an error if the solvent volume has also been given
@@ -774,7 +774,7 @@ class Solution(MSONable):
         tds = ureg.Quantity("0 mg/L")
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
-            if s in ["H2O", "H+", "OH-", "H2", "O2"]:
+            if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
                 continue
             tds += self.get_amount(s, "mg/L")
 
@@ -1750,7 +1750,7 @@ class Solution(MSONable):
         # base_pressure = ureg.Quantity("1 atm")
 
         # query the database using the sanitized formula
-        rform = Ion.from_formula(solute).reduced_formula
+        rform = standardize_formula(solute)
         # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
         # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
         # also $exists:True does not properly return dot notated fields.

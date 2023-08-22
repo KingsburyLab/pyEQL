@@ -3,7 +3,18 @@ Tests of pyEQL.utils module
 
 """
 
-from pyEQL.utils import FormulaDict
+from pyEQL.utils import FormulaDict, standardize_formula
+
+
+def test_standardize_formula():
+    """
+    Test formula standardization
+    """
+    assert standardize_formula("H2O") == "H2O(aq)"
+    assert standardize_formula("Na+") == "Na[+1]"
+    assert standardize_formula("Na[+]") == "Na[+1]"
+    assert standardize_formula("SO4--") == "SO4[-2]"
+    assert standardize_formula("Mg+2") == "Mg[+2]"
 
 
 def test_formula_dict():
