@@ -765,6 +765,30 @@ class Solution(MSONable):
         return (hardness * EQUIV_WT_CACO3).to("mg/L")
 
     @property
+    def total_dissolved_solids(self) -> Quantity:
+        """
+        Total dissolved solids in mg/L (equivalent to ppm) including both charged and uncharged species.
+
+        The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent), except for H[+1] and OH[-1]].
+        """
+        tds = ureg.Quantity("0 mg/L")
+        for s in self.components:
+            # ignore pure water and dissolved gases, but not CO2
+            if s in ["H2O", "H+", "OH-", "H2", "O2"]:
+                continue
+            tds += self.get_amount(s, "mg/L")
+
+        # return tds + self.start_uncharged_TDS
+        return tds
+
+    @property
+    def TDS(self) -> Quantity:
+        """
+        Alias of :py:meth:`total_dissolved_solids`
+        """
+        return self.total_dissolved_solids
+
+    @property
     def debye_length(self) -> Quantity:
         """
         Return the Debye length of a solution.

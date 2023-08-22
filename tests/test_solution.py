@@ -209,6 +209,13 @@ def test_get_amount(s3, s5):
     # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
 
 
+def test_tds(s1, s2, s5):
+    assert s1.total_dissolved_solids.magnitude == 0
+    assert np.isclose(s2.total_dissolved_solids.magnitude, 4 * 58442.769)
+    assert s2.total_dissolved_solids == s2.TDS
+    assert np.isclose(s5.TDS.magnitude, 100)
+
+
 def test_conductivity(s1, s2):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
