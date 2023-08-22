@@ -26,6 +26,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS
 # logging system
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list, identify_salt
+from pyEQL.utils import FormulaDict, standardize_formula
 
 EQUIV_WT_CACO3 = 100.09 / 2 * ureg.Quantity("g/mol")
 
@@ -126,7 +127,7 @@ class Solution(MSONable):
 
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
-        self.components: dict = {}
+        self.components = FormulaDict({})
 
         # connect to the desired property database
         if database is None:
@@ -163,7 +164,7 @@ class Solution(MSONable):
             raise ValueError("Multiple solvents are not yet supported!")
         if solvent[0] not in ["H2O", "H2O(aq)", "water", "Water", "HOH"]:
             raise ValueError("Non-aqueous solvent detected. These are not yet supported!")
-        self.solvent = solvent[0]
+        self.solvent = standardize_formula(solvent[0])
 
         # TODO - do I need the ability to specify the solvent mass?
         # # raise an error if the solvent volume has also been given
@@ -415,7 +416,7 @@ class Solution(MSONable):
         denominator = 1
         for item in self.components:
             # ignore water
-            if item != "H2O":
+            if item != "H2O(aq)":
                 # skip over solutes that don't have parameters
                 # try:
                 fraction = self.get_amount(item, "fraction")
@@ -499,10 +500,6 @@ class Solution(MSONable):
         """
         # identify the main salt in the solution
         salt = self.get_salt()
-        # reverse-convert the sanitized formula back to whatever was in self.components
-        for i in self.components:
-            if Ion.from_formula(i).reduced_formula == salt.cation:
-                cation = i
 
         a0 = a1 = b0 = b1 = 0
 
@@ -532,7 +529,8 @@ class Solution(MSONable):
         MW_w = ureg.Quantity(self.get_property(self.solvent, "molecular_weight"))
 
         # calculate the cation mole fraction
-        x_cat = self.get_amount(cation, "fraction")
+        # x_cat = self.get_amount(cation, "fraction")
+        x_cat = self.get_amount(salt.cation, "fraction")
 
         # calculate the kinematic viscosity
         nu = math.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
@@ -730,9 +728,7 @@ class Solution(MSONable):
         acid_anions = {"Cl[-1]", "Br[-1]", "I[-1]", "SO4[-2]", "NO3[-1]", "ClO4[-1]", "ClO3[-1]"}
 
         for item in self.components:
-            # sanitize the formulas
-            rform = Ion.from_formula(item).reduced_formula
-            if rform in base_cations.union(acid_anions):
+            if item in base_cations.union(acid_anions):
                 z = self.get_property(item, "charge")
                 alkalinity += self.get_amount(item, "mol/L") * z
 
@@ -780,7 +776,7 @@ class Solution(MSONable):
         tds = ureg.Quantity("0 mg/L")
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
-            if s in ["H2O", "H+", "OH-", "H2", "O2"]:
+            if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
                 continue
             tds += self.get_amount(s, "mg/L")
 
@@ -1565,7 +1561,7 @@ class Solution(MSONable):
 
         """
         # switch to the water activity function if the species is H2O
-        if solute == "H2O" or solute == "water":
+        if solute in ["H2O(aq)", "water", "H2O", "HOH"]:
             activity = self.get_water_activity()
         else:
             # determine the concentration units to use based on the desired scale
@@ -1659,7 +1655,7 @@ class Solution(MSONable):
 
         concentration_sum = 0
         for item in self.components:
-            if item == "H2O":
+            if item == "H2O(aq)":
                 pass
             else:
                 concentration_sum += self.get_amount(item, "mol/kg").magnitude
@@ -1755,8 +1751,8 @@ class Solution(MSONable):
         base_temperature = ureg.Quantity("25 degC")
         # base_pressure = ureg.Quantity("1 atm")
 
-        # query the database using the sanitized formula
-        rform = Ion.from_formula(solute).reduced_formula
+        # query the database using the standardized formula
+        rform = standardize_formula(solute)
         # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
         # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
         # also $exists:True does not properly return dot notated fields.
@@ -2125,7 +2121,7 @@ class Solution(MSONable):
 
         # retrieve the amount of each component in the parent solution and
         # store in a list.
-        mix_species = {}
+        mix_species = FormulaDict({})
         for sol, amt in self.components.items():
             mix_species.update({sol: f"{amt} mol"})
         for sol2, amt2 in other.components.items():
@@ -2150,7 +2146,7 @@ class Solution(MSONable):
 
         # create a new solution
         return Solution(
-            mix_species,
+            mix_species.data,  # pass a regular dict instead of the FormulaDict
             volume=str(mix_vol),
             pressure=str(mix_pressure),
             temperature=str(mix_temperature.to("K")),

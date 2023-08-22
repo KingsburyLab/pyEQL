@@ -14,6 +14,7 @@ species (e.g. Na+)
 from pymatgen.core.ion import Ion
 
 from pyEQL.logging_system import logger
+from pyEQL.utils import standardize_formula
 
 
 class Salt:
@@ -44,9 +45,9 @@ class Salt:
         # create pymatgen Ion objects
         pmg_cat = Ion.from_formula(cation)
         pmg_an = Ion.from_formula(anion)
-        # sanitize the cation and anion formulas
-        self.cation = pmg_cat.reduced_formula
-        self.anion = pmg_an.reduced_formula
+        # standardize the cation and anion formulas
+        self.cation = standardize_formula(cation)
+        self.anion = standardize_formula(anion)
 
         # get the charges on cation and anion
         self.z_cation = pmg_cat.charge
@@ -166,12 +167,12 @@ def identify_salt(sol):
     anion = "OH-"
 
     # return water if there are no solutes
-    if len(sort_list) < 3 and sort_list[0] == "H2O":
+    if len(sort_list) < 3 and sort_list[0] == "H2O(aq)":
         logger.info("Salt matching aborted because there are not enough solutes.")
         return Salt(cation, anion)
 
     # warn if something other than water is the predominant component
-    if sort_list[0] != "H2O":
+    if sort_list[0] != "H2O(aq)":
         logger.warning("H2O is not the most prominent component")
 
     # take the dominant cation and anion and assemble a salt from them

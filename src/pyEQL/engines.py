@@ -7,8 +7,6 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 """
 from abc import ABC, abstractmethod
 
-from pymatgen.core.ion import Ion
-
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
 
@@ -17,6 +15,7 @@ import pyEQL.activity_correction as ac
 from pyEQL import ureg
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list
+from pyEQL.utils import standardize_formula
 
 
 class EOS(ABC):
@@ -192,7 +191,7 @@ class NativeEOS(EOS):
         """
         # identify the predominant salt that this ion is a member of
         Salt = None
-        rform = Ion.from_formula(solute).reduced_formula
+        rform = standardize_formula(solute)
         salt_list = generate_salt_list(solution, unit="mol/kg")
         for item in salt_list:
             if rform == item.cation or rform == item.anion:
@@ -456,18 +455,9 @@ class NativeEOS(EOS):
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         salt = solution.get_salt()
-        # reverse-convert the sanitized formula back to whatever was in self.components
-        for i in solution.components:
-            rform = Ion.from_formula(i).reduced_formula
-            if rform == salt.cation:
-                cation = i
-            if rform == salt.anion:
-                anion = i
-
         solute_vol = ureg.Quantity("0 L")
 
         # use the pitzer approach if parameters are available
-
         pitzer_calc = False
 
         param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
@@ -476,7 +466,7 @@ class NativeEOS(EOS):
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            molality = (solution.get_amount(cation, "mol/kg") + solution.get_amount(anion, "mol/kg")) / 2
+            molality = (solution.get_amount(salt.cation, "mol/kg") + solution.get_amount(salt.anion, "mol/kg")) / 2
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
@@ -512,8 +502,8 @@ class NativeEOS(EOS):
             solute_vol += (
                 apparent_vol
                 * (
-                    solution.get_amount(cation, "mol") / salt.nu_cation
-                    + solution.get_amount(anion, "mol") / salt.nu_anion
+                    solution.get_amount(salt.cation, "mol") / salt.nu_cation
+                    + solution.get_amount(salt.anion, "mol") / salt.nu_anion
                 )
                 / 2
             )
@@ -530,7 +520,7 @@ class NativeEOS(EOS):
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and solute in [anion, cation]:
+            if pitzer_calc is True and solute in [salt.anion, salt.cation]:
                 continue
 
             part_vol = solution.get_property(solute, "size.molar_volume")

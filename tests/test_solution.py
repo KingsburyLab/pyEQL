@@ -65,7 +65,7 @@ def test_empty_solution_3():
     # It should have exactly 1L volume
     assert s1.volume.to("L").magnitude == 1.0
     #  the solvent should be water
-    assert s1.solvent == "H2O"
+    assert s1.solvent == "H2O(aq)"
     # It should have 0.997 kg water mass
     assert np.isclose(s1.solvent_mass.to("kg").magnitude, 0.9970415)
     # the temperature should be 25 degC
@@ -77,7 +77,7 @@ def test_empty_solution_3():
     assert np.isclose(s1.pH, 7.0, atol=0.01)
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
-    assert set(s1.list_solutes()) == {"H2O", "OH-", "H+"}
+    assert set(s1.list_solutes()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
 def test_init_raises():
@@ -275,11 +275,10 @@ def test_arithmetic_and_copy(s2, s6):
     initial_mix_vol = s2.volume.to("L").magnitude + s6.volume.to("L").magnitude
     mix = s2 + s6
     assert isinstance(mix, Solution)
-    # TODO - currently solute names are not sanitized in Solution.components, leading to the following issue when
-    # solutions are mixed and the same solute has been specified differently in each
-    # assert mix.get_amount("Na+", "mol").magnitude == 8.01 # 4 M x 2 L + 10 mM x 1 L # <- will fail
-    assert mix.get_amount("Na+", "mol").magnitude == 8.0
-    assert mix.get_amount("Na+1", "mol").magnitude == 0.01
+
+    assert mix.get_amount("Na+", "mol").magnitude == 8.01  # 4 M x 2 L + 10 mM x 1 L
+    assert mix.get_amount("Na+", "mol").magnitude == 8.01
+    assert mix.get_amount("Na+1", "mol").magnitude == 8.01
     assert mix.get_amount("Cl-", "mol").magnitude == 8.0
     assert mix.get_amount("Br-", "mol").magnitude == 0.02
     assert np.isclose(
