@@ -391,7 +391,7 @@ class NativeEOS(EOS):
         # coefficient
         for item in salts_dict:
             # ignore HOH in the salt list
-            if item == "HOH":
+            if item.formula == "HOH":
                 continue
 
             # determine alpha1 and alpha2 based on the type of salt
