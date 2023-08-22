@@ -45,7 +45,7 @@ class Solution(MSONable):
         pH: float = 7,
         pE: float = 8.5,
         solvent: str | list = "H2O",
-        engine: Literal["native", "ideal"] = "native",
+        engine: EOS | Literal["native", "ideal"] = "native",
         database: str | Path | Store | None = None,
     ):
         """
@@ -147,8 +147,10 @@ class Solution(MSONable):
         # set the equation of state engine
         self._engine = engine
         # self.engine: Optional[EOS] = None
-        if self._engine == "ideal":
-            self.engine: EOS = IdealEOS()
+        if isinstance(self._engine, EOS):
+            self.engine: EOS = self._engine
+        elif self._engine == "ideal":
+            self.engine = IdealEOS()
         elif self._engine == "native":
             self.engine = NativeEOS()
         else:
