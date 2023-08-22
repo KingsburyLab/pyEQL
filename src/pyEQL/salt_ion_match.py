@@ -45,7 +45,7 @@ class Salt:
         # create pymatgen Ion objects
         pmg_cat = Ion.from_formula(cation)
         pmg_an = Ion.from_formula(anion)
-        # sanitize the cation and anion formulas
+        # standardize the cation and anion formulas
         self.cation = standardize_formula(cation)
         self.anion = standardize_formula(anion)
 

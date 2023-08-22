@@ -1749,7 +1749,7 @@ class Solution(MSONable):
         base_temperature = ureg.Quantity("25 degC")
         # base_pressure = ureg.Quantity("1 atm")
 
-        # query the database using the sanitized formula
+        # query the database using the standardized formula
         rform = standardize_formula(solute)
         # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
         # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
