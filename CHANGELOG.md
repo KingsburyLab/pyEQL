@@ -5,17 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2023-08-22
+
+### Changed
+
+- `Solution` now more robustly converts any user-supplied formulas into unique values using `pymatgen.core.ion.Ion.reduced_formula`. This means that the `.components` or `solvent` attributes may now differ slightly from whatever is entered during `__init__`. For example, `Solution(solvent='H2O').solvent` gives `H2O(aq)`. This behavior resolved a small bug that could occur when mixing solutions. User supplied formulas passed to `get_amount` or `Solution.components[xxx]` can still be any valid formula. E.g., `Solution.components["Na+"]`, `Solution.components["Na+1"]`, and `Solution.components["Na[+]"]` will all return the same thing.
+
+## [0.6.1] - 2023-08-22
 
 ### Added
 
+- `Solution`: enable passing an `EOS` instance to the `engine` kwarg.
 - `Solution`: new properties `total_dissolved_solids` and alias `TDS`
 - `Solution`: support new units in `get_amount` - ppm, ppb, eq/L, etc.
 - `Solution`: implemented arithmetic operations `+` (for mixing two solutions), `*` and `\` for scaling their amounts
 
 ### Changed
 
-- `Solution` now more robustly converts any user-supplied formulas into unique values using `pymatgen.core.ion.Ion.reduced_formula`. This means that the `.components` or `solvent` attributes may now differ slightly from whatever is entered during `__init__`. For example, `Solution(solvent='H2O').solvent` gives `H2O(aq)`. This behavior resolved a small bug that could occur when mixing solutions. User supplied formulas passed to `get_amount` or `Solution.components[xxx]` can still be any valid formula. E.g., `Solution.components["Na+"]`, `Solution.components["Na+1"]`, and `Solution.components["Na[+]"]` will all return the same thing.
+
 - `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
 
 ## [v0.6.0] - 2023-08-15
