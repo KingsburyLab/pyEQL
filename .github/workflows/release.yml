@@ -21,6 +21,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-tags: true
 
     - uses: actions/setup-python@v4
       with:
@@ -33,8 +35,8 @@ jobs:
 
     - name: Build packages for distribution
       run: |
-        pipx run tox -e clean,build
+        tox -e clean,build
 
-    - name: Upload to PyPi
-      uses: pypa/gh-action-pypi-publish@v1.8.8
+    # - name: Upload to PyPi
+    #   uses: pypa/gh-action-pypi-publish@v1.8.8
 
