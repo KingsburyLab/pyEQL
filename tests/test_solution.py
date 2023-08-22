@@ -9,6 +9,7 @@ used by pyEQL's Solution class
 import numpy as np
 import pytest
 from pyEQL import Solution, ureg
+from pyEQL.engines import IdealEOS, NativeEOS
 
 
 @pytest.fixture()
@@ -86,6 +87,23 @@ def test_init_raises():
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
+
+
+def test_init_engines():
+    """
+    Test passing an EOS instance as well as the ideal and native EOS
+    """
+    ideal = IdealEOS()
+    s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine=ideal)
+    assert s.engine == ideal
+    s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine="ideal")
+    assert isinstance(s.engine, IdealEOS)
+    assert s.get_activity_coefficient("Na+").magnitude == 1
+    assert s.get_osmotic_coefficient().magnitude == 1
+    s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine="native")
+    assert isinstance(s.engine, NativeEOS)
+    assert s.get_activity_coefficient("Na+").magnitude < 1
+    assert s.get_osmotic_coefficient().magnitude != 1
 
 
 # create an empty and test solutions with the same volume using substance / volume,
