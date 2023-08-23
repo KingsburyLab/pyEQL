@@ -171,6 +171,12 @@ def test_pressure_temperature(s5):
     assert s5.volume < intermediate_V
 
 
+def test_elements(s5, s6):
+    assert s6.elements == sorted({"Ag", "Br", "C", "Ca", "H", "Mg", "Na", "O", "S"})
+    assert s6.chemical_system == "-".join(s6.elements)
+    assert s5.chemical_system == "C-Ca-H-O"
+
+
 def test_get_el_amt_dict(s6):
     """ """
     water_mol = s6.components["H2O(aq)"]
