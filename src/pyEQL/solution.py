@@ -1020,6 +1020,31 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
+    def get_el_amt_dict(self):
+        """
+        Return a dict of Element: amount in mol
+
+        Elements (keys) are suffixed with their oxidation state in parentheses,
+        e.g. "Fe(2)", "Cl(-1)".
+        """
+        d = {}
+        for s, mol in self.components.items():
+            elements = self.get_property(s, "elements")
+            pmg_ion_dict = self.get_property(s, "pmg_ion")
+            oxi_states = self.get_property(s, "oxi_state_guesses")[0]
+
+            for el in elements:
+                # stoichiometric coefficient, mol element per mol solute
+                stoich = pmg_ion_dict.get(el)
+                oxi_state = oxi_states.get(el)
+                key = f"{el}({oxi_state})"
+                if d.get(key):
+                    d[key] += stoich * mol
+                else:
+                    d[key] = stoich * mol
+
+        return d
+
     def get_total_amount(self, element: str, units) -> Quantity:
         """
         Return the total amount of 'element' (across all solutes) in the solution.
@@ -1825,8 +1850,15 @@ class Solution(MSONable):
                 return doc["model_parameters"]["molar_volume_pitzer"]
             return None
 
+        if name == "molecular_weight":
+            return ureg.Quantity(doc.get(name))
+
         # for parameters not named above, just return the base value
-        val = doc.get(name) if not isinstance(doc.get(name), dict) else doc[name].get("value")
+        if name == "pmg_ion" or not isinstance(doc.get(name), dict):
+            # if the queried value is not a dict, it is a root level key and should be returned as is
+            return doc.get(name)
+
+        val = doc[name].get("value")
         # logger.warning("%s has not been corrected for solution conditions" % name)
         if val is not None:
             return ureg.Quantity(val)
