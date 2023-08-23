@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `Solution`: new properties `elements` and `chemical_system`, new function `get_el_amt_dict` to compute the total
+  number of moles of each element present in the Solution.
+
+### Fixed
+
+- Two issues with the formatting of the `H2O(aq)` entry in the database, `pyeql_db.json`
+
 ## [0.7.0] - 2023-08-22
 
 ### Changed

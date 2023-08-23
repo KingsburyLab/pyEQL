@@ -429,6 +429,25 @@ class Solution(MSONable):
 
         return ureg.Quantity(di_water / denominator, "dimensionless")
 
+    @property
+    def chemical_system(self) -> str:
+        """
+        Return the chemical system of the Solution as a "-" separated list of elements, sorted alphabetically. For
+        example, a solution containing CaCO3 would have a chemical system of "C-Ca-H-O".
+        """
+        return "-".join(self.elements)
+
+    @property
+    def elements(self) -> list:
+        """
+        Return a list of elements that are present in the solution. For example,
+        a solution containing CaCO3 would return ["C", "Ca", "H", "O"]
+        """
+        els = []
+        for s in self.components:
+            els.extend(self.get_property(s, "elements"))
+        return sorted(set(els))
+
     # TODO - need tests for viscosity
     @property
     def viscosity_dynamic(self) -> Quantity:
