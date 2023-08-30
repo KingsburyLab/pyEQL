@@ -29,11 +29,7 @@ def standardize_formula(formula: str):
         charge number will always be listed explicitly and 2) the charge number will be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+', 'Na+1', and 'Na[+]' will all
         standardize to "Na[+1]"
     """
-    rform = Ion.from_formula(formula).reduced_formula
-    # TODO - this is a workaround for a shortcoming of Ion that I would like to fix in pymatgen
-    if rform.split("(aq)")[0] in ["H", "O", "N", "F", "Cl"]:
-        rform = rform.split("(aq)")[0] + "2(aq)"
-    return rform
+    return Ion.from_formula(formula).reduced_formula
 
 
 class FormulaDict(UserDict):
