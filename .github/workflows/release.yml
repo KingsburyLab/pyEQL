@@ -38,5 +38,5 @@ jobs:
         tox -e clean,build
 
     - name: Upload to PyPi
-      uses: pypa/gh-action-pypi-publish@v1.8.8
+      uses: pypa/gh-action-pypi-publish@v1.8.10
 
