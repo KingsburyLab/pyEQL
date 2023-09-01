@@ -8,6 +8,7 @@ used by pyEQL's Solution class
 
 import numpy as np
 import pytest
+
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
 
@@ -249,6 +250,24 @@ def test_get_amount(s3, s5):
     # TODO - pint does not consider "mM" and "mmol/L" equivalent. Consider filing bug report? Or perhaps an issue with
     # my unit definition file
     # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
+
+
+def test_equilibrate(s1, s2, s5):
+    assert "H2(aq)" not in s1.components
+    orig_pH = s1.pH
+    orig_pE = s1.pE
+    s1.equilibrate()
+    assert "H2(aq)" in s1.components
+    assert np.isclose(s1.pH, orig_pH, atol=0.05)
+    assert np.isclose(s1.pE, orig_pE, atol=0.05)
+
+    assert "NaOH(aq)" not in s2.components
+    s2.equilibrate()
+    orig_pH = s2.pH
+    orig_pE = s2.pE
+    assert "NaOH(aq)" in s2.components
+    assert np.isclose(s2.pH, orig_pH, atol=0.05)
+    assert np.isclose(s2.pE, orig_pE, atol=0.05)
 
 
 def test_tds(s1, s2, s5):

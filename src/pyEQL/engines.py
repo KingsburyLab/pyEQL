@@ -13,6 +13,7 @@ import pyEQL.activity_correction as ac
 # import the parameters database
 # the pint unit registry
 from pyEQL import ureg
+from pyEQL.equilibrium import equilibrate_phreeqc
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list
 from pyEQL.utils import standardize_formula
@@ -538,3 +539,4 @@ class NativeEOS(EOS):
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        equilibrate_phreeqc(solution, phreeqc_db="llnl.dat")

@@ -1519,15 +1519,15 @@ class Solution(MSONable):
         # identify the predominant salt in the solution
         return generate_salt_list(self, unit="mol/kg")
 
-    def get_equilibrium(self, **kwargs) -> None:
+    def equilibrate(self, **kwargs) -> None:
         """
         Update the composition of the Solution using the thermodynamic engine. Any kwargs specified are passed through
-        to EOS.equilibrate()
+        to self.engine.equilibrate()
 
         Returns:
             Nothing. The .components attribute of the Solution is updated.
         """
-        self.engine.equilibrate(**kwargs)
+        self.engine.equilibrate(self, **kwargs)
 
     # Activity-related methods
     def get_activity_coefficient(
