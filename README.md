@@ -1,8 +1,8 @@
+![Read the Docs](https://img.shields.io/readthedocs/pyeql)
 [![testing](https://github.com/rkingsbury/pyeql/workflows/testing/badge.svg)](https://github.com/rkingsbury/pyeql/actions?query=workflow%3Atesting)
 [![codecov](https://codecov.io/gh/rkingsbury/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/rkingsbury/pyeql)
 ![Supported python versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 
-# pyEQL
 
 ![pyeql logo](pyeql-logo.png)
 
