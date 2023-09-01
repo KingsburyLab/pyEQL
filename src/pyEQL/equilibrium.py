@@ -89,8 +89,9 @@ def equilibrate_phreeqc(
             key = bare_el
         d[key] = mol / vol
 
-    # create the PhreeqcPython instance
+    # database files in this list are not distributed with phreeqpython
     db_path = Path(os.path.dirname(__file__)) / "database" if phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+    # create the PhreeqcPython instance
     pp = PhreeqPython(database=phreeqc_db, database_directory=db_path)
 
     # # equalize with atmospheric air (optional)
