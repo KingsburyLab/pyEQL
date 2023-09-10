@@ -171,6 +171,30 @@ def test_pressure_temperature(s5):
     assert s5.volume < intermediate_V
 
 
+def test_elements(s5, s6):
+    assert s6.elements == sorted({"Ag", "Br", "C", "Ca", "H", "Mg", "Na", "O", "S"})
+    assert s6.chemical_system == "-".join(s6.elements)
+    assert s5.chemical_system == "C-Ca-H-O"
+
+
+def test_get_el_amt_dict(s6):
+    """ """
+    water_mol = s6.components["H2O(aq)"]
+    # scale volume to 8L
+    s6 *= 8
+    d = s6.get_el_amt_dict()
+    for el, amt in zip(
+        ["H(1)", "O(-2)", "Ca(2)", "Mg(2)", "Na(1)", "Ag(1)", "C(4)", "S(6)", "Br(-1)"],
+        [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
+    ):
+        assert np.isclose(d[el], amt, atol=1e-3)
+
+    s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
+    d = s.get_el_amt_dict()
+    for el, amt in zip(["Fe(2)", "Fe(3)", "Cl(-1)"], [0.002, 0.01, 0.002 + 0.015]):
+        assert np.isclose(d[el], amt, atol=1e-3)
+
+
 def test_p(s2):
     assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
     assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))

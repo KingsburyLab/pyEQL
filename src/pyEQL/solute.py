@@ -19,6 +19,8 @@ from typing import Literal
 import numpy as np
 from pymatgen.core.ion import Ion
 
+from pyEQL.utils import standardize_formula
+
 
 @dataclass
 class Datum:
@@ -105,14 +107,15 @@ class Solute:
         of the IonDoc.
         """
         pmg_ion = Ion.from_formula(formula)
-        f = pmg_ion.reduced_formula
+        f, factor = pmg_ion.get_reduced_formula_and_factor()
+        rform = standardize_formula(formula)
         charge = int(pmg_ion.charge)
         els = [str(el) for el in pmg_ion.elements]
-        mw = f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
+        mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
 
         return cls(
-            f,
+            rform,
             charge=charge,
             molecular_weight=mw,
             elements=els,

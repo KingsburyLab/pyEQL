@@ -15,6 +15,7 @@ def test_standardize_formula():
     assert standardize_formula("Na[+]") == "Na[+1]"
     assert standardize_formula("SO4--") == "SO4[-2]"
     assert standardize_formula("Mg+2") == "Mg[+2]"
+    assert standardize_formula("O2") == "O2(aq)"
 
 
 def test_formula_dict():
