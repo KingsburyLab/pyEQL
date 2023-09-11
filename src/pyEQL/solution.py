@@ -690,13 +690,12 @@ class Solution(MSONable):
         Returns
         -------
         float :
-            The charge balance of the solution, in equivalents (mol of charge).
+            The charge balance of the solution, in equivalents (mol of charge) per L.
 
         """
         charge_balance = 0
         for solute in self.components:
-            # charge_balance += self.get_amount(solute, "eq/L").magnitude * self.get_property(solute, "charge")
-            charge_balance += self.get_amount(solute, "eq").magnitude
+            charge_balance += self.get_amount(solute, "eq/L").magnitude
 
         return charge_balance
 
@@ -1027,9 +1026,9 @@ class Solution(MSONable):
         mw = ureg.Quantity(self.get_property(solute, "molecular_weight")).to("g/mol")
         if units == "%":
             return moles.to("kg", "chem", mw=mw) / self.mass.to("kg") * 100
-        if ureg.Quantity(_units).check("[substance]"):
-            return z * moles.to(_units)
         qty = ureg.Quantity(_units)
+        if qty.check("[substance]"):
+            return z * moles.to(_units)
         if qty.check("[substance]/[length]**3") or qty.check("[mass]/[length]**3"):
             return z * moles.to(_units, "chem", mw=mw, volume=self.volume)
         if qty.check("[substance]/[mass]") or qty.check("[mass]/[mass]"):

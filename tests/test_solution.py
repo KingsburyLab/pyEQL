@@ -36,7 +36,7 @@ def s4():
 @pytest.fixture()
 def s5():
     # 100 mg/L as CaCO3
-    return Solution([["Ca+2", "40 mg/L"], ["CO3-2", "60 mg/L"]], volume="1 L")
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L")
 
 
 @pytest.fixture()
@@ -258,23 +258,38 @@ def test_equilibrate(s1, s2, s5):
     orig_pE = s1.pE
     s1.equilibrate()
     assert "H2(aq)" in s1.components
-    assert np.isclose(s1.pH, orig_pH, atol=0.05)
-    assert np.isclose(s1.pE, orig_pE, atol=0.05)
+    assert np.isclose(s1.charge_balance, 0)
+    assert np.isclose(s1.pH, orig_pH, atol=0.005)
+    assert np.isclose(s1.pE, orig_pE, atol=0.005)
 
     assert "NaOH(aq)" not in s2.components
     s2.equilibrate()
     orig_pH = s2.pH
     orig_pE = s2.pE
     assert "NaOH(aq)" in s2.components
-    assert np.isclose(s2.pH, orig_pH, atol=0.05)
-    assert np.isclose(s2.pE, orig_pE, atol=0.05)
+    assert np.isclose(s2.charge_balance, 0)
+    assert np.isclose(s2.pH, orig_pH, atol=0.005)
+    assert np.isclose(s2.pE, orig_pE, atol=0.005)
+
+    # TODO - this solution is the only one in the test that contains alkalinity
+    # and equilibrating it results in a shift in the charge balance (added protons)
+    # that is larger than seems necessary.
+    assert "HCO3[-1]" not in s5.components
+    assert np.isclose(s5.charge_balance, 0)
+    orig_pH = s5.pH
+    orig_pE = s5.pE
+    s5.equilibrate()
+    assert np.isclose(s5.charge_balance, 0, atol=2e-3)
+    assert "HCO3[-1]" in s5.components
+    assert np.isclose(s5.pH, orig_pH, atol=0.03)
+    assert np.isclose(s5.pE, orig_pE, atol=0.03)
 
 
 def test_tds(s1, s2, s5):
     assert s1.total_dissolved_solids.magnitude == 0
     assert np.isclose(s2.total_dissolved_solids.magnitude, 4 * 58442.769)
     assert s2.total_dissolved_solids == s2.TDS
-    assert np.isclose(s5.TDS.magnitude, 100)
+    assert np.isclose(s5.TDS.magnitude, 40.078 + 60.0089)
 
 
 def test_conductivity(s1, s2):

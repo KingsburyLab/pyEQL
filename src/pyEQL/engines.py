@@ -5,6 +5,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 :license: LGPL, see LICENSE for more details.
 
 """
+import warnings
 from abc import ABC, abstractmethod
 
 # internal pyEQL imports
@@ -114,6 +115,8 @@ class IdealEOS(EOS):
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        warnings.warn("equilibrate() has no effect in IdealEOS!")
+        return
 
 
 class NativeEOS(EOS):
