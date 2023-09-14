@@ -20,3 +20,4 @@ def test_from_formula():
     s2 = Solute.from_formula("O6")
     assert s2.formula == "O3(aq)"
     assert s2.molecular_weight == "47.9982 g/mol"
+    assert s2.oxi_state_guesses == ({"O": 0.0},)

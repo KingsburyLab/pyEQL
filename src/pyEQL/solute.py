@@ -70,7 +70,7 @@ class Solute:
     formula_latex: str
     formula_hill: str
     formula_pretty: str
-    oxi_state_guesses: list[dict[str, float]]
+    oxi_state_guesses: tuple[dict[str, float]]
     n_atoms: int
     n_elements: int
     size: dict = field(
@@ -113,6 +113,10 @@ class Solute:
         els = [str(el) for el in pmg_ion.elements]
         mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
+        oxi_states = pmg_ion.oxi_state_guesses()
+        # TODO - hack to work around a pymatgen bug in Composition
+        if oxi_states == [] and rform in ["O2(aq)", "O3(aq)", "Cl2(aq)", "F2(aq)"]:
+            oxi_states = ({els[0]: 0.0},)
 
         return cls(
             rform,
@@ -125,7 +129,7 @@ class Solute:
             formula_latex=pmg_ion.to_latex_string(),
             formula_hill=pmg_ion.hill_formula,
             formula_pretty=pmg_ion.to_pretty_string(),
-            oxi_state_guesses=pmg_ion.oxi_state_guesses(),
+            oxi_state_guesses=oxi_states,
             n_atoms=int(pmg_ion.num_atoms),
             n_elements=len(els),
         )
