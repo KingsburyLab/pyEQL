@@ -1049,12 +1049,16 @@ class Solution(MSONable):
         for s, mol in self.components.items():
             elements = self.get_property(s, "elements")
             pmg_ion_dict = self.get_property(s, "pmg_ion")
-            oxi_states = self.get_property(s, "oxi_state_guesses")[0]
 
             for el in elements:
                 # stoichiometric coefficient, mol element per mol solute
                 stoich = pmg_ion_dict.get(el)
-                oxi_state = oxi_states.get(el)
+                try:
+                    oxi_states = self.get_property(s, "oxi_state_guesses")[0]
+                    oxi_state = oxi_states.get(el)
+                except (TypeError, IndexError):
+                    warnings.warn(f"Guessing oxi states failed for {s}")
+                    oxi_state = "unk"
                 key = f"{el}({oxi_state})"
                 if d.get(key):
                     d[key] += stoich * mol
@@ -1816,10 +1820,17 @@ class Solution(MSONable):
         # data. len>1 indicates duplicate data.
         if len(data) == 0:
             # try to determine basic properties using pymatgen
+            pmg_ion = Ion.from_formula(solute)
+            if name == "pmg_ion":
+                return pmg_ion
             if name == "charge":
-                return Ion.from_formula(solute).charge
+                return pmg_ion.charge
+            if name == "oxi_state_guesses":
+                return pmg_ion.oxi_state_guesses()
+            if name == "elements":
+                return [str(el) for el in pmg_ion.elements]
             if name == "molecular_weight":
-                return f"{float(Ion.from_formula(solute).weight)} g/mol"  # weight is a FloatWithUnit
+                return f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
             if name == "size.molar_volume" and rform == "H2O(aq)":
                 # calculate the partial molar volume for water since it isn't in the database
                 vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (

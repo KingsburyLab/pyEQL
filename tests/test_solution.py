@@ -260,7 +260,7 @@ def test_equilibrate(s1, s2, s5):
     assert "H2(aq)" in s1.components
     assert np.isclose(s1.charge_balance, 0)
     assert np.isclose(s1.pH, orig_pH, atol=0.005)
-    assert np.isclose(s1.pE, orig_pE, atol=0.005)
+    assert np.isclose(s1.pE, orig_pE)
 
     assert "NaOH(aq)" not in s2.components
     s2.equilibrate()
@@ -269,7 +269,7 @@ def test_equilibrate(s1, s2, s5):
     assert "NaOH(aq)" in s2.components
     assert np.isclose(s2.charge_balance, 0)
     assert np.isclose(s2.pH, orig_pH, atol=0.005)
-    assert np.isclose(s2.pE, orig_pE, atol=0.005)
+    assert np.isclose(s2.pE, orig_pE)
 
     # TODO - this solution is the only one in the test that contains alkalinity
     # and equilibrating it results in a shift in the charge balance (added protons)
@@ -278,11 +278,13 @@ def test_equilibrate(s1, s2, s5):
     assert np.isclose(s5.charge_balance, 0)
     orig_pH = s5.pH
     orig_pE = s5.pE
+    set(s5.components.keys())
     s5.equilibrate()
     assert np.isclose(s5.charge_balance, 0, atol=2e-3)
     assert "HCO3[-1]" in s5.components
-    assert np.isclose(s5.pH, orig_pH, atol=0.03)
-    assert np.isclose(s5.pE, orig_pE, atol=0.03)
+    print(s5.get_el_amt_dict())
+    assert np.isclose(s5.pH, orig_pH, atol=0.005)
+    assert np.isclose(s5.pE, orig_pE)
 
 
 def test_tds(s1, s2, s5):

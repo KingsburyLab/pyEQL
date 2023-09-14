@@ -74,6 +74,7 @@ def equilibrate_phreeqc(
         "redox": "pe",  # hard-coded to use the pe
         "density": solution.density.to("g/mL").magnitude,
     }
+    initial_comp = solution.components.copy()
 
     # add the composition to the dict
     # also, skip H and O
@@ -117,6 +118,8 @@ def equilibrate_phreeqc(
     for s, mol in ppsol.species.items():
         solution.components[s] = mol * vol
 
+    # make sure PHREEQC has accounted for all the species that were originally present
+    assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
     # make sure nothing crazy happened
     assert np.isclose(ppsol.pH, solution.pH, atol=0.05)
     assert np.isclose(ppsol.pe, solution.pE, atol=0.05)
