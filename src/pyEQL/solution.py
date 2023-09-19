@@ -18,6 +18,7 @@ from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MSONable
 from pint import DimensionalityError, Quantity
+from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
 from pyEQL import ureg
@@ -1066,7 +1067,6 @@ class Solution(MSONable):
 
         return d
 
-    # TODO - integrate get_el_amt_dict and get_total_amount to reduce redundant code
     def get_el_amt_dict(self):
         """
         Return a dict of Element: amount in mol
@@ -1101,10 +1101,10 @@ class Solution(MSONable):
         """
         Return the total amount of 'element' (across all solutes) in the solution.
 
-        Parameters
-        ----------
-        element : str
-                    String representing the name of the element of interest
+        Args:
+            element: The symbol of the element of interest. The symbol can optionally be followed by the
+                oxidation state in parentheses, e.g., "Na(1)", "Fe(2)", or "O(0)". If no oxidation state
+                is given, the total concentration of the element (over all oxidation states) is returned.
         units : str
                     Units desired for the output. Examples of valid units are
                     'mol/L','mol/kg','mol', 'kg', and 'g/L'
@@ -1113,29 +1113,32 @@ class Solution(MSONable):
         -------
         The total amount of the element in the solution, in the specified units
 
-        Notes
-        -----
-        There is currently no way to distinguish between different oxidation
-        states of the same element (e.g. TOTFe(II) vs. TOTFe(III)). This
-        is planned for a future release.
-
         See Also
         --------
         get_amount
         """
-        # TODO - is it important to distinguish different oxidation states here? See docstring.
-        from pymatgen.core import Element
+        TOT: Quantity = ureg.Quantity(f"0 {units}")
 
-        el = str(Element(element))
+        # standardize the element formula
+        el = str(Element(element.split("(")[0]))
 
-        TOT = ureg.Quantity(f"0 {units}")
+        # enumerate the species whose concentrations we need
+        comp_by_element = self.get_components_by_element()
 
-        # loop through all the solutes, process each one containing element
-        for item in self.components:
-            # check whether the solute contains the element
-            # if ch.contains(item, element):
-            if el in self.get_property(item, "elements"):
-                # start with the amount of the solute in the desired units
+        # compile list of species in different ways depending whether there is an oxidation state
+        if "(" in element:
+            ox = float(element.split("(")[-1].split(")")[0])
+            key = f"{el}({ox})"
+            species = comp_by_element.get(key)
+        else:
+            species = []
+            for k, v in comp_by_element.items():
+                if el in k:
+                    species.extend(v)
+
+        # loop through the species of interest, adding moles of element
+        for item, amt in self.components.items():
+            if item in species:
                 amt = self.get_amount(item, units)
                 ion = Ion.from_formula(item)
 
@@ -1146,7 +1149,7 @@ class Solution(MSONable):
                     "[substance]/[length]**3",
                     "[substance]/[mass]",
                 ):
-                    TOT += amt * ion.get_el_amt_dict[el]  # returns {el: mol per formula unit}
+                    TOT += amt * ion.get_el_amt_dict()[el]  # returns {el: mol per formula unit}
 
                 elif ureg.Quantity(units).dimensionality in (
                     "[mass]",
