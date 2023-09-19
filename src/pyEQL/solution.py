@@ -1050,7 +1050,7 @@ class Solution(MSONable):
         for s, mol in self.components.items():
             elements = self.get_property(s, "elements")
             pmg_ion_dict = self.get_property(s, "pmg_ion")
-            oxi_states = self.get_property(s, "oxi_state_guesses")[0]
+            oxi_states = self.get_property(s, "oxi_state_guesses")
 
             for el in elements:
                 # stoichiometric coefficient, mol element per mol solute
@@ -1871,6 +1871,9 @@ class Solution(MSONable):
 
         if name == "molecular_weight":
             return ureg.Quantity(doc.get(name))
+
+        if name == "oxi_state_guesses":
+            return doc.get(name)
 
         # for parameters not named above, just return the base value
         if name == "pmg_ion" or not isinstance(doc.get(name), dict):
