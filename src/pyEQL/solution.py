@@ -1053,8 +1053,8 @@ class Solution(MSONable):
 
             for el in elements:
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")[0]
-                    oxi_state = oxi_states.get(el, "nope!")
+                    oxi_states = self.get_property(s, "oxi_state_guesses")
+                    oxi_state = oxi_states.get(el)
                 except (TypeError, IndexError):
                     warnings.warn(f"Guessing oxi states failed for {s}")
                     oxi_state = "unk"
@@ -1078,6 +1078,7 @@ class Solution(MSONable):
         for s, mol in self.components.items():
             elements = self.get_property(s, "elements")
             pmg_ion_dict = self.get_property(s, "pmg_ion")
+            oxi_states = self.get_property(s, "oxi_state_guesses")
 
             for el in elements:
                 # stoichiometric coefficient, mol element per mol solute
@@ -1932,6 +1933,29 @@ class Solution(MSONable):
         except KeyError:
             logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
+
+        if name == "model_parameters.molar_volume_pitzer":
+            # return a dict
+            if doc["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
+                return doc["model_parameters"]["molar_volume_pitzer"]
+            return None
+
+        if name == "molecular_weight":
+            return ureg.Quantity(doc.get(name))
+
+        if name == "oxi_state_guesses":
+            return doc.get(name)
+
+        # for parameters not named above, just return the base value
+        if name == "pmg_ion" or not isinstance(doc.get(name), dict):
+            # if the queried value is not a dict, it is a root level key and should be returned as is
+            return doc.get(name)
+
+        val = doc[name].get("value")
+        # logger.warning("%s has not been corrected for solution conditions" % name)
+        if val is not None:
+            return ureg.Quantity(val)
+        return None
 
     def get_transport_number(self, solute, activity_correction=False) -> Quantity:
         """Calculate the transport number of the solute in the solution.
