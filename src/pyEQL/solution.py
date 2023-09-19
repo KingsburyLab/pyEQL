@@ -451,25 +451,31 @@ class Solution(MSONable):
         return sorted(set(els))
 
     @property
-    def cations(self) -> dict:
+    def cations(self) -> dict[str, float]:
         """
-        Returns the subset of self.components {formula: moles} that are cations.
+        Returns the subset of self.components {formula: moles} that are cations. The returned dict is sorted by
+        amount in descending order.
         """
-        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
+        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
+        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
 
     @property
     def anions(self) -> dict:
         """
-        Returns the subset of self.components {formula: moles} that are anions.
+        Returns the subset of self.components {formula: moles} that are anions. The returned dict is sorted by
+        amount in descending order.
         """
-        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
+        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
+        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
 
     @property
     def neutrals(self) -> dict:
         """
-        Returns the subset of self.components {formula: moles} that are neutral (not charged).
+        Returns the subset of self.components {formula: moles} that are neutral (not charged). The returned dict is sorted by
+        amount in descending order.
         """
-        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
+        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
+        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
 
     # TODO - need tests for viscosity
     @property
