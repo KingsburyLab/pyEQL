@@ -1053,8 +1053,8 @@ class Solution(MSONable):
 
             for el in elements:
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")[0]
-                    oxi_state = oxi_states.get(el, "nope!")
+                    oxi_states = self.get_property(s, "oxi_state_guesses")
+                    oxi_state = oxi_states.get(el)
                 except (TypeError, IndexError):
                     warnings.warn(f"Guessing oxi states failed for {s}")
                     oxi_state = "unk"
