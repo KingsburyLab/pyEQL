@@ -252,6 +252,42 @@ def test_get_amount(s3, s5):
     # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
 
 
+def test_components_by_element(s1, s2):
+    assert s1.get_components_by_element() == {
+        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)"},
+        "O(-2.0)": {"OH[-1]", "H2O(aq)"},
+    }
+    assert s2.get_components_by_element() == {
+        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)"},
+        "O(-2.0)": {"OH[-1]", "H2O(aq)"},
+        "Na(1.0)": {"Na[+1]"},
+        "Cl(-1.0)": {"Cl[-1]"},
+    }
+    s2.equilibrate()
+    assert s2.get_components_by_element() == {
+        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)", "NaOH(aq)", "HCl(aq)", "HClO(aq)", "HClO2(aq)"},
+        "H(0.0)": {"H2(aq)"},
+        "O(-2.0)": {
+            "OH[-1]",
+            "H2O(aq)",
+            "ClO[-1]",
+            "ClO2[-1]",
+            "ClO3[-1]",
+            "ClO4[-1]",
+            "HClO(aq)",
+            "HClO2(aq)",
+            "NaOH(aq)",
+        },
+        "O(0.0)": {"O2(aq)"},
+        "Na(1.0)": {"Na[+1]", "NaCl(aq)", "NaOH(aq)"},
+        "Cl(-1.0)": {"Cl[-1]", "HCl(aq)", "NaCl(aq)"},
+        "Cl(1.0)": {"ClO[-1]", "HClO(aq)"},
+        "Cl(3.0)": {"ClO2[-1]", "HClO2(aq)"},
+        "Cl(5.0)": {"ClO3[-1]"},
+        "Cl(7.0)": {"ClO4[-1]"},
+    }
+
+
 def test_equilibrate(s1, s2, s5):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
@@ -271,9 +307,11 @@ def test_equilibrate(s1, s2, s5):
     assert np.isclose(s2.pH, orig_pH, atol=0.005)
     assert np.isclose(s2.pE, orig_pE)
 
-    # TODO - this solution is the only one in the test that contains alkalinity
-    # and equilibrating it results in a shift in the charge balance (added protons)
-    # that is larger than seems necessary.
+    # this solution is the only one in the test that contains alkalinity
+    # and equilibrating it results in a shift in the pH
+    # the CO3-2 initially present reacts with the water to consume H+ and
+    # increase the pH by approximately 0.0006 M (b/c at pH 7 virtually all
+    # carbonate is present as HCO3-) -log10(0.001) =
     assert "HCO3[-1]" not in s5.components
     assert np.isclose(s5.charge_balance, 0)
     orig_pH = s5.pH
@@ -282,8 +320,7 @@ def test_equilibrate(s1, s2, s5):
     s5.equilibrate()
     assert np.isclose(s5.charge_balance, 0, atol=2e-3)
     assert "HCO3[-1]" in s5.components
-    print(s5.get_el_amt_dict())
-    assert np.isclose(s5.pH, orig_pH, atol=0.005)
+    assert s5.pH > orig_pH
     assert np.isclose(s5.pE, orig_pE)
 
 

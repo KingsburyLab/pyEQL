@@ -26,6 +26,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS
 # logging system
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import generate_salt_list, identify_salt
+from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, standardize_formula
 
 EQUIV_WT_CACO3 = 100.09 / 2 * ureg.Quantity("g/mol")
@@ -1038,6 +1039,34 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
+    def get_components_by_element(self) -> dict[str, set]:
+        """
+        Return a list of all species associated with a given element. Elements (keys) are
+        suffixed with their oxidation state in parentheses, e.g.,
+
+        {"Na(1)":{"Na[+1]", "NaOH(aq)"}}
+        """
+        d = {}
+        for s in self.components:
+            # determine the element and oxidation state
+            elements = self.get_property(s, "elements")
+
+            for el in elements:
+                try:
+                    oxi_states = self.get_property(s, "oxi_state_guesses")[0]
+                    oxi_state = oxi_states.get(el, "nope!")
+                except (TypeError, IndexError):
+                    warnings.warn(f"Guessing oxi states failed for {s}")
+                    oxi_state = "unk"
+                key = f"{el}({oxi_state})"
+                if d.get(key):
+                    d[key].add(s)
+                else:
+                    d[key] = {s}
+
+        return d
+
+    # TODO - integrate get_el_amt_dict and get_total_amount to reduce redundant code
     def get_el_amt_dict(self):
         """
         Return a dict of Element: amount in mol
@@ -1818,19 +1847,10 @@ class Solution(MSONable):
         data = list(self.database.query({"formula": rform, name: {"$ne": None}}))
         # formulas should always be unique in the database. len==0 indicates no
         # data. len>1 indicates duplicate data.
+        if len(data) > 1:
+            logger.warning(f"Duplicate database entries for solute {solute} found!")
         if len(data) == 0:
-            # try to determine basic properties using pymatgen
-            pmg_ion = Ion.from_formula(solute)
-            if name == "pmg_ion":
-                return pmg_ion
-            if name == "charge":
-                return pmg_ion.charge
-            if name == "oxi_state_guesses":
-                return pmg_ion.oxi_state_guesses()
-            if name == "elements":
-                return [str(el) for el in pmg_ion.elements]
-            if name == "molecular_weight":
-                return f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
+            # TODO - add molar volume of water to database?
             if name == "size.molar_volume" and rform == "H2O(aq)":
                 # calculate the partial molar volume for water since it isn't in the database
                 vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (
@@ -1839,69 +1859,79 @@ class Solution(MSONable):
 
                 return vol.to("cm **3 / mol")
 
-            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
-            return None
-        if len(data) > 1:
-            logger.warning(f"Duplicate database entries for solute {solute} found!")
+            # try to determine basic properties using pymatgen
+            doc = Solute.from_formula(rform).as_dict()
+            data = [doc]
 
         doc: dict = data[0]
 
-        # perform temperature-corrections or other adjustments for certain
-        # parameter types
-        if name == "transport.diffusion_coefficient":
-            base_value = doc["transport"]["diffusion_coefficient"]["value"]
+        try:
+            # perform temperature-corrections or other adjustments for certain
+            # parameter types
+            if name == "transport.diffusion_coefficient":
+                base_value = doc["transport"]["diffusion_coefficient"]["value"]
 
-            # correct for temperature and viscosity
-            # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-            # where :math:`\mu` is the dynamic viscosity
-            # assume that the base viscosity is that of pure water
-            return (
-                ureg.Quantity(base_value)
-                * self.temperature
-                / base_temperature
-                * self.water_substance.mu
-                * ureg.Quantity("1 Pa*s")
-                / self.get_viscosity_dynamic()
-            ).to("m**2/s")
+                # correct for temperature and viscosity
+                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
+                # where :math:`\mu` is the dynamic viscosity
+                # assume that the base viscosity is that of pure water
+                return (
+                    ureg.Quantity(base_value)
+                    * self.temperature
+                    / base_temperature
+                    * self.water_substance.mu
+                    * ureg.Quantity("1 Pa*s")
+                    / self.get_viscosity_dynamic()
+                ).to("m**2/s")
 
-        # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
-        # return ureg.Quantity("0 m**2/s")
+            # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
+            # return ureg.Quantity("0 m**2/s")
 
-        # just return the base-value molar volume for now; find a way to adjust for concentration later
-        if name == "size.molar_volume":
-            base_value = ureg.Quantity(doc["size"]["molar_volume"]["value"])
-            if self.temperature != base_temperature:
-                logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
-            return base_value
+            # just return the base-value molar volume for now; find a way to adjust for concentration later
+            if name == "size.molar_volume":
+                base_value = ureg.Quantity(doc["size"]["molar_volume"]["value"])
+                if self.temperature != base_temperature:
+                    logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
+                return base_value
 
-        if name == "model_parameters.dielectric_zuber":
-            return ureg.Quantity(doc["model_parameters"]["dielectric_zuber"]["value"])
+            if name == "model_parameters.dielectric_zuber":
+                return ureg.Quantity(doc["model_parameters"]["dielectric_zuber"]["value"])
 
-        if name == "model_parameters.activity_pitzer":
-            # return a dict
-            if doc["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
-                return doc["model_parameters"]["activity_pitzer"]
+            if name == "model_parameters.activity_pitzer":
+                # return a dict
+                if doc["model_parameters"]["activity_pitzer"].get("Beta0") is not None:
+                    return doc["model_parameters"]["activity_pitzer"]
+                return None
+
+            if name == "model_parameters.molar_volume_pitzer":
+                # return a dict
+                if doc["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
+                    return doc["model_parameters"]["molar_volume_pitzer"]
+                return None
+
+            if name == "molecular_weight":
+                return ureg.Quantity(doc.get(name))
+
+            if name == "elements":
+                return doc.get(name)
+
+            if name == "oxi_state_guesses":
+                # ensure that all oxi states are returned as floats
+                return [{k: float(v) for k, v in doc.get(name)[0].items()}]
+
+            # for parameters not named above, just return the base value
+            if name == "pmg_ion" or not isinstance(doc.get(name), dict):
+                # if the queried value is not a dict, it is a root level key and should be returned as is
+                return doc.get(name)
+
+            val = doc[name].get("value")
+            # logger.warning("%s has not been corrected for solution conditions" % name)
+            if val is not None:
+                return ureg.Quantity(val)
+
+        except KeyError:
+            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
-
-        if name == "model_parameters.molar_volume_pitzer":
-            # return a dict
-            if doc["model_parameters"]["molar_volume_pitzer"].get("Beta0") is not None:
-                return doc["model_parameters"]["molar_volume_pitzer"]
-            return None
-
-        if name == "molecular_weight":
-            return ureg.Quantity(doc.get(name))
-
-        # for parameters not named above, just return the base value
-        if name == "pmg_ion" or not isinstance(doc.get(name), dict):
-            # if the queried value is not a dict, it is a root level key and should be returned as is
-            return doc.get(name)
-
-        val = doc[name].get("value")
-        # logger.warning("%s has not been corrected for solution conditions" % name)
-        if val is not None:
-            return ureg.Quantity(val)
-        return None
 
     def get_transport_number(self, solute, activity_correction=False) -> Quantity:
         """Calculate the transport number of the solute in the solution.
