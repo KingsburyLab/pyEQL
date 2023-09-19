@@ -4263,7 +4263,7 @@
         "n_elements": 3,
         "size": {
             "radius_ionic": {
-                "value": "1.21 Å",
+                "value": "None",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
@@ -4324,172 +4324,19 @@
         }
     },
     {
-        "formula": "Er[+2]",
-        "charge": 2,
-        "molecular_weight": "167.259 g/mol",
-        "elements": [
-            "Er"
-        ],
-        "chemsys": "Er",
-        "pmg_ion": {
-            "Er": 1,
-            "charge": 2,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "Er<sup>+2</sup>",
-        "formula_latex": "Er$^{+2}$",
-        "formula_hill": "Er",
-        "formula_pretty": "Er^+2",
-        "oxi_state_guesses": [],
-        "n_atoms": 1,
-        "n_elements": 1,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.29 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": {
-                "value": "-1576.0 ± 10 kJ/mol",
-                "reference": "10.1021/acs.jpca.9b05140",
-                "data_type": "experimental"
-            },
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "Max_C": null
-            },
-            "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "V_o": null,
-                "Max_C": null
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "Er[+3]",
-        "charge": 3,
-        "molecular_weight": "167.259 g/mol",
-        "elements": [
-            "Er"
-        ],
-        "chemsys": "Er",
-        "pmg_ion": {
-            "Er": 1,
-            "charge": 3,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "Er<sup>+3</sup>",
-        "formula_latex": "Er$^{+3}$",
-        "formula_hill": "Er",
-        "formula_pretty": "Er^+3",
-        "oxi_state_guesses": [
-            {
-                "Er": 3
-            }
-        ],
-        "n_atoms": 1,
-        "n_elements": 1,
-        "size": {
-            "radius_ionic": {
-                "value": "1.03 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.29 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null,
-            "radius_ionic_marcus": {
-                "value": "1.04 ± 0.01 Å",
-                "reference": "10.1021/ic200260r",
-                "data_type": "experimental"
-            }
-        },
-        "thermo": {
-            "ΔG_hydration": {
-                "value": "-3627.0 ± 10 kJ/mol",
-                "reference": "10.1021/acs.jpca.9b05140",
-                "data_type": "experimental"
-            },
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": {
-                "value": "5.85e-06 cm**2/s",
-                "reference": "CRC",
-                "data_type": "experimental"
-            }
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "Max_C": null
-            },
-            "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "V_o": null,
-                "Max_C": null
-            },
-            "viscosity_jones_dole": {
-                "B": {
-                    "value": "0.657 dm**3/mol",
-                    "reference": "https://doi.org/10.1021/cr00040a004",
-                    "data_type": "fitted"
-                }
-            }
-        }
-    },
-    {
-        "formula": "Eu(NO3)3(aq)",
+        "formula": "Cd(NO3)2(aq)",
         "charge": 0,
-        "molecular_weight": "337.9787 g/mol",
+        "molecular_weight": "236.42079999999999 g/mol",
         "elements": [
-            "Eu",
+            "Cd",
             "N",
             "O"
         ],
-        "chemsys": "Eu-N-O",
+        "chemsys": "Cd-N-O",
         "pmg_ion": {
-            "Eu": 1,
-            "N": 3,
-            "O": 9,
+            "Cd": 1,
+            "N": 2,
+            "O": 6,
             "charge": 0,
             "@module": "pymatgen.core.ion",
             "@class": "Ion",
@@ -4514,7 +4361,7 @@
             },
             "radius_hydrated": null,
             "radius_vdw": {
-                "value": "2.35 Å",
+                "value": "2.18 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
@@ -4530,12 +4377,12 @@
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
-                    "value": "0.4777 dimensionless",
+                    "value": "0.2833 dimensionless",
                     "reference": "10.1021/je2009329",
                     "data_type": "fitted"
                 },
                 "Beta1": {
-                    "value": "4.706 dimensionless",
+                    "value": "1.665 dimensionless",
                     "reference": "10.1021/je2009329",
                     "data_type": "fitted"
                 },
@@ -4545,23 +4392,47 @@
                     "data_type": "fitted"
                 },
                 "Cphi": {
-                    "value": "-0.04847 dimensionless",
+                    "value": "-0.02426 dimensionless",
                     "reference": "10.1021/je2009329",
                     "data_type": "fitted"
                 },
                 "Max_C": {
-                    "value": "2.0 mol/kg",
+                    "value": "3.0 mol/kg",
                     "reference": "10.1021/je2009329",
                     "data_type": "fitted"
                 }
             },
             "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "V_o": null,
-                "Max_C": null
+                "Beta0": {
+                    "value": "-0.0001585 dimensionless",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                },
+                "Beta1": {
+                    "value": "0.0006157 dimensionless",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                },
+                "Beta2": {
+                    "value": "0.0 dimensionless",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                },
+                "Cphi": {
+                    "value": "9.018e-05 dimensionless",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                },
+                "V_o": {
+                    "value": "43.0 dimensionless",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                },
+                "Max_C": {
+                    "value": "3.0 mol/kg",
+                    "reference": "10.1021/je2009329",
+                    "data_type": "fitted"
+                }
             },
             "viscosity_jones_dole": {
                 "B": null
@@ -9604,7 +9475,7 @@
         },
         "transport": {
             "diffusion_coefficient": {
-                "value": "6.02e-06 cm**2/s",
+                "value": "6.04e-06 cm**2/s",
                 "reference": "CRC",
                 "data_type": "experimental"
             }
@@ -9627,7 +9498,7 @@
             },
             "viscosity_jones_dole": {
                 "B": {
-                    "value": "0.618 dm**3/mol",
+                    "value": "0.69 dm**3/mol",
                     "reference": "https://doi.org/10.1021/cr00040a004",
                     "data_type": "fitted"
                 }
@@ -9848,42 +9719,34 @@
         "n_elements": 1,
         "size": {
             "radius_ionic": {
-                "value": "1.19 Å",
+                "value": "1.075 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "radius_hydrated": {
-                "value": "3.52 Å",
-                "reference": "Nightingale1959",
-                "data_type": "experimental"
-            },
+            "radius_hydrated": null,
             "radius_vdw": {
-                "value": "1.47 Å",
+                "value": "2.34 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "molar_volume": {
-                "value": "2.6 cm**3/mol",
-                "reference": "Calculation of the Partial Molal Volume of Organic Compounds and Polymers. Progress in Colloid & Polymer Science (94), 20-39.",
-                "data_type": "experimental"
-            },
+            "molar_volume": null,
             "radius_ionic_marcus": {
-                "value": "1.33 ± 0.02 Å",
-                "reference": "Marcus2015",
+                "value": "1.105 ± 0.01 Å",
+                "reference": "10.1021/ic200260r",
                 "data_type": "experimental"
             }
         },
         "thermo": {
             "ΔG_hydration": {
-                "value": "-425.0 ± 6 kJ/mol",
-                "reference": "Marcus2015",
+                "value": "-3500.0 ± 10 kJ/mol",
+                "reference": "10.1021/acs.jpca.9b05140",
                 "data_type": "experimental"
             },
             "ΔG_formation": null
         },
         "transport": {
             "diffusion_coefficient": {
-                "value": "1.475e-05 cm**2/s",
+                "value": "5.97e-06 cm**2/s",
                 "reference": "CRC",
                 "data_type": "experimental"
             }
@@ -9906,7 +9769,7 @@
             },
             "viscosity_jones_dole": {
                 "B": {
-                    "value": "0.107 dm**3/mol",
+                    "value": "0.64 dm**3/mol",
                     "reference": "https://doi.org/10.1021/cr00040a004",
                     "data_type": "fitted"
                 }
@@ -11080,11 +10943,7 @@
             "molar_volume": null
         },
         "thermo": {
-            "ΔG_hydration": {
-                "value": "nan ± 6 kJ/mol",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            },
+            "ΔG_hydration": null,
             "ΔG_formation": null
         },
         "transport": {
@@ -11949,31 +11808,11 @@
         },
         "model_parameters": {
             "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.05517 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.2361 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.00148 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "5.5 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
+                "Beta0": null,
+                "Beta1": null,
+                "Beta2": null,
+                "Cphi": null,
+                "Max_C": null
             },
             "molar_volume_pitzer": {
                 "Beta0": null,
@@ -12104,15 +11943,15 @@
     {
         "formula": "HNO3(aq)",
         "charge": 0,
-        "molecular_weight": "101.1032 g/mol",
+        "molecular_weight": "63.01284 g/mol",
         "elements": [
-            "K",
+            "H",
             "N",
             "O"
         ],
-        "chemsys": "K-N-O",
+        "chemsys": "H-N-O",
         "pmg_ion": {
-            "K": 1,
+            "H": 1,
             "N": 1,
             "O": 3,
             "charge": 0,
@@ -12407,37 +12246,20 @@
         "n_elements": 3,
         "size": {
             "radius_ionic": {
-                "value": "1.52 Å",
+                "value": "None",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "radius_hydrated": {
-                "value": "3.31 Å",
-                "reference": "Nightingale1959",
-                "data_type": "experimental"
-            },
+            "radius_hydrated": null,
             "radius_vdw": {
                 "value": "1.1 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "molar_volume": {
-                "value": "5.2 cm**3/mol",
-                "reference": "Calculation of the Partial Molal Volume of Organic Compounds and Polymers. Progress in Colloid & Polymer Science (94), 20-39.",
-                "data_type": "experimental"
-            },
-            "radius_ionic_marcus": {
-                "value": "1.38 ± 0.02 Å",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            }
+            "molar_volume": null
         },
         "thermo": {
-            "ΔG_hydration": {
-                "value": "-356.0 ± 6 kJ/mol",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            },
+            "ΔG_hydration": null,
             "ΔG_formation": null
         },
         "transport": {
@@ -13038,12 +12860,11 @@
             "I",
             "O"
         ],
-        "chemsys": "Na-O-P",
+        "chemsys": "I-O",
         "pmg_ion": {
-            "Na": 3,
-            "P": 1,
-            "O": 4,
-            "charge": 0,
+            "I": 1,
+            "O": 3,
+            "charge": -1,
             "@module": "pymatgen.core.ion",
             "@class": "Ion",
             "@version": null
@@ -13266,1207 +13087,11 @@
         },
         "model_parameters": {
             "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.139 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "5.419 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.04454 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "0.8 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "-0.002545 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.01227 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "0.00337 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "-25.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "0.6657 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaBr(aq)",
-        "charge": 0,
-        "molecular_weight": "102.89376928 g/mol",
-        "elements": [
-            "Na",
-            "Br"
-        ],
-        "chemsys": "Br-Na",
-        "pmg_ion": {
-            "Na": 1,
-            "Br": 1,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaBr",
-        "formula_latex": "NaBr",
-        "formula_hill": "Br Na",
-        "formula_pretty": "NaBr",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "Br": -1
-            }
-        ],
-        "n_atoms": 2,
-        "n_elements": 2,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.1083 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.239 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.00104 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "9.0 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "4.333e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.0002528 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-1.4e-06 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "23.5 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "8.376 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaBrO3(aq)",
-        "charge": 0,
-        "molecular_weight": "150.89196928 g/mol",
-        "elements": [
-            "Na",
-            "Br",
-            "O"
-        ],
-        "chemsys": "Br-Na-O",
-        "pmg_ion": {
-            "Na": 1,
-            "Br": 1,
-            "O": 3,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaBrO<sub>3</sub>",
-        "formula_latex": "NaBrO$_{3}$",
-        "formula_hill": "Br Na O3",
-        "formula_pretty": "NaBrO3",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "Br": 5,
-                "O": -2
-            }
-        ],
-        "n_atoms": 5,
-        "n_elements": 3,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "-0.02574 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.2161 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "0.00756 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "2.617 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.0004794 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "-0.0007243 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.0001687 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "34.1 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "2.577 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaCSN(aq)",
-        "charge": 0,
-        "molecular_weight": "81.07216928 g/mol",
-        "elements": [
-            "Na",
-            "S",
-            "C",
-            "N"
-        ],
-        "chemsys": "C-N-Na-S",
-        "pmg_ion": {
-            "Na": 1,
-            "S": 1,
-            "C": 1,
-            "N": 1,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaCSN",
-        "formula_latex": "NaCSN",
-        "formula_hill": "C N Na S",
-        "formula_pretty": "NaCSN",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "S": -2,
-                "C": 4,
-                "N": -3
-            },
-            {
-                "Na": 1,
-                "S": -2,
-                "C": 2,
-                "N": -1
-            },
-            {
-                "Na": 1,
-                "S": -2,
-                "C": -4,
-                "N": 5
-            },
-            {
-                "Na": 1,
-                "S": -2,
-                "C": -2,
-                "N": 3
-            },
-            {
-                "Na": 1,
-                "S": -2,
-                "C": 3,
-                "N": -2
-            },
-            {
-                "Na": 1,
-                "S": 6,
-                "C": -4,
-                "N": -3
-            },
-            {
-                "Na": 1,
-                "S": -1,
-                "C": 3,
-                "N": -3
-            },
-            {
-                "Na": 1,
-                "S": 4,
-                "C": -2,
-                "N": -3
-            },
-            {
-                "Na": 1,
-                "S": -1,
-                "C": 2,
-                "N": -2
-            },
-            {
-                "Na": 1,
-                "S": 4,
-                "C": -4,
-                "N": -1
-            },
-            {
-                "Na": 1,
-                "S": -1,
-                "C": -3,
-                "N": 3
-            },
-            {
-                "Na": 1,
-                "S": 2,
-                "C": -4,
-                "N": 1
-            },
-            {
-                "Na": 1,
-                "S": 4,
-                "C": -3,
-                "N": -2
-            },
-            {
-                "Na": 1,
-                "S": 2,
-                "C": -2,
-                "N": -1
-            }
-        ],
-        "n_atoms": 4,
-        "n_elements": 4,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.1048 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.3242 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.0018 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "12.0 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "2.294e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.00132 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "1.076e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "34.5 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "11.39 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaCl(aq)",
-        "charge": 0,
-        "molecular_weight": "58.44276928000001 g/mol",
-        "elements": [
-            "Na",
-            "Cl"
-        ],
-        "chemsys": "Cl-Na",
-        "pmg_ion": {
-            "Na": 1,
-            "Cl": 1,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaCl",
-        "formula_latex": "NaCl",
-        "formula_hill": "Cl Na",
-        "formula_pretty": "NaCl",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "Cl": -1
-            }
-        ],
-        "n_atoms": 2,
-        "n_elements": 2,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.07831 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.2677 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "0.000864 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "6.148 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.0001116 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "7.507e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-1.02e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "16.6 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "6.1 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaClO4(aq)",
-        "charge": 0,
-        "molecular_weight": "122.44036928 g/mol",
-        "elements": [
-            "Na",
-            "Cl",
-            "O"
-        ],
-        "chemsys": "Cl-Na-O",
-        "pmg_ion": {
-            "Na": 1,
-            "Cl": 1,
-            "O": 4,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaClO<sub>4</sub>",
-        "formula_latex": "NaClO$_{4}$",
-        "formula_hill": "Cl Na O4",
-        "formula_pretty": "NaClO4",
-        "oxi_state_guesses": [],
-        "n_atoms": 6,
-        "n_elements": 3,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.0185 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.286 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "0.002029 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "3.5 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.0001057 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.0002797 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-9.971e-06 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "35.5 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "3.507 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaCrO4(aq)",
-        "charge": 0,
-        "molecular_weight": "138.98346928 g/mol",
-        "elements": [
-            "Na",
-            "Cr",
-            "O"
-        ],
-        "chemsys": "Cr-Na-O",
-        "pmg_ion": {
-            "Na": 1,
-            "Cr": 1,
-            "O": 4,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaCrO<sub>4</sub>",
-        "formula_latex": "NaCrO$_{4}$",
-        "formula_hill": "Cr Na O4",
-        "formula_pretty": "NaCrO4",
-        "oxi_state_guesses": [],
-        "n_atoms": 6,
-        "n_elements": 3,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.06437 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "1.544 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "0.009028 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "4.363 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.0005722 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "-0.001298 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-5.95e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "17.3 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "4.234 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaF(aq)",
-        "charge": 0,
-        "molecular_weight": "41.98817248 g/mol",
-        "elements": [
-            "Na",
-            "F"
-        ],
-        "chemsys": "F-Na",
-        "pmg_ion": {
-            "Na": 1,
-            "F": 1,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaF",
-        "formula_latex": "NaF",
-        "formula_hill": "F Na",
-        "formula_pretty": "NaF",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "F": -1
-            }
-        ],
-        "n_atoms": 2,
-        "n_elements": 2,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.02109 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.2183 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.001 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "1.0 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.002113 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "-0.003857 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.001535 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "-2.4 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "0.9923 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaHC2O.1H2O(aq)",
-        "charge": 0,
-        "molecular_weight": "82.03378928000001 g/mol",
-        "elements": [
-            "Na",
-            "C",
-            "H",
-            "O"
-        ],
-        "chemsys": "C-H-Na-O",
-        "pmg_ion": {
-            "Na": 1,
-            "C": 2,
-            "H": 3,
-            "O": 2,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaHC<sub>2</sub>O<sub>.1</sub>H<sub>2</sub>O",
-        "formula_latex": "NaHC$_{2}$O$_{.1}$H$_{2}$O",
-        "formula_hill": "C2 H3 Na O2",
-        "formula_pretty": "NaHC2O.1H2O",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "C": 0,
-                "H": 1,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 1,
-                "H": 0.3333333333333333,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 2,
-                "H": -0.3333333333333333,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 3,
-                "H": -1,
-                "O": -2
-            }
-        ],
-        "n_atoms": 8,
-        "n_elements": 4,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.1382 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.3317 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.00496 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "4.5 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "value": "0.0003546 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "-0.0006847 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-7.88e-05 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "V_o": {
-                    "value": "39.5 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "4.283 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        }
-    },
-    {
-        "formula": "NaHC3.2H2O(aq)",
-        "charge": 0,
-        "molecular_weight": "96.06036928 g/mol",
-        "elements": [
-            "Na",
-            "C",
-            "H",
-            "O"
-        ],
-        "chemsys": "C-H-Na-O",
-        "pmg_ion": {
-            "Na": 1,
-            "C": 3,
-            "H": 5,
-            "O": 2,
-            "charge": 0,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "NaHC<sub>3.2</sub>H<sub>2</sub>O",
-        "formula_latex": "NaHC$_{3.2}$H$_{2}$O",
-        "formula_hill": "C3 H5 Na O2",
-        "formula_pretty": "NaHC3.2H2O",
-        "oxi_state_guesses": [
-            {
-                "Na": 1,
-                "C": -0.6666666666666666,
-                "H": 1,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 0,
-                "H": 0.6,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 0.6666666666666666,
-                "H": 0.2,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 1.3333333333333333,
-                "H": -0.2,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 2,
-                "H": -0.6,
-                "O": -2
-            },
-            {
-                "Na": 1,
-                "C": 2.6666666666666665,
-                "H": -1,
-                "O": -2
-            }
-        ],
-        "n_atoms": 11,
-        "n_elements": 4,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "2.27 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "value": "0.1799 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta1": {
-                    "value": "0.3169 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Beta2": {
-                    "value": "0.0 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Cphi": {
-                    "value": "-0.01051 dimensionless",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                },
-                "Max_C": {
-                    "value": "3.0 mol/kg",
-                    "reference": "10.1021/je2009329",
-                    "data_type": "fitted"
-                }
+                "Beta0": null,
+                "Beta1": null,
+                "Beta2": null,
+                "Cphi": null,
+                "Max_C": null
             },
             "molar_volume_pitzer": {
                 "Beta0": null,
@@ -16867,25 +15492,25 @@
                 }
             },
             "viscosity_jones_dole": {
-                "B": {
-                    "value": "0.369 dm**3/mol",
-                    "reference": "https://doi.org/10.1021/cr00040a004",
-                    "data_type": "fitted"
-                }
+                "B": null
             }
         }
     },
     {
-        "formula": "Zr[+4]",
-        "charge": 4,
-        "molecular_weight": "91.224 g/mol",
+        "formula": "KNO3(aq)",
+        "charge": 0,
+        "molecular_weight": "101.1032 g/mol",
         "elements": [
-            "Zr"
+            "K",
+            "N",
+            "O"
         ],
-        "chemsys": "Zr",
+        "chemsys": "K-N-O",
         "pmg_ion": {
-            "Zr": 1,
-            "charge": 4,
+            "K": 1,
+            "N": 1,
+            "O": 3,
+            "charge": 0,
             "@module": "pymatgen.core.ion",
             "@class": "Ion",
             "@version": null
@@ -16903,29 +15528,20 @@
         "n_elements": 3,
         "size": {
             "radius_ionic": {
-                "value": "0.86 Å",
+                "value": "None",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
             "radius_hydrated": null,
             "radius_vdw": {
-                "value": "2.23 Å",
+                "value": "2.75 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "molar_volume": null,
-            "radius_ionic_marcus": {
-                "value": "0.72 ± 0.02 Å",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            }
+            "molar_volume": null
         },
         "thermo": {
-            "ΔG_hydration": {
-                "value": "-6949.0 ± 6 kJ/mol",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            },
+            "ΔG_hydration": null,
             "ΔG_formation": null
         },
         "transport": {

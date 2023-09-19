@@ -1084,7 +1084,7 @@ class Solution(MSONable):
                 # stoichiometric coefficient, mol element per mol solute
                 stoich = pmg_ion_dict.get(el)
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")[0]
+                    oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el)
                 except (TypeError, IndexError):
                     warnings.warn(f"Guessing oxi states failed for {s}")
@@ -1918,7 +1918,7 @@ class Solution(MSONable):
 
             if name == "oxi_state_guesses":
                 # ensure that all oxi states are returned as floats
-                return [{k: float(v) for k, v in doc.get(name)[0].items()}]
+                return {k: float(v) for k, v in doc.get(name).items()}
 
             # for parameters not named above, just return the base value
             if name == "pmg_ion" or not isinstance(doc.get(name), dict):
