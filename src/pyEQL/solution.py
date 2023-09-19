@@ -450,6 +450,27 @@ class Solution(MSONable):
             els.extend(self.get_property(s, "elements"))
         return sorted(set(els))
 
+    @property
+    def cations(self) -> dict:
+        """
+        Returns the subset of self.components {formula: moles} that are cations.
+        """
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
+
+    @property
+    def anions(self) -> dict:
+        """
+        Returns the subset of self.components {formula: moles} that are anions.
+        """
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
+
+    @property
+    def neutrals(self) -> dict:
+        """
+        Returns the subset of self.components {formula: moles} that are neutral (not charged).
+        """
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
+
     # TODO - need tests for viscosity
     @property
     def viscosity_dynamic(self) -> Quantity:

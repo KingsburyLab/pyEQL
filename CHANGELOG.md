@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Solution`: improvements to `get_total_amount`
+- `Solution`: new properties `anions`, `cations`, `neutrals` provide easy access to subsets `components`.
+- `Solution`: improvements to `get_total_amount`.
 - `Solution`: new function `get_components_by_element` that lists all species associated with elements in specific
-  oxidation states
+  oxidation states.
 - `Solution`: new properties `elements` and `chemical_system`, new function `get_el_amt_dict` to compute the total
   number of moles of each element present in the Solution.
 

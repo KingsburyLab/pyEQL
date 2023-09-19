@@ -107,6 +107,12 @@ def test_init_engines():
     assert s.get_osmotic_coefficient().magnitude != 1
 
 
+def test_component_subsets(s2):
+    assert s2.cations == {"Na[+1]": 8, "H[+1]": 2e-7}
+    assert s2.anions == {"Cl[-1]": 8, "OH[-1]": 2e-7}
+    assert list(s2.neutrals.keys()) == ["H2O(aq)"]
+
+
 # create an empty and test solutions with the same volume using substance / volume,
 # substance/mass, and substance units
 def test_solute_addition(s2, s3, s4):
