@@ -328,21 +328,13 @@ def test_components_by_element(s1, s2):
 def test_get_total_amount(s2):
     assert np.isclose(s2.get_total_amount("Na(1)", "mol").magnitude, 8)
     assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
-    # TODO - expected failures until salt matching is fixed
-    # sox = Solution({"Fe+2": "10 mM", "Fe+3": "40 mM", "Cl-": "50 mM"}, pH=3)
-    # assert np.isclose(s2.get_total_amount('Fe(2)', 'mol/L').magnitude, 0.01)
-    # assert np.isclose(s2.get_total_amount('Fe(3)', 'mol/L').magnitude, 0.04)
-    # assert np.isclose(s2.get_total_amount('Fe', 'mol').magnitude, 0.05)
-
-    # total element concentrations should be conserved after equilibrating
-    # s2.equilibrate()
-    # assert np.isclose(s2.get_total_amount('Na(1)', 'mol').magnitude, 8)
-    # assert np.isclose(s2.get_total_amount('Na', 'mol').magnitude, 8)
-
-    # Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
+    sox = Solution({"Fe+2": "10 mM", "Fe+3": "40 mM", "Cl-": "50 mM"}, pH=3)
+    assert np.isclose(sox.get_total_amount("Fe(2)", "mol/L").magnitude, 0.01)
+    assert np.isclose(sox.get_total_amount("Fe(3)", "mol/L").magnitude, 0.04)
+    assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
 
 
-def test_equilibrate(s1, s2, s5):
+def test_equilibrate(s1, s2, s5_pH):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
     orig_pE = s1.pE
