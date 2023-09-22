@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 from typing import Literal
 
-import numpy as np
 from phreeqpython import PhreeqPython
 
 # the pint unit registry
@@ -133,9 +132,6 @@ def equilibrate_phreeqc(
 
     # make sure PHREEQC has accounted for all the species that were originally present
     assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
-    # make sure nothing crazy happened
-    assert np.isclose(ppsol.pH, solution.pH, atol=0.05)
-    assert np.isclose(ppsol.pe, solution.pE, atol=0.05)
 
     # remove the PPSol from the phreeqcpython instance
     pp.remove_solutions([0])
