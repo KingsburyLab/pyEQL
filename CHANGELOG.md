@@ -31,9 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Disable hydrate notation in `standardize_formula`, which cased hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
+- Disable hydrate notation in `standardize_formula`, which caused hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
 - Inconsistent formatting of oxidation states in `get_total_amount` and `Solute`
-- Inconsistent behavior of `get_property` for `molar_volume`
+- Inconsistent return type from `get_property` when `molar_volume` and `diffusion_coefficient` were missing
 - Two issues with the formatting of the `H2O(aq)` entry in the database, `pyeql_db.json`
 
 ## [0.7.0] - 2023-08-22
