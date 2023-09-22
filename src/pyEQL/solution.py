@@ -1936,20 +1936,21 @@ class Solution(MSONable):
             # perform temperature-corrections or other adjustments for certain
             # parameter types
             if name == "transport.diffusion_coefficient":
-                base_value = doc["transport"]["diffusion_coefficient"]["value"]
-
-                # correct for temperature and viscosity
-                # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-                # where :math:`\mu` is the dynamic viscosity
-                # assume that the base viscosity is that of pure water
-                return (
-                    ureg.Quantity(base_value)
-                    * self.temperature
-                    / base_temperature
-                    * self.water_substance.mu
-                    * ureg.Quantity("1 Pa*s")
-                    / self.get_viscosity_dynamic()
-                ).to("m**2/s")
+                data = doc["transport"]["diffusion_coefficient"]
+                if data is not None:
+                    # correct for temperature and viscosity
+                    # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
+                    # where :math:`\mu` is the dynamic viscosity
+                    # assume that the base viscosity is that of pure water
+                    return (
+                        ureg.Quantity(data["value"])
+                        * self.temperature
+                        / base_temperature
+                        * self.water_substance.mu
+                        * ureg.Quantity("1 Pa*s")
+                        / self.get_viscosity_dynamic()
+                    ).to("m**2/s")
+                return data
 
             # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
             # return ureg.Quantity("0 m**2/s")
