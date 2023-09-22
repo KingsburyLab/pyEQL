@@ -1920,10 +1920,13 @@ class Solution(MSONable):
 
             # just return the base-value molar volume for now; find a way to adjust for concentration later
             if name == "size.molar_volume":
-                base_value = ureg.Quantity(doc["size"]["molar_volume"]["value"])
-                if self.temperature != base_temperature:
-                    logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
-                return base_value
+                data = doc["size"]["molar_volume"]
+                if data is not None:
+                    base_value = ureg.Quantity(doc["size"]["molar_volume"].get("value"))
+                    if self.temperature != base_temperature:
+                        logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
+                    return base_value
+                return data
 
             if name == "model_parameters.dielectric_zuber":
                 return ureg.Quantity(doc["model_parameters"]["dielectric_zuber"]["value"])
