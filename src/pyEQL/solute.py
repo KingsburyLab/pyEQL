@@ -114,11 +114,13 @@ class Solute:
         mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
         # store only the most likely oxi_state guesses
-        oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)[0]
+        oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)
         # TODO - hack to work around a pymatgen bug in Composition
         # https://github.com/materialsproject/pymatgen/issues/3324
-        if oxi_states == [] and rform in ["O2(aq)", "O3(aq)", "Cl2(aq)", "F2(aq)"]:
-            oxi_states = ({els[0]: 0.0},)
+        if oxi_states == []:
+            oxi_states = {els[0]: 0.0} if rform in ["O2(aq)", "O3(aq)", "Cl2(aq)", "F2(aq)"] else {}
+        else:
+            oxi_states = oxi_states[0]
 
         return cls(
             rform,

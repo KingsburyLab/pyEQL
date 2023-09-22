@@ -191,14 +191,14 @@ def test_get_el_amt_dict(s6):
     s6 *= 8
     d = s6.get_el_amt_dict()
     for el, amt in zip(
-        ["H(1)", "O(-2)", "Ca(2)", "Mg(2)", "Na(1)", "Ag(1)", "C(4)", "S(6)", "Br(-1)"],
+        ["H(1.0)", "O(-2.0)", "Ca(2.0)", "Mg(2.0)", "Na(1.0)", "Ag(1.0)", "C(4.0)", "S(6.0)", "Br(-1.0)"],
         [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
     ):
         assert np.isclose(d[el], amt, atol=1e-3)
 
     s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
     d = s.get_el_amt_dict()
-    for el, amt in zip(["Fe(2)", "Fe(3)", "Cl(-1)"], [0.002, 0.01, 0.002 + 0.015]):
+    for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015]):
         assert np.isclose(d[el], amt, atol=1e-3)
 
 
