@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: new kwarg `balance_charge` to enable automatic charge balancing
 - `Solution`: new properties `anions`, `cations`, `neutrals` provide easy access to subsets `components`.
 - `Solution`: improvements to `get_total_amount`.
 - `Solution`: new function `get_components_by_element` that lists all species associated with elements in specific

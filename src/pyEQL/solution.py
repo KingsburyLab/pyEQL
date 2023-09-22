@@ -13,6 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
+import numpy as np
 from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
@@ -47,6 +48,7 @@ class Solution(MSONable):
         pressure: str = "1 atm",
         pH: float = 7,
         pE: float = 8.5,
+        balance_charge: str | None = None,
         solvent: str | list = "H2O",
         engine: EOS | Literal["native", "ideal"] = "native",
         database: str | Path | Store | None = None,
@@ -83,6 +85,11 @@ class Solution(MSONable):
                 higher values = more oxidizing. At pH 7, water is stable between approximately
                 -7 to +14. The default value corresponds to a pE value typical of natural
                 waters in equilibrium with the atmosphere.
+            balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options are
+                'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
+                redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be
+                added/subtracted to balance charge. If set to None, no charge balancing will be performed either on init
+                or when equilibrate() is called.
             solvent: Formula of the solvent. Solvents other than water are not supported at
                 this time.
             engine:
@@ -120,6 +127,10 @@ class Solution(MSONable):
         self._pE = pE
         self._pH = pH
         self.pE = self._pE
+        if isinstance(balance_charge, str) and balance_charge not in ["pH", "pE"]:
+            self.balance_charge = standardize_formula(balance_charge)
+        else:
+            self.balance_charge = balance_charge
 
         # instantiate a water substance for property retrieval
         self.water_substance = IAPWS95(
@@ -198,6 +209,31 @@ class Solution(MSONable):
             )
             for item in self._solutes:
                 self.add_solute(*item)
+
+        # adjust the charge balance, if necessary
+        cb = self.charge_balance
+        if not np.isclose(cb, 0, atol=1e-8) and self.balance_charge is not None:
+            balanced = False
+            logger.info(f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate.")
+            if self.balance_charge == "pH":
+                self.components["H+"] += (
+                    -1 * cb * self.volume.to("L").magnitude
+                )  # if C.B. is negative, we need to add cations. H+ is 1 eq/mol
+                balanced = True
+            elif self.balance_charge == "pE":
+                raise NotImplementedError("Balancing charge via redox (pE) is not yet implemented!")
+            else:
+                ions = set().union(*[self.cations, self.anions])  # all ions
+                if self.balance_charge not in ions:
+                    raise ValueError(
+                        f"Charge balancing species {self.balance_charge} was not found in the solution!. Species {ions} were found."
+                    )
+                z = self.get_property(balance_charge, "charge")
+                self.components[balance_charge] += -1 * cb / z * self.volume.to("L").magnitude
+                balanced = True
+
+            if not balanced:
+                warnings.warn(f"Unable to balance charge using species {self.balance_charge}")
 
     @property
     def mass(self) -> Quantity:
