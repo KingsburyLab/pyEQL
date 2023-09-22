@@ -27,7 +27,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS
 
 # logging system
 from pyEQL.logging_system import logger
-from pyEQL.salt_ion_match import generate_salt_list, identify_salt
+from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, standardize_formula
 
@@ -997,7 +997,6 @@ class Solution(MSONable):
             <Quantity(906516.7318131207, 'pascal')>
         """
         partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
-        print(partial_molar_volume_water)
 
         osmotic_pressure = (
             -1 * ureg.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
@@ -1522,7 +1521,7 @@ class Solution(MSONable):
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
         return factor * self.get_total_moles_solute() / self.solvent_mass.to("kg")
 
-    def get_salt(self):
+    def get_salt(self) -> Salt:
         """
         Determine the predominant salt in a solution of ions.
 
@@ -1537,15 +1536,10 @@ class Solution(MSONable):
         an object that identifies the single most predominant salt in the solution, defined
         by the cation and anion with the highest mole fraction. The Salt object contains
         information about the stoichiometry of the salt to enable its effective concentration
-        to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
+        to be calculated (e.g., if a solution contains 0.5 mol/kg of Na+ and Cl-, plus traces
+        of H+ and OH-, the matched salt is 0.5 mol/kg NaCl).
 
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        Salt
+        Returns:
             Salt object containing information about the parent salt.
 
         See Also
@@ -1557,32 +1551,46 @@ class Solution(MSONable):
         :py:meth:`get_osmotic_pressure`
         :py:meth:`get_viscosity_kinematic`
 
-        Examples
-        --------
-        >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
-        >>> s1.get_salt()
-        <pyEQL.salt_ion_match.Salt object at 0x7fe6d3542048>
-        >>> s1.get_salt().formula
-        'NaCl'
-        >>> s1.get_salt().nu_cation
-        1
-        >>> s1.get_salt().z_anion
-        -1
+        Examples:
+            >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
+            >>> s1.get_salt()
+            <pyEQL.salt_ion_match.Salt object at 0x7fe6d3542048>
+            >>> s1.get_salt().formula
+            'NaCl'
+            >>> s1.get_salt().nu_cation
+            1
+            >>> s1.get_salt().z_anion
+            -1
 
-        >>> s2 = pyEQL.Solution([['Na+','0.1 mol/kg'],['Mg+2','0.2 mol/kg'],['Cl-','0.5 mol/kg']])
-        >>> s2.get_salt().formula
-        'MgCl2'
-        >>> s2.get_salt().nu_anion
-        2
-        >>> s2.get_salt().z_cation
-        2
+            >>> s2 = pyEQL.Solution([['Na+','0.1 mol/kg'],['Mg+2','0.2 mol/kg'],['Cl-','0.5 mol/kg']])
+            >>> s2.get_salt().formula
+            'MgCl2'
+            >>> s2.get_salt().nu_anion
+            2
+            >>> s2.get_salt().z_cation
+            2
         """
-        # identify the predominant salt in the solution
-        return identify_salt(self)
+        d = self.get_salt_dict()
+        first_key = next(iter(d.keys()))
+        return Salt(d[first_key]["cation"], d[first_key]["anion"])
 
-    def get_salt_dict(self) -> dict:
+    # TODO - modify? deprecate? make a salts property?
+    # TODO - implement use_totals
+    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict]:
         """
-        Determine the predominant salt in a solution of ions.
+        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
+        keyed by formula and the values are the total moles present in the solution, e.g., {"NaCl(aq)": 1}. If the
+        Solution is pure water, the returned dict contains only 'HOH'.
+
+        Args:
+            cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
+                analyzed goes below this value. Useful for excluding analysis of trace anions.
+            use_totals: Whether to base the analysis on total element concentrations or individual species
+                concentrations.
+
+        Notes:
+            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
+            of their respective equivalent amounts.
 
         Many empirical equations for solution properties such as activity coefficient,
         partial molar volume, or viscosity are based on the concentration of
@@ -1615,8 +1623,129 @@ class Solution(MSONable):
         :py:meth:`get_osmotic_pressure`
         :py:meth:`get_viscosity_kinematic`
         """
-        # identify the predominant salt in the solution
-        return generate_salt_list(self, unit="mol/kg")
+        """
+        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
+        keyed by formula and the values are the total moles of salt present in the solution, e.g., {"NaCl(aq)": 1}
+
+        Notes:
+            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
+            of their respective equivalent amounts.
+
+        See Also:
+            Solution.components
+            Solution.cations
+            Solution.anions
+        """
+        salt_dict: dict[str, float] = {}
+        components = dict(sorted(self.components.items(), key=lambda x: x[1], reverse=True))
+        # warn if something other than water is the predominant component
+        if next(iter(components)) != "H2O(aq)":
+            logger.warning("H2O(aq) is not the most prominent component in this Solution!")
+
+        # equivalents (charge-weighted moles) of cations and anions
+        cation_equiv = {k: self.get_amount(k, "eq").magnitude for k in self.cations}
+        cation_equiv = dict(sorted(cation_equiv.items(), key=lambda x: x[1], reverse=True))
+        anion_equiv = {
+            k: -1 * self.get_amount(k, "eq").magnitude for k in self.anions
+        }  # make sure amounts are positive
+        anion_equiv = dict(sorted(anion_equiv.items(), key=lambda x: x[1], reverse=True))
+
+        len_cat = len(cation_equiv)
+        len_an = len(anion_equiv)
+
+        # Only ions are H+ and OH-; return a Salt represnting water (with no amount)
+        if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
+            x = Salt("H[+1]", "OH[-1]")
+            salt_dict.update({x.formula: x.as_dict()})
+            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol")
+            return salt_dict
+
+        # # track the current cation, anion, and remainder
+        # an_current = ""
+        # cat_current = ""
+        # remainder = 0
+
+        # # match cations and anions
+        # for an, cat in zip(anion_equiv, cation_equiv):
+        #     # don't update the "current" cations unless they aren't populated yet
+        #     an_current = an if an_current == "" else an_current
+        #     cat_current = cat if cat_current == "" else cat_current
+        #     an_eq = anion_equiv[an]
+        #     cat_eq = cation_equiv[cat]
+
+        #     # TODO - is this an appropriate use of cutoff?
+        #     # if the equivalent concentrations match, pair them up and move to the next pair
+        #     if np.isclose(an_eq, cat_eq, atol=cutoff):
+        #         an_current = an
+        #         cat_current = cat
+        #         salt_dict[Salt(cat_current, an_current).formula] = an_eq
+        #         continue
+
+        # start with the first cation and anion
+        index_cat = 0
+        index_an = 0
+
+        # list(dict) returns a list of [(key, value), ]
+        cation_list = list(cation_equiv.items())
+        anion_list = list(anion_equiv.items())
+
+        # calculate the equivalent concentrations of each ion
+        c1 = cation_list[index_cat][-1]
+        a1 = anion_list[index_an][-1]
+
+        while index_cat < len_cat and index_an < len_an:
+            # if the cation concentration is greater, there will be leftover cations
+            if c1 > a1:
+                # create the salt
+                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
+                # there will be leftover cation, so use the anion amount
+                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion)
+                # adjust the amounts of the respective ions
+                c1 = c1 - a1
+                # move to the next anion
+                index_an += 1
+                try:
+                    a1 = anion_list[index_an][-1]
+                    if a1 < cutoff:
+                        continue
+                except IndexError:
+                    continue
+            # if the anion concentration is greater, there will be leftover anions
+            if c1 < a1:
+                # create the salt
+                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
+                # there will be leftover anion, so use the cation amount
+                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict[x.formula]["mol"] = c1 / x.z_cation
+                # calculate the leftover cation amount
+                a1 = a1 - c1
+                # move to the next cation
+                index_cat += 1
+                try:
+                    a1 = cation_list[index_cat][-1]
+                    if a1 < cutoff:
+                        continue
+                except IndexError:
+                    continue
+            if np.isclose(c1, a1):
+                # create the salt
+                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
+                # there will be nothing leftover, so it doesn't matter which ion you use
+                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict[x.formula]["mol"] = c1 / x.z_cation
+                # move to the next cation and anion
+                index_an += 1
+                index_cat += 1
+                try:
+                    c1 = cation_list[index_cat][-1]
+                    a1 = anion_list[index_an][-1]
+                    if (c1 < cutoff) or (a1 < cutoff):
+                        continue
+                except IndexError:
+                    continue
+
+        return salt_dict
 
     def equilibrate(self, **kwargs) -> None:
         """
@@ -2422,11 +2551,6 @@ class Solution(MSONable):
                     print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
 
         return result_list
-
-    def list_salts(self, unit="mol/kg", decimals=4):
-        list = generate_salt_list(self, unit)
-        for item in list:
-            print(item.formula + "\t {:0.{decimals}f}".format(list[item], decimals=decimals))
 
     def list_activities(self, decimals=4):
         """

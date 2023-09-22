@@ -65,30 +65,44 @@ def equilibrate_phreeqc(
 
 
     """
+    solv_mass = solution.solvent_mass.to("kg").magnitude
     # inherit bulk solution properties
     d = {
         "temp": solution.temperature.to("degC").magnitude,
-        "units": "mol/L",
+        "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
         "pH": solution.pH,
         "pe": solution.pE,
         "redox": "pe",  # hard-coded to use the pe
+        # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
+        # really have to specify the solvent mass in 1 liter of solution
+        "water": solv_mass,
         "density": solution.density.to("g/mL").magnitude,
     }
+    balance_charge = solution.balance_charge
+    if balance_charge == "pH":
+        d["pH"] = str(d["pH"]) + " charge"
+    if balance_charge == "pE":
+        d["pe"] = str(d["pe"]) + " charge"
     initial_comp = solution.components.copy()
 
     # add the composition to the dict
     # also, skip H and O
-    vol = solution.volume.to("L").magnitude
     for el, mol in solution.get_el_amt_dict().items():
         # strip off the oxi state
         bare_el = el.split("(")[0]
         if bare_el in SPECIAL_ELEMENTS:
-            key = el
+            # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
+            # passing, e.g. 'C(4)' and not 'C(4.0)'
+            key = f'{bare_el}({int(float(el.split("(")[-1].split(")")[0]))})'
         elif bare_el in ["H", "O"]:
             continue
         else:
             key = bare_el
-        d[key] = mol / vol
+
+        # tell PHREEQC which species to use for charge balance
+        if el == balance_charge:
+            key += " charge"
+        d[key] = mol / solv_mass
 
     # database files in this list are not distributed with phreeqpython
     db_path = Path(os.path.dirname(__file__)) / "database" if phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
@@ -113,10 +127,9 @@ def equilibrate_phreeqc(
         )
 
     # use the output from PHREEQC to update the Solution composition
-    # recall that phreeqcpython assumes a volume of 1L implicitly,
-    # so you need to scale the mol accordingly
+    # the .species attribute should return MOLES (not moles per ___)
     for s, mol in ppsol.species.items():
-        solution.components[s] = mol * vol
+        solution.components[s] = mol
 
     # make sure PHREEQC has accounted for all the species that were originally present
     assert set(initial_comp.keys()) - set(solution.components.keys()) == set()

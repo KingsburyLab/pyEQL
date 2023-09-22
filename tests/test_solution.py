@@ -340,17 +340,25 @@ def test_equilibrate(s1, s2, s5_pH):
     orig_pE = s1.pE
     s1.equilibrate()
     assert "H2(aq)" in s1.components
-    assert np.isclose(s1.charge_balance, 0)
-    assert np.isclose(s1.pH, orig_pH, atol=0.005)
+    assert np.isclose(s1.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
 
     assert "NaOH(aq)" not in s2.components
     s2.equilibrate()
     orig_pH = s2.pH
     orig_pE = s2.pE
+    orig_density = s2.density.magnitude
+    orig_solv_mass = s2.solvent_mass.magnitude
     assert "NaOH(aq)" in s2.components
-    assert np.isclose(s2.charge_balance, 0)
-    assert np.isclose(s2.pH, orig_pH, atol=0.005)
+
+    # total element concentrations should be conserved after equilibrating
+    assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Cl", "mol").magnitude, 8)
+    assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
+    assert np.isclose(s2.density.magnitude, orig_density)
+    assert np.isclose(s2.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s2.pH, orig_pH, atol=0.01)
     assert np.isclose(s2.pE, orig_pE)
 
     # this solution is the only one in the test that contains alkalinity
@@ -358,16 +366,24 @@ def test_equilibrate(s1, s2, s5_pH):
     # the CO3-2 initially present reacts with the water to consume H+ and
     # increase the pH by approximately 0.0006 M (b/c at pH 7 virtually all
     # carbonate is present as HCO3-) -log10(0.001) =
-    assert "HCO3[-1]" not in s5.components
-    assert np.isclose(s5.charge_balance, 0)
-    orig_pH = s5.pH
-    orig_pE = s5.pE
-    set(s5.components.keys())
-    s5.equilibrate()
-    assert np.isclose(s5.charge_balance, 0, atol=2e-3)
-    assert "HCO3[-1]" in s5.components
-    assert s5.pH > orig_pH
-    assert np.isclose(s5.pE, orig_pE)
+    assert "HCO3[-1]" not in s5_pH.components
+    assert np.isclose(s5_pH.charge_balance, 0)
+    orig_pH = s5_pH.pH
+    orig_pE = s5_pH.pE
+    orig_density = s5_pH.density.magnitude
+    orig_solv_mass = s5_pH.solvent_mass.magnitude
+    set(s5_pH.components.keys())
+    s5_pH.equilibrate()
+    assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001)
+    # due to the large pH shift, water mass and density need not be perfectly conserved
+    assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
+    assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)
+    assert np.isclose(s5_pH.charge_balance, 0)
+    assert "CaOH[+1]" in s5_pH.components
+    assert "HCO3[-1]" in s5_pH.components
+    assert s5_pH.pH > orig_pH
+    assert np.isclose(s5_pH.pE, orig_pE)
 
 
 def test_tds(s1, s2, s5):

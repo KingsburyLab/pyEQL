@@ -13,6 +13,7 @@ by USGS(PHREEQC)
 
 import numpy as np
 import pytest
+
 from pyEQL.solution import Solution
 
 
