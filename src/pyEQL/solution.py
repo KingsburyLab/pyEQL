@@ -453,25 +453,25 @@ class Solution(MSONable):
     @property
     def cations(self) -> dict[str, float]:
         """
-        Returns the subset of self.components {formula: moles} that are cations. The returned dict is sorted by
+        Returns the subset of `components` {formula: moles} that are cations. The returned dict is sorted by
         amount in descending order.
         """
         d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
         return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
 
     @property
-    def anions(self) -> dict:
+    def anions(self) -> dict[str, float]:
         """
-        Returns the subset of self.components {formula: moles} that are anions. The returned dict is sorted by
+        Returns the subset of `components` {formula: moles} that are anions. The returned dict is sorted by
         amount in descending order.
         """
         d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
         return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
 
     @property
-    def neutrals(self) -> dict:
+    def neutrals(self) -> dict[str, float]:
         """
-        Returns the subset of self.components {formula: moles} that are neutral (not charged). The returned dict is sorted by
+        Returns the subset of `components` {formula: moles} that are neutral (not charged). The returned dict is sorted by
         amount in descending order.
         """
         d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
