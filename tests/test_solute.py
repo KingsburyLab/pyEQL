@@ -15,9 +15,9 @@ def test_from_formula():
     assert s.charge == 2
     assert s.n_atoms == 1
     assert s.n_elements == 1
-    assert s.oxi_state_guesses == ({"Mg": 2.0},)
+    assert s.oxi_state_guesses == {"Mg": 2.0}
     assert s.molecular_weight == "24.305 g/mol"
     s2 = Solute.from_formula("O6")
     assert s2.formula == "O3(aq)"
     assert s2.molecular_weight == "47.9982 g/mol"
-    assert s2.oxi_state_guesses == ({"O": 0.0},)
+    assert s2.oxi_state_guesses == {"O": 0.0}
