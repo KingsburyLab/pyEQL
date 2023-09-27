@@ -1650,7 +1650,6 @@ class Solution(MSONable):
             for el, lst in self.get_components_by_element().items():
                 components[lst[0]] = self.get_total_amount(el, "mol").magnitude
             # add H+ and OH-, which would otherwise be excluded
-            print(self.components)
             for k in ["H[+1]", "OH[-1]"]:
                 if self.components.get(k):
                     components[k] = self.components[k]
@@ -1675,7 +1674,6 @@ class Solution(MSONable):
         # sort in descending order of equivalent concentration
         cation_equiv = dict(sorted(cation_equiv.items(), key=lambda x: x[1], reverse=True))
         anion_equiv = dict(sorted(anion_equiv.items(), key=lambda x: x[1], reverse=True))
-        print(components, anion_equiv, cation_equiv)
 
         len_cat = len(cation_equiv)
         len_an = len(anion_equiv)

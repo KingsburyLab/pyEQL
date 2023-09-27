@@ -90,6 +90,10 @@ class Salt(MSONable):
 
         self.formula = salt_formula
 
+    # TODO - consider whether this should be adjusted to be based on total concentrations or not
+    # NOTE: speciating the solution results in a decrease in the overall ionic strength, because some of the
+    # Mg+2 is converted to monovalent complexes like MgOH+. Hence, the activity coefficients deviate a bit from
+    # the published values.
     def get_effective_molality(self, ionic_strength):
         """Calculate the effective molality according to [mistry]_.
 
