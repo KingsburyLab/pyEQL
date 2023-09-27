@@ -20,6 +20,7 @@ from phreeqpython import PhreeqPython
 from pyEQL import ureg
 from pyEQL.logging_system import logger
 
+# TODO - not used. Remove?
 SPECIES_ALIAISES = {
     "Sodium": "Na+",
     "Potassium": "K+",
@@ -56,13 +57,7 @@ def equilibrate_phreeqc(
                 similar to vitens.dat but has many more species. `pitzer.dat` is recommended
                 when accurate activity coefficients in solutions above 1 M TDS are desired, but
                 it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
-                may offer improved prediction of LSI but currently these databases are not
-                usable because they do not allow for conductivity calculations.
-
-    1. create an empty PHREEQC solution with correct pH, pE, etc.
-    2. add each component using a REACTION block
-
-
+                may offer improved prediction of LSI.
     """
     solv_mass = solution.solvent_mass.to("kg").magnitude
     # inherit bulk solution properties
