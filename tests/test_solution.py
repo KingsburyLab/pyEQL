@@ -291,37 +291,45 @@ def test_get_amount(s3, s5):
 
 def test_components_by_element(s1, s2):
     assert s1.get_components_by_element() == {
-        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)"},
-        "O(-2.0)": {"OH[-1]", "H2O(aq)"},
+        "H(1.0)": [
+            "H2O(aq)",
+            "H[+1]",
+            "OH[-1]",
+        ],
+        "O(-2.0)": ["H2O(aq)", "OH[-1]"],
     }
     assert s2.get_components_by_element() == {
-        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)"},
-        "O(-2.0)": {"OH[-1]", "H2O(aq)"},
-        "Na(1.0)": {"Na[+1]"},
-        "Cl(-1.0)": {"Cl[-1]"},
+        "H(1.0)": [
+            "H2O(aq)",
+            "H[+1]",
+            "OH[-1]",
+        ],
+        "O(-2.0)": ["H2O(aq)", "OH[-1]"],
+        "Na(1.0)": ["Na[+1]"],
+        "Cl(-1.0)": ["Cl[-1]"],
     }
     s2.equilibrate()
     assert s2.get_components_by_element() == {
-        "H(1.0)": {"H[+1]", "OH[-1]", "H2O(aq)", "NaOH(aq)", "HCl(aq)", "HClO(aq)", "HClO2(aq)"},
-        "H(0.0)": {"H2(aq)"},
-        "O(-2.0)": {
-            "OH[-1]",
+        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
+        "H(0.0)": ["H2(aq)"],
+        "O(-2.0)": [
             "H2O(aq)",
+            "OH[-1]",
+            "NaOH(aq)",
+            "HClO(aq)",
             "ClO[-1]",
             "ClO2[-1]",
             "ClO3[-1]",
             "ClO4[-1]",
-            "HClO(aq)",
             "HClO2(aq)",
-            "NaOH(aq)",
-        },
-        "O(0.0)": {"O2(aq)"},
-        "Na(1.0)": {"Na[+1]", "NaCl(aq)", "NaOH(aq)"},
-        "Cl(-1.0)": {"Cl[-1]", "HCl(aq)", "NaCl(aq)"},
-        "Cl(1.0)": {"ClO[-1]", "HClO(aq)"},
-        "Cl(3.0)": {"ClO2[-1]", "HClO2(aq)"},
-        "Cl(5.0)": {"ClO3[-1]"},
-        "Cl(7.0)": {"ClO4[-1]"},
+        ],
+        "O(0.0)": ["O2(aq)"],
+        "Na(1.0)": ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
+        "Cl(-1.0)": ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
+        "Cl(1.0)": ["HClO(aq)", "ClO[-1]"],
+        "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
+        "Cl(5.0)": ["ClO3[-1]"],
+        "Cl(7.0)": ["ClO4[-1]"],
     }
 
 

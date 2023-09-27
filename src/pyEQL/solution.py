@@ -1102,15 +1102,21 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_components_by_element(self) -> dict[str, set]:
+    def get_components_by_element(self) -> dict[str, list]:
         """
         Return a list of all species associated with a given element. Elements (keys) are
         suffixed with their oxidation state in parentheses, e.g.,
 
-        {"Na(1)":{"Na[+1]", "NaOH(aq)"}}
+        {"Na(1)":["Na[+1]", "NaOH(aq)"]}
+
+        Species associated with each element are sorted in descending order of the amount
+        present (i.e., the first species listed is the most abundant).
         """
         d = {}
-        for s in self.components:
+        # by sorting the components according to amount, we ensure that the species
+        # are sorted in descending order of concentration in the resulting dict
+        components = dict(sorted(self.components.items(), key=lambda x: x[1], reverse=True))
+        for s in components:
             # determine the element and oxidation state
             elements = self.get_property(s, "elements")
 
