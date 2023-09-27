@@ -7,8 +7,9 @@ used by pyEQL's Solution class
 """
 
 import numpy as np
-import pyEQL
 import pytest
+
+import pyEQL
 
 
 @pytest.fixture()
@@ -149,10 +150,14 @@ class Test_solute_addition:
         # If the concentration of a solute is directly increased with a substance / mass
         # unit, the water mass should not change
         original = s3.solvent_mass.to("kg").magnitude
+        V_orig = s3.volume.to("L").magnitude
         s3.add_amount("Na+", "1 mol/kg")
         s3.add_amount("Cl-", "1 mol/kg")
         assert np.allclose(s3.solvent_mass.to("kg").magnitude, original)
-        assert np.isclose(s3.pH, 7.0, atol=0.01)
+        assert s3.volume.to("L").magnitude > V_orig
+        # pH will be slightly higher than 7 b/c the addition of solute caused the
+        # solution volume to increase, so lower mol/L = higher pH
+        assert np.isclose(s3.pH, 7.0, atol=0.05)
         assert np.isclose(s3.pE, 8.5)
 
     def test_add_amount_12(self, s3):
