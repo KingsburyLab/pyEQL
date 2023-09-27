@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Bug in `get_transport_number` caused by migration to standardized solute formulas
 - Scaling of salt concentrations in `get_salt_dict` was incorrect in some edge cases
 - Disable hydrate notation in `standardize_formula`, which caused hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
 - Inconsistent formatting of oxidation states in `get_total_amount` and `Solute`
