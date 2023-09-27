@@ -1129,9 +1129,9 @@ class Solution(MSONable):
                     oxi_state = "unk"
                 key = f"{el}({oxi_state})"
                 if d.get(key):
-                    d[key].add(s)
+                    d[key].append(s)
                 else:
-                    d[key] = {s}
+                    d[key] = [s]
 
         return d
 
