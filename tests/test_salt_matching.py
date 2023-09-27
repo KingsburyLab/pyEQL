@@ -6,6 +6,7 @@ This file contains tests for the salt-matching algorithm used by pyEQL in
 salt_ion_match.py
 """
 
+import numpy as np
 
 import pyEQL
 from pyEQL.salt_ion_match import Salt
@@ -94,6 +95,25 @@ def test_single_ion():
     assert s1.get_salt().anion == "OH[-1]"
     assert s1.get_salt().nu_cation == 1
     assert s1.get_salt().nu_anion == 3
+
+
+def test_salt_with_equilibration():
+    """
+    test matching a solution containing a salt, before and after equilibration.
+    Due to speciation changes, the concentration of the salt will decrease unless
+    get_salt_dict() uses total concentrations
+    """
+    s1 = pyEQL.Solution({"Mg+2": "1 mol/L", "Cl-": "2 mol/L"})
+    assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
+    assert s1.get_salt().formula == "MgCl2"
+    assert s1.get_salt().cation == "Mg[+2]"
+    assert s1.get_salt().anion == "Cl[-1]"
+    assert s1.get_salt().nu_cation == 1
+    assert s1.get_salt().nu_anion == 2
+    assert np.isclose(s1.get_salt_dict()["MgCl2"]["mol"], 1 * s1.volume.magnitude)
+    s1.equilibrate()
+    assert s1.get_salt().formula == "MgCl2"
+    assert np.isclose(s1.get_salt_dict()["MgCl2"]["mol"], 1 * s1.volume.magnitude)
 
 
 def test_salt_asymmetric():
