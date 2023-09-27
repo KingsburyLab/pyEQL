@@ -23,7 +23,7 @@ from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
 from pyEQL import ureg
-from pyEQL.engines import EOS, IdealEOS, NativeEOS
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 
 # logging system
 from pyEQL.logging_system import logger
@@ -50,7 +50,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
         database: str | Path | Store | None = None,
     ):
         """
@@ -92,7 +92,7 @@ class Solution(MSONable):
                 or when equilibrate() is called.
             solvent: Formula of the solvent. Solvents other than water are not supported at
                 this time.
-            engine:
+            engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
 
@@ -167,6 +167,8 @@ class Solution(MSONable):
             self.engine = IdealEOS()
         elif self._engine == "native":
             self.engine = NativeEOS()
+        elif self._engine == "phreeqc":
+            self.engine = PhreeqcEOS()
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 
@@ -376,7 +378,7 @@ class Solution(MSONable):
     @property
     def pH(self) -> float | None:
         """Return the pH of the solution."""
-        return self.p("H+", activity=True)
+        return self.p("H+", activity=False)
 
     def p(self, solute: str, activity=True) -> float | None:
         """
@@ -622,6 +624,8 @@ class Solution(MSONable):
         return math.exp(nu) * ureg.Quantity("m**2 / s")
 
     # TODO - need tests of conductivity
+    # TODO - update with newer conductivity model used since PHREEQC 3.4+
+    # https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
     @property
     def conductivity(self) -> Quantity:
         """
@@ -685,12 +689,7 @@ class Solution(MSONable):
 
                 diffusion_coefficient = self.get_property(item, "transport.diffusion_coefficient")
 
-                molar_cond = (
-                    diffusion_coefficient
-                    * (ureg.e * ureg.N_A) ** 2
-                    * self.get_property(item, "charge") ** 2
-                    / (ureg.R * self.temperature)
-                )
+                molar_cond = diffusion_coefficient * (ureg.e * ureg.N_A) ** 2 * z**2 / (ureg.R * self.temperature)
 
                 EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item, "mol/L")
 

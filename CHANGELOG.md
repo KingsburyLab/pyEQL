@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.0] - 2023-09-27
 
 ### Added
 
+- New electrolyte engine `PhreeqcEOS` provides `phreeqpython` activities within `pyEQL`
 - `Solution`: use total element concentrations when performing salt matching (can be disabled via kwarg)
 - `Solution`: add speciation support to the native engine via `phreeqpython`
 - `Solution`: add keyword argument to enable automatic charge balancing
@@ -22,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `pH` attribute is now calculated from the H+ concentration rather than its activity. For the old behavior,
+  use `Solution.p('H+')` which defaults to applying the activity correction.
 - Update `test_salt_ion_match` to `pytest` format and add additional tests
 - Update `test_bulk_properties` to `pytest` format
 
