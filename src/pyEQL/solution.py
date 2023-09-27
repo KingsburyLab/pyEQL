@@ -1643,18 +1643,39 @@ class Solution(MSONable):
             Solution.anions
         """
         salt_dict: dict[str, float] = {}
-        components = dict(sorted(self.components.items(), key=lambda x: x[1], reverse=True))
+
+        if use_totals:
+            # # use only the predominant species for each element
+            components = {}
+            for el, lst in self.get_components_by_element().items():
+                components[lst[0]] = self.get_total_amount(el, "mol").magnitude
+            # add H+ and OH-, which would otherwise be excluded
+            print(self.components)
+            for k in ["H[+1]", "OH[-1]"]:
+                if self.components.get(k):
+                    components[k] = self.components[k]
+        else:
+            components = self.components
+        components = dict(sorted(components.items(), key=lambda x: x[1], reverse=True))
+
         # warn if something other than water is the predominant component
         if next(iter(components)) != "H2O(aq)":
             logger.warning("H2O(aq) is not the most prominent component in this Solution!")
 
         # equivalents (charge-weighted moles) of cations and anions
-        cation_equiv = {k: self.get_amount(k, "eq").magnitude for k in self.cations}
-        cation_equiv = dict(sorted(cation_equiv.items(), key=lambda x: x[1], reverse=True))
+        cations = set(self.cations.keys()).intersection(components.keys())
+        anions = set(self.anions.keys()).intersection(components.keys())
+
+        # calculate the charge-weighted (equivalent) concentration of each ion
+        cation_equiv = {k: self.get_property(k, "charge") * components[k] for k in cations}
         anion_equiv = {
-            k: -1 * self.get_amount(k, "eq").magnitude for k in self.anions
+            k: -1 * self.get_property(k, "charge") * components[k] for k in anions
         }  # make sure amounts are positive
+
+        # sort in descending order of equivalent concentration
+        cation_equiv = dict(sorted(cation_equiv.items(), key=lambda x: x[1], reverse=True))
         anion_equiv = dict(sorted(anion_equiv.items(), key=lambda x: x[1], reverse=True))
+        print(components, anion_equiv, cation_equiv)
 
         len_cat = len(cation_equiv)
         len_an = len(anion_equiv)
@@ -1665,27 +1686,6 @@ class Solution(MSONable):
             salt_dict.update({x.formula: x.as_dict()})
             salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol")
             return salt_dict
-
-        # # track the current cation, anion, and remainder
-        # an_current = ""
-        # cat_current = ""
-        # remainder = 0
-
-        # # match cations and anions
-        # for an, cat in zip(anion_equiv, cation_equiv):
-        #     # don't update the "current" cations unless they aren't populated yet
-        #     an_current = an if an_current == "" else an_current
-        #     cat_current = cat if cat_current == "" else cat_current
-        #     an_eq = anion_equiv[an]
-        #     cat_eq = cation_equiv[cat]
-
-        #     # TODO - is this an appropriate use of cutoff?
-        #     # if the equivalent concentrations match, pair them up and move to the next pair
-        #     if np.isclose(an_eq, cat_eq, atol=cutoff):
-        #         an_current = an
-        #         cat_current = cat
-        #         salt_dict[Salt(cat_current, an_current).formula] = an_eq
-        #         continue
 
         # start with the first cation and anion
         index_cat = 0
@@ -1706,7 +1706,7 @@ class Solution(MSONable):
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover cation, so use the anion amount
                 salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion)
+                salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion * x.nu_anion)
                 # adjust the amounts of the respective ions
                 c1 = c1 - a1
                 # move to the next anion
@@ -1723,7 +1723,7 @@ class Solution(MSONable):
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover anion, so use the cation amount
                 salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation
+                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # calculate the leftover cation amount
                 a1 = a1 - c1
                 # move to the next cation
@@ -1739,7 +1739,7 @@ class Solution(MSONable):
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be nothing leftover, so it doesn't matter which ion you use
                 salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation
+                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # move to the next cation and anion
                 index_an += 1
                 index_cat += 1

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: use total element concentrations when performing salt matching (can be disabled via kwarg)
 - `Solution`: add speciation support to the native engine via `phreeqpython`
 - `Solution`: add keyword argument to enable automatic charge balancing
 - `Salt`: class is now MSONable (i.e., serializable via `as_dict` / `from_dict`)
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Scaling of salt concentrations in `get_salt_dict` was incorrect in some edge cases
 - Disable hydrate notation in `standardize_formula`, which caused hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
 - Inconsistent formatting of oxidation states in `get_total_amount` and `Solute`
 - Inconsistent return type from `get_property` when `molar_volume` and `diffusion_coefficient` were missing
