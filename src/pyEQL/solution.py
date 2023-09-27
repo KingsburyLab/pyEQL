@@ -2081,7 +2081,7 @@ class Solution(MSONable):
                         / base_temperature
                         * self.water_substance.mu
                         * ureg.Quantity("1 Pa*s")
-                        / self.get_viscosity_dynamic()
+                        / self.viscosity_dynamic
                     ).to("m**2/s")
                 return data
 
