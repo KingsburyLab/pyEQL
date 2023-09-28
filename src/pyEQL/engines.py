@@ -5,6 +5,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 :license: LGPL, see LICENSE for more details.
 
 """
+import warnings
 from abc import ABC, abstractmethod
 
 # internal pyEQL imports
@@ -13,8 +14,9 @@ import pyEQL.activity_correction as ac
 # import the parameters database
 # the pint unit registry
 from pyEQL import ureg
+from pyEQL.equilibrium import equilibrate_phreeqc
 from pyEQL.logging_system import logger
-from pyEQL.salt_ion_match import generate_salt_list
+from pyEQL.salt_ion_match import Salt
 from pyEQL.utils import standardize_formula
 
 
@@ -113,6 +115,8 @@ class IdealEOS(EOS):
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        warnings.warn("equilibrate() has no effect in IdealEOS!")
+        return
 
 
 class NativeEOS(EOS):
@@ -190,33 +194,35 @@ class NativeEOS(EOS):
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
         """
         # identify the predominant salt that this ion is a member of
-        Salt = None
+        salt = None
         rform = standardize_formula(solute)
-        salt_list = generate_salt_list(solution, unit="mol/kg")
-        for item in salt_list:
-            if rform == item.cation or rform == item.anion:
-                Salt = item
+        for v in solution.get_salt_dict().values():
+            if v == "HOH":
+                continue
+            if rform == v["cation"] or rform == v["anion"]:
+                del v["mol"]
+                salt = Salt.from_dict(v)
+                break
 
         # show an error if no salt can be found that contains the solute
-        if Salt is None:
+        if salt is None:
             logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
             return ureg.Quantity("1 dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
-
         # search for Pitzer parameters
-        param = solution.get_property(Salt.formula, "model_parameters.activity_pitzer")
+        param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
         if param is not None:
             # TODO - consider re-enabling a log message recording what salt(s) are used as basis for activity
             # calculation
             # if verbose is True:
-            #     print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
+            #     print("Calculating activity coefficient based on parent salt %s" % salt.formula)
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
-                if Salt.nu_cation >= 3 or Salt.nu_anion <= -3:
+            if salt.nu_cation >= 2 and salt.nu_anion <= -2:
+                if salt.nu_cation >= 3 or salt.nu_anion <= -3:
                     alpha1 = 2
                     alpha2 = 50
                 else:
@@ -230,10 +236,10 @@ class NativeEOS(EOS):
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            # molality = (solution.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+            # molality = (solution.get_amount(salt.cation,'mol/kg')/salt.nu_cation+solution.get_amount(salt.anion,'mol/kg')/salt.nu_anion)/2
 
             # determine the effective molality of the salt in the solution
-            molality = Salt.get_effective_molality(solution.ionic_strength)
+            molality = salt.get_effective_molality(solution.ionic_strength)
 
             activity_coefficient = ac.get_activity_coefficient_pitzer(
                 solution.ionic_strength,
@@ -244,16 +250,16 @@ class NativeEOS(EOS):
                 ureg.Quantity(param["Beta1"]["value"]).magnitude,
                 ureg.Quantity(param["Beta2"]["value"]).magnitude,
                 ureg.Quantity(param["Cphi"]["value"]).magnitude,
-                Salt.z_cation,
-                Salt.z_anion,
-                Salt.nu_cation,
-                Salt.nu_anion,
+                salt.z_cation,
+                salt.z_anion,
+                salt.nu_cation,
+                salt.nu_anion,
                 str(solution.temperature),
             )
 
             logger.info(
                 "Calculated activity coefficient of species {} as {} based on salt {} using Pitzer model".format(
-                    solute, activity_coefficient, Salt
+                    solute, activity_coefficient, salt
                 )
             )
             molal = activity_coefficient
@@ -382,13 +388,11 @@ class NativeEOS(EOS):
         effective_osmotic_sum = 0
         molality_sum = 0
 
-        # organize the composition into a dictionary of salts
-        salts_dict = solution.get_salt_dict()
-
         # loop through all the salts in the solution, calculate the osmotic
         # coefficint for reach, and average them into an effective osmotic
         # coefficient
-        for item in salts_dict:
+        for d in solution.get_salt_dict().values():
+            item = Salt(d["cation"], d["anion"])
             # ignore HOH in the salt list
             if item.formula == "HOH":
                 continue
@@ -413,7 +417,7 @@ class NativeEOS(EOS):
             # solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = salts_dict[item]
+            concentration = d["mol"] * ureg.Quantity("mol") / solution.solvent_mass
 
             molality_sum += concentration
 
@@ -538,3 +542,4 @@ class NativeEOS(EOS):
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        equilibrate_phreeqc(solution, phreeqc_db="llnl.dat")

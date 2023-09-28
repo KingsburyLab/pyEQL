@@ -10,10 +10,131 @@ NOTE: these methods are not currently used but are here for the future.
 """
 # import libraries for scientific functions
 import math
+import os
+from pathlib import Path
+from typing import Literal
+
+from phreeqpython import PhreeqPython
 
 # the pint unit registry
 from pyEQL import ureg
 from pyEQL.logging_system import logger
+
+SPECIES_ALIAISES = {
+    "Sodium": "Na+",
+    "Potassium": "K+",
+    "Calcium": "Ca+2",
+    "Barium": "Ba+2",
+    "Strontium": "Sr+2",
+    "Magnesium": "Mg+2",
+    "Chloride": "Cl-",
+    "Fluoride": "F-",
+    "Nitrate": "NO3-",
+    "Ammonium": "NH4+",
+    "Sulfate": "SO4-2",
+    "Phosphate": "PO4-3",
+    "Carbonate": "CO3-2",
+    "Bicarbonate": "HCO3-",
+}
+
+# These are the only elements that are allowed to have parenthetical oxidation states
+# PHREEQC will ignore others (e.g., 'Na(1)')
+SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
+
+
+def equilibrate_phreeqc(
+    solution,
+    phreeqc_db: Literal["vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"] = "vitens.dat",
+):
+    """Adjust the speciation of a Solution object to achieve chemical equilibrium.
+
+    Args:
+        phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
+
+    1. create an empty PHREEQC solution with correct pH, pE, etc.
+    2. add each component using a REACTION block
+
+
+    """
+    solv_mass = solution.solvent_mass.to("kg").magnitude
+    # inherit bulk solution properties
+    d = {
+        "temp": solution.temperature.to("degC").magnitude,
+        "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
+        "pH": solution.pH,
+        "pe": solution.pE,
+        "redox": "pe",  # hard-coded to use the pe
+        # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
+        # really have to specify the solvent mass in 1 liter of solution
+        "water": solv_mass,
+        "density": solution.density.to("g/mL").magnitude,
+    }
+    balance_charge = solution.balance_charge
+    if balance_charge == "pH":
+        d["pH"] = str(d["pH"]) + " charge"
+    if balance_charge == "pE":
+        d["pe"] = str(d["pe"]) + " charge"
+    initial_comp = solution.components.copy()
+
+    # add the composition to the dict
+    # also, skip H and O
+    for el, mol in solution.get_el_amt_dict().items():
+        # strip off the oxi state
+        bare_el = el.split("(")[0]
+        if bare_el in SPECIAL_ELEMENTS:
+            # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
+            # passing, e.g. 'C(4)' and not 'C(4.0)'
+            key = f'{bare_el}({int(float(el.split("(")[-1].split(")")[0]))})'
+        elif bare_el in ["H", "O"]:
+            continue
+        else:
+            key = bare_el
+
+        # tell PHREEQC which species to use for charge balance
+        if el == balance_charge:
+            key += " charge"
+        d[key] = mol / solv_mass
+
+    # database files in this list are not distributed with phreeqpython
+    db_path = Path(os.path.dirname(__file__)) / "database" if phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+    # create the PhreeqcPython instance
+    pp = PhreeqPython(database=phreeqc_db, database_directory=db_path)
+
+    # # equalize with atmospheric air (optional)
+    # if EQUALIZE:
+    #     phases = [("CO2(g)", -3.5), ("O2(g)", -0.67)]
+    #     self.ppsol.equalize([t[0] for t in phases], [t[1] for t in phases])
+
+    # create the PHREEQC solution object
+    try:
+        ppsol = pp.add_solution(d)
+    except Exception as e:
+        print(d)
+        # catch problems with the input to phreeqc
+        raise ValueError(
+            "There is a problem with your input. The error message received from "
+            f" phreeqpython is:\n\n {e}\n Check your input arguments, especially "
+            "the composition dictionary, and try again."
+        )
+
+    # use the output from PHREEQC to update the Solution composition
+    # the .species attribute should return MOLES (not moles per ___)
+    for s, mol in ppsol.species.items():
+        solution.components[s] = mol
+
+    # make sure PHREEQC has accounted for all the species that were originally present
+    assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
+
+    # remove the PPSol from the phreeqcpython instance
+    pp.remove_solutions([0])
 
 
 def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 K")):

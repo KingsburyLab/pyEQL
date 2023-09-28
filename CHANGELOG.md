@@ -9,11 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: use total element concentrations when performing salt matching (can be disabled via kwarg)
+- `Solution`: add speciation support to the native engine via `phreeqpython`
+- `Solution`: add keyword argument to enable automatic charge balancing
+- `Salt`: class is now MSONable (i.e., serializable via `as_dict` / `from_dict`)
+- `Solution`: new properties `anions`, `cations`, `neutrals` provide easy access to subsets `components`.
+- `Solution`: improvements to `get_total_amount`.
+- `Solution`: new function `get_components_by_element` that lists all species associated with elements in specific
+  oxidation states.
 - `Solution`: new properties `elements` and `chemical_system`, new function `get_el_amt_dict` to compute the total
   number of moles of each element present in the Solution.
 
+### Changed
+
+- Update `test_salt_ion_match` to `pytest` format and add additional tests
+- Update `test_bulk_properties` to `pytest` format
+
+### Removed
+
+- `Solution.list_salts()` has been removed. See `Solution.get_salt_dict()` for equivalent functionality
+- `salt_ion_match.generate_salt_list` and `identify_salt` have been removed. See `Solution.get_salt_dict()` and `Solution.get_salt()` for equivalent functionality.
+
 ### Fixed
 
+- Scaling of salt concentrations in `get_salt_dict` was incorrect in some edge cases
+- Disable hydrate notation in `standardize_formula`, which caused hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
+- Inconsistent formatting of oxidation states in `get_total_amount` and `Solute`
+- Inconsistent return type from `get_property` when `molar_volume` and `diffusion_coefficient` were missing
 - Two issues with the formatting of the `H2O(aq)` entry in the database, `pyeql_db.json`
 
 ## [0.7.0] - 2023-08-22

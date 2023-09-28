@@ -8,6 +8,7 @@ used by pyEQL's Solution class
 
 import numpy as np
 import pytest
+
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
 
@@ -34,8 +35,14 @@ def s4():
 
 @pytest.fixture()
 def s5():
-    # 100 mg/L as CaCO3
-    return Solution([["Ca+2", "40 mg/L"], ["CO3-2", "60 mg/L"]], volume="1 L")
+    # 100 mg/L as CaCO3 ~ 1 mM
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L")
+
+
+@pytest.fixture()
+def s5_pH():
+    # 100 mg/L as CaCO3 ~ 1 mM
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH")
 
 
 @pytest.fixture()
@@ -54,6 +61,26 @@ def s6():
             ["Br-", "20 mM"],
         ],  # -20 meq/L
         volume="1 L",
+    )
+
+
+@pytest.fixture()
+def s6_Ca():
+    # non-electroneutral solution with lots of hardness
+    # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
+    # charge balance = 2+10+10+10-120-20-12 = -120 meq/L
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Mg+2", "5 mM"],  # 10 meq/L
+            ["Na+1", "10 mM"],  # 10 meq/L
+            ["Ag+1", "10 mM"],  # no contribution to alk or hardness
+            ["CO3-2", "6 mM"],  # no contribution to alk or hardness
+            ["SO4-2", "60 mM"],  # -120 meq/L
+            ["Br-", "20 mM"],
+        ],  # -20 meq/L
+        volume="1 L",
+        balance_charge="Ca+2",
     )
 
 
@@ -106,6 +133,12 @@ def test_init_engines():
     assert s.get_osmotic_coefficient().magnitude != 1
 
 
+def test_component_subsets(s2):
+    assert s2.cations == {"Na[+1]": 8, "H[+1]": 2e-7}
+    assert s2.anions == {"Cl[-1]": 8, "OH[-1]": 2e-7}
+    assert list(s2.neutrals.keys()) == ["H2O(aq)"]
+
+
 # create an empty and test solutions with the same volume using substance / volume,
 # substance/mass, and substance units
 def test_solute_addition(s2, s3, s4):
@@ -146,18 +179,23 @@ def test_chempot_energy(s1, s2):
     pass
 
 
-def test_alkalinity_hardness_chargebalance(s3, s5, s6):
+def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s3.charge_balance, 0)
+    assert np.isclose(s5.charge_balance, 0, atol=1e-5)
+    assert np.isclose(s5_pH.charge_balance, 0, atol=1e-8)
+    assert np.isclose(s6.charge_balance, -0.12)
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+
+def test_alkalinity_hardness(s3, s5, s6):
     assert np.isclose(s3.hardness, 0)
     assert np.isclose(s3.alkalinity, 0)
 
     assert np.isclose(s5.alkalinity.magnitude, 100, rtol=0.005)
     assert np.isclose(s5.hardness.magnitude, 100, rtol=0.005)
-    assert np.isclose(s5.charge_balance, 0, atol=1e-5)
 
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
-    assert np.isclose(s6.charge_balance, -0.12)
 
 
 def test_pressure_temperature(s5):
@@ -184,14 +222,14 @@ def test_get_el_amt_dict(s6):
     s6 *= 8
     d = s6.get_el_amt_dict()
     for el, amt in zip(
-        ["H(1)", "O(-2)", "Ca(2)", "Mg(2)", "Na(1)", "Ag(1)", "C(4)", "S(6)", "Br(-1)"],
+        ["H(1.0)", "O(-2.0)", "Ca(2.0)", "Mg(2.0)", "Na(1.0)", "Ag(1.0)", "C(4.0)", "S(6.0)", "Br(-1.0)"],
         [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
     ):
         assert np.isclose(d[el], amt, atol=1e-3)
 
     s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
     d = s.get_el_amt_dict()
-    for el, amt in zip(["Fe(2)", "Fe(3)", "Cl(-1)"], [0.002, 0.01, 0.002 + 0.015]):
+    for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015]):
         assert np.isclose(d[el], amt, atol=1e-3)
 
 
@@ -251,11 +289,116 @@ def test_get_amount(s3, s5):
     # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
 
 
+def test_components_by_element(s1, s2):
+    assert s1.get_components_by_element() == {
+        "H(1.0)": [
+            "H2O(aq)",
+            "H[+1]",
+            "OH[-1]",
+        ],
+        "O(-2.0)": ["H2O(aq)", "OH[-1]"],
+    }
+    assert s2.get_components_by_element() == {
+        "H(1.0)": [
+            "H2O(aq)",
+            "H[+1]",
+            "OH[-1]",
+        ],
+        "O(-2.0)": ["H2O(aq)", "OH[-1]"],
+        "Na(1.0)": ["Na[+1]"],
+        "Cl(-1.0)": ["Cl[-1]"],
+    }
+    s2.equilibrate()
+    assert s2.get_components_by_element() == {
+        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
+        "H(0.0)": ["H2(aq)"],
+        "O(-2.0)": [
+            "H2O(aq)",
+            "OH[-1]",
+            "NaOH(aq)",
+            "HClO(aq)",
+            "ClO[-1]",
+            "ClO2[-1]",
+            "ClO3[-1]",
+            "ClO4[-1]",
+            "HClO2(aq)",
+        ],
+        "O(0.0)": ["O2(aq)"],
+        "Na(1.0)": ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
+        "Cl(-1.0)": ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
+        "Cl(1.0)": ["HClO(aq)", "ClO[-1]"],
+        "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
+        "Cl(5.0)": ["ClO3[-1]"],
+        "Cl(7.0)": ["ClO4[-1]"],
+    }
+
+
+def test_get_total_amount(s2):
+    assert np.isclose(s2.get_total_amount("Na(1)", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
+    sox = Solution({"Fe+2": "10 mM", "Fe+3": "40 mM", "Cl-": "50 mM"}, pH=3)
+    assert np.isclose(sox.get_total_amount("Fe(2)", "mol/L").magnitude, 0.01)
+    assert np.isclose(sox.get_total_amount("Fe(3)", "mol/L").magnitude, 0.04)
+    assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
+
+
+def test_equilibrate(s1, s2, s5_pH):
+    assert "H2(aq)" not in s1.components
+    orig_pH = s1.pH
+    orig_pE = s1.pE
+    s1.equilibrate()
+    assert "H2(aq)" in s1.components
+    assert np.isclose(s1.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s1.pH, orig_pH, atol=0.01)
+    assert np.isclose(s1.pE, orig_pE)
+
+    assert "NaOH(aq)" not in s2.components
+    s2.equilibrate()
+    orig_pH = s2.pH
+    orig_pE = s2.pE
+    orig_density = s2.density.magnitude
+    orig_solv_mass = s2.solvent_mass.magnitude
+    assert "NaOH(aq)" in s2.components
+
+    # total element concentrations should be conserved after equilibrating
+    assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Cl", "mol").magnitude, 8)
+    assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
+    assert np.isclose(s2.density.magnitude, orig_density)
+    assert np.isclose(s2.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s2.pH, orig_pH, atol=0.01)
+    assert np.isclose(s2.pE, orig_pE)
+
+    # this solution is the only one in the test that contains alkalinity
+    # and equilibrating it results in a shift in the pH
+    # the CO3-2 initially present reacts with the water to consume H+ and
+    # increase the pH by approximately 0.0006 M (b/c at pH 7 virtually all
+    # carbonate is present as HCO3-) -log10(0.001) =
+    assert "HCO3[-1]" not in s5_pH.components
+    assert np.isclose(s5_pH.charge_balance, 0)
+    orig_pH = s5_pH.pH
+    orig_pE = s5_pH.pE
+    orig_density = s5_pH.density.magnitude
+    orig_solv_mass = s5_pH.solvent_mass.magnitude
+    set(s5_pH.components.keys())
+    s5_pH.equilibrate()
+    assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001)
+    # due to the large pH shift, water mass and density need not be perfectly conserved
+    assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
+    assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)
+    assert np.isclose(s5_pH.charge_balance, 0)
+    assert "CaOH[+1]" in s5_pH.components
+    assert "HCO3[-1]" in s5_pH.components
+    assert s5_pH.pH > orig_pH
+    assert np.isclose(s5_pH.pE, orig_pE)
+
+
 def test_tds(s1, s2, s5):
     assert s1.total_dissolved_solids.magnitude == 0
     assert np.isclose(s2.total_dissolved_solids.magnitude, 4 * 58442.769)
     assert s2.total_dissolved_solids == s2.TDS
-    assert np.isclose(s5.TDS.magnitude, 100)
+    assert np.isclose(s5.TDS.magnitude, 40.078 + 60.0089)
 
 
 def test_conductivity(s1, s2):
