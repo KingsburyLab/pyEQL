@@ -107,6 +107,16 @@ def test_empty_solution_3():
     assert set(s1.list_solutes()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
+def test_diffusion_transport(s2):
+    d25 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
+    assert np.isclose(d25, 1.334e-9)
+    assert np.isclose(s2.get_transport_number("Na+"), 0.396, atol=1e-3)
+    assert np.isclose(s2.get_transport_number("Cl-"), 0.604, atol=1e-3)
+    s2.temperature = "40 degC"
+    d40 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
+    assert np.isclose(d40, d25 * 40 / 25)
+
+
 def test_init_raises():
     with pytest.raises(ValueError, match="random is not a valid value"):
         Solution(engine="random")

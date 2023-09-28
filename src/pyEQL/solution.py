@@ -2193,6 +2193,7 @@ class Solution(MSONable):
                 *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
         """
+        solute = standardize_formula(solute)
         denominator = ureg.Quantity("0  mol / m / s")
         numerator = ureg.Quantity("0  mol / m / s")
 
