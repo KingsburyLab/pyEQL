@@ -414,6 +414,8 @@ def test_tds(s1, s2, s5):
 def test_conductivity(s1, s2):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
+    s_nacl = Solution({"Na+": "2298 mg/L", "Cl-": "3544 ppm"})
+    assert np.isclose(s_nacl.conductivity.to("mS/cm").magnitude, 10, atol=1)  # conductivity ~ 10 mS/cm
     # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
     assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m

@@ -687,9 +687,7 @@ class Solution(MSONable):
                 else:
                     alpha = self.ionic_strength.magnitude**0.5 / z
 
-                diffusion_coefficient = self.get_property(item, "transport.diffusion_coefficient")
-
-                molar_cond = diffusion_coefficient * (ureg.e * ureg.N_A) ** 2 * z**2 / (ureg.R * self.temperature)
+                molar_cond = self.get_molar_conductivity(item)
 
                 EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item, "mol/L")
 

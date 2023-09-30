@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Simplified `Solution.get_conductivity` to avoid errors in selected cases.
+- Required `pymatgen` version was incorrectly set at `2022.8.10` when it should be `2023.8.10`
 - Bug in `get_osmotic_coefficient` that caused a `ZeroDivisionError` with an empty solution.
 
 ## [0.8.0] - 2023-09-27
