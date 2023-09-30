@@ -458,7 +458,11 @@ class NativeEOS(EOS):
                 )
                 effective_osmotic_sum += concentration * ureg.Quantity("1 dimensionless")
 
-        return effective_osmotic_sum / molality_sum
+        try:
+            return effective_osmotic_sum / molality_sum
+        except ZeroDivisionError:
+            # this means the solution is empty
+            return 1
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""

@@ -10,6 +10,7 @@ data rather than the theoretical result of the respective functions.
 """
 
 import numpy as np
+
 import pyEQL
 
 
@@ -20,8 +21,11 @@ def test_osmotic_pressure():
     # TODO - at present this test is inaccurate because in the complex matrix
     # of seawater, pyEQL falls back to using an ideal solution model with
     # unit osmotic coefficient.
-    sea = pyEQL.autogenerate('seawater')
-    assert np.isclose(sea.osmotic_pressure.to('atm').magnitude, 27, rtol=0.15)
+    empty = pyEQL.Solution()
+    assert np.isclose(empty.osmotic_pressure.to("atm").magnitude, 0, atol=1e-5)
+    sea = pyEQL.autogenerate("seawater")
+    assert np.isclose(sea.osmotic_pressure.to("atm").magnitude, 27, rtol=0.15)
+
 
 class Test_osmotic_pitzer:
     """
