@@ -972,7 +972,7 @@ class Solution(MSONable):
         Notes:
             Osmotic pressure is calculated based on the water activity [sata]_ [wk]_
 
-            .. math:: \\Pi = \\frac{RT}{V_{w}} \\ln a_{w}
+            .. math:: \\Pi = -\\frac{RT}{V_{w}} \\ln a_{w}
 
             Where :math:`\\Pi` is the osmotic pressure, :math:`V_{w}` is the partial
             molar volume of water (18.2 cm**3/mol), and :math:`a_{w}` is the water
@@ -987,7 +987,7 @@ class Solution(MSONable):
         Examples:
             >>> s1=pyEQL.Solution()
             >>> s1.osmotic_pressure
-            0.0
+            <Quantity(0.495791416, 'pascal')>
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> soln.osmotic_pressure
