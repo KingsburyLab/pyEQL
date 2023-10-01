@@ -17,7 +17,7 @@ import numpy as np
 from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
-from monty.json import MSONable
+from monty.json import MontyDecoder, MSONable
 from pint import DimensionalityError, Quantity
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
@@ -69,13 +69,13 @@ class Solution(MSONable):
 
                         Defaults to empty (pure solvent) if omitted
             volume : str, optional
-                        Volume of the solvent, including the ureg. Defaults to '1 L' if omitted.
+                        Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
                         Note that the total solution volume will be computed using partial molar
                         volumes of the respective solutes as they are added to the solution.
             temperature : str, optional
                         The solution temperature, including the ureg. Defaults to '25 degC' if omitted.
             pressure : Quantity, optional
-                        The ambient pressure of the solution, including the ureg.
+                        The ambient pressure of the solution, including the unit.
                         Defaults to '1 atm' if omitted.
             pH : number, optional
                         Negative log of H+ activity. If omitted, the solution will be
@@ -97,12 +97,13 @@ class Solution(MSONable):
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
 
         Examples:
-            >>> s1 = pyEQL.Solution([['Na+','1 mol/L'],['Cl-','1 mol/L']],temperature='20 degC',volume='500 mL')
+            >>> s1 = pyEQL.Solution({'Na+': '1 mol/L','Cl-': '1 mol/L'},temperature='20 degC',volume='500 mL')
             >>> print(s1)
             Components:
-            ['H2O', 'Cl-', 'H+', 'OH-', 'Na+']
-            Volume: 0.5 l
-            Density: 1.0383030844030992 kg/l
+            Volume: 0.500 l
+            Pressure: 1.000 atm
+            Temperature: 293.150 K
+            Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
         """
         # create a logger attached to this class
         # self.logger = logging.getLogger(type(self).__name__)
@@ -2350,11 +2351,6 @@ class Solution(MSONable):
         """Return the volume of only the solutes."""
         return self.engine.get_solute_volume(self)
 
-    # copying and serialization
-    def copy(self) -> Solution:
-        """Return a copy of the solution."""
-        return Solution.from_dict(self.as_dict())
-
     def as_dict(self) -> dict:
         """
         Convert the Solution into a dict representation that can be serialized to .json or other format.
@@ -2364,7 +2360,7 @@ class Solution(MSONable):
             self._update_volume()
         d = super().as_dict()
         # replace solutes with the current composition
-        d["solutes"] = {k: v * ureg.Quantity("1 mol") for k, v in self.components.items()}
+        d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
         d["engine"] = self._engine
         return d
@@ -2379,7 +2375,8 @@ class Solution(MSONable):
         # first we store the volume of the serialized solution
         orig_volume = ureg.Quantity(d["volume"])
         # then instantiate a new one
-        new_sol = super().from_dict(d)
+        decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
+        new_sol = cls(**decoded)
         # now determine how different the new solution volume is from the original
         scale_factor = (orig_volume / new_sol.volume).magnitude
         # reset the new solution volume to that of the original. In the process of

@@ -6,6 +6,8 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
 
+import copy
+
 import numpy as np
 import pytest
 
@@ -36,13 +38,13 @@ def s4():
 @pytest.fixture()
 def s5():
     # 100 mg/L as CaCO3 ~ 1 mM
-    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L")
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]])
 
 
 @pytest.fixture()
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
-    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH")
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], balance_charge="pH")
 
 
 @pytest.fixture()
@@ -433,7 +435,7 @@ def test_conductivity(s1, s2):
 
 
 def test_arithmetic_and_copy(s2, s6):
-    s6_scale = s6.copy()
+    s6_scale = copy.deepcopy(s6)
     s6_scale *= 1.5
     assert s6_scale.volume == 1.5 * s6.volume
     assert s6_scale.pressure == s6.pressure
@@ -487,13 +489,17 @@ def test_arithmetic_and_copy(s2, s6):
         s2 + s_bad
 
 
-def test_serialization(s1, s2):
+def test_serialization(s1, s2, s5):
     assert isinstance(s1.as_dict(), dict)
     s1_new = Solution.from_dict(s1.as_dict())
     assert s1_new.volume.magnitude == 2
+    assert s1_new._solutes["H[+1]"] == "2e-07 mol"
+    assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
     assert s1_new.components == s1.components
     assert np.isclose(s1_new.pH, s1.pH)
+    assert np.isclose(s1_new._pH, s1._pH)
     assert np.isclose(s1_new.pE, s1.pE)
+    assert np.isclose(s1_new._pE, s1._pE)
     assert s1_new.temperature == s1.temperature
     assert s1_new.pressure == s1.pressure
     assert s1_new.solvent == s1.solvent
@@ -510,8 +516,11 @@ def test_serialization(s1, s2):
     assert s2_new.components == s2.components
     # but not point to the same instances
     assert s2_new.components is not s2.components
+    assert s2_new.get_total_moles_solute() == s2.get_total_moles_solute()
     assert np.isclose(s2_new.pH, s2.pH)
+    assert np.isclose(s2_new._pH, s2._pH)
     assert np.isclose(s2_new.pE, s2.pE)
+    assert np.isclose(s2_new._pE, s2._pE)
     assert s2_new.temperature == s2.temperature
     assert s2_new.pressure == s2.pressure
     assert s2_new.solvent == s2.solvent
