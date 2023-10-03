@@ -15,14 +15,23 @@ objects, providing methods to populate them with solutes, calculate
 species-specific properties (such as activity and diffusion coefficients),
 and retrieve bulk properties (such as density, conductivity, or volume).
 
-![pyeql demo](pyeql-demo.png)
+```python
+>>> from pyEQL import Solution
+>>> s1=Solution({"Na+":"1 mol/L", "Cl-": "1 mol/L"})
+>>> s1.density
+<Quantity(1.03710384, 'kilogram / liter')>
+>>> s1.conductivity
+<Quantity(8.09523295, 'siemens / meter')>
+>>> s1.osmotic_pressure.to('atm')
+<Quantity(46.7798197, 'standard_atmosphere')>
+>>> s1.get_amount('Na+', 'ug/L')
+<Quantity(22989769.3, 'microgram / liter')>
+```
 
 pyEQL is designed to be customizable and easy to integrate into projects
 that require modeling of chemical thermodyanmics of aqueous solutions.
 It aspires to provide a flexible, extensible framework for the user, with a
 high level of transparency about data sources and calculation methods.
-
-pyEQL runs on Python 3.8+ and is licensed under LGPL.
 
 ### Key Features
 
@@ -35,8 +44,8 @@ pyEQL runs on Python 3.8+ and is licensed under LGPL.
 - Not limited to dilute solutions. pyEQL contains out of the box support for
   the Pitzer Model and other methods for modeling concentrated solutions.
 
-- Extensible database system that allows one to supplement pyEQL's default
-  parameters with project-specific data.
+- Built in [database](https://pyeql.readthedocs.io/en/latest/database.html) containing hundreds of model
+  parameters and physicochemical properties for different ions.
 
 - Units-aware calculations (by means of the [pint](https://github.com/hgrecco/pint) library)
 
