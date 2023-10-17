@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking** `pyEQL.unit` deprecation machinery has been removed to quiet the warning
+  messages on import. The `pyEQL` unit registry was renamed to `pyEQL.ureg` in v0.6.1.
 - Significant documentation updates.
 - `Solution.components` is now automatically sorted in descending order of amount, for
   consistency with `anions`, `cations`, and `neutrals`.
