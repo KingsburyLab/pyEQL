@@ -2,10 +2,10 @@
 
 # Chemical Formulas
 
-pyEQL interprets the chemical formula of a substance to calculate its molecular
+`pyEQL` interprets the chemical formula of a substance to calculate its molecular
 weight and formal charge. The formula is also used as a key to search the
-database for parameters (e.g. diffusion coefficient) that are used in subsequent
-calculations.
+[property database](database.md) for parameters (e.g. diffusion coefficient) that are
+used in subsequent calculations.
 
 ## How to Enter Valid Chemical Formulas
 
@@ -32,8 +32,7 @@ by `(aq)` to disambiguate them from solids.
 
 :::{important}
 **When writing multivalent ion formulas, it is strongly recommended that you put the charge number AFTER the + or -
-sign** (e.g., type "Mg+2" NOT "Mg2+"). The latter formula is ambiguous - it could mean $`Mg_2^+`$ or $`Mg^{+2}`$ and
-it will be processed incorrectly into `Mg[+0.5]`
+sign** (e.g., type "Mg+2" NOT "Mg2+"). The latter formula is ambiguous - it could mean $Mg_2^+$ or $Mg^{+2}$ and it will be processed incorrectly into `Mg[+0.5]`
 :::
 
 (manual-testing)=
@@ -56,11 +55,11 @@ When using the `Solution` class,
 - However, the `components` attribute is a special dictionary that automatically standardizes formulas when accessed. So, you can still enter the formula
   however you want. For example, the following all access or modify the same element in `components`:
 
-  ```
-  Solution.components.get('Na+')
-  Solution.components["Na+1"]
-  Solution.components.update("Na[+]": 2)
-  Solution.components["Na[+1]"]
+  ```python
+  >>> Solution.components.get('Na+')
+  >>> Solution.components["Na+1"]
+  >>> Solution.components.update("Na[+]": 2)
+  >>> Solution.components["Na[+1]"]
   ```
 
 - Arguments to `Solution.get_property` can be entered in any format you prefer. When `pyEQL` queries the database, it will automatically standardize the formula.

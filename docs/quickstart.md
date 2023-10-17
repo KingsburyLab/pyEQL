@@ -1,6 +1,6 @@
 (tutorial)=
 
-# Tutorial
+# Quickstart
 
 pyEQL creates a new type (`Solution` class) to represent a chemical solution.
 It also comes pre-loaded with a database of diffusion coefficients, activity
@@ -113,15 +113,8 @@ To access pyEQL's main features in your project all that is needed is an import 
 
 In order to directly create `Quantity`  objects, you need to explicitly import `UnitRegistry`, which you can do as follows:
 
-> ```pycon
+> ```python
 > >>> from pyEQL import ureg
 > >>> test_qty = ureg('1 kg/m**3')
 > 1.0 kilogram/meter3
 > ```
-:::{note}
-Note that the meaning of `ureg` is equivalent in the above `pyEQL` examples and in the [pint documentation](http://pint.readthedocs.io/). `pyEQL` instantiates its own `UnitRegistry` (with custom definitions for solution chemistry) and assigns it to the variable `ureg`. In most `pint` examples, the line `ureq = UnitRegistry()` does the same thing.
-:::
-
-:::{warning}
-if you use `pyEQL` in conjunction with another module that also uses pint for units-aware calculations, you must convert all `Quantity`  objects to strings before passing them to the other module, as pint cannot perform mathematical operations on units that belong to different "registries."  See the [pint documentation](http://pint.readthedocs.io/) for more details.
-:::

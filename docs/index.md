@@ -53,12 +53,27 @@ Contents:
 
 ```{toctree}
 :maxdepth: 2
+quickstart
+```
 
+```{toctree}
+:caption: User Guide
+:maxdepth: 3
 installation
-tutorial
-class_solution
+creating
 chemistry
+units
+amounts
+engines
 database
+arithmetic
+serialization
+class_solution
+```
+
+```{toctree}
+:caption: For Developers
+:maxdepth: 1
 contributing
 utilities
 internal
