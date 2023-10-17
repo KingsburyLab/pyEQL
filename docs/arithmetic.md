@@ -5,7 +5,8 @@
 You can use the `+` operator to mix (combine) two solutions. The moles of each component
 in the two solutions will be added together, and the volume of the mixed solution will
 be _approximately_ equal to the sum of the two volumes, depending on the electrolyte
-modeling engine used.
+modeling engine used. The pressure and temperature of the mixed solution are computed
+as volume-weighted averages.
 
 ```python
 >>> from pyEQL import Solution

@@ -1,6 +1,6 @@
 (class-solution)=
 
-# `Solution` API Reference
+# `Solution` Class Reference
 
 This page contains detailed information on each of the methods, attributes, and properties in `Solution`. Use the sidebar on the right for easier navigation.
 

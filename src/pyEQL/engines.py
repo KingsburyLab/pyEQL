@@ -26,7 +26,14 @@ from pyEQL.utils import standardize_formula
 
 
 class EOS(ABC):
-    """Abstract base class for pyEQL equation of state classes."""
+    """
+    Abstract base class for pyEQL equation of state classes.
+
+    The intent is that concrete implementations of this class make use of the
+    standalone functions available in pyEQL.activity_correction and pyEQL.equilibrium
+    as much as possible. This facilitates robust unit testing while allowing users
+    to "mix and match" or customize the various models as needed.
+    """
 
     @abstractmethod
     def get_activity_coefficient(self, solution, solute):

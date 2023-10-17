@@ -179,14 +179,16 @@ html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
     'base_url': 'https://pyeql.readthedocs.io/en/latest/',
-    'repo_url': 'https://github.com/rkingsbury/pyEQL/',
+    'repo_url': 'https://github.com/KingsburyLab/pyEQL/',
     'repo_name': 'pyEQL',
     'logo_icon': '&#xf876',
     'html_minify': True,
     'css_minify': True,
-    'nav_title': 'pyEQL: a human-friendly python interface for solution chemistry',
+    'nav_title': 'pyEQL: a python interface for water chemistry',
     'color_primary': "blue",
     'color_accent': "light-blue",
+    'globaltoc_depth': 2,
+    'globaltoc_collapse': True,
 }
 html_sidebars = {
     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]

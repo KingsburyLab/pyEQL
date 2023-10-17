@@ -1,6 +1,6 @@
 (chemistry)=
 
-# Chemical Formulas
+# Writing Formulas
 
 `pyEQL` interprets the chemical formula of a substance to calculate its molecular
 weight and formal charge. The formula is also used as a key to search the

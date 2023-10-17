@@ -1,6 +1,6 @@
 (installation)=
 
-# Installation
+# Installing
 
 ## Use a conda environment
 
@@ -65,10 +65,10 @@ If you use pip to install pyEQL (recommended), they should be installed automati
 
 ## Installing the development branch
 
-If you want to use the bleeding edge (and potentially unstable!) development branch instead of the latest stable release, you can substitute the following for the above 'pip install' command:
+If you want to use the bleeding edge version before it is released to PyPi instead of the latest stable release, you can substitute the following for the above 'pip install' command:
 
 ```
-pip install git+https://github.com/rkingsbury/pyEQL.git@develop
+pip install git+https://github.com/KingsburyLab/pyEQL.git@main
 ```
 
 ## Manually install via Git
@@ -76,7 +76,7 @@ pip install git+https://github.com/rkingsbury/pyEQL.git@develop
 Simply navigate to a directory of your choice on your computer and clone the repository by executing the following terminal command:
 
 ```
-git clone https://github.com/rkingsbury/pyEQL
+git clone https://github.com/KingsburyLab/pyEQL
 ```
 
 Then install by executing:

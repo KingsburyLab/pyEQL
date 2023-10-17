@@ -1,33 +1,4 @@
-# Solute Amounts
-
-## See all components in the solution
-
-You can inspect the solutes present in the solution via the `components` attribute. This comprises a dictionary of solute formula: moles, where 'moles' is the number of moles of that solute in the `Solution`. Note that the solvent (water) is present in `components`, too.
-`components` is reverse sorted, with the most predominant component (i.e., the solvent)
-listed first.
-
-```python
->>> from pyEQL import Solution
->>> s = Solution({"Mg+2": "0.5 mol/L", "Cl-": "1.0 mol/L"})
->>> s.components
-{'H2O(aq)': 54.83678280993063, 'Cl[-1]': 1.0, 'Mg[+2]': 0.5, 'H[+1]': 1e-07, 'OH[-1]': 1e-07}
-```
-
-Similarly, you can use the properties `anions`, `cations`, `neutrals`, and `solvent` to
-retrieve subsets of `components`:
-
-```python
->>> s.anions
-{'Cl[-1]': 1.0, 'OH[-1]': 1e-07}
->>> s.cations
-{'Mg[+2]': 0.5, 'H[+1]': 1e-07}
->>> s.neutrals
-{'H2O(aq)': 54.83678280993063}
->>> s.solvent
-'H2O(aq)'
-```
-
-Like `components`, all of the above dicts are sorted in order of decreasing amount.
+# Getting Concentrations
 
 ## Get the amount of a specific solute
 
@@ -77,6 +48,90 @@ of particles in the solution (`'count'`, useful for setting up simulation boxes)
 >>> s.get_amount('Mg[+2]', 'count')
 <Quantity(3.01107038e+23, 'dimensionless')>
 ```
+
+## See all components in the solution
+
+You can inspect the solutes present in the solution via the `components` attribute. This comprises a dictionary of solute formula: moles, where 'moles' is the number of moles of that solute in the `Solution`. Note that the solvent (water) is present in `components`, too.
+`components` is reverse sorted, with the most predominant component (i.e., the solvent)
+listed first.
+
+```python
+>>> from pyEQL import Solution
+>>> s = Solution({"Mg+2": "0.5 mol/L", "Cl-": "1.0 mol/L"})
+>>> s.components
+{'H2O(aq)': 54.83678280993063, 'Cl[-1]': 1.0, 'Mg[+2]': 0.5, 'H[+1]': 1e-07, 'OH[-1]': 1e-07}
+```
+
+Similarly, you can use the properties `anions`, `cations`, `neutrals`, and `solvent` to
+retrieve subsets of `components`:
+
+```python
+>>> s.anions
+{'Cl[-1]': 1.0, 'OH[-1]': 1e-07}
+>>> s.cations
+{'Mg[+2]': 0.5, 'H[+1]': 1e-07}
+>>> s.neutrals
+{'H2O(aq)': 54.83678280993063}
+>>> s.solvent
+'H2O(aq)'
+```
+
+Like `components`, all of the above dicts are sorted in order of decreasing amount.
+
+## Salt vs. Solute Concentrations
+
+Sometimes the concentration of a dissolved _salt_ (e.g., MgCl2) is of greater interest
+than the concentrations of the individual solutes (Mg+2 and Cl-). `pyEQL` has the
+ability to interpret a `Solution` composition and represent it as a mixture of salts.
+
+To retrieve only _the predominant salt_ (i.e., the salt with the highest concentration),
+use `get_salt`. This returns a `Salt` object with several useful attributes.
+
+```python
+>>> from pyEQL import Solution
+>>> s = Solution({"Mg+2": "0.4 mol/L", "Na+": "0.1 mol/L", "Cl-": "1.0 mol/L"})
+>>> s.get_salt()
+<pyEQL.salt_ion_match.Salt object at 0x7f0ded09fd30>
+>>> s.get_salt().formula
+'MgCl2'
+>>> s.get_salt().anion
+'Cl[-1]'
+>>> s.get_salt().z_cation
+2.0
+>>> s.get_salt().nu_anion
+2
+```
+
+To see a `dict` of all the salts in given solution, use `get_salt_dict()`. This method
+returns a dict keyed by the salt's formula, where the values are `Salt` objects converted
+into dictionaries. All the usual attributes like `anion`, `z_cation` etc. are accessible
+in the corresponding keys. Each value also contains a `mol` key giving the moles
+of the salt present.
+
+```python
+>>> from pyEQL import Solution
+>>> s = Solution({"Mg+2": "0.4 mol/L", "Na+": "0.1 mol/L", "Cl-": "1.0 mol/L"})
+>>> s.get_salt_dict()
+{'MgCl2': {'@module': 'pyEQL.salt_ion_match',
+           '@class': 'Salt', '@version': '0.5.2',
+           'cation': 'Mg[+2]',
+           'anion': 'Cl[-1]',
+           'mol': 0.4},
+ 'NaCl': {'@module': 'pyEQL.salt_ion_match',
+          '@class': 'Salt', '@version': '0.5.2',
+          'cation': 'Na[+1]',
+          'anion': 'Cl[-1]',
+          'mol': 0.1},
+ 'NaOH': {'@module': 'pyEQL.salt_ion_match',
+          '@class': 'Salt', '@version': '0.5.2',
+          'cation': 'Na[+1]',
+          'anion': 'OH[-1]',
+          'mol': 1e-07}
+}
+```
+
+Refer to the [Salt Matching module reference](internal.md#salt-matching-module) for more
+details.
 
 ## Total Element Concentrations
 

@@ -63,10 +63,10 @@ Other properties that are present in the schema, but not set, are `None`. For ex
 
 You can convert a `Solute` into a regular dictionary using `Solute.as_dict()`
 
-'''
+```
 >>> s.as_dict()
 {'formula': 'Ti[+2]', 'charge': 2, 'molecular_weight': '47.867 g/mol', 'elements': ['Ti'], 'chemsys': 'Ti', 'pmg_ion': Ion: Ti1 +2, 'formula_html': 'Ti<sup>+2</sup>', 'formula_latex': 'Ti$^{+2}$', 'formula_hill': 'Ti', 'formula_pretty': 'Ti^+2', 'oxi_state_guesses': ({'Ti': 2.0},), 'n_atoms': 1, 'n_elements': 1, 'size': {'radius_ionic': None, 'radius_hydrated': None, 'radius_vdw': None, 'molar_volume': None}, 'thermo': {'ΔG_hydration': None, 'ΔG_formation': None}, 'transport': {'diffusion_coefficient': None}, 'model_parameters': {'activity_pitzer': {'Beta0': None, 'Beta1': None, 'Beta2': None, 'Cphi': None, 'Max_C': None}, 'molar_volume_pitzer': {'Beta0': None, 'Beta1': None, 'Beta2': None, 'Cphi': None, 'V_o': None, 'Max_C': None}, 'viscosity_jones_dole': {'B': None}}}
-'''
+```
 
 ## Searching the database
 
@@ -101,7 +101,7 @@ If the property does not exist in the database, `None` will be returned.
 
 ```
 >>> s1.get_property('Mg+2', 'transport.randomproperty')
->>> 
+>>>
 ```
 
 Although the database contains additional context about each and every property value, such as a citation, this information is not currently exposed via the `Solution` interface. Richer methods for exploring and adding to the database may be added in the future.
@@ -110,6 +110,7 @@ Although the database contains additional context about each and every property 
 
 The database currently contains one or more physichochemical properties for each of the solutes listed below. More detailed information about which properties are available for which solutes may be added in the future.
 
+```
  - Ac[+3]
  - Ag(CN)2[-1]
  - AgNO3(aq)
@@ -460,3 +461,4 @@ The database currently contains one or more physichochemical properties for each
  - ZnSO4(aq)
  - Zn[+2]
  - Zr[+4]
+```

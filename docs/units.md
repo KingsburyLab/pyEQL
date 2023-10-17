@@ -1,4 +1,4 @@
-# Unit Conversion
+# Converting Units
 
 `pyEQL` uses [pint](https://pint.readthedocs.io/en/stable/) to automatically interpret and
 convert units. For this reason, many quantitative arguments are passed to functions

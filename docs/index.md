@@ -64,17 +64,22 @@ creating
 chemistry
 units
 amounts
-engines
-database
 arithmetic
 serialization
+```
+
+```{toctree}
+:caption: Advanced Topics
+:maxdepth: 1
+engines
+database
+mixing
 class_solution
+internal
 ```
 
 ```{toctree}
 :caption: For Developers
 :maxdepth: 1
 contributing
-utilities
-internal
 ```

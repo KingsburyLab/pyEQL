@@ -6,6 +6,9 @@ pyEQL functions that take Solution objects as inputs or return Solution objects.
 
 """
 import math
+from typing import Literal
+
+from monty.dev import deprecated
 
 import pyEQL
 from pyEQL import ureg
@@ -219,7 +222,7 @@ def donnan_eql(solution, fixed_charge):
         return donnan_soln
 
     # define a function representing the donnan equilibrium as a function
-    # of the two unknown actvities to feed to the nonlinear solver
+    # of the two unknown activities to feed to the nonlinear solver
 
     # the stuff in the term below doesn't change on iteration, so calculate it up-front
     # assign it the correct units and extract the magnitude for a performance gain
@@ -280,6 +283,9 @@ def donnan_eql(solution, fixed_charge):
     return donnan_soln
 
 
+@deprecated(
+    message="mix() is deprecated and will be removed in the next release! You can now mix solutions using the addition operator, e.g. s_mix = s1 + s2."
+)
 def mix(s1, s2):
     """
     Mix two solutions together.
@@ -299,7 +305,7 @@ def mix(s1, s2):
     return s1 + s2
 
 
-def autogenerate(solution=""):
+def autogenerate(solution: Literal["seawater", "rainwater", "wastewater", "urine", "Ringers lactate", "normal saline"]):
     """
     This method provides a quick way to create Solution objects representing
     commonly-encountered solutions, such as seawater, rainwater, and wastewater.
