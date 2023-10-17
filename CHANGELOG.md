@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2023-10-17
 
+### Added
+
+- `Solution.print()` added to take the place of the deprecated `list_xxx` methods.
+
 ### Changed
 
 - Significant documentation updates.
