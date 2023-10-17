@@ -495,8 +495,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are cations. The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
 
     @property
     def anions(self) -> dict[str, float]:
@@ -504,8 +503,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are anions. The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
 
     @property
     def neutrals(self) -> dict[str, float]:
@@ -513,8 +511,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are neutral (not charged). The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
 
     # TODO - need tests for viscosity
     @property
@@ -1113,8 +1110,7 @@ class Solution(MSONable):
         d = {}
         # by sorting the components according to amount, we ensure that the species
         # are sorted in descending order of concentration in the resulting dict
-        components = dict(sorted(self.components.items(), key=lambda x: x[1], reverse=True))
-        for s in components:
+        for s in self.components:
             # determine the element and oxidation state
             elements = self.get_property(s, "elements")
 
