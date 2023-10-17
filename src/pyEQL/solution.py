@@ -2491,9 +2491,6 @@ class Solution(MSONable):
         return self
 
     # informational methods
-    def list_solutes(self):
-        """List all the solutes in the solution."""
-        return list(self.components.keys())
 
     def list_salts(self, unit="mol/kg", decimals=4):
         for k, v in self.get_salt_dict().items():
@@ -2548,6 +2545,13 @@ class Solution(MSONable):
     """
     Legacy methods to be deprecated in a future release.
     """
+
+    @deprecated(
+        message="list_solutes() is deprecated and will be removed in the next release! Use Solution.components.keys() instead.)"
+    )
+    def list_solutes(self):
+        """List all the solutes in the solution."""
+        return list(self.components.keys())
 
     @deprecated(
         message="list_concentrations() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
