@@ -495,8 +495,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are cations. The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") > 0}
 
     @property
     def anions(self) -> dict[str, float]:
@@ -504,8 +503,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are anions. The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") < 0}
 
     @property
     def neutrals(self) -> dict[str, float]:
@@ -513,8 +511,7 @@ class Solution(MSONable):
         Returns the subset of `components` {formula: moles} that are neutral (not charged). The returned dict is sorted by
         amount in descending order.
         """
-        d = {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
-        return dict(sorted(d.items(), key=lambda x: x[1], reverse=True))
+        return {k: v for k, v in self.components.items() if self.get_property(k, "charge") == 0}
 
     # TODO - need tests for viscosity
     @property
@@ -1113,8 +1110,7 @@ class Solution(MSONable):
         d = {}
         # by sorting the components according to amount, we ensure that the species
         # are sorted in descending order of concentration in the resulting dict
-        components = dict(sorted(self.components.items(), key=lambda x: x[1], reverse=True))
-        for s in components:
+        for s in self.components:
             # determine the element and oxidation state
             elements = self.get_property(s, "elements")
 
@@ -1768,7 +1764,7 @@ class Solution(MSONable):
         """
         Return the activity coefficient of a solute in solution.
 
-        The model used to calculte the activity coefficient is determined by the Solution's equation of state
+        The model used to calculate the activity coefficient is determined by the Solution's equation of state
         engine.
 
         Args:
@@ -2359,6 +2355,10 @@ class Solution(MSONable):
         if self.volume_update_required:
             self._update_volume()
         d = super().as_dict()
+        for k, v in d.items():
+            # convert all Quantity to str
+            if isinstance(v, Quantity):
+                d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
@@ -2480,7 +2480,7 @@ class Solution(MSONable):
     def __sub__(self, other: Solution):
         raise NotImplementedError("Subtraction of solutions is not implemented.")
 
-    def __mul__(self, factor: float | int):
+    def __mul__(self, factor: float):
         """
         Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
         every component (including solvent). No other properties will change.
@@ -2488,7 +2488,7 @@ class Solution(MSONable):
         self.volume *= factor
         return self
 
-    def __truediv__(self, factor: float | int):
+    def __truediv__(self, factor: float):
         """
         Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
         of every compoonents (including solvent). No other properties will change.
