@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `Solution.components` is now automatically sorted in descending order of amount, for
+  consistency with `anions`, `cations`, and `neutrals`.
+
 ### Fixed
 
 - Bugfix in `as_dict` to make serialization via `dumpfn` possible. Previously, `Quantity`
