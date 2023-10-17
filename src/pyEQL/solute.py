@@ -19,6 +19,8 @@ from typing import Literal
 import numpy as np
 from pymatgen.core.ion import Ion
 
+from pyEQL.utils import standardize_formula
+
 
 @dataclass
 class Datum:
@@ -68,7 +70,7 @@ class Solute:
     formula_latex: str
     formula_hill: str
     formula_pretty: str
-    oxi_state_guesses: list[dict[str, float]]
+    oxi_state_guesses: dict[str, float]
     n_atoms: int
     n_elements: int
     size: dict = field(
@@ -105,14 +107,23 @@ class Solute:
         of the IonDoc.
         """
         pmg_ion = Ion.from_formula(formula)
-        f = pmg_ion.reduced_formula
+        f, factor = pmg_ion.get_reduced_formula_and_factor()
+        rform = standardize_formula(formula)
         charge = int(pmg_ion.charge)
         els = [str(el) for el in pmg_ion.elements]
-        mw = f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
+        mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
+        # store only the most likely oxi_state guesses
+        oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)
+        # TODO - hack to work around a pymatgen bug in Composition
+        # https://github.com/materialsproject/pymatgen/issues/3324
+        if oxi_states == []:
+            oxi_states = {els[0]: 0.0} if rform in ["O2(aq)", "O3(aq)", "Cl2(aq)", "F2(aq)"] else {}
+        else:
+            oxi_states = oxi_states[0]
 
         return cls(
-            f,
+            rform,
             charge=charge,
             molecular_weight=mw,
             elements=els,
@@ -122,7 +133,7 @@ class Solute:
             formula_latex=pmg_ion.to_latex_string(),
             formula_hill=pmg_ion.hill_formula,
             formula_pretty=pmg_ion.to_pretty_string(),
-            oxi_state_guesses=pmg_ion.oxi_state_guesses(),
+            oxi_state_guesses=oxi_states,
             n_atoms=int(pmg_ion.num_atoms),
             n_elements=len(els),
         )

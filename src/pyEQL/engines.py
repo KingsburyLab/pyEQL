@@ -5,18 +5,24 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 :license: LGPL, see LICENSE for more details.
 
 """
+import os
+import warnings
 from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Literal
 
-from pymatgen.core.ion import Ion
+from phreeqpython import PhreeqPython
 
 # internal pyEQL imports
 import pyEQL.activity_correction as ac
 
 # import the parameters database
 # the pint unit registry
-from pyEQL import unit
+from pyEQL import ureg
+from pyEQL.equilibrium import equilibrate_phreeqc
 from pyEQL.logging_system import logger
-from pyEQL.salt_ion_match import generate_salt_list
+from pyEQL.salt_ion_match import Salt
+from pyEQL.utils import standardize_formula
 
 
 class EOS(ABC):
@@ -99,21 +105,23 @@ class IdealEOS(EOS):
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
-        return unit.Quantity("1 dimensionless")
+        return ureg.Quantity("1 dimensionless")
 
     def get_osmotic_coefficient(self, solution):
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
         """
-        return unit.Quantity("1 dimensionless")
+        return ureg.Quantity("1 dimensionless")
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
-        return unit.Quantity("0 L")
+        return ureg.Quantity("0 L")
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        warnings.warn("equilibrate() has no effect in IdealEOS!")
+        return
 
 
 class NativeEOS(EOS):
@@ -191,33 +199,35 @@ class NativeEOS(EOS):
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
         """
         # identify the predominant salt that this ion is a member of
-        Salt = None
-        rform = Ion.from_formula(solute).reduced_formula
-        salt_list = generate_salt_list(solution, unit="mol/kg")
-        for item in salt_list:
-            if rform == item.cation or rform == item.anion:
-                Salt = item
+        salt = None
+        rform = standardize_formula(solute)
+        for v in solution.get_salt_dict().values():
+            if v == "HOH":
+                continue
+            if rform == v["cation"] or rform == v["anion"]:
+                del v["mol"]
+                salt = Salt.from_dict(v)
+                break
 
         # show an error if no salt can be found that contains the solute
-        if Salt is None:
+        if salt is None:
             logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
-            return unit.Quantity("1 dimensionless")
+            return ureg.Quantity("1 dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
-
         # search for Pitzer parameters
-        param = solution.get_property(Salt.formula, "model_parameters.activity_pitzer")
+        param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
         if param is not None:
             # TODO - consider re-enabling a log message recording what salt(s) are used as basis for activity
             # calculation
             # if verbose is True:
-            #     print("Calculating activity coefficient based on parent salt %s" % Salt.formula)
+            #     print("Calculating activity coefficient based on parent salt %s" % salt.formula)
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if Salt.nu_cation >= 2 and Salt.nu_anion <= -2:
-                if Salt.nu_cation >= 3 or Salt.nu_anion <= -3:
+            if salt.nu_cation >= 2 and salt.nu_anion <= -2:
+                if salt.nu_cation >= 3 or salt.nu_anion <= -3:
                     alpha1 = 2
                     alpha2 = 50
                 else:
@@ -231,30 +241,30 @@ class NativeEOS(EOS):
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            # molality = (solution.get_amount(Salt.cation,'mol/kg')/Salt.nu_cation+solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
+            # molality = (solution.get_amount(salt.cation,'mol/kg')/salt.nu_cation+solution.get_amount(salt.anion,'mol/kg')/salt.nu_anion)/2
 
             # determine the effective molality of the salt in the solution
-            molality = Salt.get_effective_molality(solution.ionic_strength)
+            molality = salt.get_effective_molality(solution.ionic_strength)
 
             activity_coefficient = ac.get_activity_coefficient_pitzer(
                 solution.ionic_strength,
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
-                Salt.z_cation,
-                Salt.z_anion,
-                Salt.nu_cation,
-                Salt.nu_anion,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
+                salt.z_cation,
+                salt.z_anion,
+                salt.nu_cation,
+                salt.nu_anion,
                 str(solution.temperature),
             )
 
             logger.info(
                 "Calculated activity coefficient of species {} as {} based on salt {} using Pitzer model".format(
-                    solute, activity_coefficient, Salt
+                    solute, activity_coefficient, salt
                 )
             )
             molal = activity_coefficient
@@ -299,7 +309,7 @@ class NativeEOS(EOS):
                 % solute
             )
 
-            molal = unit.Quantity("1 dimensionless")
+            molal = ureg.Quantity("1 dimensionless")
 
         return molal
 
@@ -383,15 +393,13 @@ class NativeEOS(EOS):
         effective_osmotic_sum = 0
         molality_sum = 0
 
-        # organize the composition into a dictionary of salts
-        salts_dict = solution.get_salt_dict()
-
         # loop through all the salts in the solution, calculate the osmotic
         # coefficint for reach, and average them into an effective osmotic
         # coefficient
-        for item in salts_dict:
+        for d in solution.get_salt_dict().values():
+            item = Salt(d["cation"], d["anion"])
             # ignore HOH in the salt list
-            if item == "HOH":
+            if item.formula == "HOH":
                 continue
 
             # determine alpha1 and alpha2 based on the type of salt
@@ -414,7 +422,7 @@ class NativeEOS(EOS):
             # solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = salts_dict[item]
+            concentration = d["mol"] * ureg.Quantity("mol") / solution.solvent_mass
 
             molality_sum += concentration
 
@@ -425,10 +433,10 @@ class NativeEOS(EOS):
                     concentration,
                     alpha1,
                     alpha2,
-                    unit.Quantity(param["Beta0"]["value"]).magnitude,
-                    unit.Quantity(param["Beta1"]["value"]).magnitude,
-                    unit.Quantity(param["Beta2"]["value"]).magnitude,
-                    unit.Quantity(param["Cphi"]["value"]).magnitude,
+                    ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                    ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                    ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                    ureg.Quantity(param["Cphi"]["value"]).magnitude,
                     item.z_cation,
                     item.z_anion,
                     item.nu_cation,
@@ -448,26 +456,21 @@ class NativeEOS(EOS):
                     "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
                     % item.formula
                 )
-                effective_osmotic_sum += concentration * unit.Quantity("1 dimensionless")
+                effective_osmotic_sum += concentration * ureg.Quantity("1 dimensionless")
 
-        return effective_osmotic_sum / molality_sum
+        try:
+            return effective_osmotic_sum / molality_sum
+        except ZeroDivisionError:
+            # this means the solution is empty
+            return 1
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         salt = solution.get_salt()
-        # reverse-convert the sanitized formula back to whatever was in self.components
-        for i in solution.components:
-            rform = Ion.from_formula(i).reduced_formula
-            if rform == salt.cation:
-                cation = i
-            if rform == salt.anion:
-                anion = i
-
-        solute_vol = unit.Quantity("0 L")
+        solute_vol = ureg.Quantity("0 L")
 
         # use the pitzer approach if parameters are available
-
         pitzer_calc = False
 
         param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
@@ -476,7 +479,7 @@ class NativeEOS(EOS):
             # this is necessary for solutions inside e.g. an ion exchange
             # membrane, where the cation and anion concentrations may be
             # unequal
-            molality = (solution.get_amount(cation, "mol/kg") + solution.get_amount(anion, "mol/kg")) / 2
+            molality = (solution.get_amount(salt.cation, "mol/kg") + solution.get_amount(salt.anion, "mol/kg")) / 2
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
@@ -497,11 +500,11 @@ class NativeEOS(EOS):
                 molality,
                 alpha1,
                 alpha2,
-                unit.Quantity(param["Beta0"]["value"]).magnitude,
-                unit.Quantity(param["Beta1"]["value"]).magnitude,
-                unit.Quantity(param["Beta2"]["value"]).magnitude,
-                unit.Quantity(param["Cphi"]["value"]).magnitude,
-                unit.Quantity(param["V_o"]["value"]).magnitude,
+                ureg.Quantity(param["Beta0"]["value"]).magnitude,
+                ureg.Quantity(param["Beta1"]["value"]).magnitude,
+                ureg.Quantity(param["Beta2"]["value"]).magnitude,
+                ureg.Quantity(param["Cphi"]["value"]).magnitude,
+                ureg.Quantity(param["V_o"]["value"]).magnitude,
                 salt.z_cation,
                 salt.z_anion,
                 salt.nu_cation,
@@ -512,8 +515,8 @@ class NativeEOS(EOS):
             solute_vol += (
                 apparent_vol
                 * (
-                    solution.get_amount(cation, "mol") / salt.nu_cation
-                    + solution.get_amount(anion, "mol") / salt.nu_anion
+                    solution.get_amount(salt.cation, "mol") / salt.nu_cation
+                    + solution.get_amount(salt.anion, "mol") / salt.nu_anion
                 )
                 / 2
             )
@@ -530,12 +533,12 @@ class NativeEOS(EOS):
                 continue
 
             # ignore the salt cation and anion, if already accounted for by Pitzer
-            if pitzer_calc is True and solute in [anion, cation]:
+            if pitzer_calc is True and solute in [salt.anion, salt.cation]:
                 continue
 
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
-                solute_vol += part_vol * mol * unit.Quantity("1 mol")
+                solute_vol += part_vol * mol * ureg.Quantity("1 mol")
                 logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
@@ -548,3 +551,152 @@ class NativeEOS(EOS):
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        equilibrate_phreeqc(solution, phreeqc_db="llnl.dat")
+
+
+# These are the only elements that are allowed to have parenthetical oxidation states
+# PHREEQC will ignore others (e.g., 'Na(1)')
+SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
+
+
+class PhreeqcEOS(EOS):
+    """Engine based on the PhreeqC model, as implemented via the phreeqpython package."""
+
+    def __init__(
+        self,
+        phreeqc_db: Literal[
+            "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
+        ] = "phreeqc.dat",
+    ):
+        """
+        Args:
+        phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
+        """
+        # database files in this list are not distributed with phreeqpython
+        self.db_path = (
+            Path(os.path.dirname(__file__)) / "database" if phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+        )
+        self.database = phreeqc_db
+
+    def _setup_ppsol(self, solution):
+        """
+        Helper method to set up a PhreeqPython solution for subsequent analysis
+        """
+        # TODO - copied from equilibrate_phreeqc. Can be streamlined / consolidated into a private method somewhere.
+        solv_mass = solution.solvent_mass.to("kg").magnitude
+        # inherit bulk solution properties
+        d = {
+            "temp": solution.temperature.to("degC").magnitude,
+            "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
+            "pH": solution.pH,
+            "pe": solution.pE,
+            "redox": "pe",  # hard-coded to use the pe
+            # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
+            # really have to specify the solvent mass in 1 liter of solution
+            "water": solv_mass,
+            "density": solution.density.to("g/mL").magnitude,
+        }
+        balance_charge = solution.balance_charge
+        if balance_charge == "pH":
+            d["pH"] = str(d["pH"]) + " charge"
+        if balance_charge == "pE":
+            d["pe"] = str(d["pe"]) + " charge"
+        initial_comp = solution.components.copy()
+
+        # add the composition to the dict
+        # also, skip H and O
+        for el, mol in solution.get_el_amt_dict().items():
+            # strip off the oxi state
+            bare_el = el.split("(")[0]
+            if bare_el in SPECIAL_ELEMENTS:
+                # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
+                # passing, e.g. 'C(4)' and not 'C(4.0)'
+                key = f'{bare_el}({int(float(el.split("(")[-1].split(")")[0]))})'
+            elif bare_el in ["H", "O"]:
+                continue
+            else:
+                key = bare_el
+
+            # tell PHREEQC which species to use for charge balance
+            if el == balance_charge:
+                key += " charge"
+            d[key] = mol / solv_mass
+
+        # create the PhreeqcPython instance
+        pp = PhreeqPython(database=self.database, database_directory=self.db_path)
+
+        # create the PHREEQC solution object
+        try:
+            ppsol = pp.add_solution(d)
+        except Exception as e:
+            print(d)
+            # catch problems with the input to phreeqc
+            raise ValueError(
+                "There is a problem with your input. The error message received from "
+                f" phreeqpython is:\n\n {e}\n Check your input arguments, especially "
+                "the composition dictionary, and try again."
+            )
+
+        # make sure PHREEQC has accounted for all the species that were originally present
+        assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
+
+        return ppsol
+
+    def _destroy_ppsol(self, ppsol):
+        """
+        Remove the PhreeqPython solution from memory
+        """
+        ppsol.forget()
+
+    def get_activity_coefficient(self, solution, solute):
+        """
+        Return the *molal scale* activity coefficient of solute, given a Solution
+        object.
+        """
+        ppsol = self._setup_ppsol(solution)
+
+        # translate the species into keys that phreeqc will understand
+        k = standardize_formula(solute)
+        el = k.split("[")[0]
+        chg = k.split("[")[1].split("]")[0]
+        if chg[-1] == "1":
+            chg = chg[0]  # just pass + or -, not +1 / -1
+        k = el + chg
+
+        # calculate the molal scale activity coefficient
+        print(k)
+        act = ppsol.activity(k, "mol") / ppsol.molality(k, "mol")
+
+        # remove the PPSol from the phreeqcpython instance
+        self._destroy_ppsol(ppsol)
+
+        return act * ureg.Quantity("1 dimensionless")
+
+    def get_osmotic_coefficient(self, solution):
+        """
+        Return the *molal scale* osmotic coefficient of solute, given a Solution
+        object.
+
+        PHREEQC appears to assume a unit osmotic coefficient unless the pitzer database
+        is used. Unfortunately, there is no easy way to access the osmotic coefficient
+        via phreeqcpython
+        """
+        # TODO - find a way to access or calculate osmotic coefficient
+        return ureg.Quantity("1 dimensionless")
+
+    def get_solute_volume(self, solution):
+        """Return the volume of the solutes."""
+        # TODO - phreeqc seems to have no concept of volume, but it does calculate density
+        return ureg.Quantity("0 L")
+
+    def equilibrate(self, solution):
+        """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+        equilibrate_phreeqc(solution, phreeqc_db=self.database)

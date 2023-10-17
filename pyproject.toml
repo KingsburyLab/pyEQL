@@ -11,8 +11,10 @@ version_scheme = "no-guess-dev"
 line-length = 120
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py38"
 line-length = 120
+exclude = [".dat"]
+src = ["src"]
 select = [
   "B",    # flake8-bugbear
   "C4",   # flake8-comprehensions
@@ -84,5 +86,4 @@ no_implicit_optional = false
 
 [tool.codespell]
 ignore-words-list = "nd"
-skip = 'tests/test_files/*'
-exclude = 'src/pyEQL/database/pyeql_db.json'
+skip = "tests/test_files/*,src/pyEQL/database/*"

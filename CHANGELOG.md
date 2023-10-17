@@ -7,10 +7,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `Solution.components` is now automatically sorted in descending order of amount, for
+  consistency with `anions`, `cations`, and `neutrals`.
+
+### Fixed
+
+- Bugfix in `as_dict` to make serialization via `dumpfn` possible. Previously, `Quantity`
+  were not converted to a serializable form. Now, `Quantity` are converted to `str` in
+  `as_dict()`.
+
+## [0.8.1] - 2023-10-01
+
+### Changed
+
+- `from_dict` modified to avoid call to `super()`, making for more robust behavior if `Solution` is inherited.
+
+### Removed
+
+- `copy()` method was removed for consistency with `python` conventions (it returned a deep rather than a
+  shallow copy). Use `copy.deepcopy(Solution)` instead.
+
+### Fixed
+
+- Bugfix in `as_dict` in which the `solutes` attribute was saved with `Quantity` rather than `float`
+- Simplified `Solution.get_conductivity` to avoid errors in selected cases.
+- Required `pymatgen` version was incorrectly set at `2022.8.10` when it should be `2023.8.10`
+- Bug in `get_osmotic_coefficient` that caused a `ZeroDivisionError` with an empty solution.
+
+## [0.8.0] - 2023-09-27
+
 ### Added
 
+- New electrolyte engine `PhreeqcEOS` provides `phreeqpython` activities within `pyEQL`
+- `Solution`: use total element concentrations when performing salt matching (can be disabled via kwarg)
+- `Solution`: add speciation support to the native engine via `phreeqpython`
+- `Solution`: add keyword argument to enable automatic charge balancing
+- `Salt`: class is now MSONable (i.e., serializable via `as_dict` / `from_dict`)
+- `Solution`: new properties `anions`, `cations`, `neutrals` provide easy access to subsets `components`.
+- `Solution`: improvements to `get_total_amount`.
+- `Solution`: new function `get_components_by_element` that lists all species associated with elements in specific
+  oxidation states.
+- `Solution`: new properties `elements` and `chemical_system`, new function `get_el_amt_dict` to compute the total
+  number of moles of each element present in the Solution.
+
+### Changed
+
+- `pH` attribute is now calculated from the H+ concentration rather than its activity. For the old behavior,
+  use `Solution.p('H+')` which defaults to applying the activity correction.
+- Update `test_salt_ion_match` to `pytest` format and add additional tests
+- Update `test_bulk_properties` to `pytest` format
+
+### Removed
+
+- `Solution.list_salts()` has been removed. See `Solution.get_salt_dict()` for equivalent functionality
+- `salt_ion_match.generate_salt_list` and `identify_salt` have been removed. See `Solution.get_salt_dict()` and `Solution.get_salt()` for equivalent functionality.
+
+### Fixed
+
+- Bug in `get_transport_number` caused by migration to standardized solute formulas
+- Scaling of salt concentrations in `get_salt_dict` was incorrect in some edge cases
+- Disable hydrate notation in `standardize_formula`, which caused hydroxides such as 'Ca(OH)3' to be written 'CaO2H.H2O'
+- Inconsistent formatting of oxidation states in `get_total_amount` and `Solute`
+- Inconsistent return type from `get_property` when `molar_volume` and `diffusion_coefficient` were missing
+- Two issues with the formatting of the `H2O(aq)` entry in the database, `pyeql_db.json`
+
+## [0.7.0] - 2023-08-22
+
+### Changed
+
+- `Solution` now more robustly converts any user-supplied formulas into unique values using `pymatgen.core.ion.Ion.reduced_formula`. This means that the `.components` or `solvent` attributes may now differ slightly from whatever is entered during `__init__`. For example, `Solution(solvent='H2O').solvent` gives `H2O(aq)`. This behavior resolved a small bug that could occur when mixing solutions. User supplied formulas passed to `get_amount` or `Solution.components[xxx]` can still be any valid formula. E.g., `Solution.components["Na+"]`, `Solution.components["Na+1"]`, and `Solution.components["Na[+]"]` will all return the same thing.
+
+## [0.6.1] - 2023-08-22
+
+### Added
+
+- `Solution`: enable passing an `EOS` instance to the `engine` kwarg.
+- `Solution`: new properties `total_dissolved_solids` and alias `TDS`
 - `Solution`: support new units in `get_amount` - ppm, ppb, eq/L, etc.
 - `Solution`: implemented arithmetic operations `+` (for mixing two solutions), `*` and `\` for scaling their amounts
+
+### Changed
+
+
+- `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
 
 ## [v0.6.0] - 2023-08-15
 

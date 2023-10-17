@@ -2,6 +2,8 @@ name: Post-process
 
 on:
   workflow_run:
+    branches:
+      - main
     types:
       - completed
     workflows:
@@ -19,8 +21,9 @@ jobs:
       - # It is often a desired behavior to merge only when a workflow execution
         # succeeds. This can be changed as needed.
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: rymndhng/release-on-push-action@v0.27.0
+        uses: rymndhng/release-on-push-action@v0.28.0
         with:
           # loonly release when PRs with release:major/minor/patch labels are merged
           bump_version_scheme: norelease
           use_github_release_notes: true
+          release_body: "See [CHANGELOG](https://github.com/rkingsbury/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."
