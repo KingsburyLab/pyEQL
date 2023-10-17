@@ -45,6 +45,8 @@ class FormulaDict(UserDict):
 
     def __setitem__(self, key, value):
         super().__setitem__(standardize_formula(key), value)
+        # sort contents anytime an item is set
+        self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 
     def __delitem__(self, key):
         super().__delitem__(standardize_formula(key))
