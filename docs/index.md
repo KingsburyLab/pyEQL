@@ -9,15 +9,14 @@ Release: '{{ release }}'
 
 ## Description
 
-**The goal of `pyEQL` is to provide a consistent interface (via the `Solution` class)
-for water chemistry, that can be connected to a variety of different modeling engines**
+**The goal of `pyEQL` is to provide a stable, intuitive, easy to learn python interface
+for water chemistry that can be connected to a variety of different modeling engines**
 
-`pyEQL` is a Python library that provides tools for modeling aqueous electrolyte
-solutions. Specifically, `pyEQL` defines a `Solution` class to represent an aqueous
-electrolyte solution. It also comes pre-loaded with a database of diffusion coefficients,
-activity correction parameters, and other data on a variety of common electrolytes.
-Virtually all of the user-facing functions in `pyEQL` are accessed through the
-`Solution` class.
+Specifically, `pyEQL` defines a `Solution` class to represent an aqueous
+electrolyte solution. Virtually all of the user-facing functions in `pyEQL` are accessed
+through the `Solution` class. It also includes a number of other utilities to support
+water chemistry analysis including a database of diffusion coefficients, activity
+correction parameters, and other data on a variety of common electrolytes.
 
 ## 1-minute Tutorial
 

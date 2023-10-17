@@ -6,16 +6,19 @@
 [![PyPI version](https://badge.fury.io/py/pyEQL.svg)](https://badge.fury.io/py/pyEQL)
 
 
-![pyeql logo](pyeql-logo.png)
+![pyeql logo](pyeql-logo.svg)
 
-A human-friendly python interface for solution chemistry
+A python interface for water chemistry
 
 
 ## Description
 
-pyEQL is a Python library that provides tools for modeling aqueous electrolyte
-solutions. It allows the user to manipulate solutions as Python
-objects, providing methods to populate them with solutes, calculate
+**The goal of `pyEQL` is to provide a stable, intuitive, easy to learn python interface
+for water chemistry that can be connected to a variety of different modeling engines**
+
+Specifically, `pyEQL` defines a `Solution` class to represent an aqueous
+electrolyte solution. The `Solution` class allows the user to manipulate solutions as
+Python objects, providing methods to populate them with solutes, calculate
 species-specific properties (such as activity and diffusion coefficients),
 and retrieve bulk properties (such as density, conductivity, or volume).
 
@@ -32,7 +35,11 @@ and retrieve bulk properties (such as density, conductivity, or volume).
 <Quantity(22989769.3, 'microgram / liter')>
 ```
 
-pyEQL is designed to be customizable and easy to integrate into projects
+`pyEQL` also includes a number of other utilities to support water chemistry analysis,
+including a **built-in property database** of diffusion coefficients, activity correction
+parameters, and other data on a variety of common electrolytes.
+
+It is designed to be customizable and easy to integrate into projects
 that require modeling of chemical thermodyanmics of aqueous solutions.
 It aspires to provide a flexible, extensible framework for the user, with a
 high level of transparency about data sources and calculation methods.
@@ -64,6 +71,7 @@ Detailed documentation is available at [https://pyeql.readthedocs.io/](https://p
   for older version of Python.
 - [pint](https://github.com/hgrecco/pint) - for units-aware calculations
 - [pymatgen](https://github.com/materialsproject/pymatgen) - periodic table and chemical formula information
+- [phreeqpython](https://github.com/Vitens/phreeqpython) - for PHREEQC-based speciation calculations
 - [iapws](https://github.com/jjgomera/iapws/) - equations of state for water
 - [monty](https://github.com/materialsvirtuallab/monty) - serialization and deserialization utilities
 - [maggma](https://materialsproject.github.io/maggma/) - interface for accessing the property database
