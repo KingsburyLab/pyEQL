@@ -26,4 +26,4 @@ jobs:
           # loonly release when PRs with release:major/minor/patch labels are merged
           bump_version_scheme: norelease
           use_github_release_notes: true
-          release_body: "See [CHANGELOG](https://github.com/rkingsbury/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."
+          release_body: "See [CHANGELOG](https://github.com/KingsburyLab/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."

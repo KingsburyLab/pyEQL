@@ -1,6 +1,6 @@
 [![Read the Docs](https://img.shields.io/readthedocs/pyeql)](https://pyeql.readthedocs.io/en/latest/)
-[![testing](https://github.com/rkingsbury/pyeql/workflows/testing/badge.svg)](https://github.com/rkingsbury/pyeql/actions?query=workflow%3Atesting)
-[![codecov](https://codecov.io/gh/rkingsbury/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/rkingsbury/pyeql)
+[![testing](https://github.com/KingsburyLab/pyeql/workflows/testing/badge.svg)](https://github.com/KingsburyLab/pyeql/actions?query=workflow%3Atesting)
+[![codecov](https://codecov.io/gh/KingsburyLab/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/KingsburyLab/pyeql)
 ![Supported python versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8332915.svg)](https://doi.org/10.5281/zenodo.8332915)
 
