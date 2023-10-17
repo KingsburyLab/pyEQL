@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/KingsburyLab/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/KingsburyLab/pyeql)
 ![Supported python versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8332915.svg)](https://doi.org/10.5281/zenodo.8332915)
+[![PyPI version](https://badge.fury.io/py/pyEQL.svg)](https://badge.fury.io/py/pyEQL)
 
 
 ![pyeql logo](pyeql-logo.png)
