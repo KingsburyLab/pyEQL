@@ -2492,10 +2492,6 @@ class Solution(MSONable):
 
     # informational methods
 
-    def list_salts(self, unit="mol/kg", decimals=4):
-        for k, v in self.get_salt_dict().items():
-            print(k + "\t {:0.{decimals}f}".format(v, decimals=decimals))
-
     def print(
         self,
         mode: Literal["all", "ions", "cations", "anions", "neutrals"] = "all",
@@ -2547,16 +2543,23 @@ class Solution(MSONable):
     """
 
     @deprecated(
+        message="list_salts() is deprecated and will be removed in the next release! Use Solution.get_salt_dict() instead.)"
+    )
+    def list_salts(self, unit="mol/kg", decimals=4):  # pragma: no cover
+        for k, v in self.get_salt_dict().items():
+            print(k + "\t {:0.{decimals}f}".format(v, decimals=decimals))
+
+    @deprecated(
         message="list_solutes() is deprecated and will be removed in the next release! Use Solution.components.keys() instead.)"
     )
-    def list_solutes(self):
+    def list_solutes(self):  # pragma: no cover
         """List all the solutes in the solution."""
         return list(self.components.keys())
 
     @deprecated(
         message="list_concentrations() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
     )
-    def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):
+    def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):  # pragma: no cover
         """
         List the concentration of each species in a solution.
 
