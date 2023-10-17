@@ -99,7 +99,7 @@ def test_empty_solution_3():
     # assert np.isclose(s1.pH, 7.0, atol=0.01)
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
-    assert set(s1.list_solutes()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
+    assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
 def test_init_engines():

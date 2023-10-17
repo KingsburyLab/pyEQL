@@ -13,11 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.components` is now automatically sorted in descending order of amount, for
   consistency with `anions`, `cations`, and `neutrals`.
 
+### Removed
+
+- `Solution.list_solutes()` has been removed. Use `Solution.components.keys()` instead.
+
 ### Fixed
 
 - Bugfix in `as_dict` to make serialization via `dumpfn` possible. Previously, `Quantity`
   were not converted to a serializable form. Now, `Quantity` are converted to `str` in
   `as_dict()`.
+
+### Removed
+
+- python 3.8 is no longer supported
 
 ## [0.8.1] - 2023-10-01
 
