@@ -6,7 +6,7 @@
 
 You can help the project simply by using pyEQL and comparing the output to experimental data and/or other models and tools.
 If you encounter any bugs, packaging issues, feature requests, comments, or questions, please report them
-using the [issue tracker](https://github.com/rkingsbury/pyEQL/issues) on [github](https://github.com/rkingsbury/pyeql).
+using the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) on [github](https://github.com/KingsburyLab/pyeql).
 
 ## Contributing Code
 
@@ -35,7 +35,7 @@ To contribute bug fixes, documentation enhancements, or new code, please fork py
    ```
    git checkout -b mybranch
    ```
-   or 
+   or
    ```
    git checkout -b doc-mydoc
    ```
