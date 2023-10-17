@@ -75,6 +75,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "nbsphinx",
 ]
 
 # Enable markdown
@@ -93,6 +94,9 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+
+# always execute notebooks when compiling docs
+# nbsphinx_execute = 'always'
 
 # The suffix of source filenames.
 source_suffix = [".rst", ".md"]
