@@ -75,6 +75,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "nbsphinx",
 ]
 
 # Enable markdown
@@ -93,6 +94,9 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+
+# always execute notebooks when compiling docs
+# nbsphinx_execute = 'always'
 
 # The suffix of source filenames.
 source_suffix = [".rst", ".md"]
@@ -181,13 +185,14 @@ html_theme_options = {
     'base_url': 'https://pyeql.readthedocs.io/en/latest/',
     'repo_url': 'https://github.com/KingsburyLab/pyEQL/',
     'repo_name': 'pyEQL',
-    'logo_icon': '&#xf876',
+    # 'logo_icon': 'e798',
     'html_minify': True,
     'css_minify': True,
-    'nav_title': 'pyEQL: a human-friendly python interface for solution chemistry',
+    'nav_title': 'pyEQL: a python interface for water chemistry',
     'color_primary': "blue",
     'color_accent': "light-blue",
     'globaltoc_depth': 2,
+    'globaltoc_collapse': True,
 }
 html_sidebars = {
     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
@@ -205,7 +210,7 @@ html_sidebars = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = "../pyeql-logo.svg"
+# html_logo = "pyeql-logo.svg"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

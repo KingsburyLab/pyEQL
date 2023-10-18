@@ -5,8 +5,8 @@ name: upgrade dependencies
 on:
   workflow_dispatch: # Allow running on-demand
   schedule:
-    # Runs every Monday at 8:00 UTC (4:00 Eastern)
-    - cron: '0 8 * * 1'
+    # Runs on the 10th day of every month at 8:00 UTC (4:00 Eastern)
+    - cron: '0 8 10 * *'
 
 jobs:
   upgrade:

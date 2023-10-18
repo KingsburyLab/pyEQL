@@ -1,6 +1,7 @@
 # Contributors
 
-pyEQL is written and maintained by Ryan S. Kingsbury
+pyEQL was originally written by Prof. Ryan Kingsbury (@rkingsbury) and is primarily
+developed and maintained by the Kingsbury Lab at Princeton University.
 
 Other contributors, listed alphabetically, are:
 
