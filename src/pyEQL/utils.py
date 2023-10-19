@@ -32,6 +32,28 @@ def standardize_formula(formula: str):
     return Ion.from_formula(formula).reduced_formula
 
 
+def format_solute(solute_dict: dict, units: str):
+    """
+    Format a solute dictionary with the given units.
+
+    Args:
+        solute_dict: The dictionary to format.
+
+    Returns:
+        A formatted solute dictionary.
+
+    Raises:
+        TypeError if `solute_dict` is invalid.
+    """
+    if not isinstance(solute_dict, dict):
+        raise TypeError("solute_dict must be a dictionary of the format ...")
+
+    for key, value in solute_dict.items():
+        solute_dict[key] = f"{str(value)} {units}"
+
+    return solute_dict
+
+
 class FormulaDict(UserDict):
     """
     Automatically converts keys on get/set using pymatgen.core.Ion.from_formula(key).reduced_formula.
