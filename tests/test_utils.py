@@ -3,7 +3,7 @@ Tests of pyEQL.utils module
 
 """
 
-from pyEQL.utils import FormulaDict, standardize_formula
+from pyEQL.utils import FormulaDict, format_solute, standardize_formula
 
 
 def test_standardize_formula():
@@ -35,3 +35,12 @@ def test_formula_dict():
     assert d.get("Na+") == 0.5
     d.update({"Br-": 2})
     assert d["Br[-]"] == 2
+
+
+def test_format_solute():
+    """
+    Test formatting solute dictionaries
+    """
+    test = {"Na+": 0.5, "Cl-": 0.5}
+    base = {"Na+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}
+    assert format_solute(test, units="mol/kg") == base
