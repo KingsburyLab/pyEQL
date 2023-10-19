@@ -38,6 +38,7 @@ def format_solute(solute_dict: dict, units: str):
 
     Args:
         solute_dict: The dictionary to format.
+        units: The units to use for the solute.
 
     Returns:
         A formatted solute dictionary.
@@ -49,7 +50,7 @@ def format_solute(solute_dict: dict, units: str):
         raise TypeError("solute_dict must be a dictionary of the format ...")
 
     for key, value in solute_dict.items():
-        solute_dict[key] = f"{str(value)} {units}"
+        solute_dict[key] = f"{value!s} {units}"
 
     return solute_dict
 
