@@ -8,12 +8,14 @@ pyEQL Solution Class.
 from __future__ import annotations
 
 import math
+import os
 import warnings
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+import yaml
 from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
@@ -3228,3 +3230,34 @@ class Solution(MSONable):
         :py:meth:`get_salt_dict`
         """
         return self.get_salt_dict()
+
+    @classmethod
+    def from_preset(cls, preset: str) -> Solution:
+        """Instantiate a solution from a preset composition
+
+        Args:
+            preset (str): a named preset e.g. 'seawater' or the path to a .yaml file that defines the desired preset
+
+        Returns:
+            Solution
+        """
+        # Path to the YAML file corresponding to the preset
+        yaml_path = os.path.join("presets", f"{preset}.yaml")
+
+        # Check if the file exists
+        if not os.path.exists(yaml_path):
+            raise FileNotFoundError(f"File '{yaml_path}' not found!")
+
+        # Load the yaml file corresponding to the preset
+        with open(yaml_path) as file:
+            data = yaml.load(file, Loader=yaml.FullLoader)
+
+        # Extract data from the yaml file
+        temperature = data["temperature"]
+        pressure = data["pressure"]
+        pH = data["pH"]
+        solutes = data["solutes"]
+        # solutes = [[solute["name"], solute["concentration"]] for solute in solutes]
+
+        # Create and return a Solution object
+        return cls(solutes=solutes, temperature=temperature, pressure=pressure, pH=pH)
