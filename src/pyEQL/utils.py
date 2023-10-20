@@ -40,21 +40,18 @@ def format_solutes_dict(solute_dict: dict, units: str):
     Args:
         solute_dict: The dictionary to format. This must be of the form dict{str: Number}
             e.g. {"Na+": 0.5, "Cl-": 0.9}
-        units: The units to use for the solute.
+        units: The units to use for the solute. e.g. "mol/kg"
 
     Returns:
         A formatted solute dictionary.
 
     Raises:
-        TypeError if `solute_dict` is invalid.
+        TypeError if `solute_dict` is not a dictionary.
     """
     if not isinstance(solute_dict, dict):
         raise TypeError("solute_dict must be a dictionary. Refer to the doc for proper formatting.")
 
-    for key, value in solute_dict.items():
-        solute_dict[key] = f"{value!s} {units}"
-
-    return solute_dict
+    return {key: f"{value!s} {units}" for key, value in solute_dict.items()}
 
 
 class FormulaDict(UserDict):
