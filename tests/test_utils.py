@@ -2,8 +2,9 @@
 Tests of pyEQL.utils module
 
 """
+from pytest import raises
 
-from pyEQL.utils import FormulaDict, standardize_formula
+from pyEQL.utils import FormulaDict, format_solutes_dict, standardize_formula
 
 
 def test_standardize_formula():
@@ -35,3 +36,17 @@ def test_formula_dict():
     assert d.get("Na+") == 0.5
     d.update({"Br-": 2})
     assert d["Br[-]"] == 2
+
+
+def test_format_solute():
+    """
+    Test formatting solute dictionaries
+    """
+    test = {"Na+": 0.5, "Cl-": 0.5}
+    base = {"Na+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}
+    assert format_solutes_dict(test, units="mol/kg") == base
+
+    bad_test = [["Na+", 0.5], ["Cl-", 0.5]]
+    error_msg = "solute_dict must be a dictionary. Refer to the doc for proper formatting."
+    with raises(TypeError, match=error_msg):
+        format_solutes_dict(bad_test, units="mol/kg")
