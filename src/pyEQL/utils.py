@@ -32,6 +32,28 @@ def standardize_formula(formula: str):
     return Ion.from_formula(formula).reduced_formula
 
 
+def format_solutes_dict(solute_dict: dict, units: str):
+    """
+    Formats a dictionary of solutes by converting the amount to a string with the provided units suitable for passing to
+    use with the Solution class. Note that all solutes must be given in the same units.
+
+    Args:
+        solute_dict: The dictionary to format. This must be of the form dict{str: Number}
+            e.g. {"Na+": 0.5, "Cl-": 0.9}
+        units: The units to use for the solute. e.g. "mol/kg"
+
+    Returns:
+        A formatted solute dictionary.
+
+    Raises:
+        TypeError if `solute_dict` is not a dictionary.
+    """
+    if not isinstance(solute_dict, dict):
+        raise TypeError("solute_dict must be a dictionary. Refer to the doc for proper formatting.")
+
+    return {key: f"{value!s} {units}" for key, value in solute_dict.items()}
+
+
 class FormulaDict(UserDict):
     """
     Automatically converts keys on get/set using pymatgen.core.Ion.from_formula(key).reduced_formula.
