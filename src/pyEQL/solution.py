@@ -20,7 +20,7 @@ from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
-from monty.serialization import dumpfn
+from monty.serialization import dumpfn, loadfn
 from pint import DimensionalityError, Quantity
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
@@ -3281,3 +3281,32 @@ class Solution(MSONable):
             dumpfn(solution_dict, file_path)
         else:
             dumpfn(self, file_path)
+
+    def from_file(self, file_path: str) -> Solution | None:
+        """Loading from a .yaml or .json file.
+
+        Args:
+            file_path (str): _description_
+        """
+        if not os.path.exists(file_path):
+            logger.error("Invalid path to file entered - %s" % file_path)
+            return None
+        if "yaml" in file_path.lower():
+            true_keys = [
+                "solutes",
+                "volume",
+                "temperature",
+                "pressure",
+                "pH",
+                "pE",
+                "balance_charge",
+                "solvent",
+                "engine",
+                # "database",
+            ]
+            solution_dict = loadfn(file_path)
+            keys_to_delete = [key for key in solution_dict if key not in true_keys]
+            for key in keys_to_delete:
+                solution_dict.pop(key)
+            return Solution(**solution_dict)
+        return loadfn(solution_dict)
