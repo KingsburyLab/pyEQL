@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import yaml
 from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
@@ -3237,31 +3236,28 @@ class Solution(MSONable):
         """Instantiate a solution from a preset composition
 
         Args:
-            preset (str): a named preset e.g. 'seawater' or the path to a .yaml file that defines the desired preset
+            preset (str): String representing the desired solution.
+              Valid entries are 'seawater', 'rainwater', 'wastewater',
+              'urine', 'normal saline' and 'Ringers lactate'.
 
         Returns:
-            Solution
+            A pyEQL Solution object.
         """
-        # Path to the YAML file corresponding to the preset
+        # Path to the YAML and JSON files corresponding to the preset
         yaml_path = os.path.join("presets", f"{preset}.yaml")
+        json_path = os.path.join("presets", f"{preset}.json")
 
         # Check if the file exists
-        if not os.path.exists(yaml_path):
-            raise FileNotFoundError(f"File '{yaml_path}' not found!")
-
-        # Load the yaml file corresponding to the preset
-        with open(yaml_path) as file:
-            data = yaml.load(file, Loader=yaml.FullLoader)
-
-        # Extract data from the yaml file
-        temperature = data["temperature"]
-        pressure = data["pressure"]
-        pH = data["pH"]
-        solutes = data["solutes"]
-        # solutes = [[solute["name"], solute["concentration"]] for solute in solutes]
+        if os.path.exists(yaml_path):
+            preset_path = yaml_path
+        elif os.path.exists(json_path):
+            preset_path = json_path
+        else:
+            logger.error("Invalid solution entered - %s" % preset)
+            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path} not found!")
 
         # Create and return a Solution object
-        return cls(solutes=solutes, temperature=temperature, pressure=pressure, pH=pH)
+        return cls().from_file(preset_path)
 
     def to_file(self, file_name: str, extension: str = "yaml") -> None:
         """Saving to a .yaml or .json file.
