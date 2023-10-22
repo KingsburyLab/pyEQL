@@ -20,6 +20,7 @@ from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
+from monty.serialization import dumpfn
 from pint import DimensionalityError, Quantity
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
@@ -3261,3 +3262,22 @@ class Solution(MSONable):
 
         # Create and return a Solution object
         return cls(solutes=solutes, temperature=temperature, pressure=pressure, pH=pH)
+
+    def to_file(self, file_name: str, extension: str = "yaml") -> None:
+        """Saving to a .yaml or .json file.
+
+        Args:
+            file_name (str): The name of the file with the saved Solution
+            extension (str, optional): The extension of the save file.
+              Valid entries are 'yaml' and 'json'.
+              Defaults to 'yaml'.
+        """
+        if extension not in ["json", "yaml"]:
+            logger.error("Invalid extension entered - %s" % extension)
+            return
+        file_path = os.path.join("presets", f"{file_name}.{extension}")
+        if extension == "yaml":
+            solution_dict = self.as_dict()
+            dumpfn(solution_dict, file_path)
+        else:
+            dumpfn(self, file_path)
