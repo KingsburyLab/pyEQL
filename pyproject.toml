@@ -1,6 +1,6 @@
 [build-system]
 # AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
+requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -73,9 +73,13 @@ isort.split-on-trailing-comma = false
 "tests/*" = ["D", "E501"] # TODO - remove E501
 
 [tool.pytest.ini_options]
-addopts = "--color=yes -p no:warnings --import-mode=importlib --durations=30"
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
 testpaths = [
-    "tests",
+  "tests",
 ]
 
 [tool.mypy]
@@ -83,6 +87,10 @@ ignore_missing_imports = true
 namespace_packages = true
 explicit_package_bases = true
 no_implicit_optional = false
+strict = true
+show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unreachable = true
 
 [tool.codespell]
 ignore-words-list = "nd"
