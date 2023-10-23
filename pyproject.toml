@@ -74,10 +74,18 @@ isort.split-on-trailing-comma = false
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = [
+  "-ra",
+  "--showlocals",
+  "--strict-markers",
+  "--strict-config",
+  "--color=yes",
+  "--import-mode=importlib",
+  "--durations=30"
+]
 xfail_strict = true
 filterwarnings = ["error"]
-log_cli_level = "info"
+log_cli_level = "warning"
 testpaths = [
   "tests",
 ]
