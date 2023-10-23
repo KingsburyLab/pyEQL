@@ -3254,40 +3254,38 @@ class Solution(MSONable):
             preset_path = json_path
         else:
             logger.error("Invalid solution entered - %s" % preset)
-            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path} not found!")
+            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path}' not found!")
 
         # Create and return a Solution object
         return cls().from_file(preset_path)
 
-    def to_file(self, file_name: str, extension: str = "yaml") -> None:
+    def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
 
         Args:
-            file_name (str): The name of the file with the saved Solution
-            extension (str, optional): The extension of the save file.
-              Valid entries are 'yaml' and 'json'.
-              Defaults to 'yaml'.
+            filename (Union[str, Path]): The path to the file to save Solution.
+              Valid extensions are .json or .yaml.
         """
-        if extension not in ["json", "yaml"]:
-            logger.error("Invalid extension entered - %s" % extension)
-            return
-        file_path = os.path.join("presets", f"{file_name}.{extension}")
-        if extension == "yaml":
+        if not ("yaml" in filename.lower() or "json" in filename.lower()):
+            logger.error("Invalid path to file entered - %s" % filename)
+            raise FileNotFoundError(f"File '{filename}' not found!")
+        if "yaml" in filename.lower():
             solution_dict = self.as_dict()
-            dumpfn(solution_dict, file_path)
+            dumpfn(solution_dict, filename)
         else:
-            dumpfn(self, file_path)
+            dumpfn(self, filename)
 
-    def from_file(self, file_path: str) -> Solution | None:
+    def from_file(self, filename: str | Path) -> Solution | None:
         """Loading from a .yaml or .json file.
 
         Args:
-            file_path (str): _description_
+            filename (Union[str, Path]): Path to the .json or .yaml file (including extension) to load the Solution from.
+              Valid extensions are .json or .yaml.
         """
-        if not os.path.exists(file_path):
-            logger.error("Invalid path to file entered - %s" % file_path)
-            return None
-        if "yaml" in file_path.lower():
+        if not os.path.exists(filename):
+            logger.error("Invalid path to file entered - %s" % filename)
+            raise FileNotFoundError(f"File '{filename}' not found!")
+        if "yaml" in filename.lower():
             true_keys = [
                 "solutes",
                 "volume",
@@ -3300,7 +3298,7 @@ class Solution(MSONable):
                 "engine",
                 # "database",
             ]
-            solution_dict = loadfn(file_path)
+            solution_dict = loadfn(filename)
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
