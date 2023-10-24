@@ -3232,7 +3232,7 @@ class Solution(MSONable):
         return self.get_salt_dict()
 
     @classmethod
-    def from_preset(cls, preset: str) -> Solution:
+    def from_preset(cls, preset: str) -> Solution | None:
         """Instantiate a solution from a preset composition
 
         Args:
