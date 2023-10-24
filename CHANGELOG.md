@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `format_solutes_dict()` method added into the utils module to help format solutes dictionaries with a unit.
+- `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files.
+- `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files.
+- `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition.
 
 ## [0.9.0] - 2023-10-17
 
