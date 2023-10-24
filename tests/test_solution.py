@@ -7,9 +7,12 @@ used by pyEQL's Solution class
 """
 
 import copy
+import os
+from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -576,3 +579,59 @@ def test_serialization(s1, s2, tmpdir):
     # also should point to different Store instances
     # TODO currently this test will fail due to a bug in maggma's __eq__
     # assert s2_new.database != s2.database
+
+
+def test_valid_preset():
+    solution = Solution.from_preset("seawater")
+    assert isinstance(solution, Solution)
+    assert solution.temperature is not None
+    assert solution.pressure is not None
+    assert solution.pH is not None
+    assert len(solution._solutes) > 0
+
+
+def test_invalid_preset():
+    with pytest.raises(FileNotFoundError):
+        Solution.from_preset("nonexistent_preset")
+
+
+def test_correct_data_loading():
+    preset_name = "seawater"
+    solution = Solution.from_preset(preset_name)
+    with open(os.path.join("presets", f"{preset_name}.yaml")) as file:
+        data = yaml.load(file, Loader=yaml.FullLoader)
+
+    assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution.pH, data["pH"], atol=0.01)
+    for solute in solution._solutes:
+        assert solute in data["solutes"]
+
+
+def test_to_file_and_from_file_json(tmpdir, s1):
+    tmp_path = Path(tmpdir)
+    filename = tmp_path / "test_solution.json"
+    s1.to_file(filename)
+    assert filename.exists()
+
+    loaded_s1 = Solution().from_file(filename)
+    assert loaded_s1 is not None
+    assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+
+
+def test_to_file_and_from_file_yaml(tmpdir, s1):
+    tmp_path = Path(tmpdir)
+    filename = tmp_path / "test_solution.yaml"
+    s1.to_file(filename)
+    assert filename.exists()
+
+    loaded_s1 = Solution().from_file(filename)
+    assert loaded_s1 is not None
+    assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+
+
+def test_invalid_extension_raises_error(tmpdir, s1):
+    tmp_path = Path(tmpdir)
+    filename = tmp_path / "test_solution.txt"
+    with pytest.raises(FileNotFoundError):
+        s1.to_file(filename)
