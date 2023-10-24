@@ -3243,21 +3243,13 @@ class Solution(MSONable):
         Returns:
             A pyEQL Solution object.
         """
-        # Path to the YAML and JSON files corresponding to the preset
-        yaml_path = os.path.join("presets", f"{preset}.yaml")
-        json_path = os.path.join("presets", f"{preset}.json")
-
         # Check if the file exists
-        if os.path.exists(yaml_path):
-            preset_path = yaml_path
-        elif os.path.exists(json_path):
-            preset_path = json_path
-        else:
+        if not os.path.exists(preset):
             logger.error("Invalid solution entered - %s" % preset)
-            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path}' not found!")
+            raise FileNotFoundError(f"File '{preset}' not found!")
 
         # Create and return a Solution object
-        return cls().from_file(preset_path)
+        return cls().from_file(preset)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
