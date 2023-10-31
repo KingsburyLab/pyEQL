@@ -593,6 +593,9 @@ class PhreeqcEOS(EOS):
         )
         self.database = phreeqc_db
 
+        # create the PhreeqcPython instance
+        self.pp = PhreeqPython(database=self.database, database_directory=self.db_path)
+
     def _setup_ppsol(self, solution):
         """
         Helper method to set up a PhreeqPython solution for subsequent analysis
@@ -637,12 +640,9 @@ class PhreeqcEOS(EOS):
                 key += " charge"
             d[key] = mol / solv_mass
 
-        # create the PhreeqcPython instance
-        pp = PhreeqPython(database=self.database, database_directory=self.db_path)
-
         # create the PHREEQC solution object
         try:
-            ppsol = pp.add_solution(d)
+            ppsol = self.pp.add_solution(d)
         except Exception as e:
             print(d)
             # catch problems with the input to phreeqc
