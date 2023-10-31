@@ -429,7 +429,7 @@ class NativeEOS(EOS):
             # solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = d["mol"] * ureg.Quantity("mol") / solution.solvent_mass
+            concentration = ureg.Quantity(d["mol"], "mol") / solution.solvent_mass
 
             molality_sum += concentration
 
@@ -463,7 +463,7 @@ class NativeEOS(EOS):
                     "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
                     % item.formula
                 )
-                effective_osmotic_sum += concentration * ureg.Quantity("1 dimensionless")
+                effective_osmotic_sum += concentration * osmotic_coefficient
 
         try:
             return effective_osmotic_sum / molality_sum
@@ -545,7 +545,7 @@ class NativeEOS(EOS):
 
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
-                solute_vol += part_vol * mol * ureg.Quantity("1 mol")
+                solute_vol += part_vol * ureg.Quantity(mol, "mol")
                 logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
@@ -685,7 +685,7 @@ class PhreeqcEOS(EOS):
         # remove the PPSol from the phreeqcpython instance
         self._destroy_ppsol(ppsol)
 
-        return act * ureg.Quantity("1 dimensionless")
+        return ureg.Quantity(act, "dimensionless")
 
     def get_osmotic_coefficient(self, solution):
         """

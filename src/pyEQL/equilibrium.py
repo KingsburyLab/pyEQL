@@ -162,7 +162,7 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 
     )
 
 
-def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=25 * ureg.Quantity("degC")):
+def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=ureg.Quantity(25, "degC")):
     r"""(float,float,number, optional number) -> float.
 
     Adjust a reaction equilibrium constant from one temperature to another.
@@ -227,7 +227,7 @@ def adjust_temp_arrhenius(
     rate_constant,
     activation_energy,
     temperature,
-    reference_temperature=25 * ureg.Quantity("degC"),
+    reference_temperature=ureg.Quantity(25, "degC"),
 ):
     r"""(float,float,number, optional number) -> float.
 
@@ -363,7 +363,7 @@ def alpha(n, pH, pKa_list):
     k_term = 1
 
     # the 'item' index counts from 0 to the number of protons, inclusive
-    for item in range(0, num_protons + 1):
+    for item in range(num_protons + 1):
         # multiply the preceding k values together
         for i in range(len(pKa_list[:item])):
             k_term *= 10 ** -pKa_list[i]
