@@ -22,7 +22,7 @@ from pint import DimensionalityError, Quantity
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
-from pyEQL import ureg
+from pyEQL import ureg, IonDB
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 
 # logging system
@@ -145,11 +145,8 @@ class Solution(MSONable):
 
         # connect to the desired property database
         if database is None:
-            from pkg_resources import resource_filename
-
-            database_dir = resource_filename("pyEQL", "database")
-            json = Path(database_dir) / "pyeql_db.json"
-            db_store = JSONStore(str(json), key="formula")
+            # load the default database, which is a JSONStore
+            db_store = IonDB
         elif isinstance(database, (str, Path)):
             db_store = JSONStore(str(database), key="formula")
             logger.info(f"Created maggma JSONStore from .json file {database}")
