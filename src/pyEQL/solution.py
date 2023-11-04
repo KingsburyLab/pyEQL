@@ -108,8 +108,11 @@ class Solution(MSONable):
         # create a logger attached to this class
         # self.logger = logging.getLogger(type(self).__name__)
 
-        # per-instance cache of get_property calls
-        self.get_property = lru_cache(maxsize=None)(self._get_property)
+        # per-instance cache of get_property and other calls that do not depend
+        # on composition
+        # see https://rednafi.com/python/lru_cache_on_methods/
+        self.get_property = lru_cache()(self._get_property)
+        self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
 
         # initialize the volume recalculation flag
         self.volume_update_required = False
@@ -341,6 +344,10 @@ class Solution(MSONable):
 
         # recalculate the volume
         self.volume_update_required = True
+
+        # clear any cached solute properties that may depend on temperature
+        self.get_property.cache_clear()
+        self.get_molar_conductivity.cache_clear()
 
     @property
     def pressure(self) -> Quantity:
@@ -584,14 +591,16 @@ class Solution(MSONable):
             a1 = ureg.Quantity(params["a1"]["value"]).magnitude
             b0 = ureg.Quantity(params["b0"]["value"]).magnitude
             b1 = ureg.Quantity(params["b1"]["value"]).magnitude
-        else:
-            # proceed with the coefficients equal to zero and log a warning
-            logger.warning("Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula)
 
-        # compute the delta G parameters
-        temperature = self.temperature.to("degC").magnitude
-        G_123 = a0 + a1 * (temperature) ** 0.75
-        G_23 = b0 + b1 * (temperature) ** 0.5
+            # compute the delta G parameters
+            temperature = self.temperature.to("degC").magnitude
+            G_123 = a0 + a1 * (temperature) ** 0.75
+            G_23 = b0 + b1 * (temperature) ** 0.5
+        else:
+            # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
+            # proceed with the coefficients equal to zero and log a warning
+            logger.info("Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula)
+            G_123 = G_23 = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
         nu_w = self.water_substance.nu
@@ -848,7 +857,6 @@ class Solution(MSONable):
                 continue
             tds += self.get_amount(s, "mg/L")
 
-        # return tds + self.start_uncharged_TDS
         return tds
 
     @property
@@ -885,7 +893,7 @@ class Solution(MSONable):
 
         """
         # to preserve dimensionality, convert the ionic strength into mol/L units
-        ionic_strength = self.ionic_strength.magnitude * ureg.Quantity("mol/L")
+        ionic_strength = ureg.Quantity(self.ionic_strength.magnitude, "mol/L")
         dielectric_constant = self.dielectric_constant
 
         debye_length = (
@@ -2204,7 +2212,7 @@ class Solution(MSONable):
 
         return (numerator / denominator).to("dimensionless")
 
-    def get_molar_conductivity(self, solute: str) -> Quantity:
+    def _get_molar_conductivity(self, solute: str) -> Quantity:
         """
         Calculate the molar (equivalent) conductivity for a solute.
 

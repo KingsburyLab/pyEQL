@@ -7,10 +7,12 @@ pyEQL utilities
 """
 
 from collections import UserDict
+from functools import lru_cache
 
 from pymatgen.core.ion import Ion
 
 
+@lru_cache
 def standardize_formula(formula: str):
     """
     Convert a chemical formula into standard form.
