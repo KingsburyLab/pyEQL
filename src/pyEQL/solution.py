@@ -2182,20 +2182,23 @@ class Solution(MSONable):
 
         """
         solute = standardize_formula(solute)
-        denominator = ureg.Quantity("0  mol / m / s")
-        numerator = ureg.Quantity("0  mol / m / s")
+        denominator = numerator = 0
         IS = self.ionic_strength.magnitude
 
-        for item in self.components:
+        for item, mol in self.components.items():
             z = self.get_property(item, "charge")
             # neutral solutes do not contribute to transport number
             if z == 0:
                 continue
 
-            term = self._get_property(item, "transport.diffusion_coefficient") * z**2 * self.get_amount(item, "mol/L")
+            # the molar conductivity of each species is F/RT D * z^2, and the F/RT factor
+            # cancels out
+            # using species amounts in mol is equivalent to using concentrations in mol/L
+            # since there is only one solution volume, and it's much faster.
+            term = self.get_molar_conductivity(item).magnitude * mol
 
             if activity_correction is True:
-                gamma = self.get_activity_coefficient(item)
+                gamma = self.get_activity_coefficient(item).magnitude
 
                 alpha = 0.6 / z**0.5 if 0.36 * z > IS else IS**0.5 / z
 
@@ -2210,7 +2213,7 @@ class Solution(MSONable):
 
                 denominator += term
 
-        return (numerator / denominator).to("dimensionless")
+        return ureg.Quantity(numerator / denominator, "dimensionless")
 
     def _get_molar_conductivity(self, solute: str) -> Quantity:
         """
