@@ -680,12 +680,7 @@ class PhreeqcEOS(EOS):
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        try:
-            act = ppsol.activity(k, "mol") / ppsol.molality(k, "mol")
-        except ZeroDivisionError:
-            # assume this means the solute does not exist
-            logger.warning(f"Solute {solute} not found in solution. returning 0 activity")
-            act = 0
+        act = ppsol.activity(k, "mol") / ppsol.molality(k, "mol")
 
         # remove the PPSol from the phreeqcpython instance
         self._destroy_ppsol(ppsol)
