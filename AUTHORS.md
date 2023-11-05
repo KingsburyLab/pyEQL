@@ -5,6 +5,7 @@ developed and maintained by the Kingsbury Lab at Princeton University.
 
 Other contributors, listed alphabetically, are:
 
-* Hernan Grecco <hernan.grecco@gmail.com>
+* @DhruvDuseja
+* Hernan Grecco (@hgrecco)
 
 (If you think that your name belongs here, please let the maintainer know)
