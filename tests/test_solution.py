@@ -581,57 +581,33 @@ def test_serialization(s1, s2, tmpdir):
     # assert s2_new.database != s2.database
 
 
-def test_valid_preset():
-    solution = Solution.from_preset("seawater")
-    assert isinstance(solution, Solution)
-    assert solution.temperature is not None
-    assert solution.pressure is not None
-    assert solution.pH is not None
-    assert len(solution._solutes) > 0
-
-
-def test_invalid_preset():
-    with pytest.raises(FileNotFoundError):
-        Solution.from_preset("nonexistent_preset")
-
-
-def test_correct_data_loading():
+def test_from_preset():
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     with open(os.path.join("presets", f"{preset_name}.yaml")) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
-
+    # test valid preset
+    assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution.pressure == ureg.Quantity(data["pressure"])
     assert np.isclose(solution.pH, data["pH"], atol=0.01)
     for solute in solution._solutes:
         assert solute in data["solutes"]
+    # test invalid preset
+    with pytest.raises(FileNotFoundError):
+        Solution.from_preset("nonexistent_preset")
 
 
-def test_to_file_and_from_file_json(tmpdir, s1):
+def test_test_to_from_file(tmpdir, s1):
     tmp_path = Path(tmpdir)
-    filename = tmp_path / "test_solution.json"
-    s1.to_file(filename)
-    assert filename.exists()
-
-    loaded_s1 = Solution().from_file(filename)
-    assert loaded_s1 is not None
-    assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
-
-
-def test_to_file_and_from_file_yaml(tmpdir, s1):
-    tmp_path = Path(tmpdir)
-    filename = tmp_path / "test_solution.yaml"
-    s1.to_file(filename)
-    assert filename.exists()
-
-    loaded_s1 = Solution().from_file(filename)
-    assert loaded_s1 is not None
-    assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
-
-
-def test_invalid_extension_raises_error(tmpdir, s1):
-    tmp_path = Path(tmpdir)
+    for f in ["test.json", "test.yaml"]:
+        filename = tmp_path / f
+        s1.to_file(filename)
+        assert filename.exists()
+        loaded_s1 = Solution().from_file(filename)
+        assert loaded_s1 is not None
+        assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+    # test invalid extension raises error
     filename = tmp_path / "test_solution.txt"
     with pytest.raises(FileNotFoundError):
         s1.to_file(filename)

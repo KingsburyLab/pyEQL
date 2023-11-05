@@ -3232,7 +3232,7 @@ class Solution(MSONable):
         return self.get_salt_dict()
 
     @classmethod
-    def from_preset(cls, preset: str) -> Solution | None:
+    def from_preset(cls, preset: str) -> Solution:
         """Instantiate a solution from a preset composition
 
         Args:
@@ -3242,6 +3242,9 @@ class Solution(MSONable):
 
         Returns:
             A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given preset file doesn't exist on the file system.
         """
         # Path to the YAML and JSON files corresponding to the preset
         yaml_path = os.path.join("presets", f"{preset}.yaml")
@@ -3272,16 +3275,23 @@ class Solution(MSONable):
             raise FileNotFoundError(f"File '{str_filename}' not found!")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()
+            solution_dict.pop("database")
             dumpfn(solution_dict, filename)
         else:
             dumpfn(self, filename)
 
-    def from_file(self, filename: str | Path) -> Solution | None:
+    def from_file(self, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
             filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
               Valid extensions are .json or .yaml.
+
+        Returns:
+            A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given filename doesn't exist on the file system.
         """
         if not os.path.exists(filename):
             logger.error("Invalid path to file entered - %s" % filename)

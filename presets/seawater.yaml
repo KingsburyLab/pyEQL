@@ -27,13 +27,3 @@ pE: 8.5
 balance_charge:
 solvent: H2O(aq)
 engine: native
-database:
-  '@module': maggma.stores.mongolike
-  '@class': JSONStore
-  '@version': 0.57.4
-  paths:
-  - /workspaces/pyEQL/src/pyEQL/database/pyeql_db.json
-  read_only: true
-  serialization_option:
-  serialization_default:
-  key: formula
