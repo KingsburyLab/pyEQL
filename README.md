@@ -82,4 +82,4 @@ Detailed documentation is available at [https://pyeql.readthedocs.io/](https://p
 pyEQL is licensed under LGPL.
 
 This project has been set up using PyScaffold 4.5. For details and usage
-information on PyScaffold see [](https://pyscaffold.org/).
+information on PyScaffold see [https://pyscaffold.org/]().
