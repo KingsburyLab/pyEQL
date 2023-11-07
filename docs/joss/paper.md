@@ -7,6 +7,7 @@ tags:
   - desalination
   - geochemistry
   - electrolytes
+  - electrochemistry
 authors:
   - name: Ryan Kingsbury
     orcid: 0000-0002-7168-3967
@@ -68,11 +69,6 @@ Pitzer model parameters [@May2011b] for more than 100 salts, diffusion coefficie
 100 solutes, and an ever-expanding set of additional property data that make the best-available models
 transparently accessible to the end user.
 
-The package makes us of `pint` [@pint] to provide automatic unit conversions and is designed to
-interoperate with widely used scientific codes in the Materials Project [@Jain2013] ecosystem --
-namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular weight, parsing chemical
-formulae) and the `maggma` `Store` API [@maggma] for accessing the built-in property database.
-
 # Example Use Cases
 
 `pyEQL` may be useful to scientists and engineers in various fields broadly related to aqueous
@@ -87,79 +83,70 @@ solution chemistry. Specific use cases include, but are not limited to:
 - Looking up properties of individual ionic species, including molecular weight, diffusion coefficient,
   ionic, hydrated, and van der Waals radii, etc.
 
+Figures can be included like this:
+![Overview of `pyEQL`'s architecture. Properties such as ionic strength, conductivity, and concentrations are calculated directly by `pyEQL`. Modeling engines are used to calculate non-ideal effects such as activity coefficients, while property database stores necessary parameters. The modular design of the modeling engines and property database facilitate customization.\label{fig:example}](pyEQL_overview.png){ width=80% }
+and referenced from text using \autoref{fig:example}.
+
+
 # Design Principles
 
 ## Return the best answer possible
 
+Recognizing that accurate modeling of complex electrolyte solutions can be difficult or even impossible,
+`pyEQL` is designed to return **the best answer possible** given the data and models available. For example,
+to calculate the osmotic pressure of a solution, the built-in modeling engine first attempts to use the
+Pitzer model, but if parameters are not available, it reverts to a more approximate formula rather than
+raising an error. To maintain transpranency, log messages (and where appropriate, warnings) are generated
+throughout the codebase to document when assumptions or approximations have to be invoked or when important
+model parameters are missing from the database.
+
 ## Facilitate intgegration with other models and databases
 
+`pyEQL` is built to be extensible and customizable and to integrate easily with widely-used scientific `python`
+libraries. It makes use of `pint` [@pint] to provide automatic unit conversions, and is designed to
+interoperate with codes in the Materials Project [@Jain2013] ecosystem --
+namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular weight, parsing chemical
+formulae) and `maggma` [@maggma] for accessing the built-in property database.
 
 # Architecture
 
 ## The `Solution` class
 
-## The `Solute` class
+The primary user-facing object in `pyEQL` is the `Solution` class. This class contains constituitive relationships
+for calculating most solution properties that depend on composition, such as total dissolved solids, ionic strength,
+density, conductivity, and many others (\autoref{fig:example}). Calculations that require information about non-idealities
+(e.g., activity coefficients) are handled by a "modeling engine" that is stored in `Solution` as an attribute.
 
 ## Modeling Engines
 
-only get_activity_coefficient and get_solute_volume and equilibrate
+Every `Solution` contains a "modeling engine" which inherit from an abstract base class defined in `pyEQL`. Modeling
+engines provide specific methods for calculating non-ideal properties including solute activity coefficients, solute volumes,
+and speciation. The results of these calculations are passed back to `Solution` where they can be transparently accessed
+by the user alongside other properties. This modular design is intended to facilite connecting the `Solution` API to
+multiple modeling engines. Currently, the available modeling engines include an ideal solution approximation,
+a built-in implementation of the Pitzer model, and the PHREEQC modeling engine.
 
-composed of building blocks written in functional style
+## The `Solute` class and Property Database
 
-easy to compose alternative model implementations via inheritance
-
-## Property Database
-
-Serialized `Solute` classes, `maggma`, designed for expansion and customizability
-
-
-First commit Nov 5, 2013
-First release 12/10/14
-
-# Mathematics
-
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-Double dollars make self-standing equations:
-
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
-
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-
-# Figures
-
-TODO - need a nice figure showing pyEQL connecting to different modeling engines
-
-Block diagram of pyEQL architecture - Solution, Solute, EOS ("modeling engine")
-Maybe a ray showing common properties like density, alkalinity, osmotic pressure,
-concentrations
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png){ width=20% }
-and referenced from text using \autoref{fig:example}.
-
+`pyEQL` also provides `Solute`, a `dataclass` that defines a structured schema for storing solute property data.
+The database distributed with `pyEQL` is a list of serialized `Solute` objects stored in a `.json` file, which is
+accessed via the `maggma` `Store` API [@maggma]. The database used by a particular `Solution` instance can be specified
+by keyword argument when the object is created, which makes it possible in principle to use customized databases. Furthermore,
+using the `Store` API means that such databases can be stored in any format supported by `maggma` (e.g., Mongo Database,
+.json file, etc.).
 
 # Acknowledgements
 
 The author gratefully acknowledges the Persson Research Group at the University
-of California, Berkeley, especially Shyam Dwaraknath, Matthew K. Horton, Donny Winston,
+of California, Berkeley, particularly Shyam Dwaraknath, Matthew K. Horton, Donny Winston,
 Jason Munro, and Orion Cohen, for their guidance in scientific
 software development practices. I also acknowledge Hernan Grecco for helpful discussions
-regarding unit conversion and XXX and YYY for recent contributions. The author acknowledges
-financial support from Princeton University, Membrion, Inc., and
-Bluecell Energy, LLC (no longer operating).
+regarding unit conversion and Dhruv Duseja and Andrew Rosen for recent contributions. The author acknowledges partial
+financial support from Princeton University, Membrion, Inc., and Bluecell Energy, LLC over the period 2013-2023.
 
 # References
 
-- JESS review papers? `[@rowland_ProgressAqueousSolution_2019]`
+<!-- - JESS review papers? `[@rowland_ProgressAqueousSolution_2019]`
 - May Pitzer compilation? `[@May2011b]`
 - Effective Pitzer Model `[@Mistry2013]`
 - CRC handbook `[CRCdiffusion]`
@@ -173,4 +160,4 @@ Bluecell Energy, LLC (no longer operating).
 - geochemist's workbench `[@gwb]`
 - OLI studio `[@oli]`
 - JESS `[@marcellos2021pyequion; @pyequion2]`
-- pyequion2 `[@marcellos2021pyequion; @pyequion2]`
+- pyequion2 `[@marcellos2021pyequion; @pyequion2]` -->
