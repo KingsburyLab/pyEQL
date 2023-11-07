@@ -69,6 +69,8 @@ Pitzer model parameters [@May2011b] for more than 100 salts, diffusion coefficie
 100 solutes, and an ever-expanding set of additional property data that make the best-available models
 transparently accessible to the end user.
 
+![Overview of `pyEQL`'s architecture. Properties such as ionic strength, conductivity, and concentrations are calculated directly by `pyEQL`. Modeling engines are used to calculate non-ideal effects such as activity coefficients, while property database stores necessary parameters. The modular design of the modeling engines and property database facilitate customization.\label{fig:example}](pyEQL_overview.png){ width=80% }
+
 # Example Use Cases
 
 `pyEQL` may be useful to scientists and engineers in various fields broadly related to aqueous
@@ -82,10 +84,6 @@ solution chemistry. Specific use cases include, but are not limited to:
 - Converting concentrations between different unit systems, e.g. moles per L, weight %, parts per million
 - Looking up properties of individual ionic species, including molecular weight, diffusion coefficient,
   ionic, hydrated, and van der Waals radii, etc.
-
-Figures can be included like this:
-![Overview of `pyEQL`'s architecture. Properties such as ionic strength, conductivity, and concentrations are calculated directly by `pyEQL`. Modeling engines are used to calculate non-ideal effects such as activity coefficients, while property database stores necessary parameters. The modular design of the modeling engines and property database facilitate customization.\label{fig:example}](pyEQL_overview.png){ width=80% }
-and referenced from text using \autoref{fig:example}.
 
 
 # Design Principles
