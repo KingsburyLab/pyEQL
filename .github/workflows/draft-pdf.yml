@@ -1,3 +1,5 @@
+name: Build JOSS pdf
+
 on: [push]
 
 jobs:
