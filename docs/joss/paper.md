@@ -24,9 +24,9 @@ bibliography: paper.bib
 # Summary
 
 The properties and behavior of aqueous solutions -- that is, water containing dissolved
-minerals and other solutes -- are vital to understanding natural systems and developing
+minerals and other solutes -- are vital to understanding natural systems and to developing
 new technologies for water purification, wastewater treatment, and sustainable industrial
-processes. `pyEQL` provides object representations for aqueous solutions, creating a
+processes [@Stumm1993)]. `pyEQL` provides object representations for aqueous solutions, creating a
 stable, intuitive, and easy to learn interface for calculating properties of solutions
 and dissolved solutes. Its purpose is to save researchers time by making a variety of
 different models accessible through a single interface and by aggregating hundreds of
@@ -44,30 +44,28 @@ Researchers and practitioners in fields such as water treatment and desalination
 or environmental engineering need accurate information about electrolyte solutions to perform their work,
 but are typically not specialists in solution chemistry or electrolyte thermodynamics.
 
-Available software such as `PHREEQC` [@Charlton2011], `GeoChemist's Workbench` [@gwb], or
-OLI Studio `[@oli]` implement numerous electrolyte models and contain powerful capabilities for
-specialists, but are not highly accessible for routien use by others, due to a
+Available software such as `PHREEQC` [@Charlton2011] (open source), `GeoChemist's Workbench` [@gwb], or
+OLI Studio [@oli] implement numerous electrolyte models and contain powerful capabilities for
+specialists, but are not highly accessible for routine use by others, due to a
 steep learning curve, difficult interoperability with other tools (such as external transport models),
-the lack of a freely-available version, and/or limitation to specific operating system platforms.
-Although there are `python` interfaces to the open-source `PHREEQC` software, these interfaces
-are either not object-oriented (IPhreeqC [@Parkhurst2013]), poorly documented, and/or only offer access
-to only a limited subset of the PHREEQC parameter databases (`phreeqpython`, `pyeqion2`). There
-are even some limitations within the parent software packages. For example, if `PHREEQC` is
-used with the `pitzer.dat` database (the most accurate for high salinity solutions), then
-it is unable to calculate the solution's conductivity. A researcher seeking quality
-data on common bulk properties such as density or viscosity or solute-specific
-properties such as diffusion coefficient, transport number, or activity coefficient is thus left
+the lack of a freely-available version, and/or limitation to specific operating systems.
+Several `python` interfaces to the open-source `PHREEQC` software exist, including IPhreeqC [@Parkhurst2013],
+`phreeqpython` [@phreeqpython], and `pyeqion2` [@marcellos2021pyequion; @pyequion2]; however, these interfaces
+are either not object-oriented, poorly documented, and/or only offer access to only a limited subset of the `PHREEQC`
+parameter databases. There are more subtle limitations as well. For example, `phreeqpython` is unable to calculate
+solution conductivity when used in conjunction with the `PHREEQC` `pitzer.dat` database (the most accurate for high
+salinity solutions). A researcher seeking quality data on common bulk properties such as density or viscosity or
+solute-specific properties such as diffusion coefficient, transport number, or activity coefficient is thus left
 to piece together outputs from disparate models and literature -- a time-consuming and error-prone process.
-`pyEQL` is designed to free researchers from the tedium of identifying appropriate
-models, compiling the required parameters from literature, implementing, and validating them.
 
-It defines a python `Solution` class from which properties can be easily retrieved. It
-implements the Pitzer model [@May2011b] for binary salts, with mixing rules [@Mistry2013] for
-more complex solutions, and decays gracefully to more approximate models (such as the Debye-Huckel activity
-model) when adequate data is not available. The built-in property database includes
-Pitzer model parameters [@May2011b] for more than 100 salts, diffusion coefficients [CRCdiffusion] for more than
-100 solutes, and an ever-expanding set of additional property data that make the best-available models
-transparently accessible to the end user.
+`pyEQL` is designed to free researchers from the tedium of identifying and implementing the relevant models
+and compiling the required parameters from literature. It defines a python `Solution` class from which properties
+can be easily retrieved. It implements the Pitzer model [@May2011b] for binary salts, with mixing rules [@Mistry2013]
+for more complex solutions, and decays gracefully to more approximate models (such as the Debye-Huckel activity
+model [@Stumm1993)]) when adequate data is not available. The built-in property database includes Pitzer model
+parameters [@May2011b] for more than 100 salts, diffusion coefficients [CRCdiffusion] for more than 100 solutes,
+and an ever-expanding set of additional property data that make the best-available models transparently accessible
+to the end user.
 
 ![Overview of `pyEQL`'s architecture. Properties such as ionic strength, conductivity, and concentrations are calculated directly by `pyEQL`. Modeling engines are used to calculate non-ideal effects such as activity coefficients, while property database stores necessary parameters. The modular design of the modeling engines and property database facilitate customization.\label{fig:example}](pyEQL_overview.png){ width=80% }
 
@@ -98,13 +96,12 @@ raising an error. To maintain transpranency, log messages (and where appropriate
 throughout the codebase to document when assumptions or approximations have to be invoked or when important
 model parameters are missing from the database.
 
-## Facilitate intgegration with other models and databases
+## Interoperate with other scientific codes
 
-`pyEQL` is built to be extensible and customizable and to integrate easily with widely-used scientific `python`
-libraries. It makes use of `pint` [@pint] to provide automatic unit conversions, and is designed to
-interoperate with codes in the Materials Project [@Jain2013] ecosystem --
-namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular weight, parsing chemical
-formulae) and `maggma` [@maggma] for accessing the built-in property database.
+`pyEQL` is built to be extensible, customizable, and easy to use in conjunction with widely-used scientific `python`
+libraries. Specifically, it makes use of `pint` [@pint] to provide automatic unit conversions and leverages codes in
+the Materials Project [@Jain2013] ecosystem -- namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular
+weight, parsing chemical formulae) and `maggma` [@maggma] for accessing the built-in property database.
 
 # Architecture
 
@@ -117,16 +114,16 @@ density, conductivity, and many others (\autoref{fig:example}). Calculations tha
 
 ## Modeling Engines
 
-Every `Solution` contains a "modeling engine" which inherit from an abstract base class defined in `pyEQL`. Modeling
-engines provide specific methods for calculating non-ideal properties including solute activity coefficients, solute volumes,
-and speciation. The results of these calculations are passed back to `Solution` where they can be transparently accessed
-by the user alongside other properties. This modular design is intended to facilite connecting the `Solution` API to
-multiple modeling engines. Currently, the available modeling engines include an ideal solution approximation,
-a built-in implementation of the Pitzer model, and the PHREEQC modeling engine.
+Every `Solution` contains a "modeling engine" which inherits from a base class defined in `pyEQL`. Modeling
+engines provide methods for calculating non-ideal thermodynamic corrections including solute activity coefficients and
+molar volumes as well as performing speciation. The results of these calculations are passed back to `Solution` where they
+can be transparently accessed by the user alongside other properties. This modular design facilitates connecting the `Solution`
+API to multiple modeling backends or software packages. Currently, the available modeling engines include an ideal solution
+approximation, a built-in implementation of the Pitzer model, and the `PHREEQC` modeling engine.
 
-## The `Solute` class and Property Database
+## The Property Database and `Solute` class
 
-`pyEQL` also provides `Solute`, a `dataclass` that defines a structured schema for storing solute property data.
+`pyEQL` also provides `Solute`, a `dataclass` that defines a structured schema for solute property data.
 The database distributed with `pyEQL` is a list of serialized `Solute` objects stored in a `.json` file, which is
 accessed via the `maggma` `Store` API [@maggma]. The database used by a particular `Solution` instance can be specified
 by keyword argument when the object is created, which makes it possible in principle to use customized databases. Furthermore,
