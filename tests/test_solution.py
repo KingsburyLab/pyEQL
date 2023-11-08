@@ -581,7 +581,9 @@ def test_serialization(s1, s2, tmpdir):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset():
+def test_from_preset(tmpdir):
+    from monty.serialization import dumpfn
+
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     with open(os.path.join("presets", f"{preset_name}.yaml")) as file:
@@ -596,6 +598,15 @@ def test_from_preset():
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
+    # test json as preset
+    tmp_path = Path(tmpdir)
+    json_preset = tmp_path / "test.json"
+    dumpfn(solution, json_preset)
+    solution_json = Solution.from_preset(tmp_path / "test")
+    assert isinstance(solution_json, Solution)
+    assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution_json.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
 
 
 def test_test_to_from_file(tmpdir, s1):
@@ -611,3 +622,5 @@ def test_test_to_from_file(tmpdir, s1):
     filename = tmp_path / "test_solution.txt"
     with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
         s1.to_file(filename)
+    with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
+        Solution().from_file(filename)
