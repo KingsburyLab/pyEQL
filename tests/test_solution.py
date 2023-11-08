@@ -609,5 +609,5 @@ def test_test_to_from_file(tmpdir, s1):
         assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
     # test invalid extension raises error
     filename = tmp_path / "test_solution.txt"
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
         s1.to_file(filename)

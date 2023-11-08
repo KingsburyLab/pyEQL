@@ -3228,7 +3228,9 @@ class Solution(MSONable):
         return self.get_salt_dict()
 
     @classmethod
-    def from_preset(cls, preset: str) -> Solution:
+    def from_preset(
+        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
+    ) -> Solution:
         """Instantiate a solution from a preset composition
 
         Args:
@@ -3241,6 +3243,29 @@ class Solution(MSONable):
 
         Raises:
             FileNotFoundError: If the given preset file doesn't exist on the file system.
+
+        Notes
+        -----
+        The following sections explain the different solution options:
+
+        - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+        - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
+        - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
+        - 'urine' - typical human urine. See Table 3-15 of [2]_
+        - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
+        - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
+
+        References:
+        ----------
+            .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
+                the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+
+            .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+                    McGraw-Hill, 2013.
+
+            .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
+
+            .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
         """
         # Path to the YAML and JSON files corresponding to the preset
         yaml_path = os.path.join("presets", f"{preset}.yaml")
@@ -3267,8 +3292,8 @@ class Solution(MSONable):
         """
         str_filename = str(filename)
         if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            logger.error("Invalid path to file entered - %s" % str_filename)
-            raise FileNotFoundError(f"File '{str_filename}' not found!")
+            logger.error("Invalid file extension entered - %s" % str_filename)
+            raise ValueError("File extension must be .json or .yaml")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()
             solution_dict.pop("database")
