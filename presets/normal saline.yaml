@@ -1,0 +1,17 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': 0.0.post1.dev699+g0764b1c
+solutes:
+  H2O(aq): 55.19703719794332 mol
+  Na[+1]: 0.154 mol
+  Cl[-1]: 0.154 mol
+  H[+1]: 1e-07 mol
+  OH[-1]: 1e-07 mol
+volume: 1 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 7.0
+pE: 8.5
+balance_charge:
+solvent: H2O(aq)
+engine: native
