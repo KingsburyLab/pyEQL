@@ -136,8 +136,9 @@ The author gratefully acknowledges the Persson Research Group at the University
 of California, Berkeley, particularly Shyam Dwaraknath, Matthew K. Horton, Donny Winston,
 Jason Munro, and Orion Cohen, for their guidance in scientific
 software development practices. I also acknowledge Hernan Grecco for helpful discussions
-regarding unit conversion and Dhruv Duseja and Andrew Rosen for recent contributions. The author acknowledges partial
-financial support from Princeton University, Membrion, Inc., and Bluecell Energy, LLC over the period 2013-2023.
+regarding unit conversion and Kirill Pushkarev, Dhruv Duseja and Andrew Rosen for recent contributions.
+The author acknowledges partial financial support from Princeton University, Membrion, Inc., and
+Bluecell Energy, LLC over the period 2013-2023.
 
 # References
 
