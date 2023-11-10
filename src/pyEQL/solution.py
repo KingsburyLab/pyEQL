@@ -1789,9 +1789,9 @@ class Solution(MSONable):
         try:
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
-        except ValueError:
+        except (ValueError, ZeroDivisionError):
             logger.warning("Calculation unsuccessful. Returning unit activity coefficient.")
-            return ureg.Quantity("1 dimensionless")
+            return ureg.Quantity(1, "dimensionless")
 
         # if necessary, convert the activity coefficient to another scale, and return the result
         if scale == "molal":
