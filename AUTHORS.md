@@ -5,7 +5,9 @@ developed and maintained by the Kingsbury Lab at Princeton University.
 
 Other contributors, listed alphabetically, are:
 
-* @DhruvDuseja
+* Kirill Pushkarev (@kirill-push)
+* Dhruv Duseja (@DhruvDuseja)
+* Andrew Rosen (@arosen93)
 * Hernan Grecco (@hgrecco)
 
 (If you think that your name belongs here, please let the maintainer know)
