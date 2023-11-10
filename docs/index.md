@@ -77,7 +77,8 @@ high level of transparency about data sources and calculation methods.
 ```{toctree}
 :maxdepth: 2
 quickstart
-pyeql_demo
+examples/pyeql_demo
+tutorials
 ```
 
 ```{toctree}
