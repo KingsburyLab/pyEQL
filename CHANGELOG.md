@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Restored filter that suppresses duplicate log messages
 
-### Removed
+### Deprecated
 
 - `replace pyEQL.functions.autogenerate()` is now deprecated. Use `from_preset` instead.
 
