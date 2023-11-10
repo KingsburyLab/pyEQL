@@ -116,6 +116,7 @@ class Solution(MSONable):
         self.get_property = lru_cache()(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
         self.get_mobility = lru_cache()(self._get_mobility)
+        self.get_diffusion_coefficient = lru_cache()(self._get_diffusion_coefficient)
 
         # initialize the volume recalculation flag
         self.volume_update_required = False
@@ -352,6 +353,7 @@ class Solution(MSONable):
         self.get_property.cache_clear()
         self.get_molar_conductivity.cache_clear()
         self.get_mobility.cache_clear()
+        self.get_diffusion_coefficient.cache_clear()
 
     @property
     def pressure(self) -> Quantity:
@@ -2070,7 +2072,7 @@ class Solution(MSONable):
                     # assume that the base viscosity is that of pure water
                     return (
                         ureg.Quantity(data["value"]).to("m**2/s")
-                        * self.temperature.magnitude
+                        * self.temperature.to("K").magnitude
                         / 298.15
                         * self.water_substance.mu
                         / self.viscosity_dynamic.to("Pa*s").magnitude
@@ -2242,8 +2244,11 @@ class Solution(MSONable):
 
         References:
             .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+
+        See Also:
+            get_diffusion_coefficient
         """
-        D = self.get_property(solute, "transport.diffusion_coefficient")
+        D = self.get_diffusion_coefficient(solute)
 
         if D is not None:
             molar_cond = (
@@ -2255,6 +2260,68 @@ class Solution(MSONable):
         logger.info(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
         return molar_cond.to("mS / cm / (mol/L)")
+
+    def _get_diffusion_coefficient(self, solute: str, default: float | None = None) -> Quantity:
+        """
+        Get the **temperature-adjusted** diffusion coefficient of a solute.
+
+        Args:
+            solute: the solute for which to retrieve the diffusion coefficient.
+            default: The diffusion coefficient value to assume if data for the chosen solute are not found in
+                the database. If None (default), a diffusion coefficient of 0 will be returned.
+
+        Notes:
+            This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
+            ONLY when the Solution temperature is the same as the reference temperature for the diffusion coefficient
+            in the database (usually 25 C).
+
+            Otherwise, the reference D value is adjusted based on the Solution temperature. If the requisite
+            parameters are available, the adjustment is
+
+            .. math::
+
+                D_T = D_{298} \\exp(\\frac{d}{T} - \\frac{d}{298}) \\frac{\\nu_{298}}{\\nu_T}
+
+            where d is a parameter from Ref. 2. If d is not in the database, then the base diffusion coefficient value
+            is increased or decreased by 2.5% for every degree K different from 298, as per the CRC handbook.
+
+        References:
+            1. https://www.hydrochemistry.eu/exmpls/sc.html
+            2. https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
+            3. CRC Handbook of Chemistry and Physics
+
+        """
+        D = self.get_property(solute, "transport.diffusion_coefficient")
+        rform = standardize_formula(solute)
+        if not D or D.magnitude == 0:
+            default = default if default is not None else 0
+            logger.info(
+                f"Diffusion coefficient not found for species {rform}. Return default value of {default} m**2/s."
+            )
+            return ureg.Quantity(default, "m**2/s")
+
+        # TODO - assume reference temperature is 298.15 K (this is the case for all current DB entries)
+        T_ref = 298.15
+        mu_ref = 0.0008898985817971047  # water viscosity from IAPWS95 at 298.15 K
+        T_sol = self.temperature.to("K").magnitude
+        mu = self.viscosity_dynamic.to("Pa*s").magnitude
+
+        # skip correction if within 1 degree
+        if abs(T_sol - T_ref) > 1:
+            # get the d parameter required by the PHREEQC model
+            # TODO - add d, a1, and a2 params to database
+
+            doc = self.database.query_one({"formula": rform})
+            if doc is not None:
+                d = doc.get("models.conductivity.phreeqc_d.value")
+                if d is not None:
+                    # use the PHREEQC model if d is found
+                    return D * math.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            else:
+                # per CRC handbook, D increases by 2-3% per degree above 25 C
+                return D * (1 + 0.025 * (T_sol - T_ref))
+
+        return D
 
     def _get_mobility(self, solute: str) -> Quantity:
         """
@@ -2285,7 +2352,7 @@ class Solution(MSONable):
         .. [smed] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
 
         """
-        D = self.get_property(solute, "transport.diffusion_coefficient")
+        D = self.get_diffusion_coefficient(solute)
 
         mobility = ureg.N_A * ureg.e * abs(self.get_property(solute, "charge")) * D / (ureg.R * self.temperature)
 

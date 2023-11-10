@@ -117,7 +117,12 @@ def test_diffusion_transport(s2):
     assert np.isclose(d25, 1.334e-9)
     assert np.isclose(s2.get_transport_number("Na+"), 0.396, atol=1e-3)
     assert np.isclose(s2.get_transport_number("Cl-"), 0.604, atol=1e-3)
+    # test setting a default value
+    assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
+    assert s2.get_diffusion_coefficient("Cs+", default=1e-9).magnitude == 1e-9
     s2.temperature = "40 degC"
+    # TODO
+    # d40 = s2.get_diffusion_coefficient("Na+").magnitude
     d40 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
     assert np.isclose(d40, d25 * 40 / 25)
 
