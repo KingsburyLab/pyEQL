@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2023-11-10
+
+### Added
+
+- Docs: new tutorial notebooks
+- Docs: remove duplicate contributing pages (Closes [#68](https://github.com/KingsburyLab/pyEQL/issues/68))
+- `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files. (@kirill-push)
+- `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files. (@kirill-push)
+- `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition. (@kirill-push)
+
+### Fixed
+
+- Restored filter that suppresses duplicate log messages
+
+### Removed
+
+- `replace pyEQL.functions.autogenerate()` is now deprecated. Use `from_preset` instead.
+
 ## [0.9.2] - 2023-11-07
 
 ### Fixed
@@ -16,9 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `format_solutes_dict()` method added into the utils module to help format solutes dictionaries with a unit. (@DhruvDuseja)
-- `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files.
-- `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files.
-- `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition.
 
 ### Changed
 
