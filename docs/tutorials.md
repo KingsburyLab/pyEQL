@@ -1,5 +1,9 @@
 # Tutorials
 
+Each tutorial below is presented in a Jupyter notebook. You can view the executed notebooks here
+in the documentation, view the raw notebooks on GitHub, or interactively run them in your web
+browser using Binder by clicking the respective links below.
+
 ## Functionality Overview
 
 [View Notebook on GitHub](https://github.com/KingsburyLab/pyEQL/tree/main/docs/examples/pyeql_demo.ipynb) | Try Interactive Notebook on Binder [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KingsburyLab/pyEQL/main?labpath=docs%2Fexamples%2Fpyeql_demo.ipynb)
