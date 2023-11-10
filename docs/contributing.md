@@ -58,15 +58,16 @@ and use Python's built-in web server for a preview in your web browser
 python3 -m http.server --directory 'docs/_build/html'
 ```
 
-### Submit an issue
-
-Before you work on any non-trivial code contribution it's best to first create
-a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to start a discussion on the subject. This often provides additional considerations and avoids unnecessary work.
-
 ## Contributing Code
 
 To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow) workflow model.
 
+The [Scientific Python Guide](https://learn.scientific-python.org/development/guides/) is also an excellent technical reference for new and longtime developers.
+
+### Submit an issue
+
+Before you work on any non-trivial code contribution it's best to first create
+a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to start a discussion on the subject. This often provides additional considerations and avoids unnecessary work.
 
 ### Hacking pyEQL, step by step
 
