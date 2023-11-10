@@ -7,9 +7,12 @@ used by pyEQL's Solution class
 """
 
 import copy
+import os
+from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -576,3 +579,48 @@ def test_serialization(s1, s2, tmpdir):
     # also should point to different Store instances
     # TODO currently this test will fail due to a bug in maggma's __eq__
     # assert s2_new.database != s2.database
+
+
+def test_from_preset(tmpdir):
+    from monty.serialization import dumpfn
+
+    preset_name = "seawater"
+    solution = Solution.from_preset(preset_name)
+    with open(os.path.join("presets", f"{preset_name}.yaml")) as file:
+        data = yaml.load(file, Loader=yaml.FullLoader)
+    # test valid preset
+    assert isinstance(solution, Solution)
+    assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution.pH, data["pH"], atol=0.01)
+    for solute in solution._solutes:
+        assert solute in data["solutes"]
+    # test invalid preset
+    with pytest.raises(FileNotFoundError):
+        Solution.from_preset("nonexistent_preset")
+    # test json as preset
+    tmp_path = Path(tmpdir)
+    json_preset = tmp_path / "test.json"
+    dumpfn(solution, json_preset)
+    solution_json = Solution.from_preset(tmp_path / "test")
+    assert isinstance(solution_json, Solution)
+    assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution_json.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
+
+
+def test_test_to_from_file(tmpdir, s1):
+    tmp_path = Path(tmpdir)
+    for f in ["test.json", "test.yaml"]:
+        filename = tmp_path / f
+        s1.to_file(filename)
+        assert filename.exists()
+        loaded_s1 = Solution().from_file(filename)
+        assert loaded_s1 is not None
+        assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+    # test invalid extension raises error
+    filename = tmp_path / "test_solution.txt"
+    with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
+        s1.to_file(filename)
+    with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
+        Solution().from_file(filename)

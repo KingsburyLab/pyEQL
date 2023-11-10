@@ -1,0 +1,17 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': 0.0.post1.dev699+g0764b1c
+solutes:
+  H2O(aq): 55.34454944845822 mol
+  HCO3[-1]: 3.162277660168379e-06 mol
+  H[+1]: 1e-06 mol
+  OH[-1]: 1e-08 mol
+  CO3[-2]: 1e-09 mol
+volume: 1 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 6.0
+pE: 8.5
+balance_charge:
+solvent: H2O(aq)
+engine: native

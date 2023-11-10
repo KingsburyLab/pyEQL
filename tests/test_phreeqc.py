@@ -110,6 +110,9 @@ def test_init_engines():
     assert isinstance(s.engine, PhreeqcEOS)
     assert s.get_activity_coefficient("Na+").magnitude * s.get_activity_coefficient("Cl-").magnitude < 1
     assert s.get_osmotic_coefficient().magnitude == 1
+    # with pytest.warns(match="Solute Mg+2 not found"):
+    assert s.get_activity_coefficient("Mg+2").magnitude == 1
+    assert s.get_activity("Mg+2").magnitude == 0
 
 
 def test_conductivity(s1, s2):

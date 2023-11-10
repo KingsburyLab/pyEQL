@@ -72,3 +72,7 @@ class Unique(logging.Filter):
             return False
         self.__logged[msg] = 1
         return True
+
+
+# add the filter to suppress duplicate messages
+logger.addFilter(Unique())

@@ -11,6 +11,8 @@ and performing chemical thermodynamics computations.
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 
 from pint import UnitRegistry
+from pathlib import Path
+from maggma.stores import JSONStore
 from pkg_resources import resource_filename
 
 try:
@@ -39,6 +41,14 @@ ureg.enable_contexts("chem")
 # set the default string formatting for pint quantities
 ureg.default_format = "P~"
 
+# create a Store for the default database
+database_dir = resource_filename("pyEQL", "database")
+json = Path(database_dir) / "pyeql_db.json"
+IonDB = JSONStore(str(json), key="formula")
+# By calling connect on init, we get the expensive JSON reading operation out
+# of the way. Subsequent calls to connect will bypass this and access the already-
+# instantiated Store in memory, which should speed up instantiation of Solution objects.
+IonDB.connect()
 
 from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402

@@ -305,7 +305,12 @@ def mix(s1, s2):
     return s1 + s2
 
 
-def autogenerate(solution: Literal["seawater", "rainwater", "wastewater", "urine", "Ringers lactate", "normal saline"]):
+@deprecated(
+    message="autogenerate() is deprecated and will be removed in the next release! Use Solution.from_preset() instead.)"
+)
+def autogenerate(
+    solution: Literal["seawater", "rainwater", "wastewater", "urine", "Ringers lactate", "normal saline"]
+):  # pragma: no cover
     """
     This method provides a quick way to create Solution objects representing
     commonly-encountered solutions, such as seawater, rainwater, and wastewater.

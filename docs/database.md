@@ -3,7 +3,7 @@
 # Property Database
 
 pyEQL is distributed with a database of solute properties and model parameters needed to perform
-it's calculations. The database includes:
+its calculations. The database includes:
 
 - Molecular weight, charge, and other chemical informatics information for any species
 - Diffusion coefficients for 104 ions

@@ -429,7 +429,7 @@ class NativeEOS(EOS):
             # solution.get_amount(Salt.anion,'mol/kg')/Salt.nu_anion)/2
 
             # get the effective molality of the salt
-            concentration = d["mol"] * ureg.Quantity("mol") / solution.solvent_mass
+            concentration = ureg.Quantity(d["mol"], "mol") / solution.solvent_mass
 
             molality_sum += concentration
 
@@ -463,7 +463,7 @@ class NativeEOS(EOS):
                     "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
                     % item.formula
                 )
-                effective_osmotic_sum += concentration * ureg.Quantity("1 dimensionless")
+                effective_osmotic_sum += concentration * osmotic_coefficient
 
         try:
             return effective_osmotic_sum / molality_sum
@@ -545,7 +545,7 @@ class NativeEOS(EOS):
 
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
-                solute_vol += part_vol * mol * ureg.Quantity("1 mol")
+                solute_vol += part_vol * ureg.Quantity(mol, "mol")
                 logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
@@ -593,6 +593,9 @@ class PhreeqcEOS(EOS):
         )
         self.database = phreeqc_db
 
+        # create the PhreeqcPython instance
+        self.pp = PhreeqPython(database=self.database, database_directory=self.db_path)
+
     def _setup_ppsol(self, solution):
         """
         Helper method to set up a PhreeqPython solution for subsequent analysis
@@ -637,12 +640,9 @@ class PhreeqcEOS(EOS):
                 key += " charge"
             d[key] = mol / solv_mass
 
-        # create the PhreeqcPython instance
-        pp = PhreeqPython(database=self.database, database_directory=self.db_path)
-
         # create the PHREEQC solution object
         try:
-            ppsol = pp.add_solution(d)
+            ppsol = self.pp.add_solution(d)
         except Exception as e:
             print(d)
             # catch problems with the input to phreeqc
@@ -672,20 +672,20 @@ class PhreeqcEOS(EOS):
 
         # translate the species into keys that phreeqc will understand
         k = standardize_formula(solute)
-        el = k.split("[")[0]
-        chg = k.split("[")[1].split("]")[0]
+        spl = k.split("[")
+        el = spl[0]
+        chg = spl[1].split("]")[0]
         if chg[-1] == "1":
             chg = chg[0]  # just pass + or -, not +1 / -1
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        print(k)
         act = ppsol.activity(k, "mol") / ppsol.molality(k, "mol")
 
         # remove the PPSol from the phreeqcpython instance
         self._destroy_ppsol(ppsol)
 
-        return act * ureg.Quantity("1 dimensionless")
+        return ureg.Quantity(act, "dimensionless")
 
     def get_osmotic_coefficient(self, solution):
         """
