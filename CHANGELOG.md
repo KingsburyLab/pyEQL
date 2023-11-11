@@ -9,14 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution`: new method `get_diffusion_coefficient` for dedicated retrieval of diffusion coefficients
+- Database: empirical parameters for temperature and ionic strength adjustment of diffusion coefficients for 15 solutes
 - Docs: new tutorial notebooks
 - Docs: remove duplicate contributing pages (Closes [#68](https://github.com/KingsburyLab/pyEQL/issues/68))
 - `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files. (@kirill-push)
 - `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files. (@kirill-push)
 - `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition. (@kirill-push)
 
+### Changed
+
+- `Solution`: method af adjusting diffusion coefficients for temperature was updated (same as used in PHREEQC >= 3.4)
+- `Solution.conductvity`: improved equation (same as used in PHREEQC >= 3.4) which is more accurate at higher concentration
+
 ### Fixed
 
+- Database errors with `Cs[+1]` diffusion coefficient and `KBr` Pitzer parameters
 - Restored filter that suppresses duplicate log messages
 
 ### Deprecated

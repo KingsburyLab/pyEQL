@@ -625,7 +625,7 @@ class Solution(MSONable):
         # calculate the kinematic viscosity
         nu = math.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
 
-        return ureg.Quantity(math.exp(nu), "m**2 / s")
+        return ureg.Quantity(np.exp(nu), "m**2 / s")
 
     # TODO - need tests of conductivity
     # TODO - update with newer conductivity model used since PHREEQC 3.4+
@@ -1887,7 +1887,7 @@ class Solution(MSONable):
                 / math.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
-            return math.exp(
+            return np.exp(
                 -molal_phi * ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
             ) * ureg.Quantity(1, "dimensionless")
@@ -1943,7 +1943,7 @@ class Solution(MSONable):
 
         logger.info("Calculated water activity using osmotic coefficient")
 
-        return ureg.Quantity(math.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
+        return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
 
     def get_chemical_potential_energy(self, activity_correction: bool = True) -> Quantity:
         """
@@ -2029,7 +2029,7 @@ class Solution(MSONable):
         Quantity: The desired parameter or None if not found
 
         """
-        base_temperature = ureg.Quantity("25 degC")
+        base_temperature = ureg.Quantity(25, "degC")
         # base_pressure = ureg.Quantity("1 atm")
 
         # query the database using the standardized formula
@@ -2066,20 +2066,7 @@ class Solution(MSONable):
             if name == "transport.diffusion_coefficient":
                 data = doc["transport"]["diffusion_coefficient"]
                 if data is not None:
-                    # correct for temperature and viscosity
-                    # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-                    # where :math:`\mu` is the dynamic viscosity
-                    # assume that the base viscosity is that of pure water
-                    return (
-                        ureg.Quantity(data["value"]).to("m**2/s")
-                        * self.temperature.to("K").magnitude
-                        / 298.15
-                        * self.water_substance.mu
-                        / self.viscosity_dynamic.to("Pa*s").magnitude
-                    )
-
-            # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
-            # return ureg.Quantity("0 m**2/s")
+                    return ureg.Quantity(data["value"]).to("m**2/s")
 
             # just return the base-value molar volume for now; find a way to adjust for concentration later
             if name == "size.molar_volume":
@@ -2293,14 +2280,14 @@ class Solution(MSONable):
         """
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
-        if not D or D.magnitude == 0:
+        if D is None or D.magnitude == 0:
             default = default if default is not None else 0
             logger.info(
                 f"Diffusion coefficient not found for species {rform}. Return default value of {default} m**2/s."
             )
             return ureg.Quantity(default, "m**2/s")
 
-        # TODO - assume reference temperature is 298.15 K (this is the case for all current DB entries)
+        # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
         mu_ref = 0.0008898985817971047  # water viscosity from IAPWS95 at 298.15 K
         T_sol = self.temperature.to("K").magnitude
@@ -2309,17 +2296,21 @@ class Solution(MSONable):
         # skip correction if within 1 degree
         if abs(T_sol - T_ref) > 1:
             # get the d parameter required by the PHREEQC model
-            # TODO - add d, a1, and a2 params to database
+            try:
+                doc = self.database.query_one({"formula": rform})
+                d = doc.get("model_parameters.diffusion_temp_smolyakov.d.value")
+                # it will be a str, e.g. "1 dimensionless"
+                d = float(d.split(" "))[0]
+            except AttributeError:
+                # this means the database doesn't contain a d value.
+                # according to Ref 2, the following are recommended default parameters
+                d = 0
 
-            doc = self.database.query_one({"formula": rform})
-            if doc is not None:
-                d = doc.get("models.conductivity.phreeqc_d.value")
-                if d is not None:
-                    # use the PHREEQC model if d is found
-                    return D * math.exp(d / T_sol - d / T_ref) * mu_ref / mu
-            else:
-                # per CRC handbook, D increases by 2-3% per degree above 25 C
-                return D * (1 + 0.025 * (T_sol - T_ref))
+            # use the PHREEQC model from Ref 2 once d is determined
+            return D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            # else:
+            #     # per CRC handbook, D increases by 2-3% per degree above 25 C
+            #     return D * (1 + 0.025 * (T_sol - T_ref))
 
         return D
 

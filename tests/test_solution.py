@@ -113,18 +113,22 @@ def test_empty_solution_3():
 
 
 def test_diffusion_transport(s2):
-    d25 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
-    assert np.isclose(d25, 1.334e-9)
+    d25 = s2.get_diffusion_coefficient("Na+").magnitude
+    assert np.isclose(d25, 1.334e-9, atol=1e-11)
     assert np.isclose(s2.get_transport_number("Na+"), 0.396, atol=1e-3)
     assert np.isclose(s2.get_transport_number("Cl-"), 0.604, atol=1e-3)
     # test setting a default value
     assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
     assert s2.get_diffusion_coefficient("Cs+", default=1e-9).magnitude == 1e-9
     s2.temperature = "40 degC"
-    # TODO
-    # d40 = s2.get_diffusion_coefficient("Na+").magnitude
-    d40 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
-    assert np.isclose(d40, d25 * 40 / 25)
+    d40 = s2.get_diffusion_coefficient("Na+").magnitude
+    assert np.isclose(
+        d40,
+        d25
+        * np.exp(122 / (273.15 + 40) - 122 / 298.15)
+        * (0.0008898985817971047 / s2.viscosity_dynamic.to("Pa*s").magnitude),
+        atol=5e-11,
+    )
 
 
 def test_init_raises():
@@ -431,11 +435,11 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
     # TODO - expected failures due to limited temp adjustment of diffusion coeff
-    # s_kcl.temperature = '5 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+    s_kcl.temperature = "5 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
 
-    # s_kcl.temperature = '50 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.02)
+    s_kcl.temperature = "50 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.05)
 
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})

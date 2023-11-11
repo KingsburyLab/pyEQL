@@ -123,11 +123,11 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
     # TODO - expected failures due to limited temp adjustment of diffusion coeff
-    # s_kcl.temperature = '5 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+    s_kcl.temperature = "5 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
 
-    # s_kcl.temperature = '50 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.02)
+    s_kcl.temperature = "50 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.05)
 
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
