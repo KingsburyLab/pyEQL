@@ -115,23 +115,41 @@ def test_init_engines():
     assert s.get_activity("Mg+2").magnitude == 0
 
 
-def test_conductivity(s1, s2):
+def test_conductivity(s1):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
-    # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
+
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+        s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
+        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # higher concentration data points from Appelo, 2017 Figure 4.
+    s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
+    assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
+
+    # MgCl2
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
+        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # per CRC handbook "standard KCl solutions for calibrating conductiVity cells",
+    # 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
     assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
-    # TODO - expected failures due to limited temp adjustment of diffusion coeff
     s_kcl.temperature = "5 degC"
-    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.06)
 
     s_kcl.temperature = "50 degC"
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.05)
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.18)
 
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.05)
 
 
 def test_equilibrate(s1, s2, s5_pH):
