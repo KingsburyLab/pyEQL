@@ -5,12 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.10.0] - 2023-11-10
+## [0.10.0] - 2023-11-12
 
 ### Added
 
-- `Solution`: new method `get_diffusion_coefficient` for dedicated retrieval of diffusion coefficients
+- `Solution`: Revamped docstrings for `conductivity`, `get_transport_number`, `get_molar_conductivity`, and
+  `get_diffusion_coefficient`.
+- `Solution`: new method `get_diffusion_coefficient` for dedicated retrieval of diffusion coefficients. This method
+  implements an improved algorithm for temperature adjustment and a new algorithm for adjusting infinite dilution D values
+  for ionic strengthe effects. The algorithm is identical to that implemented in PHREEQC >= 3.4.
 - Database: empirical parameters for temperature and ionic strength adjustment of diffusion coefficients for 15 solutes
+- Added tests for temperature and ionic strength adjustment and conductivity
 - Docs: new tutorial notebooks
 - Docs: remove duplicate contributing pages (Closes [#68](https://github.com/KingsburyLab/pyEQL/issues/68))
 - `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files. (@kirill-push)
@@ -20,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `Solution`: method af adjusting diffusion coefficients for temperature was updated (same as used in PHREEQC >= 3.4)
-- `Solution.conductvity`: improved equation (same as used in PHREEQC >= 3.4) which is more accurate at higher concentration
+- `Solution.conductvity`: improved equation (same as used in PHREEQC >= 3.4) which is more accurate at higher concentrations
 
 ### Fixed
 
@@ -30,6 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - `replace pyEQL.functions.autogenerate()` is now deprecated. Use `from_preset` instead.
+
+### Removed
+
+- The `activity_correction` kwarg in `get_transport_number` has been removed, because this now occurs by default and is
+  handled in `get_diffusion_coefficient`.
 
 ## [0.9.2] - 2023-11-07
 

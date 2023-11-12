@@ -628,73 +628,49 @@ class Solution(MSONable):
 
         return ureg.Quantity(np.exp(nu), "m**2 / s")
 
-    # TODO - need tests of conductivity
-    # TODO - update with newer conductivity model used since PHREEQC 3.4+
-    # https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
     @property
     def conductivity(self) -> Quantity:
         """
         Compute the electrical conductivity of the solution.
 
-        Parameters
-        ----------
-        None
-
         Returns:
-        -------
-        Quantity
             The electrical conductivity of the solution in Siemens / meter.
 
         Notes:
-        -----
-        Conductivity is calculated by summing the molar conductivities of the respective
-        solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion models [aq]_ [hc]_
+            Conductivity is calculated by summing the molar conductivities of the respective
+            solutes.
 
-        .. math::
+            .. math::
 
-            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+                EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 m_i = \\sum_i \\lambda_i m_i
 
-        Where:
+            Where :math:`D_i` is the diffusion coefficient, :math:`m_i` is the molal concentration,
+            :math:`z_i` is the charge, and the summation extends over all species in the solution.
+            Alternatively, :math:`\\lambda_i` is the molar conductivity of solute i.
 
-        .. math::
-
-            \\alpha =
-            \\begin{cases}
-                {\\frac{0.6}{\\sqrt{| z_{i} | }}} & {I < 0.36 | z_{i} | }
-                {\\frac{\\sqrt{I}}{| z_i |}} & otherwise
-            \\end{cases}
-
-        Note: PHREEQC uses the molal rather than molar concentration according to
-        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
+            Diffusion coefficients :math:`D_i` (and molar conductivities :math:`\\lambda_i`) are
+            adjusted for the effects of temperature and ionic strength using the method implemented
+            in PHREEQC >= 3.4. [aq]_ [hc]_  See `get_diffusion_coefficient for` further details.
 
         References:
-        ----------
-        .. [aq] https://www.aqion.de/site/electrical-conductivity
-        .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
+            .. [aq] https://www.aqion.de/site/electrical-conductivity
+            .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
 
         See Also:
-        --------
-        :py:attr:`ionic_strength`
-        :py:meth:`get_molar_conductivity()`
-        :py:meth:`get_activity_coefficient()`
-
+            :py:attr:`get_diffusion_coefficient`
+            :py:meth:`get_molar_conductivity`
+            :py:attr:`ionic_strength`
         """
-        EC = ureg.Quantity("0 S/m")
-        IS = self.ionic_strength.magnitude
-
-        for item in self.components:
-            z = abs(self.get_property(item, "charge"))
-            # ignore uncharged species
-            if z != 0:
-                # determine the value of the exponent alpha
-                alpha = 0.6 / z**0.5 if 0.36 * z > IS else IS**0.5 / z
-
-                molar_cond = self.get_molar_conductivity(item)
-
-                EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item, "mol/L")
-
-        return EC.to("S/m")
+        EC = ureg.Quantity(
+            np.asarray(
+                [
+                    self.get_molar_conductivity(i).to("S*L/mol/m").magnitude * self.get_amount(i, "mol/L").magnitude
+                    for i in self.components
+                ]
+            ),
+            "S/m",
+        )
+        return np.sum(EC)
 
     @property
     def ionic_strength(self) -> Quantity:
@@ -750,9 +726,9 @@ class Solution(MSONable):
         on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
         have a small nonzero value. It is calculated according to:
 
-        .. math:: CB = \\sum_i n_i z_i
+        .. math:: CB = \\sum_i C_i z_i
 
-        where :math:`n_i` is the number of moles, and :math:`z_i` is the charge on species i.
+        where :math:`C_i` is the molar concentration, and :math:`z_i` is the charge on species i.
 
         Returns:
         -------
@@ -2141,21 +2117,18 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
-    def get_transport_number(self, solute, activity_correction=False) -> Quantity:
+    def get_transport_number(self, solute: str) -> Quantity:
         """Calculate the transport number of the solute in the solution.
 
         Args:
-            solute : String identifying the solute for which the transport number is
+            solute: Formula of the solute for which the transport number is
                 to be calculated.
 
-            activity_correction: If True, the transport number will be corrected for activity following
-                the same method used for solution conductivity. Defaults to False if omitted.
-
         Returns:
-                The transport number of `solute`
+                The transport number of `solute`, as a dimensionless Quantity.
 
         Notes:
-                Transport number is calculated according to :
+            Transport number is calculated according to :
 
                 .. math::
 
@@ -2165,47 +2138,34 @@ class Solution(MSONable):
                 coefficient, and :math:`z_i` is the charge, and the summation extends
                 over all species in the solution.
 
-                If `activity_correction` is True, the contribution of each ion to the
-                transport number is corrected with an activity factor. See the documentation
-                for Solution.conductivity for an explanation of this correction.
+                Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+                and ionic strength using the method implemented in PHREEQC >= 3.4.
+                See `get_diffusion_coefficient for` further details.
+
 
         References:
                 Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
                 ion effects on membrane potential and the permselectivity of ion exchange membranes.""
                 *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
+        See Also:
+            :py:meth:`get_diffusion_coefficient`
+            :py:meth:`get_molar_conductivity`
         """
         solute = standardize_formula(solute)
         denominator = numerator = 0
-        IS = self.ionic_strength.magnitude
 
         for item, mol in self.components.items():
-            z = self.get_property(item, "charge")
-            # neutral solutes do not contribute to transport number
-            if z == 0:
-                continue
-
             # the molar conductivity of each species is F/RT D * z^2, and the F/RT factor
             # cancels out
             # using species amounts in mol is equivalent to using concentrations in mol/L
             # since there is only one solution volume, and it's much faster.
             term = self.get_molar_conductivity(item).magnitude * mol
 
-            if activity_correction is True:
-                gamma = self.get_activity_coefficient(item).magnitude
+            if item == solute:
+                numerator = term
 
-                alpha = 0.6 / z**0.5 if 0.36 * z > IS else IS**0.5 / z
-
-                if item == solute:
-                    numerator = term * gamma**alpha
-
-                denominator += term * gamma**alpha
-
-            else:
-                if item == solute:
-                    numerator = term
-
-                denominator += term
+            denominator += term
 
         return ureg.Quantity(numerator / denominator, "dimensionless")
 
@@ -2226,19 +2186,26 @@ class Solution(MSONable):
 
             .. math::
 
-                \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                \\lambda_i = \\frac{F^2}{RT} D_i z_i^2
 
-            Note that the diffusion coefficient is strongly variable with temperature.
+            Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+            and ionic strength using the method implemented in PHREEQC >= 3.4.  See `get_diffusion_coefficient for` further details.
 
         References:
-            .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+            1. .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
+
+            2. https://www.hydrochemistry.eu/exmpls/sc.html
+
+            3. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free' water and a double layer. Cement and Concrete Research 101, 2017. https://dx.doi.org/10.1016/j.cemconres.2017.08.030
+
+            4. CRC Handbook of Chemistry and Physics
 
         See Also:
-            get_diffusion_coefficient
+            :py:meth:`get_diffusion_coefficient`
         """
-        D = self.get_diffusion_coefficient(solute)
+        D = self.get_diffusion_coefficient(solute, default=0)
 
-        if D is not None:
+        if D != 0:
             molar_cond = (
                 D * (ureg.e * ureg.N_A) ** 2 * self.get_property(solute, "charge") ** 2 / (ureg.R * self.temperature)
             )
@@ -2286,7 +2253,7 @@ class Solution(MSONable):
 
         References:
             1. https://www.hydrochemistry.eu/exmpls/sc.html
-            2. https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
+            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free' water and a double layer. Cement and Concrete Research 101, 2017. https://dx.doi.org/10.1016/j.cemconres.2017.08.030
             3. CRC Handbook of Chemistry and Physics
 
         See Also:
@@ -2306,7 +2273,7 @@ class Solution(MSONable):
         T_ref = 298.15
         mu_ref = 0.0008898985817971047  # water viscosity from IAPWS95 at 298.15 K
         T_sol = self.temperature.to("K").magnitude
-        mu = self.viscosity_dynamic.to("Pa*s").magnitude
+        mu = self.water_substance.mu
 
         # skip temperature correction if within 1 degree
         if abs(T_sol - T_ref) > 1 or activity_correction is True:
@@ -2320,9 +2287,13 @@ class Solution(MSONable):
                 d = float(d.split(" ")[0])
                 a1 = float(a1.split(" ")[0])
                 a2 = float(a2.split(" ")[0])
-            except AttributeError:
+            except TypeError:
                 # this means the database doesn't contain a d value.
                 # according to Ref 2, the following are recommended default parameters
+                logger.info(
+                    f"Temperature and ionic strength correction parameters for solute {rform} diffusion "
+                    "coefficient not in database. Using recommended default values of a1=1.6, a2=4.73, and d=0."
+                )
                 d = 0
                 a1 = 1.6
                 a2 = 4.73
@@ -2331,8 +2302,8 @@ class Solution(MSONable):
             D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
 
             if activity_correction:
-                A = _debye_parameter_activity(str(self.temperature)).magnitude
-                B = _debye_parameter_B(str(self.temperature)).magnitude
+                A = _debye_parameter_activity(str(self.temperature)).to("kg**0.5/mol**0.5").magnitude / 2.303
+                B = _debye_parameter_B(str(self.temperature)).to("1/angstrom * kg**0.5/mol**0.5").magnitude
                 z = self.get_property(solute, "charge")
                 IS = self.ionic_strength.magnitude
                 kappaa = B * IS**0.5 * a2 / (1 + IS**0.75)
