@@ -14,6 +14,7 @@ by USGS(PHREEQC)
 import numpy as np
 import pytest
 
+from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.solution import Solution
 
 ## Tests of the pitzer model
@@ -50,6 +51,13 @@ def test_units_and_equality():
     a1 = s1.get_activity_coefficient("Na+")
     a2 = s1.get_activity_coefficient("Cl-")
     assert a1 == a2
+
+
+def test_debye_params():
+    # tests of the various Debye Huckel parameters
+    # A should be equal to 0.509 at 25 C, for log base 10
+    assert np.isclose(_debye_parameter_activity().magnitude / 2.303, 0.509, atol=1e-3)
+    assert np.isclose(_debye_parameter_B().to("nm**-1 * kg**0.5/mol**0.5").magnitude, 3.29, atol=1e-2)
 
 
 def test_activity_crc_HCl():
