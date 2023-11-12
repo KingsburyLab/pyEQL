@@ -112,8 +112,25 @@ def test_empty_solution_3():
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
-def test_diffusion_transport(s2):
-    d25 = s2.get_diffusion_coefficient("Na+").magnitude
+def test_diffusion_transport(s1, s2):
+    # test ionic strength adjustment
+    assert s1.get_diffusion_coefficient("H+") > s2.get_diffusion_coefficient("H+")
+
+    # for Na+, d=122, a1=1.52, a2=3.7, A=1.173802 at 25 DegC, B = 3.2843078+10
+    factor = np.exp(
+        -1.52
+        * 1.173802
+        * 1
+        * np.sqrt(s2.ionic_strength.magnitude)
+        / (1 + 3.2843078 + 10 * np.sqrt(s2.ionic_strength.magnitude) * 3.7 / (1 + s2.ionic_strength.magnitude**0.75))
+    )
+    assert np.isclose(
+        factor * s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude,
+        s2.get_diffusion_coefficient("Na+").magnitude,
+        atol=5e-11,
+    )
+
+    d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
     assert np.isclose(d25, 1.334e-9, atol=1e-11)
     assert np.isclose(s2.get_transport_number("Na+"), 0.396, atol=1e-3)
     assert np.isclose(s2.get_transport_number("Cl-"), 0.604, atol=1e-3)

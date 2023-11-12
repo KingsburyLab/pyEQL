@@ -25,6 +25,7 @@ from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
+from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 
 # logging system
@@ -2248,12 +2249,14 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def _get_diffusion_coefficient(self, solute: str, default: float | None = None) -> Quantity:
+    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True, default: float = 0) -> Quantity:
         """
         Get the **temperature-adjusted** diffusion coefficient of a solute.
 
         Args:
             solute: the solute for which to retrieve the diffusion coefficient.
+            activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
+                strength using a model from Ref 2.
             default: The diffusion coefficient value to assume if data for the chosen solute are not found in
                 the database. If None (default), a diffusion coefficient of 0 will be returned.
 
@@ -2262,26 +2265,38 @@ class Solution(MSONable):
             ONLY when the Solution temperature is the same as the reference temperature for the diffusion coefficient
             in the database (usually 25 C).
 
-            Otherwise, the reference D value is adjusted based on the Solution temperature. If the requisite
-            parameters are available, the adjustment is
+            Otherwise, the reference D value is adjusted based on the Solution temperature and (optionally), ionic strength.
+            The adjustments are"
 
             .. math::
 
                 D_T = D_{298} \\exp(\\frac{d}{T} - \\frac{d}{298}) \\frac{\\nu_{298}}{\\nu_T}
 
-            where d is a parameter from Ref. 2. If d is not in the database, then the base diffusion coefficient value
-            is increased or decreased by 2.5% for every degree K different from 298, as per the CRC handbook.
+            .. math::
+
+                D_{\\gamma} = D^0 \\exp(\\frac{-a1 A |z_i| \\sqrt{I}}{1+\\kappa a}
+
+            .. math::
+
+                 \\kappa a = B \\sqrt{I} \\frac{a2}{1+I^{0.75}}
+
+            where a1, a2, and d are parameters from Ref. 2, A and B are the parameters used in the Debye Huckel equation, and
+            I is the ionic strength. If the model parameters for a particular solute are not available,
+            default values of d=0, a1=1.6, and a2=4.73 (as recommended in Ref. 2) are used instead.
 
         References:
             1. https://www.hydrochemistry.eu/exmpls/sc.html
             2. https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
             3. CRC Handbook of Chemistry and Physics
 
+        See Also:
+            pyEQL.activity_correction._debye_parameter_B
+            pyEQL.activity_correction._debye_parameter_activity
+
         """
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            default = default if default is not None else 0
             logger.info(
                 f"Diffusion coefficient not found for species {rform}. Return default value of {default} m**2/s."
             )
@@ -2293,26 +2308,43 @@ class Solution(MSONable):
         T_sol = self.temperature.to("K").magnitude
         mu = self.viscosity_dynamic.to("Pa*s").magnitude
 
-        # skip correction if within 1 degree
-        if abs(T_sol - T_ref) > 1:
-            # get the d parameter required by the PHREEQC model
+        # skip temperature correction if within 1 degree
+        if abs(T_sol - T_ref) > 1 or activity_correction is True:
+            # get the a1, a2, and d parameters required by the PHREEQC model
             try:
                 doc = self.database.query_one({"formula": rform})
-                d = doc.get("model_parameters.diffusion_temp_smolyakov.d.value")
-                # it will be a str, e.g. "1 dimensionless"
-                d = float(d.split(" "))[0]
+                d = doc["model_parameters"]["diffusion_temp_smolyakov"]["d"]["value"]
+                a1 = doc["model_parameters"]["diffusion_temp_smolyakov"]["a1"]["value"]
+                a2 = doc["model_parameters"]["diffusion_temp_smolyakov"]["a2"]["value"]
+                # values will be a str, e.g. "1 dimensionless"
+                d = float(d.split(" ")[0])
+                a1 = float(a1.split(" ")[0])
+                a2 = float(a2.split(" ")[0])
             except AttributeError:
                 # this means the database doesn't contain a d value.
                 # according to Ref 2, the following are recommended default parameters
                 d = 0
+                a1 = 1.6
+                a2 = 4.73
 
-            # use the PHREEQC model from Ref 2 once d is determined
-            return D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            # use the PHREEQC model from Ref 2 to correct for temperature
+            D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+
+            if activity_correction:
+                A = _debye_parameter_activity(str(self.temperature)).magnitude
+                B = _debye_parameter_B(str(self.temperature)).magnitude
+                z = self.get_property(solute, "charge")
+                IS = self.ionic_strength.magnitude
+                kappaa = B * IS**0.5 * a2 / (1 + IS**0.75)
+                # correct for ionic strength
+                D_final *= np.exp(-a1 * A * abs(z) * IS**0.5 / (1 + kappaa))
             # else:
             #     # per CRC handbook, D increases by 2-3% per degree above 25 C
             #     return D * (1 + 0.025 * (T_sol - T_ref))
+        else:
+            D_final = D
 
-        return D
+        return D_final
 
     def _get_mobility(self, solute: str) -> Quantity:
         """
