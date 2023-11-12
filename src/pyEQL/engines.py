@@ -225,10 +225,8 @@ class NativeEOS(EOS):
         # search for Pitzer parameters
         param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
         if param is not None:
-            # TODO - consider re-enabling a log message recording what salt(s) are used as basis for activity
-            # calculation
-            # if verbose is True:
-            #     print("Calculating activity coefficient based on parent salt %s" % salt.formula)
+            # TODO - consider re-enabling a log message recording what salt(s) are used as basis for activity calculation
+            logger.info(f"Calculating activity coefficient based on parent salt {salt.formula}")
 
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
