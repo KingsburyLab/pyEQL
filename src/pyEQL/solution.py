@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-from iapws import IAPWS95
+from iapws import IAPWS95, IAPWS97
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
@@ -142,10 +142,7 @@ class Solution(MSONable):
             self.balance_charge = balance_charge
 
         # instantiate a water substance for property retrieval
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self._create_water_substance()
 
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
@@ -342,10 +339,7 @@ class Solution(MSONable):
         self._temperature = ureg.Quantity(temperature)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self._create_water_substance()
 
         # recalculate the volume
         self.volume_update_required = True
@@ -372,10 +366,7 @@ class Solution(MSONable):
         self._pressure = ureg.Quantity(pressure)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self._create_water_substance()
 
         # recalculate the volume
         self.volume_update_required = True
@@ -2271,7 +2262,7 @@ class Solution(MSONable):
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
-        mu_ref = 0.0008898985817971047  # water viscosity from IAPWS95 at 298.15 K
+        mu_ref = 0.0008900225512925807  # water viscosity from IAPWS97 at 298.15 K
         T_sol = self.temperature.to("K").magnitude
         mu = self.water_substance.mu
 
@@ -2405,6 +2396,23 @@ class Solution(MSONable):
     def _get_solute_volume(self):
         """Return the volume of only the solutes."""
         return self.engine.get_solute_volume(self)
+
+    def _create_water_substance(self):
+        """
+        Instantiate a water substance model from IAPWS
+        """
+        # note that IAPWS97 is much faster than IAPWS95, but the latter can do temp
+        # below zero. See https://github.com/jjgomera/iapws/issues/14
+        if self.temperature.to("degC").magnitude > 0:
+            self.water_substance = IAPWS97(
+                T=self.temperature.magnitude,
+                P=self.pressure.to("MPa").magnitude,
+            )
+        else:
+            self.water_substance = IAPWS95(
+                T=self.temperature.magnitude,
+                P=self.pressure.to("MPa").magnitude,
+            )
 
     def as_dict(self) -> dict:
         """Convert the Solution into a dict representation that can be serialized to .json or other format."""
