@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-from iapws import IAPWS95, IAPWS97
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
@@ -32,7 +31,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, standardize_formula
+from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 
@@ -142,7 +141,7 @@ class Solution(MSONable):
             self.balance_charge = balance_charge
 
         # instantiate a water substance for property retrieval
-        self._create_water_substance()
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
@@ -339,7 +338,7 @@ class Solution(MSONable):
         self._temperature = ureg.Quantity(temperature)
 
         # update the water substance
-        self._create_water_substance()
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -366,7 +365,7 @@ class Solution(MSONable):
         self._pressure = ureg.Quantity(pressure)
 
         # update the water substance
-        self._create_water_substance()
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -2396,23 +2395,6 @@ class Solution(MSONable):
     def _get_solute_volume(self):
         """Return the volume of only the solutes."""
         return self.engine.get_solute_volume(self)
-
-    def _create_water_substance(self):
-        """
-        Instantiate a water substance model from IAPWS
-        """
-        # note that IAPWS97 is much faster than IAPWS95, but the latter can do temp
-        # below zero. See https://github.com/jjgomera/iapws/issues/14
-        if self.temperature.to("degC").magnitude > 0:
-            self.water_substance = IAPWS97(
-                T=self.temperature.magnitude,
-                P=self.pressure.to("MPa").magnitude,
-            )
-        else:
-            self.water_substance = IAPWS95(
-                T=self.temperature.magnitude,
-                P=self.pressure.to("MPa").magnitude,
-            )
 
     def as_dict(self) -> dict:
         """Convert the Solution into a dict representation that can be serialized to .json or other format."""

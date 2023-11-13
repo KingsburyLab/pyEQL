@@ -14,11 +14,11 @@ are called from within the get_activity_coefficient method of the Solution class
 """
 import math
 
-from iapws import IAPWS95
 from pint import Quantity
 
 from pyEQL import ureg
 from pyEQL.logging_system import logger
+from pyEQL.utils import create_water_substance
 
 
 def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
@@ -49,9 +49,9 @@ def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
 
         https://en.wikipedia.org/wiki/Debye%E2%80%93H%C3%BCckel_equation
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).to("K").magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    water_substance = create_water_substance(
+        ureg.Quantity(temperature),
+        ureg.Quantity("1 atm"),
     )
 
     param_B = (
@@ -99,9 +99,9 @@ def _debye_parameter_activity(temperature: str = "25 degC") -> "Quantity":
         :py:func:`_debye_parameter_osmotic`
 
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).to("K").magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    water_substance = create_water_substance(
+        ureg.Quantity(temperature),
+        ureg.Quantity("1 atm"),
     )
 
     debyeparam = (
@@ -202,9 +202,9 @@ def _debye_parameter_volume(temperature="25 degC"):
     _debye_parameter_osmotic
 
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    water_substance = create_water_substance(
+        ureg.Quantity(temperature),
+        ureg.Quantity("1 atm"),
     )
 
     # TODO - add partial derivatives to calculation
