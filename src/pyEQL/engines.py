@@ -112,18 +112,18 @@ class IdealEOS(EOS):
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
-        return ureg.Quantity("1 dimensionless")
+        return ureg.Quantity(1, "dimensionless")
 
     def get_osmotic_coefficient(self, solution):
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
         """
-        return ureg.Quantity("1 dimensionless")
+        return ureg.Quantity(1, "dimensionless")
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
-        return ureg.Quantity("0 L")
+        return ureg.Quantity(0, "L")
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
@@ -219,7 +219,7 @@ class NativeEOS(EOS):
         # show an error if no salt can be found that contains the solute
         if salt is None:
             logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
-            return ureg.Quantity("1 dimensionless")
+            return ureg.Quantity(1, "dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
         # search for Pitzer parameters
@@ -314,7 +314,7 @@ class NativeEOS(EOS):
                 % solute
             )
 
-            molal = ureg.Quantity("1 dimensionless")
+            molal = ureg.Quantity(1, "dimensionless")
 
         return molal
 
@@ -473,7 +473,7 @@ class NativeEOS(EOS):
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         salt = solution.get_salt()
-        solute_vol = ureg.Quantity("0 L")
+        solute_vol = ureg.Quantity(0, "L")
 
         # use the pitzer approach if parameters are available
         pitzer_calc = False
@@ -695,12 +695,12 @@ class PhreeqcEOS(EOS):
         via phreeqcpython
         """
         # TODO - find a way to access or calculate osmotic coefficient
-        return ureg.Quantity("1 dimensionless")
+        return ureg.Quantity(1, "dimensionless")
 
     def get_solute_volume(self, solution):
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
-        return ureg.Quantity("0 L")
+        return ureg.Quantity(0, "L")
 
     def equilibrate(self, solution):
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""

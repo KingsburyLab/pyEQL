@@ -127,7 +127,7 @@ class Solution(MSONable):
             self._volume = ureg.Quantity(volume).to("L")
         else:
             # volume_set = False
-            self._volume = ureg.Quantity("1 L")
+            self._volume = ureg.Quantity(1, "L")
         # store the initial conditions as private variables in case they are
         # changed later
         self._temperature = ureg.Quantity(temperature)
@@ -193,8 +193,8 @@ class Solution(MSONable):
         # self.add_solvent(self.solvent, kwargs["solvent"][1])
 
         # calculate the moles of solvent (water) on the density and the solution volume
-        moles = self.volume / ureg.Quantity("55.55 mol/L")
-        self.components["H2O"] = moles.magnitude
+        moles = self.volume.magnitude / 55.55  # molarity of pure water
+        self.components["H2O"] = moles
 
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
@@ -759,7 +759,7 @@ class Solution(MSONable):
         .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = ureg.Quantity("0 mol/L")
+        alkalinity = ureg.Quantity(0, "mol/L")
 
         base_cations = {
             "Li[+1]",
@@ -806,7 +806,7 @@ class Solution(MSONable):
             The hardness of the solution in mg/L as CaCO3
 
         """
-        hardness = ureg.Quantity("0 mol/L")
+        hardness = ureg.Quantity(0, "mol/L")
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -823,7 +823,7 @@ class Solution(MSONable):
 
         The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent), except for H[+1] and OH[-1]].
         """
-        tds = ureg.Quantity("0 mg/L")
+        tds = ureg.Quantity(0, "mg/L")
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
             if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
@@ -1252,7 +1252,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
             # set the volume recalculation flag
@@ -1356,7 +1356,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
@@ -1444,7 +1444,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
@@ -1753,7 +1753,7 @@ class Solution(MSONable):
         """
         # return unit activity coefficient if the concentration of the solute is zero
         if self.get_amount(solute, "mol").magnitude == 0:
-            return ureg.Quantity("1 dimensionless")
+            return ureg.Quantity(1, "dimensionless")
 
         try:
             # get the molal-scale activity coefficient from the EOS engine
@@ -1768,11 +1768,11 @@ class Solution(MSONable):
         if scale == "molar":
             total_molality = self.get_total_moles_solute() / self.solvent_mass
             total_molarity = self.get_total_moles_solute() / self.volume
-            return (molal * self.water_substance.rho * ureg.Quantity("1 g/L") * total_molality / total_molarity).to(
+            return (molal * ureg.Quantity(self.water_substance.rho, "g/L") * total_molality / total_molarity).to(
                 "dimensionless"
             )
         if scale == "rational":
-            return molal * (1 + ureg.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
+            return molal * (1 + ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
         raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
@@ -1953,7 +1953,7 @@ class Solution(MSONable):
         .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
 
         """
-        E = ureg.Quantity("0 J")
+        E = ureg.Quantity(0, "J")
 
         # loop through all the components and add their potential energy
         for item in self.components:
@@ -2254,10 +2254,8 @@ class Solution(MSONable):
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            logger.info(
-                f"Diffusion coefficient not found for species {rform}. Return default value of {default} m**2/s."
-            )
-            return ureg.Quantity(default, "m**2/s")
+            logger.info(f"Diffusion coefficient not found for species {rform}. Use default value of {default} m**2/s.")
+            D = ureg.Quantity(default, "m**2/s")
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
