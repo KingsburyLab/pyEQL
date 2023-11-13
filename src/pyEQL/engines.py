@@ -170,16 +170,9 @@ class NativeEOS(EOS):
                 Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                 By default, the molal scale activity coefficient is returned.
 
-        Returns
+        Returns:
             The mean ion activity coefficient of the solute in question on  the selected scale.
 
-        See Also:
-            get_ionic_strength
-            get_salt
-            activity_correction.get_activity_coefficient_debyehuckel
-            activity_correction.get_activity_coefficient_guntelberg
-            activity_correction.get_activity_coefficient_davies
-            activity_correction.get_activity_coefficient_pitzer
 
         Notes:
             For multicomponent mixtures, pyEQL implements the "effective Pitzer model"
@@ -190,8 +183,7 @@ class NativeEOS(EOS):
 
             .. math:: m_effective = 2 I \\over (\\nu_{+} z_{+}^2 + \\nu{_}- z_{-} ^2)
 
-        References
-
+        References:
         .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
                *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
@@ -204,6 +196,14 @@ class NativeEOS(EOS):
 
         .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
+
+        See Also:
+            get_ionic_strength
+            get_salt
+            activity_correction.get_activity_coefficient_debyehuckel
+            activity_correction.get_activity_coefficient_guntelberg
+            activity_correction.get_activity_coefficient_davies
+            activity_correction.get_activity_coefficient_pitzer
         """
         # identify the predominant salt that this ion is a member of
         salt = None
@@ -593,6 +593,10 @@ class PhreeqcEOS(EOS):
 
         # create the PhreeqcPython instance
         self.pp = PhreeqPython(database=self.database, database_directory=self.db_path)
+        # attribute to hold the solution object
+        self.ppsol = None
+        # store the solution composition to see whether we need to re-instantiate the solution
+        self._stored_comp = None
 
     def _setup_ppsol(self, solution):
         """
@@ -600,6 +604,7 @@ class PhreeqcEOS(EOS):
         """
         # TODO - copied from equilibrate_phreeqc. Can be streamlined / consolidated into a private method somewhere.
         solv_mass = solution.solvent_mass.to("kg").magnitude
+        self._stored_comp = solution.components
         # inherit bulk solution properties
         d = {
             "temp": solution.temperature.to("degC").magnitude,
@@ -653,20 +658,24 @@ class PhreeqcEOS(EOS):
         # make sure PHREEQC has accounted for all the species that were originally present
         assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
 
-        return ppsol
+        self.ppsol = ppsol
 
-    def _destroy_ppsol(self, ppsol):
+    def _destroy_ppsol(self):
         """
         Remove the PhreeqPython solution from memory
         """
-        ppsol.forget()
+        if self.ppsol is not None:
+            self.ppsol.forget()
 
     def get_activity_coefficient(self, solution, solute):
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
-        ppsol = self._setup_ppsol(solution)
+        if solution.components != self._stored_comp:
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+            self._stored_comp = solution.components
 
         # translate the species into keys that phreeqc will understand
         k = standardize_formula(solute)
@@ -678,10 +687,7 @@ class PhreeqcEOS(EOS):
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        act = ppsol.activity(k, "mol") / ppsol.molality(k, "mol")
-
-        # remove the PPSol from the phreeqcpython instance
-        self._destroy_ppsol(ppsol)
+        act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
 
         return ureg.Quantity(act, "dimensionless")
 
