@@ -139,7 +139,8 @@ def test_diffusion_transport(s1, s2):
 
     # test setting a default value
     assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
-    assert s2.get_diffusion_coefficient("Cs+", default=1e-9).magnitude == 1e-9
+    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=False).magnitude == 1e-9
+    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=True).magnitude < 1e-9
     d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
     nu25 = s2.water_substance.nu
     s2.temperature = "40 degC"

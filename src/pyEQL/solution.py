@@ -2264,10 +2264,8 @@ class Solution(MSONable):
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            logger.info(
-                f"Diffusion coefficient not found for species {rform}. Return default value of {default} m**2/s."
-            )
-            return ureg.Quantity(default, "m**2/s")
+            logger.info(f"Diffusion coefficient not found for species {rform}. Use default value of {default} m**2/s.")
+            D = ureg.Quantity(default, "m**2/s")
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
