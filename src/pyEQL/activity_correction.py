@@ -14,116 +14,102 @@ are called from within the get_activity_coefficient method of the Solution class
 """
 import math
 
-from iapws import IAPWS95
+from pint import Quantity
 
-# the pint unit registry
 from pyEQL import ureg
 from pyEQL.logging_system import logger
+from pyEQL.utils import create_water_substance
 
 
-def _debye_parameter_B(temperature="25 degC"):
+def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
     """
     Return the constant B used in the extended Debye-Huckel equation.
 
-    Parameters
-    ----------
-    temperature : str Quantity, optional
-                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
+    Args:
+        temperature: The temperature of the solution at which to calculate the constant.
+            Defaults to '25 degC'.
 
-    Notes
-    -----
-    The parameter B is equal to:
+    Returns:
+        The parameter B for use in extended Debye-Huckel equation (base e). For base 10,
+        divide the resulting value by 2.303. Note that A is often given in base 10 terms
+        in older textbooks and reference material (0.3281 at 25 degC).
 
-    .. math:: B = ( {8 \\pi N_A e^2 \\over 1000 \\epsilon k T} ) ^ {1 \\over 2}
+    Notes:
+        The parameter B is equal to:
 
-    References
-    ----------
-    Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.
+        .. math:: B = ( \\frac{{2 N_A \\rho_w e^2}{\\epsilon_o \\epsilon_r k T}) ^ {1 \\over 2}
 
-    Examples:
-    --------
-    >>> _debye_parameter_B() #doctest: +ELLIPSIS
-    0.3291...
+    References:
+        Bockris and Reddy. /Modern Electrochemistry/, vol 1. Plenum/Rosetta, 1977, p.210.
 
+        Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+        and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
+
+        https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Physical_Chemistry_(LibreTexts)/25%3A_Solutions_II_-_Nonvolatile_Solutes/25.06%3A_The_Debye-Huckel_Theory
+
+        https://en.wikipedia.org/wiki/Debye%E2%80%93H%C3%BCckel_equation
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    T = ureg.Quantity(temperature)
+    water_substance = create_water_substance(
+        T,
+        ureg.Quantity(1, "atm"),
     )
 
     param_B = (
-        8
-        * math.pi
+        2
         * ureg.N_A
+        * ureg.Quantity(water_substance.rho, "g/L")
         * ureg.elementary_charge**2
-        / (
-            water_substance.mu
-            * ureg.Quantity("1 g/L")  # in g/L
-            * ureg.epsilon_0
-            * water_substance.epsilon
-            * ureg.boltzmann_constant
-            * ureg.Quantity(temperature)
-        )
+        / (ureg.epsilon_0 * water_substance.epsilon * ureg.boltzmann_constant * T)
     ) ** 0.5
     return param_B.to_base_units()
 
 
-def _debye_parameter_activity(temperature="25 degC"):
+def _debye_parameter_activity(temperature: str = "25 degC") -> "Quantity":
     """
-    Return the constant A for use in the Debye-Huckel limiting law (base 10).
+    Return the constant A for use in the Debye-Huckel limiting law (base e).
 
-    Parameters
-    ----------
-    temperature : str Quantity, optional
-                  String representing the temperature of the solution. Defaults to '25 degC' if not specified.
+    Args:
+        temperature: The temperature of the solution at which to calculate the constant.
+            Defaults to '25 degC'.
 
-    Returns
-    -------
-    Quantity          The parameter A for use in the Debye-Huckel limiting law (base e)
+    Returns:
+        The parameter A for use in the Debye-Huckel limiting law (base e). For base 10,
+        divide the resulting value by 2.303. Note that A is often given in base 10 terms
+        in older textbooks and reference material (0.509 at 25 degC).
 
-    Notes
-    -----
-    The parameter A is equal to:
+    Notes:
+        The parameter A is equal to:
 
-    ..  math::
-        A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
+        ..  math::
+            A^{\\gamma} = {e^3 ( 2 \\pi N_A {\\rho})^{0.5} \\over (4 \\pi \\epsilon_o \\epsilon_r k T)^{1.5}}
 
-    Note that this equation returns the parameter value that can be used to calculate
-    the natural logarithm of the activity coefficient. For base 10, divide the
-    value returned by 2.303. The value is often given in base 10 terms (0.509 at
-    25 degC) in older textbooks.
+        Note that this equation returns the parameter value that can be used to calculate
+        the natural logarithm of the activity coefficient. For base 10, divide the
+        value returned by 2.303.
 
-    References
-    ----------
-    Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
-    and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
+    References:
+        Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
+        and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
 
-    Examples:
-    --------
-    >>> _debye_parameter_activity() #doctest: +ELLIPSIS
-    1.17499...
+        https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Physical_Chemistry_(LibreTexts)/25%3A_Solutions_II_-_Nonvolatile_Solutes/25.06%3A_The_Debye-Huckel_Theory
+
+        https://en.wikipedia.org/wiki/Debye%E2%80%93H%C3%BCckel_equation
 
     See Also:
         :py:func:`_debye_parameter_osmotic`
 
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    T = ureg.Quantity(temperature)
+    water_substance = create_water_substance(
+        T,
+        ureg.Quantity(1, "atm"),
     )
 
     debyeparam = (
         ureg.elementary_charge**3
-        * (2 * math.pi * ureg.N_A * water_substance.rho * ureg.Quantity("1 g/L")) ** 0.5
-        / (
-            4
-            * math.pi
-            * ureg.epsilon_0
-            * water_substance.epsilon
-            * ureg.boltzmann_constant
-            * ureg.Quantity(temperature)
-        )
-        ** 1.5
+        * (2 * math.pi * ureg.N_A * ureg.Quantity(water_substance.rho, "g/L")) ** 0.5
+        / (4 * math.pi * ureg.epsilon_0 * water_substance.epsilon * ureg.boltzmann_constant * T) ** 1.5
     )
 
     logger.info(f"Computed Debye-Huckel Limiting Law Constant A^{{\\gamma}} = {debyeparam} at {temperature}")
@@ -210,24 +196,21 @@ def _debye_parameter_volume(temperature="25 degC"):
     _debye_parameter_osmotic
 
     """
-    water_substance = IAPWS95(
-        T=ureg.Quantity(temperature).magnitude,
-        P=ureg.Quantity("1 atm").to("MPa").magnitude,
+    T = ureg.Quantity(temperature)
+    water_substance = create_water_substance(
+        T,
+        ureg.Quantity(1, "atm"),
     )
 
     # TODO - add partial derivatives to calculation
     epsilon = water_substance.epsilon
-    dedp = ureg.Quantity("-0.01275 1/MPa")
+    dedp = ureg.Quantity(-0.01275, "1/MPa")
     result = (
-        -2
-        * _debye_parameter_osmotic(temperature)
-        * ureg.R
-        * ureg.Quantity(temperature)
-        * (3 / epsilon * dedp - 1 / ureg.Quantity("2.2 GPa"))
+        -2 * _debye_parameter_osmotic(temperature) * ureg.R * T * (3 / epsilon * dedp - 1 / ureg.Quantity(2.2, "GPa"))
     )
     # result = ureg.Quantity('1.898 cm ** 3 * kg ** 0.5 /  mol ** 1.5')
 
-    if ureg.Quantity(temperature) != ureg.Quantity("25 degC"):
+    if T.to("degC").magnitude != 25:
         logger.warning("Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC")
 
     logger.info(f"Computed Debye-Huckel Limiting Slope for volume A^V = {result} at {temperature}")
@@ -277,7 +260,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength, formal_charge=1, temper
 
     log_f = -_debye_parameter_activity(temperature) * formal_charge**2 * ionic_strength**0.5
 
-    return math.exp(log_f) * ureg.Quantity("1 dimensionless")
+    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_guntelberg(ionic_strength, formal_charge=1, temperature="25 degC"):
@@ -327,7 +310,7 @@ def get_activity_coefficient_guntelberg(ionic_strength, formal_charge=1, tempera
         / (1 + ionic_strength.magnitude**0.5)
     )
 
-    return math.exp(log_f) * ureg.Quantity("1 dimensionless")
+    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_davies(ionic_strength, formal_charge=1, temperature="25 degC"):
@@ -377,7 +360,7 @@ def get_activity_coefficient_davies(ionic_strength, formal_charge=1, temperature
         * (ionic_strength.magnitude**0.5 / (1 + ionic_strength.magnitude**0.5) - 0.2 * ionic_strength.magnitude)
     )
 
-    return math.exp(log_f) * ureg.Quantity("1 dimensionless")
+    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_pitzer(
@@ -482,14 +465,14 @@ def get_activity_coefficient_pitzer(
 
     """
     # assign proper units to alpha1, alpha2, and b
-    alpha1 = alpha1 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    b = b * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * ureg.Quantity("kg ** 2 /mol ** 2")
+    alpha1 = ureg.Quantity(alpha1, "kg ** 0.5 / mol ** 0.5")
+    alpha2 = ureg.Quantity(alpha2, "kg ** 0.5 / mol ** 0.5")
+    b = ureg.Quantity(b, "kg ** 0.5 / mol ** 0.5")
+    C_phi = ureg.Quantity(C_phi, "kg ** 2 /mol ** 2")
 
     # assign units appropriate for the activity parameters
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * ureg.Quantity("kg/mol")
-    Bphi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * ureg.Quantity("kg/mol")
+    BMX = ureg.Quantity(_pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2), "kg/mol")
+    Bphi = ureg.Quantity(_pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2), "kg/mol")
 
     loggamma = _pitzer_log_gamma(
         ionic_strength,
@@ -505,7 +488,7 @@ def get_activity_coefficient_pitzer(
         b,
     )
 
-    return math.exp(loggamma) * ureg.Quantity("1 dimensionless")
+    return math.exp(loggamma) * ureg.Quantity(1, "dimensionless")
 
 
 def get_apparent_volume_pitzer(
@@ -613,14 +596,14 @@ def get_apparent_volume_pitzer(
     """
     # TODO - find a cleaner way to make sure coefficients are assigned the proper units
     # if they aren't, the calculation gives very wrong results
-    alpha1 = alpha1 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    b = b * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * ureg.Quantity("kg ** 2 /mol ** 2 / dabar")
-    V_o = V_o * ureg.Quantity("cm ** 3 / mol")
+    alpha1 = ureg.Quantity(alpha1, "kg ** 0.5 / mol ** 0.5")
+    alpha2 = ureg.Quantity(alpha2, "kg ** 0.5 / mol ** 0.5")
+    b = ureg.Quantity(b, "kg ** 0.5 / mol ** 0.5")
+    C_phi = ureg.Quantity(C_phi, "kg ** 2 /mol ** 2 / dabar")
+    V_o = ureg.Quantity(V_o, "cm ** 3 / mol")
 
     # assign units appropriate for the volume parameter
-    BMX = _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * ureg.Quantity("kg /mol/dabar")
+    BMX = ureg.Quantity(_pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2), "kg /mol/dabar")
 
     second_term = (
         (nu_cation + nu_anion)
@@ -852,7 +835,7 @@ def _pitzer_log_gamma(
     nu_cation,
     nu_anion,
     temperature="25 degC",
-    b=ureg.Quantity("1.2 kg**0.5/mol**0.5"),
+    b=ureg.Quantity(1.2, "kg**0.5/mol**0.5"),
 ):
     """
     Return the natural logarithm of the binary activity coefficient calculated by the Pitzer
@@ -1011,11 +994,11 @@ def get_osmotic_coefficient_pitzer(
 
     """
     # assign proper units to alpha1, alpha2, and b
-    alpha1 = alpha1 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    alpha2 = alpha2 * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    b = b * ureg.Quantity("kg ** 0.5 / mol ** 0.5")
-    C_phi = C_phi * ureg.Quantity("kg ** 2 /mol ** 2")
-    B_phi = _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2) * ureg.Quantity("kg/mol")
+    alpha1 = ureg.Quantity(alpha1, "kg ** 0.5 / mol ** 0.5")
+    alpha2 = ureg.Quantity(alpha2, "kg ** 0.5 / mol ** 0.5")
+    b = ureg.Quantity(b, "kg ** 0.5 / mol ** 0.5")
+    C_phi = ureg.Quantity(C_phi, "kg ** 2 /mol ** 2")
+    B_phi = ureg.Quantity(_pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2), "kg/mol")
 
     first_term = 1 - _debye_parameter_osmotic(temperature) * abs(z_cation * z_anion) * ionic_strength**0.5 / (
         1 + b * ionic_strength**0.5

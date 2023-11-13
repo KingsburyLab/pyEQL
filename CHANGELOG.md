@@ -5,23 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.10.0] - 2023-11-10
+## [0.10.1] - 2023-11-12
 
 ### Added
 
+- utility function `create_water_substance` with caching to speed up access to IAPWS instances
+
+### Changed
+
+- `Solution.get_diffusion_coefficient`: the default diffusion coefficient (returned when D for a solute is not found in
+  the database) is now adjusted for temperature and ionic strength.
+- `Solution.water_substance` - use the IAPWS97 model instead of IAPWS95 whenever possible, for a substantial speedup.
+
+## [0.10.0] - 2023-11-12
+
+### Added
+
+- `Solution`: Revamped docstrings for `conductivity`, `get_transport_number`, `get_molar_conductivity`, and
+  `get_diffusion_coefficient`.
+- `Solution`: new method `get_diffusion_coefficient` for dedicated retrieval of diffusion coefficients. This method
+  implements an improved algorithm for temperature adjustment and a new algorithm for adjusting infinite dilution D values
+  for ionic strengthe effects. The algorithm is identical to that implemented in PHREEQC >= 3.4.
+- Database: empirical parameters for temperature and ionic strength adjustment of diffusion coefficients for 15 solutes
+- Added tests for temperature and ionic strength adjustment and conductivity
 - Docs: new tutorial notebooks
 - Docs: remove duplicate contributing pages (Closes [#68](https://github.com/KingsburyLab/pyEQL/issues/68))
 - `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files. (@kirill-push)
 - `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files. (@kirill-push)
 - `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition. (@kirill-push)
 
+### Changed
+
+- `Solution`: method af adjusting diffusion coefficients for temperature was updated (same as used in PHREEQC >= 3.4)
+- `Solution.conductvity`: improved equation (same as used in PHREEQC >= 3.4) which is more accurate at higher concentrations
+
 ### Fixed
 
+- Database errors with `Cs[+1]` diffusion coefficient and `KBr` Pitzer parameters
 - Restored filter that suppresses duplicate log messages
 
 ### Deprecated
 
 - `replace pyEQL.functions.autogenerate()` is now deprecated. Use `from_preset` instead.
+
+### Removed
+
+- The `activity_correction` kwarg in `get_transport_number` has been removed, because this now occurs by default and is
+  handled in `get_diffusion_coefficient`.
 
 ## [0.9.2] - 2023-11-07
 

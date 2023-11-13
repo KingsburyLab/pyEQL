@@ -95,6 +95,7 @@ class Solute:
                 "Max_C": None,
             },
             "viscosity_jones_dole": {"B": None},
+            "diffusion_temp_smolyakov": {"a1": None, "a2": None, "d": None},
         }
     )
 
