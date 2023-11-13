@@ -60,7 +60,7 @@ def format_solutes_dict(solute_dict: dict, units: str):
 
 
 @lru_cache
-@ureg.wraps(ret=None, args=["K", "MPa"])
+@ureg.wraps(ret=None, args=["K", "MPa"], strict=False)
 def create_water_substance(temperature: float, pressure: float):
     """
     Instantiate a water substance model from IAPWS
