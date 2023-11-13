@@ -666,6 +666,7 @@ class PhreeqcEOS(EOS):
         """
         if self.ppsol is not None:
             self.ppsol.forget()
+            self.ppsol = None
 
     def get_activity_coefficient(self, solution, solute):
         """

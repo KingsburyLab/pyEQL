@@ -113,6 +113,8 @@ def test_init_engines():
     # with pytest.warns(match="Solute Mg+2 not found"):
     assert s.get_activity_coefficient("Mg+2").magnitude == 1
     assert s.get_activity("Mg+2").magnitude == 0
+    s.engine._destroy_ppsol()
+    assert s.engine.ppsol is None
 
 
 def test_conductivity(s1):
