@@ -6,6 +6,8 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
 
+import logging
+
 import numpy as np
 import pytest
 
@@ -154,7 +156,7 @@ def test_conductivity(s1):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.05)
 
 
-def test_equilibrate(s1, s2, s5_pH):
+def test_equilibrate(s1, s2, s5_pH, caplog):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
     orig_pE = s1.pE
@@ -180,6 +182,15 @@ def test_equilibrate(s1, s2, s5_pH):
     assert np.isclose(s2.charge_balance, 0, atol=1e-7)
     assert np.isclose(s2.pH, orig_pH, atol=0.01)
     assert np.isclose(s2.pE, orig_pE)
+
+    # test log message if there is a species not present in the phreeqc database
+    s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")
+    totzr = s_zr.get_total_amount("Zr", "mol")
+    with caplog.at_level(logging.INFO, "pyEQL.logging_system"):
+        s_zr.equilibrate()
+        assert "likely absent from its database" in caplog.text
+        assert "Zr[+4]" in s_zr.components
+        assert s_zr.get_total_amount("Zr", "mol") == totzr
 
     # this solution is the only one in the test that contains alkalinity
     # and equilibrating it results in a shift in the pH

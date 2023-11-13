@@ -19,6 +19,7 @@ from phreeqpython import PhreeqPython
 # the pint unit registry
 from pyEQL import ureg
 from pyEQL.logging_system import logger
+from pyEQL.utils import standardize_formula
 
 # TODO - not used. Remove?
 SPECIES_ALIAISES = {
@@ -125,8 +126,16 @@ def equilibrate_phreeqc(
     for s, mol in ppsol.species.items():
         solution.components[s] = mol
 
-    # make sure PHREEQC has accounted for all the species that were originally present
+    # make sure all species are accounted for
     assert set(initial_comp.keys()) - set(solution.components.keys()) == set()
+
+    # log a message if any components were not touched by PHREEQC
+    missing_species = set(initial_comp.keys()) - {standardize_formula(s) for s in ppsol.species}
+    if len(missing_species) > 0:
+        logger.info(
+            f"After equilibration, the amounts of species {missing_species} were not modified "
+            "by PHREEQC. These species are likely absent from its database."
+        )
 
     # remove the PPSol from the phreeqcpython instance
     pp.remove_solutions([0])
