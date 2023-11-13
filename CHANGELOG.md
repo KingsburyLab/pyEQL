@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Solution.water_substance` - use the IAPWS97 model instead of IAPWS95 whenever possible, for a substantial speedup.
 
+### Added
+
+- utility function `create_water_substance` with caching to speed up access to IAPWS instances
+
 ## [0.10.0] - 2023-11-12
 
 ### Added
