@@ -130,7 +130,7 @@ class Test_molar_conductivity:
     def test_molar_conductivity_neutral(self):
         s1 = Solution([["FeCl3", "0.001 mol/L"]], temperature="25 degC")
         result = s1.get_molar_conductivity("FeCl3").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("0 m**2 * S / mol").magnitude
+        expected = ureg.Quantity(0, "m**2 * S / mol").magnitude
 
         assert round(abs(result - expected), 5) == 0
 
@@ -138,7 +138,7 @@ class Test_molar_conductivity:
     def test_molar_conductivity_water(self):
         s1 = Solution(temperature="25 degC")
         result = s1.get_molar_conductivity("H2O").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("0 m**2 * S / mol").magnitude
+        expected = ureg.Quantity(0, "m**2 * S / mol").magnitude
 
         assert round(abs(result - expected), 5) == 0
 
