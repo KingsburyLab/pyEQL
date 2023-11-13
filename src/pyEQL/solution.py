@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
@@ -32,7 +31,7 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, standardize_formula
+from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 
@@ -142,10 +141,7 @@ class Solution(MSONable):
             self.balance_charge = balance_charge
 
         # instantiate a water substance for property retrieval
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
@@ -342,10 +338,7 @@ class Solution(MSONable):
         self._temperature = ureg.Quantity(temperature)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -372,10 +365,7 @@ class Solution(MSONable):
         self._pressure = ureg.Quantity(pressure)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -2271,7 +2261,7 @@ class Solution(MSONable):
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
-        mu_ref = 0.0008898985817971047  # water viscosity from IAPWS95 at 298.15 K
+        mu_ref = 0.0008900225512925807  # water viscosity from IAPWS97 at 298.15 K
         T_sol = self.temperature.to("K").magnitude
         mu = self.water_substance.mu
 

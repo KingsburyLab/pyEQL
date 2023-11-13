@@ -2,9 +2,11 @@
 Tests of pyEQL.utils module
 
 """
+from iapws import IAPWS95, IAPWS97
 from pytest import raises
 
-from pyEQL.utils import FormulaDict, format_solutes_dict, standardize_formula
+from pyEQL import ureg
+from pyEQL.utils import FormulaDict, create_water_substance, format_solutes_dict, standardize_formula
 
 
 def test_standardize_formula():
@@ -50,3 +52,8 @@ def test_format_solute():
     error_msg = "solute_dict must be a dictionary. Refer to the doc for proper formatting."
     with raises(TypeError, match=error_msg):
         format_solutes_dict(bad_test, units="mol/kg")
+
+
+def test_create_water_substance():
+    assert isinstance(create_water_substance(300, 0.1), IAPWS97)
+    assert isinstance(create_water_substance(ureg.Quantity(-15, "degC"), 0.1), IAPWS95)
