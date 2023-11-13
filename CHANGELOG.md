@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- `Solution.water_substance` - use the IAPWS97 model instead of IAPWS95 whenever possible, for a substantial speedup.
-
 ### Added
 
 - utility function `create_water_substance` with caching to speed up access to IAPWS instances
+
+### Changed
+
+- `Solution.get_diffusion_coefficient`: the default diffusion coefficient (returned when D for a solute is not found in
+  the database) is now adjusted for temperature and ionic strength.
+- `Solution.water_substance` - use the IAPWS97 model instead of IAPWS95 whenever possible, for a substantial speedup.
 
 ## [0.10.0] - 2023-11-12
 
