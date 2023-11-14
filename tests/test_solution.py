@@ -517,6 +517,9 @@ def test_arithmetic_and_copy(s2, s6):
     with pytest.raises(NotImplementedError):
         s6 - s6_scale
 
+    # confirm that a copied solution can be equilibrated
+    s6_scale.equilibrate()
+
     # TODO - test pH and pE
     s2.temperature = "35 degC"
     s2.pressure = "1.1 atm"

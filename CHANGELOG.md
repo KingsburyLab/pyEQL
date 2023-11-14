@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `PhreeqcEOS`: performance improvements for the `phreeqc` engine. The `EOS` instance now retains
+  the `phreeqpython` solution object in between calls, only re-initializing it if the composition
+  of the `Solution` has changed since the previous call.
+- `PhreeqcEOS`: performance improvements for the `phreeqc` engine. The `EOS` instance now retains
+  the `phreeqpython` solution object in between calls, only re-initializing it if the composition
+  of the `Solution` has changed since the previous call.
+
+  ### Removed
+
+  - `equilibrium.equilibrate_phreeqc()` has been removed to reduce redundant code. All its
+    was absorbed into `NativeEOS` and `PhreeqcEOS`
+
 ## [0.10.1] - 2023-11-12
 
 ### Added
