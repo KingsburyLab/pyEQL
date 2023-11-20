@@ -230,6 +230,5 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     initial_Ca = s6_Ca.get_total_amount("Ca", "mol").magnitude
     assert s6_Ca.balance_charge == "Ca[+2]"
     s6_Ca.equilibrate()
-    print(s6_Ca.components)
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
