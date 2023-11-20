@@ -91,7 +91,7 @@ class Solution(MSONable):
                 'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
                 redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be
                 added/subtracted to balance charge. If set to None, no charge balancing will be performed either on init
-                or when equilibrate() is called.
+                or when equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
             solvent: Formula of the solvent. Solvents other than water are not supported at
                 this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
@@ -1077,7 +1077,7 @@ class Solution(MSONable):
         Return a list of all species associated with a given element. Elements (keys) are
         suffixed with their oxidation state in parentheses, e.g.,
 
-        {"Na(1)":["Na[+1]", "NaOH(aq)"]}
+        {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
 
         Species associated with each element are sorted in descending order of the amount
         present (i.e., the first species listed is the most abundant).
@@ -1109,7 +1109,7 @@ class Solution(MSONable):
         Return a dict of Element: amount in mol
 
         Elements (keys) are suffixed with their oxidation state in parentheses,
-        e.g. "Fe(2)", "Cl(-1)".
+        e.g. "Fe(2.0)", "Cl(-1.0)".
         """
         d = {}
         for s, mol in self.components.items():
@@ -1140,7 +1140,7 @@ class Solution(MSONable):
 
         Args:
             element: The symbol of the element of interest. The symbol can optionally be followed by the
-                oxidation state in parentheses, e.g., "Na(1)", "Fe(2)", or "O(0)". If no oxidation state
+                oxidation state in parentheses, e.g., "Na(1.0)", "Fe(2.0)", or "O(0.0)". If no oxidation state
                 is given, the total concentration of the element (over all oxidation states) is returned.
         units : str
                     Units desired for the output. Examples of valid units are
