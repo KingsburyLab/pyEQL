@@ -39,7 +39,9 @@ def s5():
 @pytest.fixture()
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
-    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH")
+    return Solution(
+        [["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH", engine="phreeqc"
+    )
 
 
 @pytest.fixture()
@@ -58,6 +60,7 @@ def s6():
             ["Br-", "20 mM"],
         ],  # -20 meq/L
         volume="1 L",
+        engine="phreeqc",
     )
 
 
@@ -78,6 +81,7 @@ def s6_Ca():
         ],  # -20 meq/L
         volume="1 L",
         balance_charge="Ca+2",
+        engine="phreeqc",
     )
 
 
@@ -162,7 +166,7 @@ def test_equilibrate(s1, s2, s5_pH, caplog):
     orig_pE = s1.pE
     s1.equilibrate()
     assert "H2(aq)" in s1.components
-    assert np.isclose(s1.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s1.charge_balance, 0, atol=1e-8)
     assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
 
@@ -179,9 +183,14 @@ def test_equilibrate(s1, s2, s5_pH, caplog):
     assert np.isclose(s2.get_total_amount("Cl", "mol").magnitude, 8)
     assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
     assert np.isclose(s2.density.magnitude, orig_density)
-    assert np.isclose(s2.charge_balance, 0, atol=1e-7)
+    # this solution has balance_charge=None, therefore, the charge balance
+    # may be off after equilibration
+    assert not np.isclose(s2.charge_balance, 0, atol=1e-8)
     assert np.isclose(s2.pH, orig_pH, atol=0.01)
     assert np.isclose(s2.pE, orig_pE)
+    s2.balance_charge = "pH"
+    s2.equilibrate()
+    assert np.isclose(s2.charge_balance, 0, atol=1e-8)
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")

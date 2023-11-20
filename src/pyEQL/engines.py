@@ -187,12 +187,10 @@ class NativeEOS(EOS):
             "water": solv_mass,
             "density": solution.density.to("g/mL").magnitude,
         }
-        balance_charge = solution.balance_charge
-        if balance_charge == "pH":
+        if solution.balance_charge == "pH":
             d["pH"] = str(d["pH"]) + " charge"
-        if balance_charge == "pE":
+        if solution.balance_charge == "pE":
             d["pe"] = str(d["pe"]) + " charge"
-        solution.components.copy()
 
         # add the composition to the dict
         # also, skip H and O
@@ -209,7 +207,7 @@ class NativeEOS(EOS):
                 key = bare_el
 
             # tell PHREEQC which species to use for charge balance
-            if el == balance_charge:
+            if solution.balance_charge is not None and el in solution.balance_charge:
                 key += " charge"
             d[key] = mol / solv_mass
 

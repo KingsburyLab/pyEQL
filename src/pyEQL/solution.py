@@ -91,7 +91,7 @@ class Solution(MSONable):
                 'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
                 redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be
                 added/subtracted to balance charge. If set to None, no charge balancing will be performed either on init
-                or when equilibrate() is called.
+                or when equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
             solvent: Formula of the solvent. Solvents other than water are not supported at
                 this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
