@@ -13,16 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `phreeqpython` solution object in between calls, only re-initializing it if the composition
   of the `Solution` has changed since the previous call.
 
-  ### Fixed
+### Fixed
 
-  - `equilibrate`: Fixed several bugs affecting `NativeEOS` and `PhreeqcEOS` in which calling `equilibrate()`
-    would mess up the charge balance. This was especially an issue if `balance_charge` was set to something
-    other than `pH`.
+- `equilibrate`: Fixed several bugs affecting `NativeEOS` and `PhreeqcEOS` in which calling `equilibrate()`
+  would mess up the charge balance. This was especially an issue if `balance_charge` was set to something
+  other than `pH`.
 
-  ### Removed
+### Removed
 
-  - `equilibrium.equilibrate_phreeqc()` has been removed to reduce redundant code. All its
-    was absorbed into `NativeEOS` and `PhreeqcEOS`
+- `equilibrium.equilibrate_phreeqc()` has been removed to reduce redundant code. All its
+  was absorbed into `NativeEOS` and `PhreeqcEOS`
 
 ## [0.10.1] - 2023-11-12
 
