@@ -171,7 +171,7 @@ class NativeEOS(EOS):
 
     def _setup_ppsol(self, solution):
         """
-        Helper method to set up a PhreeqPython solution for subsequent analysis
+        Helper method to set up a PhreeqPython solution for subsequent analysis.
         """
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -206,10 +206,14 @@ class NativeEOS(EOS):
             else:
                 key = bare_el
 
+            d[key] = str(mol / solv_mass)
+
             # tell PHREEQC which species to use for charge balance
-            if solution.balance_charge is not None and el in solution.balance_charge:
-                key += " charge"
-            d[key] = mol / solv_mass
+            if (
+                solution.balance_charge is not None
+                and solution.balance_charge in solution.get_components_by_element()[el]
+            ):
+                d[key] += " charge"
 
         # create the PHREEQC solution object
         try:
@@ -657,20 +661,35 @@ class NativeEOS(EOS):
         # self._stored_comp = solution.components
 
         # use the output from PHREEQC to update the Solution composition
-        # the .species attribute should return MOLES (not moles per ___)
-        for s, mol in self.ppsol.species.items():
+        # the .species_moles attribute should return MOLES (not moles per ___)
+        for s, mol in self.ppsol.species_moles.items():
             solution.components[s] = mol
 
         # make sure all species are accounted for
+        charge_adjust = 0
         assert set(self._stored_comp.keys()) - set(solution.components.keys()) == set()
 
         # log a message if any components were not touched by PHREEQC
+        # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
         if len(missing_species) > 0:
-            logger.info(
+            logger.warning(
                 f"After equilibration, the amounts of species {missing_species} were not modified "
                 "by PHREEQC. These species are likely absent from its database."
             )
+        for s in missing_species:
+            charge_adjust += -1 * solution.get_amount(s, "eq").magnitude
+
+        # re-adjust charge balance
+        if solution.balance_charge is None:
+            pass
+        elif solution.balance_charge == "pH":
+            solution.components["H+"] += charge_adjust
+        elif solution.balance_charge == "pE":
+            raise NotImplementedError
+        else:
+            z = solution.get_property(solution.balance_charge, "charge")
+            solution.add_amount(solution.balance_charge, f"{charge_adjust/z} mol")
 
     def __deepcopy__(self, memo):
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
@@ -719,10 +738,6 @@ class PhreeqcEOS(NativeEOS):
         if self.ppsol is None or solution.components != self._stored_comp:
             self._destroy_ppsol()
             self._setup_ppsol(solution)
-        # if :
-        #     self._destroy_ppsol()
-        #     self._setup_ppsol(solution)
-        #     self._stored_comp = solution.components
 
         # translate the species into keys that phreeqc will understand
         k = standardize_formula(solute)
@@ -734,7 +749,8 @@ class PhreeqcEOS(NativeEOS):
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
+        # act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
+        act = self.ppsol.pp.ip.get_activity(self.ppsol.number, k) / self.ppsol.pp.ip.get_molality(self.ppsol.number, k)
 
         return ureg.Quantity(act, "dimensionless")
 

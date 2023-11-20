@@ -160,7 +160,7 @@ def test_conductivity(s1):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.05)
 
 
-def test_equilibrate(s1, s2, s5_pH, caplog):
+def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
     orig_pE = s1.pE
@@ -224,3 +224,12 @@ def test_equilibrate(s1, s2, s5_pH, caplog):
     assert "HCO3[-1]" in s5_pH.components
     assert s5_pH.pH > orig_pH
     assert np.isclose(s5_pH.pE, orig_pE)
+
+    # test equilibrate() with a non-pH balancing species
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+    initial_Ca = s6_Ca.get_total_amount("Ca", "mol").magnitude
+    assert s6_Ca.balance_charge == "Ca[+2]"
+    s6_Ca.equilibrate()
+    print(s6_Ca.components)
+    assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
