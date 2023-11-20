@@ -44,11 +44,11 @@ Finally, you can manually create a solution with any list of solutes, temperatur
 
 ## Using a preset
 
-Alternatively, you can use the `pyEQL.functions.autogenerate()` function to easily create common solutions like seawater:
+Alternatively, you can use the `Solution.from_preset()` classmethod to easily create common solutions like seawater:
 
 ```
->>> from pyEQL.functions import autogenerate
->>> s2 = autogenerate('seawater')
+>>> from pyEQL import Solution
+>>> s2 = Solution.from_preset('seawater')
 <pyEQL.solution.Solution object at 0x7f057de6b0a0>
 ```
 
