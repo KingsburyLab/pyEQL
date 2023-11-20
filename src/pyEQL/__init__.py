@@ -9,10 +9,10 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 """
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-
-from pint import UnitRegistry
 from pathlib import Path
+
 from maggma.stores import JSONStore
+from pint import UnitRegistry
 from pkg_resources import resource_filename
 
 try:
@@ -50,5 +50,4 @@ IonDB = JSONStore(str(json), key="formula")
 # instantiated Store in memory, which should speed up instantiation of Solution objects.
 IonDB.connect()
 
-from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402
