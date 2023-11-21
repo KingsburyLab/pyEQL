@@ -54,7 +54,7 @@ def gibbs_mix(Solution1, Solution2):
     """
     concentrate = Solution1
     dilute = Solution2
-    blend = mix(Solution1, Solution2)
+    blend = Solution1 + Solution2
     term_list = {concentrate: 0, dilute: 0, blend: 0}
 
     # calculate the entropy change and number of moles solute for each solution
@@ -107,7 +107,7 @@ def entropy_mix(Solution1, Solution2):
     """
     concentrate = Solution1
     dilute = Solution2
-    blend = mix(Solution1, Solution2)
+    blend = Solution1 + Solution2
     term_list = {concentrate: 0, dilute: 0, blend: 0}
 
     # calculate the entropy change and number of moles solute for each solution
@@ -286,7 +286,7 @@ def donnan_eql(solution, fixed_charge):
 @deprecated(
     message="mix() is deprecated and will be removed in the next release! You can now mix solutions using the addition operator, e.g. s_mix = s1 + s2."
 )
-def mix(s1, s2):
+def mix(s1, s2):  # pragma: no cover
     """
     Mix two solutions together.
 
