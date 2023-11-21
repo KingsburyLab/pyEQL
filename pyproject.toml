@@ -96,7 +96,7 @@ namespace_packages = true
 explicit_package_bases = true
 no_implicit_optional = false
 strict = true
-show_error_codes = true
+hide_error_codes = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
