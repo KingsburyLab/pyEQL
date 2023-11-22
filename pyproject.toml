@@ -73,7 +73,7 @@ isort.split-on-trailing-comma = false
 "tests/*" = ["D", "E501"] # TODO - remove E501
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "3.0"
 addopts = [
   "-ra",
   "--showlocals",
