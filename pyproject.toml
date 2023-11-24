@@ -89,7 +89,6 @@ log_cli_level = "warning"
 testpaths = [
   "tests",
 ]
-filterwarnings = ["ignore::UserWarning"]
 
 [tool.mypy]
 ignore_missing_imports = true
