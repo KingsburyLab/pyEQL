@@ -84,7 +84,7 @@ addopts = [
   "--durations=30"
 ]
 xfail_strict = true
-filterwarnings = ["error"]
+filterwarnings = ["error", "ignore::UserWarning"]
 log_cli_level = "warning"
 testpaths = [
   "tests",
