@@ -11,7 +11,7 @@ data rather than the theoretical result of the respective functions.
 
 import numpy as np
 
-import pyEQL
+from pyEQL import Solution
 
 
 def test_osmotic_pressure():
@@ -21,9 +21,9 @@ def test_osmotic_pressure():
     # TODO - at present this test is inaccurate because in the complex matrix
     # of seawater, pyEQL falls back to using an ideal solution model with
     # unit osmotic coefficient.
-    empty = pyEQL.Solution()
+    empty = Solution()
     assert np.isclose(empty.osmotic_pressure.to("atm").magnitude, 0, atol=1e-5)
-    sea = pyEQL.autogenerate("seawater")
+    sea = Solution.from_preset("seawater")
     assert np.isclose(sea.osmotic_pressure.to("atm").magnitude, 27, rtol=0.15)
 
 
@@ -35,7 +35,7 @@ class Test_osmotic_pitzer:
     """
 
     def test_dimensionality(self):
-        s1 = pyEQL.Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
+        s1 = Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
         assert s1.get_osmotic_coefficient().dimensionality == ""
         assert s1.get_osmotic_coefficient() >= 0
 
@@ -59,7 +59,7 @@ class Test_osmotic_pitzer:
 
         for i, conc in enumerate(conc_list):
             conc = str(conc) + "mol/kg"
-            sol = pyEQL.Solution()
+            sol = Solution()
             sol.add_solute("NH4+", conc)
             sol.add_solute("NO3-", conc)
             result = sol.get_osmotic_coefficient()
@@ -87,7 +87,7 @@ class Test_osmotic_pitzer:
 
         for i, conc in enumerate(conc_list):
             conc = str(conc) + "mol/kg"
-            sol = pyEQL.Solution()
+            sol = Solution()
             sol.add_solute("Cu+2", conc)
             sol.add_solute("SO4-2", conc)
             result = sol.get_osmotic_coefficient()

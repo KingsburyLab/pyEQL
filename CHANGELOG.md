@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Add tests for `gibbs_mix` and `entropy_mix` functions. Format docstrings in Google style.
+
+### Removed
+
+- `functions.py` is no longer imported into the root namespace. You'll now need to say `from pyEQL.functions import gibbs_mix`
+  instead of `from pyEQL import gibbs_mix`
+
 ## [0.11.0] - 2023-11-20
 
 ### Changed
