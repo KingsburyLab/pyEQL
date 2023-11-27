@@ -54,7 +54,6 @@ class Test_nano3_kno3_activity:
 
             assert np.isclose(result, expected[item], RTOL)
 
-    @pytest.mark.xfail()
     def test_activity_K_XNa_75(self):
         # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
         # mole fraction of Na+ is 0.75

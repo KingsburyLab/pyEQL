@@ -1,6 +1,6 @@
 [build-system]
 # AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
+requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -10,7 +10,7 @@ version_scheme = "no-guess-dev"
 [tool.black]
 line-length = 120
 
-[tool.ruff]
+[tool.ruff.lint]
 target-version = "py38"
 line-length = 120
 exclude = [".dat"]
@@ -68,14 +68,26 @@ ignore = [
 pydocstyle.convention = "google"
 isort.split-on-trailing-comma = false
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/*" = ["D", "E501"] # TODO - remove E501
 
 [tool.pytest.ini_options]
-addopts = "--color=yes -p no:warnings --import-mode=importlib --durations=30"
+minversion = "6.0"
+addopts = [
+  "-ra",
+  "--showlocals",
+  "--strict-markers",
+  "--strict-config",
+  "--color=yes",
+  "--import-mode=importlib",
+  "--durations=30"
+]
+xfail_strict = true
+filterwarnings = ["error", "ignore::UserWarning"]
+log_cli_level = "warning"
 testpaths = [
-    "tests",
+  "tests",
 ]
 
 [tool.mypy]
@@ -83,6 +95,10 @@ ignore_missing_imports = true
 namespace_packages = true
 explicit_package_bases = true
 no_implicit_optional = false
+strict = true
+hide_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unreachable = true
 
 [tool.codespell]
 ignore-words-list = "nd"
