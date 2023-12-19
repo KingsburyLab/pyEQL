@@ -134,7 +134,7 @@ palettable==3.3.3
     # via pymatgen
 pandas==2.1.4
     # via pymatgen
-paramiko==3.3.1
+paramiko==3.4.0
     # via sshtunnel
 periodictable==1.6.1
     # via phreeqpython
