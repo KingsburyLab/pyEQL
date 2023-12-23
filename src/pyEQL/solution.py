@@ -20,6 +20,7 @@ from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
 from monty.serialization import dumpfn, loadfn
 from pint import DimensionalityError, Quantity
+from pkg_resources import resource_filename
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
@@ -56,6 +57,7 @@ class Solution(MSONable):
         database: str | Path | Store | None = None,
     ):
         """
+        Instantiate a Solution from a composition.
 
         Args:
             solutes : dict, optional. Keys must be the chemical formula, while values must be
@@ -3282,7 +3284,7 @@ class Solution(MSONable):
     def from_preset(
         cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
     ) -> Solution:
-        """Instantiate a solution from a preset composition
+        """Instantiate a solution from a preset composition.
 
         Args:
             preset (str): String representing the desired solution.
@@ -3295,19 +3297,17 @@ class Solution(MSONable):
         Raises:
             FileNotFoundError: If the given preset file doesn't exist on the file system.
 
-        Notes
-        -----
-        The following sections explain the different solution options:
+        Notes:
+            The following sections explain the different solution options:
 
-        - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-        - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
-        - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
-        - 'urine' - typical human urine. See Table 3-15 of [2]_
-        - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
-        - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
+            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
+            - 'urine' - typical human urine. See Table 3-15 of [2]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
 
         References:
-        ----------
             .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
                 the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
 
@@ -3318,9 +3318,10 @@ class Solution(MSONable):
 
             .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
         """
+        preset_dir = resource_filename("pyEQL", "presets")
         # Path to the YAML and JSON files corresponding to the preset
-        yaml_path = os.path.join("presets", f"{preset}.yaml")
-        json_path = os.path.join("presets", f"{preset}.json")
+        yaml_path = os.path.join(preset_dir, f"{preset}.yaml")
+        json_path = os.path.join(preset_dir, f"{preset}.json")
 
         # Check if the file exists
         if os.path.exists(yaml_path):

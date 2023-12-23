@@ -5,11 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.11.1] - 2023-12-23
 
 ### Added
 
 - Add tests for `gibbs_mix` and `entropy_mix` functions. Format docstrings in Google style.
+
+### Fixed
+
+- `Solution.from_preset`: Fixed a packaging error that made this method fail with a `FileNotFoundError`.
 
 ### Removed
 

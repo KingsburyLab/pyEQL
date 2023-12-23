@@ -1,7 +1,4 @@
 """
-pyEQL
-=====
-
 pyEQL is a python package for calculating the properties of aqueous solutions
 and performing chemical thermodynamics computations.
 

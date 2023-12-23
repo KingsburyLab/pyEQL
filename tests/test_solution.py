@@ -653,7 +653,7 @@ def test_from_preset(tmpdir):
 
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
-    with open(os.path.join("presets", f"{preset_name}.yaml")) as file:
+    with open(os.path.join("src/pyEQL/presets", f"{preset_name}.yaml")) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
     # test valid preset
     assert isinstance(solution, Solution)
