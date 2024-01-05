@@ -6,11 +6,10 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 """
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-from pathlib import Path
+from importlib.resources import files
 
 from maggma.stores import JSONStore
 from pint import UnitRegistry
-from pkg_resources import resource_filename
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -31,7 +30,7 @@ ureg = UnitRegistry(cache_folder=":auto:")
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
 ureg.autoconvert_offset_to_baseunit = True
 # append custom unit definitions and contexts
-fname = resource_filename("pyEQL", "pint_custom_units.txt")
+fname = files("pyEQL") / "pint_custom_units.txt"
 ureg.load_definitions(fname)
 # activate the "chemistry" context globally
 ureg.enable_contexts("chem")
@@ -39,9 +38,8 @@ ureg.enable_contexts("chem")
 ureg.default_format = "P~"
 
 # create a Store for the default database
-database_dir = resource_filename("pyEQL", "database")
-json = Path(database_dir) / "pyeql_db.json"
-IonDB = JSONStore(str(json), key="formula")
+json_db_file = files("pyEQL") / "database" / "pyeql_db.json"
+IonDB = JSONStore(str(json_db_file), key="formula")
 # By calling connect on init, we get the expensive JSON reading operation out
 # of the way. Subsequent calls to connect will bypass this and access the already-
 # instantiated Store in memory, which should speed up instantiation of Solution objects.

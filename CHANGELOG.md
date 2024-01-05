@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- Removed deprecated `pkg_resources` import in favor of `importlib.resources`
+
 ## [0.11.1] - 2023-12-23
 
 ### Added
@@ -204,7 +210,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-
 - `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
 
 ## [v0.6.0] - 2023-08-15
@@ -224,7 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `pymatgen`, `monty`, and `maggma` as dependencies
 - Add `pre-commit` configuration
 - Add pull request template, new GitHub actions, and `tox -e autodocs` environment to serve and update docs in real time
-- Add pre-commit configuration and lint with `ruff` using  rulesets mostly borrowed from `pymatgen`
+- Add pre-commit configuration and lint with `ruff` using rulesets mostly borrowed from `pymatgen`
 - Add more comprehensive platform testing via `tox`
 
 ### Changed
@@ -254,9 +259,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.2] - 2020-04-21
 
- - Fix breaking bug introduced by upstream pint change to avogadro_number
- - Format project with black
- - Misc. linting and docstring changes
+- Fix breaking bug introduced by upstream pint change to avogadro_number
+- Format project with black
+- Misc. linting and docstring changes
 
 ## [0.5.0] 2018-09-19
 
