@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 import os
 import warnings
+from importlib.resources import files
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -20,7 +21,6 @@ from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
 from monty.serialization import dumpfn, loadfn
 from pint import DimensionalityError, Quantity
-from pkg_resources import resource_filename
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
@@ -3318,15 +3318,15 @@ class Solution(MSONable):
 
             .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
         """
-        preset_dir = resource_filename("pyEQL", "presets")
+        # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset
-        yaml_path = os.path.join(preset_dir, f"{preset}.yaml")
-        json_path = os.path.join(preset_dir, f"{preset}.json")
+        yaml_path = files("pyEQL") / "presets" / f"{preset}.yaml"
+        json_path = files("pyEQL") / "presets" / f"{preset}.json"
 
         # Check if the file exists
-        if os.path.exists(yaml_path):
+        if yaml_path.exists():
             preset_path = yaml_path
-        elif os.path.exists(json_path):
+        elif json_path.exists():
             preset_path = json_path
         else:
             logger.error("Invalid solution entered - %s" % preset)
