@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- `Solution.__add_`: Bugfix in the addition operation `+` that could cause problems with
+  child classes (i.e., classes that inherit from `Solution`) to work improperly
+
 ### Changed
 
 - Removed deprecated `pkg_resources` import in favor of `importlib.resources`
