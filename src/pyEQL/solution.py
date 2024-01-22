@@ -2513,7 +2513,7 @@ class Solution(MSONable):
         mix_pE = -math.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
 
         # create a new solution
-        return self.__class__(
+        return Solution(
             mix_species.data,  # pass a regular dict instead of the FormulaDict
             volume=str(mix_vol),
             pressure=str(mix_pressure),
