@@ -138,7 +138,7 @@ periodictable==1.6.1
     # via phreeqpython
 phreeqpython==1.5.0
     # via pyEQL (setup.py)
-pillow==10.1.0
+pillow==10.2.0
     # via matplotlib
 pint==0.23
     # via pyEQL (setup.py)
