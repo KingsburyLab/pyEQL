@@ -10,8 +10,8 @@ from __future__ import annotations
 import math
 import os
 import warnings
-from importlib.resources import files
 from functools import lru_cache
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal
 
@@ -153,7 +153,7 @@ class Solution(MSONable):
         if database is None:
             # load the default database, which is a JSONStore
             db_store = IonDB
-        elif isinstance(database, (str, Path)):
+        elif isinstance(database, str | Path):
             db_store = JSONStore(str(database), key="formula")
             logger.info(f"Created maggma JSONStore from .json file {database}")
         else:
