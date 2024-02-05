@@ -348,7 +348,7 @@ sphinxcontrib-serializinghtml==1.1.9
     # via sphinx
 sshtunnel==0.4.0
     # via maggma
-starlette==0.32.0.post1
+starlette==0.36.2
     # via fastapi
 sympy==1.12
     # via pymatgen
