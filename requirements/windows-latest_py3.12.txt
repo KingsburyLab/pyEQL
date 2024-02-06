@@ -43,7 +43,7 @@ colorama==0.4.6
     #   tqdm
 contourpy==1.2.0
     # via matplotlib
-cryptography==41.0.7
+cryptography==42.0.0
     # via paramiko
 cycler==0.12.1
     # via matplotlib
