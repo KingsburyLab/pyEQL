@@ -78,7 +78,7 @@ exceptiongroup==1.2.0
     # via
     #   anyio
     #   pytest
-fastapi==0.108.0
+fastapi==0.109.1
     # via maggma
 filelock==3.13.1
     # via
