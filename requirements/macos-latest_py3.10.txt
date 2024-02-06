@@ -220,7 +220,7 @@ spglib==2.2.0
     # via pymatgen
 sshtunnel==0.4.0
     # via maggma
-starlette==0.32.0.post1
+starlette==0.36.2
     # via fastapi
 sympy==1.12
     # via pymatgen
