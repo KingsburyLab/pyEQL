@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.12.0] - 2024-02-15
+
+### Added
+
+- `Solution`: new kwarg `default_diffusion_coeff` which allows the user to specify a value to use
+  when a species diffusion coefficient is missing from the database. By default, the value for NaCl
+  salt (1.61e-9 m2/s) is used. This is important for conductivity and transport number calculations,
+  which perform weighted summations of diffusion coefficients over every species in the solution.
+  Previously, species with missing diffusion coefficients would be excluded from such calculations,
+  possibly resulting in inaccuracies, particularly after calling `equilibrate()`, which often
+  generates charged complexes such as NaSO4- or MgCl+.
 
 ### Fixed
 

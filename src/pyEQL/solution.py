@@ -55,6 +55,7 @@ class Solution(MSONable):
         solvent: str | list = "H2O",
         engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
         database: str | Path | Store | None = None,
+        default_diffusion_coeff: float = 1.6106e-9,
     ):
         """
         Instantiate a Solution from a composition.
@@ -99,6 +100,13 @@ class Solution(MSONable):
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
+            default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
+                calculations when there is no diffusion coefficient for a species in the database. This affects several important property calculations including conductivity and transport number, which are related to the weighted sums of diffusion coefficients of all species. Setting this argument to zero will exclude any species that does not have a tabulated diffusion coefficient from these calculations, possibly resulting in underestimation of the conductivity and/or inaccurate transport numbers.
+
+                Missing diffusion coefficients are especially likely in complex electrolytes containing, for example, complexes or paired species such as NaSO4[-1]. In such cases, setting default_diffusion_coeff  to zero is likely to result in the above
+                errors.
+
+                By default, this argument is set to the diffusion coefficient of NaCl salt, 1.61x10^-9 m2/s.
 
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '1 mol/L','Cl-': '1 mol/L'},temperature='20 degC',volume='500 mL')
@@ -118,6 +126,7 @@ class Solution(MSONable):
         self.get_property = lru_cache()(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
         self.get_mobility = lru_cache()(self._get_mobility)
+        self.default_diffusion_coeff = default_diffusion_coeff
         self.get_diffusion_coefficient = lru_cache()(self._get_diffusion_coefficient)
 
         # initialize the volume recalculation flag
@@ -2195,7 +2204,7 @@ class Solution(MSONable):
         See Also:
             :py:meth:`get_diffusion_coefficient`
         """
-        D = self.get_diffusion_coefficient(solute, default=0)
+        D = self.get_diffusion_coefficient(solute)
 
         if D != 0:
             molar_cond = (
@@ -2208,7 +2217,7 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True, default: float = 0) -> Quantity:
+    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True) -> Quantity:
         """
         Get the **temperature-adjusted** diffusion coefficient of a solute.
 
@@ -2216,8 +2225,6 @@ class Solution(MSONable):
             solute: the solute for which to retrieve the diffusion coefficient.
             activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
                 strength using a model from Ref 2.
-            default: The diffusion coefficient value to assume if data for the chosen solute are not found in
-                the database. If None (default), a diffusion coefficient of 0 will be returned.
 
         Notes:
             This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
@@ -2256,8 +2263,10 @@ class Solution(MSONable):
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            logger.info(f"Diffusion coefficient not found for species {rform}. Use default value of {default} m**2/s.")
-            D = ureg.Quantity(default, "m**2/s")
+            logger.info(
+                f"Diffusion coefficient not found for species {rform}. Using default value of {self.default_diffusion_coeff} m**2/s."
+            )
+            D = ureg.Quantity(self.default_diffusion_coeff, "m**2/s")
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
