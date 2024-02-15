@@ -2225,8 +2225,6 @@ class Solution(MSONable):
             solute: the solute for which to retrieve the diffusion coefficient.
             activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
                 strength using a model from Ref 2.
-            default: The diffusion coefficient value to assume if data for the chosen solute are not found in
-                the database. If None (default), a diffusion coefficient of 0 will be returned.
 
         Notes:
             This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
