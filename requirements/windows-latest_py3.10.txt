@@ -159,7 +159,7 @@ pydantic-settings==2.1.0
     # via maggma
 pydash==7.0.7
     # via maggma
-pymatgen==2024.1.27
+pymatgen==2024.2.20
     # via pyEQL (setup.py)
 pymongo==4.6.1
     # via
