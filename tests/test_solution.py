@@ -392,7 +392,7 @@ def test_components_by_element(s1, s2):
 
 
 def test_get_total_amount(s2):
-    assert np.isclose(s2.get_total_amount("Na(1)", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Na(1)", "g").magnitude, 8 * 58, 44)
     assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
     sox = Solution({"Fe+2": "10 mM", "Fe+3": "40 mM", "Cl-": "50 mM"}, pH=3)
     assert np.isclose(sox.get_total_amount("Fe(2)", "mol/L").magnitude, 0.01)
