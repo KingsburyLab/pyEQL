@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- `Solution.get_total_amount`: Bugfix that would cause the method to fail if
+  mass-based units such as mg/L or ppm were requested.
+
 ## [0.12.0] - 2024-02-15
 
 ### Added
@@ -19,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `Solution.__add_`: Bugfix in the addition operation `+` that could cause problems with
+- `Solution.__add__`: Bugfix in the addition operation `+` that could cause problems with
   child classes (i.e., classes that inherit from `Solution`) to work improperly
 
 ### Changed

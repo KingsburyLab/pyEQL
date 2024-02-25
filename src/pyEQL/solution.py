@@ -1204,7 +1204,7 @@ class Solution(MSONable):
                     "[mass]/[length]**3",
                     "[mass]/[mass]",
                 ):
-                    TOT += amt * ion.to_weight_dict["el"]  # returns {el: wt fraction}
+                    TOT += amt * ion.to_weight_dict[el]  # returns {el: wt fraction}
 
         return TOT
 
