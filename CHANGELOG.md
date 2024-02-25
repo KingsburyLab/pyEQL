@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2024-02-25
+
+### Fixed
+
+- `Solution.get_total_amount`: Bugfix that would cause the method to fail if
+  units with names not natively understood by `pint` (e.g., 'ppm') were passed.
+
 ## [0.12.1] - 2024-02-25
 
 ### Fixed

@@ -1165,7 +1165,7 @@ class Solution(MSONable):
         --------
         get_amount
         """
-        TOT: Quantity = ureg.Quantity(f"0 {units}")
+        TOT: Quantity = 0
 
         # standardize the element formula
         el = str(Element(element.split("(")[0]))
