@@ -16,6 +16,8 @@ def test_from_formula():
     assert s.n_atoms == 1
     assert s.n_elements == 1
     assert s.oxi_state_guesses == {"Mg": 2.0}
+    # test behavior when oxi_state_guesses fails
+    assert Solute.from_formula("Br[-0.33333333]").oxi_state_guesses == {}
     assert s.molecular_weight == "24.305 g/mol"
     s2 = Solute.from_formula("O6")
     assert s2.formula == "O3(aq)"
