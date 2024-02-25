@@ -116,8 +116,7 @@ class Solute:
         chemsys = pmg_ion.chemical_system
         # store only the most likely oxi_state guesses
         try:
-            oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)
-            oxi_states == {} if oxi_states == () else oxi_states[0]
+            oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)[0]
         except (IndexError, ValueError):
             oxi_states = {}
 
