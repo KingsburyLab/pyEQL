@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `Solution.get_total_amount`: Bugfix that would cause the method to fail if
+- `Solution.get_total_amount`: Fix bug that would cause the method to fail if
   units with names not natively understood by `pint` (e.g., 'ppm') were passed.
 
 ## [0.12.1] - 2024-02-25
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Solute.from_formula`: Fix bug in which an uncaught exception could occur when
   if `pymatgen` failed to guess the oxidation state of a solute. (Issue #103 - thanks to @xiaoxiaozhu123 for reporting).
-- `Solution.get_total_amount`: Bugfix that would cause the method to fail if
+- `Solution.get_total_amount`: Fix bug that would cause the method to fail if
   mass-based units such as mg/L or ppm were requested.
 
 ## [0.12.0] - 2024-02-15
