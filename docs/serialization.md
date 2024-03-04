@@ -41,8 +41,8 @@ Temperature: 298.150 K
 Components: ['H2O(aq)', 'H[+1]', 'OH[-1]']
 ```
 
-:::{note}
+```{note}
 In a future release, `to_file()` / `from_file()` methods may be added to `Solution` to
 make the above steps easier. Please post on GitHub if you have strong opinions about
 this!
-:::
+```

@@ -1,6 +1,6 @@
 ---
-Date: '{{ today }}'
-Release: '{{ release }}'
+Date: "{{ today }}"
+Release: "{{ release }}"
 ---
 
 ![pyeql-logo](../pyeql-logo.png)
@@ -30,11 +30,12 @@ pip install pyEQL
 
 ```python
 >>> from pyEQL import Solution
->>> s1 = pyEQL.Solution({'Na+':'0.5 mol/kg', 'Cl-': '0.5 mol/kg'},
+>>> s1 = Solution({'Na+':'0.5 mol/kg', 'Cl-': '0.5 mol/kg'},
                          pH=8,
                          temperature = '20 degC',
                          volume='8 L')
 ```
+
 ### Get properties
 
 ```python

@@ -7,7 +7,7 @@ salts. This mapping is necessary because some parameters (such as activity
 coefficient data) can only be determined for salts (e.g. NaCl) and not individual
 species (e.g. Na+)
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -95,24 +95,21 @@ class Salt(MSONable):
     # Mg+2 is converted to monovalent complexes like MgOH+. Hence, the activity coefficients deviate a bit from
     # the published values.
     def get_effective_molality(self, ionic_strength):
-        """Calculate the effective molality according to [mistry]_.
+        r"""Calculate the effective molality according to [mistry]_.
 
-        .. math:: 2 I \\over (\\nu_+ z_+^2 + \\nu_- z_- ^2)
+        .. math:: 2 I \over (\nu_+ z_+^2 + \nu_- z_- ^2)
 
-        Parameters
-        ----------
-        ionic_strength: Quantity
-                        The ionic strength of the parent solution, mol/kg
+        Args:
+            ionic_strength: Quantity
+                The ionic strength of the parent solution, mol/kg
 
-        Returns
-        -------
-        Quantity: the effective molality of the salt in the parent solution
+        Returns:
+            Quantity: the effective molality of the salt in the parent solution
 
-        References
-        ----------
-        .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior
-               on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination
-               2013, 318, 34-47.
+        References:
+            .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior
+                on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination
+                2013, 318, 34-47.
         """
         m_effective = 2 * ionic_strength / (self.nu_cation * self.z_cation**2 + self.nu_anion * self.z_anion**2)
 

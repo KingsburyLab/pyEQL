@@ -1,7 +1,7 @@
 """
 pyEQL functions that take Solution objects as inputs or return Solution objects.
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -19,7 +19,8 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
     Return the Gibbs energy change associated with mixing two solutions.
 
     Args:
-        solution1, solution2: The two solutions to be mixed.
+        solution1: a solution to be mixed.
+        solution2: a solution to be mixed.
 
     Returns:
         The change in Gibbs energy associated with complete mixing of the
@@ -30,7 +31,7 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
 
         .. math::
 
-            \\Delta_{mix} G = \\sum_i (n_c + n_d) R T \\ln a_b - \\sum_i n_c R T \\ln a_c - \\sum_i n_d R T \\ln a_d
+            \Delta_{mix} G = \sum_i {(n_c + n_d) R T \ln a_b} - \sum_i {n_c R T \ln a_c} - \sum_i {n_d R T \ln a_d}
 
         Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
         and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
@@ -41,8 +42,8 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
         anion, and water).
 
     References:
-        Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-            A differential approach.* Elsevier, 2007, pp. 23-37.
+        Koga, Yoshikata, 2007. Solution Thermodynamics and its Application to Aqueous Solutions:
+            A differential approach. Elsevier, 2007, pp. 23-37.
 
     """
     concentrate = solution1
@@ -77,7 +78,7 @@ def entropy_mix(solution1: Solution, solution2: Solution):
 
         .. math::
 
-            \\Delta_{mix} S = \\sum_i (n_c + n_d) R T \\ln x_b - \\sum_i n_c R T \\ln x_c - \\sum_i n_d R T \\ln x_d
+            \Delta_{mix} S = \sum_i {(n_c + n_d) R T \ln x_b} - \sum_i {n_c R T \ln x_c} - \sum_i {n_d R T \ln x_d}
 
         Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
         and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
@@ -111,10 +112,10 @@ def entropy_mix(solution1: Solution, solution2: Solution):
 
 
 def donnan_eql(solution: Solution, fixed_charge: str):
-    """
+    r"""
     Return a solution object in equilibrium with fixed_charge.
 
-    Parameters:
+    Args:
         solution : Solution object
             The external solution to be brought into equilibrium with the fixed
             charges
@@ -133,19 +134,20 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
         .. math::
 
-            \\frac{a_{-}}{\\bar a_{-}}^{\\frac{1}{z_{-}} \\frac{\\bar a_{+}}{a_{+}}^{\\frac{1}{z_{+}} \
-            = exp(\\frac{\\Delta \\pi \\bar V}{{RT z_{+} \\nu_{+}}})
+            \big(\frac{a_{-}}{\bar a_{-}} \big)^(\frac{1}{z_{-})
+            \big(\frac{\bar a_{+}}{a_{+}}\big)^(\frac{1}{z_{+})
+            \exp(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}})
 
         Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
         the overbar indicates the membrane phase,
-        :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
+        :math:`a` represents activity, :math:`z` represents charge, :math:`\nu` represents the stoichiometric
         coefficient, :math:`V` represents the partial molar volume of the salt, and
-        :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
+        :math:`\Delta \pi` is the difference in osmotic pressure between the membrane and the
         solution phase.
 
         In addition, electroneutrality must prevail within the membrane phase:
 
-        .. math:: \\bar C_{+} z_{+} + \\bar X + \\bar C_{-} z_{-} = 0
+        .. math:: \bar C_{+} z_{+} + \bar X + \bar C_{-} z_{-} = 0
 
         Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
         in the membrane or ion exchange phase.

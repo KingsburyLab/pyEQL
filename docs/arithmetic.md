@@ -20,10 +20,10 @@ as volume-weighted averages.
 <Quantity(1.99989659, 'liter')>
 ```
 
-:::{note}
+```{note}
 Both `Solution` involved in an addition operation must use the same [electrolyte
 modeling engine](engines.md).
-:::
+```
 
 Subtraction is not implemented and will raise a `NotImplementedError`.
 

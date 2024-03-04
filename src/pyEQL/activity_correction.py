@@ -8,7 +8,7 @@ Individual functions for activity coefficients are defined here so that they
 can be used independently of a pyEQL solution object. Normally, these functions
 are called from within the get_activity_coefficient method of the Solution class.
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -22,7 +22,7 @@ from pyEQL.utils import create_water_substance
 
 
 def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
-    """
+    r"""
     Return the constant B used in the extended Debye-Huckel equation.
 
     Args:
@@ -117,7 +117,7 @@ def _debye_parameter_activity(temperature: str = "25 degC") -> "Quantity":
 
 
 def _debye_parameter_osmotic(temperature="25 degC"):
-    """
+    r"""
     Return the constant A_phi for use in calculating the osmotic coefficient according to Debye-Huckel theory.
 
     Parameters
@@ -156,7 +156,7 @@ def _debye_parameter_osmotic(temperature="25 degC"):
 
 
 def _debye_parameter_volume(temperature="25 degC"):
-    """
+    r"""
     Return the constant A_V, the Debye-Huckel limiting slope for apparent
     molar volume.
 
