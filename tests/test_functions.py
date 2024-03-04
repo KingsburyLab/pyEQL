@@ -2,6 +2,8 @@
 Tests of pyEQL.functions module
 
 """
+import platform
+
 import numpy as np
 import pytest
 
@@ -39,6 +41,7 @@ def s2_i():
     return Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, volume="10 L", engine="ideal")
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
     # mixing energy and entropy of any solution with itself should be zero
     assert np.isclose(gibbs_mix(s1, s1).magnitude, 0)

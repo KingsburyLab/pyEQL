@@ -7,14 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- CI: Added Apple M1 runner (GitHub: `macos-14`) to the CI tests.
+
+### Fixed
+
+- CI: Addressed several issues in the testing configuration which had resulted in testing
+  fewer operating systems x python version combinations than intended. CI tests now
+  correctly and comprehensively test every supported version of python on every os
+  (macos, windows, ubuntu).
+- `utils.FormulaDict`: implemented `__contains__` so that `get()` works correctly in
+  python 3.12+. See https://github.com/python/cpython/issues/105524
+- Docs: fixed many small problems in documentation causing equations and examples to
+  render incorrectly.
+- `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
+
 ## [0.13.0] - 2024-03-05
 
 ### Fixed
 
 - `equilibrium.alpha()`: Fixed incorrect calculation of acid-base distribution coefficient for multiprotic acids.
-- Docs: fixed many small problems in documentation causing equations and examples to
-  render incorrectly.
-- `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
 
 ## [0.12.2] - 2024-02-25
 

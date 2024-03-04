@@ -10,6 +10,7 @@ data rather than the theoretical result of the respective functions. In some
 cases, the output is also tested against a well-established model published
 by USGS(PHREEQC)
 """
+import platform
 
 import numpy as np
 import pytest
@@ -280,6 +281,7 @@ def test_activity_crc_rbcl():
         assert np.isclose(result, expected, rtol=0.05)
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_activity_crc_MgCl2():
     """
     calculate the activity coefficient of MgCl2 at each concentration and compare

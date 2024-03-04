@@ -5,8 +5,10 @@ pyEQL salt matching test suite
 This file contains tests for the salt-matching algorithm used by pyEQL in
 salt_ion_match.py
 """
+import platform
 
 import numpy as np
+import pytest
 
 import pyEQL
 from pyEQL.salt_ion_match import Salt
@@ -97,6 +99,7 @@ def test_single_ion():
     assert s1.get_salt().nu_anion == 3
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_salt_with_equilibration():
     """
     test matching a solution containing a salt, before and after equilibration.
