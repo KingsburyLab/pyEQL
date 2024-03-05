@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `NativeEOS` / `PhreeqcEOS`: Added `try`/`catch` so that `pyEQL` can still be used on platforms that PHREEQC does
+  not support, such as Apple Silicon. In such cases, functions like `equilibrate` that depend on PHREEQC will
+  raise errors, but everything else can still be used.
 - CI: Added Apple M1 runner (GitHub: `macos-14`) to the CI tests.
 
 ### Fixed
