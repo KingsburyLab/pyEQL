@@ -8,6 +8,7 @@ used by pyEQL's Solution class
 
 import copy
 import os
+import platform
 from pathlib import Path
 
 import numpy as np
@@ -366,6 +367,8 @@ def test_components_by_element(s1, s2):
         "Na(1.0)": ["Na[+1]"],
         "Cl(-1.0)": ["Cl[-1]"],
     }
+    if platform.machine() == "arm64" and platform.system() == "Darwin":
+        pytest.skip(reason="arm64 not supported")
     s2.equilibrate()
     assert s2.get_components_by_element() == {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
@@ -401,6 +404,7 @@ def test_get_total_amount(s2):
     assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_equilibrate(s1, s2, s5_pH):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
@@ -505,6 +509,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_arithmetic_and_copy(s2, s6):
     s6_scale = copy.deepcopy(s6)
     s6_scale *= 1.5

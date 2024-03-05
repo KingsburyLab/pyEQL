@@ -5,16 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.14.0] - 2024-03-05
+
+### Added
+
+- `NativeEOS` / `PhreeqcEOS`: Added `try`/`catch` so that `pyEQL` can still be used on platforms that PHREEQC does
+  not support, such as Apple Silicon. In such cases, functions like `equilibrate` that depend on PHREEQC will
+  raise errors, but everything else can still be used.
+- CI: Added Apple M1 runner (GitHub: `macos-14`) to the CI tests.
+
+### Fixed
+
+- CI: Addressed several issues in the testing configuration which had resulted in testing
+  fewer operating systems x python version combinations than intended. CI tests now
+  correctly and comprehensively test every supported version of python on every os
+  (macos, windows, ubuntu).
+- `utils.FormulaDict`: implemented `__contains__` so that `get()` works correctly in
+  python 3.12+. See https://github.com/python/cpython/issues/105524
+- Docs: fixed many small problems in documentation causing equations and examples to
+  render incorrectly.
+- `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
 
 ## [0.13.0] - 2024-03-05
 
 ### Fixed
 
 - `equilibrium.alpha()`: Fixed incorrect calculation of acid-base distribution coefficient for multiprotic acids.
-- Docs: fixed many small problems in documentation causing equations and examples to
-  render incorrectly.
-- `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
 
 ## [0.12.2] - 2024-02-25
 

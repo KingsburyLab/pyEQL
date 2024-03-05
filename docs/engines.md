@@ -21,6 +21,16 @@ as needed to particular use cases.
 `pyEQL` currently supports three modeling engines: `ideal`, `native`, and `phreeqc`, which
 are selected via the `engine` kwarg to `Solution.__init__()`. Each engine is briefly described below.
 
+```{warning}
+If you are using a Mac with an Apple M1, M2, etc. chip (i.e., Arm64 architecture), some features of `pyEQL` will be
+unavailable. Specifically, anything which depends on PHREEQC (e.g., the
+`equilibrate` method in the native engine and the entire
+ [`phreeqc` engine](engines.md#the-phreeqc-engine)) will not work. This is because `phreeqpython` is currently
+ not available for this platform. All other functions of `pyEQL` should work as expected.
+
+Feel free to post your experiences or proposed solutions at https://github.com/KingsburyLab/pyEQL/issues/109
+```
+
 ## The `'native'` engine (Default)
 
 The `native` engine is the default choice and was the only option available prior to

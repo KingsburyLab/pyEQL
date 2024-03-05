@@ -159,7 +159,15 @@ class NativeEOS(EOS):
             Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
         )
         # create the PhreeqcPython instance
-        self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+        # try/except added to catch unsupported architectures, such as Apple Silicon
+        try:
+            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+        except OSError:
+            logger.error(
+                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
+                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
+                " pyEQL will work, but equilibrate() will have no effect."
+            )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
