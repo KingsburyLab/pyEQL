@@ -686,7 +686,7 @@ def test_test_to_from_file(tmpdir, s1):
         filename = tmp_path / f
         s1.to_file(filename)
         assert filename.exists()
-        loaded_s1 = Solution().from_file(filename)
+        loaded_s1 = Solution.from_file(filename)
         assert loaded_s1 is not None
         assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
     # test invalid extension raises error
@@ -694,4 +694,4 @@ def test_test_to_from_file(tmpdir, s1):
     with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
-        Solution().from_file(filename)
+        Solution.from_file(filename)

@@ -3300,6 +3300,7 @@ class Solution(MSONable):
         else:
             dumpfn(self, filename)
 
+    @classmethod
     def from_file(self, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
