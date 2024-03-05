@@ -52,8 +52,7 @@ class EOS(ABC):
             Quantity: dimensionless quantity object
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -68,8 +67,7 @@ class EOS(ABC):
             Quantity: dimensionless molal scale osmotic coefficient
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -84,8 +82,7 @@ class EOS(ABC):
             Quantity: solute volume in L
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -102,8 +99,7 @@ class EOS(ABC):
             Nothing. The speciation of the Solution is modified in-place.
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters or lack of convergence.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters or lack of convergence.
         """
 
 
@@ -280,9 +276,7 @@ class NativeEOS(EOS):
             molality," which is the molality that would result in a single-salt
             mixture with the same total ionic strength as the multicomponent solution.
 
-            .. math::
-
-                m_{effective} = \frac{2 I}{(\nu_{+} z_{+}^2 + \nu{_}- z_{-}^2)}
+            .. math:: m_{effective} = \frac{2 I}{(\nu_{+} z_{+}^2 + \nu_{-}- z_{-}^2)}
 
         References:
             .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
@@ -299,12 +293,11 @@ class NativeEOS(EOS):
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         See Also:
-            get_ionic_strength
-            get_salt
-            activity_correction.get_activity_coefficient_debyehuckel
-            activity_correction.get_activity_coefficient_guntelberg
-            activity_correction.get_activity_coefficient_davies
-            activity_correction.get_activity_coefficient_pitzer
+            :attr:`pyEQL.solution.Solution.ionic_strength`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_debyehuckel`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_guntelberg`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_davies`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_pitzer`
         """
         # identify the predominant salt that this ion is a member of
         salt = None
@@ -429,28 +422,27 @@ class NativeEOS(EOS):
         coefficient of 1.
 
         If the 'rational' scale is given as input, then the molal-scale osmotic
-        coefficient :math:`\\phi` is converted according to [rbs]_
+        coefficient :math:`\phi` is converted according to [rbs]_
 
-        .. math:: g = - \\phi * M_{w} \\sum_{i} \\nu_{i} m_{i}) / \\ln x_{w}
+        .. math:: g = - \phi M_{w} \frac{\sum_{i} \nu_{i} m_{i}}{\ln x_{w}}
 
         where :math:`g` is the rational osmotic coefficient, :math:`M_{w}` is
         the molecular weight of water, the summation represents the total molality of
         all solute  species, and :math:`x_{w}` is the mole fraction of water.
 
         Args:
-            scale:
-            The concentration scale for the returned osmotic coefficient. Valid options are "molal",
-            "rational" (i.e., mole fraction), and "fugacity".  By default, the molal scale osmotic
-            coefficient is returned.
+            scale: The concentration scale for the returned osmotic coefficient. Valid options are "molal",
+                "rational" (i.e., mole fraction), and "fugacity".  By default, the molal scale osmotic
+                coefficient is returned.
 
         Returns:
             Quantity:
                 The osmotic coefficient
 
         See Also:
-            get_water_activity
-            get_ionic_strength
-            get_salt
+            :meth:`pyEQL.solution.Solution.get_water_activity`
+            :meth:`pyEQL.solution.Solution.get_salt`
+            :attr:`pyEQL.solution.Solution.ionic_strength`
 
         Notes:
             For multicomponent mixtures, pyEQL adopts the "effective Pitzer model"

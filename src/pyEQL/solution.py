@@ -62,41 +62,41 @@ class Solution(MSONable):
 
         Args:
             solutes : dict, optional. Keys must be the chemical formula, while values must be
-                        str Quantity representing the amount. For example:
+                str Quantity representing the amount. For example:
 
-                        {"Na+": "0.1 mol/L", "Cl-": "0.1 mol/L"}
+                {"Na+": "0.1 mol/L", "Cl-": "0.1 mol/L"}
 
-                        Note that an older "list of lists" syntax is also supported; however this
-                        will be deprecated in the future and is no longer recommended. The equivalent
-                        list syntax for the above example is
+                Note that an older "list of lists" syntax is also supported; however this
+                will be deprecated in the future and is no longer recommended. The equivalent
+                list syntax for the above example is
 
-                        [["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]]
+                [["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]]
 
-                        Defaults to empty (pure solvent) if omitted
+                Defaults to empty (pure solvent) if omitted
             volume : str, optional
-                        Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
-                        Note that the total solution volume will be computed using partial molar
-                        volumes of the respective solutes as they are added to the solution.
+                Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
+                Note that the total solution volume will be computed using partial molar
+                volumes of the respective solutes as they are added to the solution.
             temperature : str, optional
-                        The solution temperature, including the ureg. Defaults to '25 degC' if omitted.
+                The solution temperature, including the ureg. Defaults to '25 degC' if omitted.
             pressure : Quantity, optional
-                        The ambient pressure of the solution, including the unit.
-                        Defaults to '1 atm' if omitted.
+                The ambient pressure of the solution, including the unit.
+                Defaults to '1 atm' if omitted.
             pH : number, optional
-                        Negative log of H+ activity. If omitted, the solution will be
-                        initialized to pH 7 (neutral) with appropriate quantities of
-                        H+ and OH- ions
-            pe: the pE value (redox potential) of the solution.     Lower values = more reducing,
+                Negative log of H+ activity. If omitted, the solution will be
+                initialized to pH 7 (neutral) with appropriate quantities of
+                H+ and OH- ions
+            pE: the pE value (redox potential) of the solution.     Lower values = more reducing,
                 higher values = more oxidizing. At pH 7, water is stable between approximately
                 -7 to +14. The default value corresponds to a pE value typical of natural
                 waters in equilibrium with the atmosphere.
-            balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options are
-                'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
-                redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be
-                added/subtracted to balance charge. If set to None, no charge balancing will be performed either on init
-                or when equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
-            solvent: Formula of the solvent. Solvents other than water are not supported at
-                this time.
+            balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options
+                are 'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
+                redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-'
+                that will be added/subtracted to balance charge. If set to None, no charge balancing will be
+                performed either on init or when equilibrate() is called. Note that in this case, equilibrate()
+                can distort the charge balance!
+            solvent: Formula of the solvent. Solvents other than water are not supported at this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
@@ -229,7 +229,8 @@ class Solution(MSONable):
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
             logger.warning(
-                'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input (e.g., {"Na+":"0.5 mol/L"} instead.)'
+                'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
+                '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
             for item in self._solutes:
                 self.add_solute(*item)
@@ -250,7 +251,8 @@ class Solution(MSONable):
                 ions = set().union(*[self.cations, self.anions])  # all ions
                 if self.balance_charge not in ions:
                     raise ValueError(
-                        f"Charge balancing species {self.balance_charge} was not found in the solution!. Species {ions} were found."
+                        f"Charge balancing species {self.balance_charge} was not found in the solution!. "
+                        f"Species {ions} were found."
                     )
                 z = self.get_property(balance_charge, "charge")
                 self.components[balance_charge] += -1 * cb / z * self.volume.to("L").magnitude
@@ -819,7 +821,8 @@ class Solution(MSONable):
         """
         Total dissolved solids in mg/L (equivalent to ppm) including both charged and uncharged species.
 
-        The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent), except for H[+1] and OH[-1]].
+        The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent),
+        except for H[+1] and OH[-1]].
         """
         tds = ureg.Quantity(0, "mg/L")
         for s in self.components:
@@ -1186,11 +1189,12 @@ class Solution(MSONable):
         Parameters
         ----------
         formula : str
-                    Chemical formula for the solute.
-                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+            Chemical formula for the solute.
+            Charged species must contain a + or - and (for polyvalent solutes) a number representing the
+            net charge (e.g. 'SO4-2').
         amount : str
-                    The amount of substance in the specified unit system. The string should contain both a quantity and
-                    a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'
+            The amount of substance in the specified unit system. The string should contain both a quantity and
+            a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'
         """
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1693,8 +1697,9 @@ class Solution(MSONable):
 
     def equilibrate(self, **kwargs) -> None:
         """
-        Update the composition of the Solution using the thermodynamic engine. Any kwargs specified are passed through
-        to self.engine.equilibrate()
+        Update the composition of the Solution using the thermodynamic engine.
+
+        Any kwargs specified are passed through to self.engine.equilibrate()
 
         Returns:
             Nothing. The .components attribute of the Solution is updated.
@@ -1851,8 +1856,8 @@ class Solution(MSONable):
 
             .. math:: \ln a_{w} = - \Phi M_{w} \sum_{i} m_{i}
 
-            Where :math:`M_{w}` is the molar mass of water (0.018015 kg/mol) and :math:`m_{i}` is the molal concentration
-            of each species.
+            Where :math:`M_{w}` is the molar mass of water (0.018015 kg/mol) and :math:`m_{i}` is the molal
+            concentration of each species.
 
             If appropriate Pitzer model parameters are not available, the
             water activity is assumed equal to the mole fraction of water.
@@ -1913,7 +1918,8 @@ class Solution(MSONable):
             anion, and water).
 
         References:
-            .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
+            .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
+            A differential approach.* Elsevier, 2007, pp. 23-37.
 
         """
         E = ureg.Quantity(0, "J")
@@ -2140,7 +2146,8 @@ class Solution(MSONable):
                 \lambda_i = \frac{F^2}{RT} D_i z_i^2
 
             Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
-            and ionic strength using the method implemented in PHREEQC >= 3.4.  See `get_diffusion_coefficient for` further details.
+            and ionic strength using the method implemented in PHREEQC >= 3.4.  See `get_diffusion_coefficient`
+            for further details.
 
         References:
             1. .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
@@ -2183,8 +2190,8 @@ class Solution(MSONable):
             ONLY when the Solution temperature is the same as the reference temperature for the diffusion coefficient
             in the database (usually 25 C).
 
-            Otherwise, the reference D value is adjusted based on the Solution temperature and (optionally), ionic strength.
-            The adjustments are"
+            Otherwise, the reference D value is adjusted based on the Solution temperature and (optionally),
+            ionic strength. The adjustments are
 
             .. math::
 
@@ -2198,14 +2205,14 @@ class Solution(MSONable):
 
                  \kappa a = B \sqrt{I} \frac{a2}{1+I^{0.75}}
 
-            where a1, a2, and d are parameters from Ref. 2, A and B are the parameters used in the Debye Huckel equation, and
-            I is the ionic strength. If the model parameters for a particular solute are not available,
+            where a1, a2, and d are parameters from Ref. 2, A and B are the parameters used in the Debye Huckel
+            equation, and I is the ionic strength. If the model parameters for a particular solute are not available,
             default values of d=0, a1=1.6, and a2=4.73 (as recommended in Ref. 2) are used instead.
 
         References:
             1. https://www.hydrochemistry.eu/exmpls/sc.html
-            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free' water
-               and a double layer. Cement and Concrete Research 101, 2017.
+            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free'
+               water and a double layer. Cement and Concrete Research 101, 2017.
                https://dx.doi.org/10.1016/j.cemconres.2017.08.030
             3. CRC Handbook of Chemistry and Physics
 
@@ -2218,7 +2225,8 @@ class Solution(MSONable):
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
             logger.info(
-                f"Diffusion coefficient not found for species {rform}. Using default value of {self.default_diffusion_coeff} m**2/s."
+                f"Diffusion coefficient not found for species {rform}. Using default value of "
+                f"{self.default_diffusion_coeff} m**2/s."
             )
             D = ureg.Quantity(self.default_diffusion_coeff, "m**2/s")
 
@@ -2513,7 +2521,8 @@ class Solution(MSONable):
 
         Args:
             mode: Whether to list the amounts of all solutes, or only anions, cations, any ion, or any neutral solute.
-            units: The units to list solute amounts in. "activity" will list dimensionless activities instead of concentrations.
+            units: The units to list solute amounts in. "activity" will list dimensionless activities instead of
+                concentrations.
             places: The number of decimal places to round the solute amounts.
         """
         print(self)
@@ -3268,10 +3277,10 @@ class Solution(MSONable):
 
         References:
             .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
-                the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+                   the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
 
             .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
-                    McGraw-Hill, 2013.
+                   McGraw-Hill, 2013.
 
             .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
 

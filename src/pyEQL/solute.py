@@ -32,19 +32,23 @@ class Datum:
 
     @property
     def magnitude(self):
+        """Return the numerical value of a Datum."""
         return float(self.value.split(" ")[0])
 
     @property
     def unit(self):
+        """Return the unit of a Datum."""
         return self.value.split(" ")[-1]
 
     @property
     def uncertainty(self):
+        """Return the uncertainty of a Datum."""
         if len(self.value.split(" ")) > 3:
             return float(self.value.split(" ")[2])
         return np.nan
 
     def as_dict(self):
+        """Return a dictionary representation of the Datum."""
         return dict(asdict(self).items())
 
 
@@ -55,9 +59,8 @@ class Solute:
     transport numbers, concentration, activity, etc.
 
     Args:
-        formula : str
-                    Chemical formula for the solute.
-                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+        formula: Chemical formula for the solute. Charged species must contain a + or - and (for polyvalent solutes)
+            a number representing the net charge (e.g. 'SO4-2').
     """
 
     formula: str
@@ -137,6 +140,7 @@ class Solute:
         )
 
     def as_dict(self):
+        """Return a dictionary representation of the Solute."""
         return dict(asdict(self).items())
 
     # set output of the print() statement

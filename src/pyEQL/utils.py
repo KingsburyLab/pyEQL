@@ -1,7 +1,7 @@
 """
 pyEQL utilities
 
-:copyright: 2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -30,9 +30,10 @@ def standardize_formula(formula: str):
         ValueError if `formula` cannot be processed or is invalid.
 
     Notes:
-        Currently this method standardizes formulae by passing them through pymatgen.core.ion.Ion.reduced_formula(). For ions, this means that 1) the
-        charge number will always be listed explicitly and 2) the charge number will be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+', 'Na+1', and 'Na[+]' will all
-        standardize to "Na[+1]"
+        Currently this method standardizes formulae by passing them through `pymatgen.core.ion.Ion.reduced_formula()`.
+        For ions, this means that 1) the charge number will always be listed explicitly and 2) the charge number will
+        be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+',
+        'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
     """
     return Ion.from_formula(formula).reduced_formula
 
@@ -63,7 +64,7 @@ def format_solutes_dict(solute_dict: dict, units: str):
 @ureg.wraps(ret=None, args=["K", "MPa"], strict=False)
 def create_water_substance(temperature: float, pressure: float):
     """
-    Instantiate a water substance model from IAPWS
+    Instantiate a water substance model from IAPWS.
 
     Args:
         temperature: the desired temperature in K
