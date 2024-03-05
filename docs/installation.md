@@ -33,22 +33,29 @@ You can tell if this is the case by typing the following command:
 
 ```
 
+```
 $ python --version
 Python 2.7.12
-
 ```
 
 This means Python 2.x is installed. If you run 'pip install' it will point to the Python 2.7 installation, but pyEQL
 only works on Python 3. So, try this:
 
 ```
-
 $ python3 --version
 Python 3.9.7
-
 ```
 
 To get to Python 3.x, you have to type 'python3'. In this case, you would run 'pip3 install'
+
+```{warning}
+If you are using a Mac with an Apple M1, M2, etc. chip (i.e., Arm64 architecture), some features of `pyEQL` will be
+unavailable. Specifically, anything which depends on PHREEQC (e.g., the
+`equilibrate` method in the native engine and the entire
+ [`phreeqc` engine](engines.md)) will not work. This is because `phreeqpython` is currently
+ not available for this platform. All other functions of `pyEQL` should work as expected.
+
+Feel free to post your experiences or proposed solutions at https://github.com/KingsburyLab/pyEQL/issues/109
 ```
 
 ## Other dependencies
