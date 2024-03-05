@@ -63,7 +63,7 @@ and compiling the required parameters from literature. It defines a python `Solu
 can be easily retrieved. It implements the Pitzer model [@May2011b] for binary salts, with mixing rules [@Mistry2013]
 for more complex solutions, and decays gracefully to more approximate models (such as the Debye-Huckel activity
 model [@Stumm1993)]) when adequate data is not available. The built-in property database includes Pitzer model
-parameters [@May2011b] for more than 100 salts, diffusion coefficients [CRCdiffusion] for more than 100 solutes,
+parameters [@May2011b] for more than 100 salts, diffusion coefficients [@CRCdiffusion] for more than 100 solutes,
 and an ever-expanding set of additional property data that make the best-available models transparently accessible
 to the end user.
 
@@ -145,7 +145,7 @@ Bluecell Energy, LLC over the period 2013-2023.
 <!-- - JESS review papers? `[@rowland_ProgressAqueousSolution_2019]`
 - May Pitzer compilation? `[@May2011b]`
 - Effective Pitzer Model `[@Mistry2013]`
-- CRC handbook `[CRCdiffusion]`
+- CRC handbook `[@CRCdiffusion]`
 - phreeqc `[@Charlton2011]`
 - iphreeqc / phreeqpy `[@Parkhurst2013]`
 - phreeqpython `[@phreeqpython]`
