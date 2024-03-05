@@ -99,5 +99,10 @@ class FormulaDict(UserDict):
         # sort contents anytime an item is set
         self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 
+    # Necessary to define this so that .get() works properly in python 3.12+
+    # see https://github.com/python/cpython/issues/105524
+    def __contains__(self, key):
+        return standardize_formula(key) in self.data
+
     def __delitem__(self, key):
         super().__delitem__(standardize_formula(key))
