@@ -16,33 +16,27 @@ using `from_dict()`.
 
 ## Saving to a `.json` file
 
-`Solution` can be serialized (and later recreated from) a `.json` file using
+`Solution` can be serialized (and later recreated from) a `.json` file using `to_file`, which is based on
 [`monty.serializtaion.dumpfn`](https://pythonhosted.org/monty/monty.html#module-monty.serialization).
 
 ```python
 >>> from pyEQL import Solution
->>> from monty.serialization import dumpfn
 >>> s = Solution({"Na+": "0.5 mol/L", "Cl-": "0.5 mol/L"})
->>> dumpfn(s, 'test.json')
+>>> s.to_file('test.json')
 ```
 
 ## Loading from a `.json` file
 
-Similarly, [monty.serialization.loadfn](https://pythonhosted.org/monty/monty.html#module-monty.serialization) can be used to create a `Solution` from a compatible
+Similarly, `from_file` (based on [monty.serialization.loadfn](https://pythonhosted.org/monty/monty.html#module-monty.serialization)) can be used to create a `Solution` from a compatible
 `.json` file.
 
 ```python
->>> from monty.serialization import loadfn
->>> s = loadfn('test.json')
-print(s)
+>>> from pyEQL import Solution
+>>> s = Solution.from_file('test.json')
+<pyEQL.solution.Solution object at 0x7febf742d8a0>
+>>> print(s)
 Volume: 1.000 l
 Pressure: 1.000 atm
 Temperature: 298.150 K
 Components: ['H2O(aq)', 'H[+1]', 'OH[-1]']
 ```
-
-:::{note}
-In a future release, `to_file()` / `from_file()` methods may be added to `Solution` to
-make the above steps easier. Please post on GitHub if you have strong opinions about
-this!
-:::

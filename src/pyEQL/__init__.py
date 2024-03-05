@@ -2,7 +2,7 @@
 pyEQL is a python package for calculating the properties of aqueous solutions
 and performing chemical thermodynamics computations.
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 """
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover

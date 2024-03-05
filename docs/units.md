@@ -80,13 +80,13 @@ pint.errors.DimensionalityError: Cannot convert from 'meter' ([length]) to 'mete
 Refer to the [pint documentation](https://pint.readthedocs.io/en/stable/) for more
 etails about working with `Quantity`.
 
-:::{note}
+```{note}
 Note that the meaning of `ureg` is equivalent in the above `pyEQL` examples and in the [pint documentation](http://pint.readthedocs.io/). `pyEQL` instantiates its own `UnitRegistry` (with custom definitions for solution chemistry) and assigns it to the variable `ureg`. In most `pint` examples, the line `ureq = UnitRegistry()` does the same thing.
-:::
+```
 
-:::{important}
+```{important}
 if you use `pyEQL` in conjunction with another module that also uses pint for units-aware calculations, you must convert all `Quantity`  objects to strings before passing them to the other module, as pint cannot perform mathematical operations on units that belong to different "registries."  See the [pint documentation](http://pint.readthedocs.io/) for more details.
-:::
+```
 
 ## Custom Units
 

@@ -55,14 +55,13 @@ number of species included (see [Lu et al.](https://doi.org/10.1016/j.earscirev.
 See `pyEQL.equilibrium.eqiulibrate_phreeqc` in the [module reference](internal.md#speciation-functions)
 for more details.
 
-
-:::{warning}
+```{warning}
 Speciation support was added to the `native` engine in `v0.8.0` and should be considered
 experimental. Specifically, because the `native` engine uses a non-Pitzer PHREEQC database
 for speciation but uses the Pitzer model (when possible) for activity coefficients. As such,
 there may be subtle thermodynamic inconsistencies between the activities and the equilibrium
 concentrations returned by `equilibrate()`.
-:::
+```
 
 ## The `'phreeqc'` engine
 
@@ -81,11 +80,11 @@ concentration of the solute.
 Due to limitations in the `phreeqpython` interface, the osmotic coefficient is always
 returned as 1 at present.
 
-:::{warning}
+```{warning}
 The `phreeqc` engine currently returns an osmotic coefficient of 1 and solute volume of
 0 for all solutions. There appear to be limitations in the `phreeqpython` interface that
 make it difficult to access these properties.
-:::
+```
 
 ### Solute volumes
 
@@ -94,16 +93,15 @@ the `ideal` engine). More
 research is needed to determine whether this is consistent with intended PHREEQC behavior
 (when using the default database) or not.
 
-:::{warning}
+```{warning}
 The `phreeqc` engine currently returns an osmotic coefficient of 1 and solute volume of
 0 for all solutions. There appear to be limitations in the `phreeqpython` interface that
 make it difficult to access these properties.
-:::
+```
 
 ### Speciation
 
 Speciation calculations are provided by PHREEQC via `phreeqpython`.
-
 
 ## The `'ideal'` engine
 
