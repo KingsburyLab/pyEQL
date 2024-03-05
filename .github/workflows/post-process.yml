@@ -60,21 +60,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
-
-  # https://github.com/marketplace/actions/tag-release-on-push-action
-  auto-gen-release:
-    name: Tag/Release on merge of labeled PRs
-    needs: test-comprehensive
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - # It is often a desired behavior to merge only when a workflow execution
-        # succeeds. This can be changed as needed.
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: rymndhng/release-on-push-action@v0.28.0
-        with:
-          # loonly release when PRs with release:major/minor/patch labels are merged
-          bump_version_scheme: norelease
-          use_github_release_notes: true
-          release_body: "See [CHANGELOG](https://github.com/KingsburyLab/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."

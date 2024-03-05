@@ -1,42 +1,60 @@
 name: release
 
+# runs when the Post merge workflow completes successfully
+# tags new release and pushes to PyPi
+# see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [Post merge]
+    types: [completed]
 
   workflow_dispatch:
 
 jobs:
+  # https://github.com/marketplace/actions/tag-release-on-push-action
+  tag-release:
+    name: Tag/Release on merge of labeled PRs
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: rymndhng/release-on-push-action@v0.28.0
+        with:
+          # loonly release when PRs with release:major/minor/patch labels are merged
+          bump_version_scheme: norelease
+          use_github_release_notes: true
+          release_body: "See [CHANGELOG](https://github.com/KingsburyLab/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."
+
   # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
 
   deploy:
     name: Upload release to PyPI
     runs-on: ubuntu-latest
+    needs: tag-release
     environment:
       name: publish
       url: https://pypi.org/p/pyEQL
 
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools setuptools_scm wheel tox
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools setuptools_scm wheel tox
 
-    - name: Build packages for distribution
-      run: |
-        tox -e clean,build
+      - name: Build packages for distribution
+        run: |
+          tox -e clean,build
 
-    - name: Upload to PyPi
-      uses: pypa/gh-action-pypi-publish@v1.8.12
-
+      - name: Upload to PyPi
+        uses: pypa/gh-action-pypi-publish@v1.8.12
