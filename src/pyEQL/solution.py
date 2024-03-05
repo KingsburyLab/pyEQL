@@ -267,13 +267,8 @@ class Solution(MSONable):
         Return the total mass of the solution.
 
         The mass is calculated each time this method is called.
-        Parameters
-        ----------
-        None
 
-        Returns:
-        -------
-        Quantity: the mass of the solution, in kg
+        Returns: The mass of the solution, in kg
 
         """
         mass = np.sum([self.get_amount(item, "kg").magnitude for item in self.components])
@@ -319,17 +314,16 @@ class Solution(MSONable):
             volume : Total volume of the solution, including the unit, e.g. '1 L'
 
         Examples:
-        ---------
-        >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
-        >>> print(mysol.volume)
-        0.5000883925072983 l
-        >>> mysol.list_concentrations()
-        {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
-        >>> mysol.volume = '200 mL')
-        >>> print(mysol.volume)
-        0.2 l
-        >>> mysol.list_concentrations()
-        {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
+            >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
+            >>> print(mysol.volume)
+            0.5000883925072983 l
+            >>> mysol.list_concentrations()
+            {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
+            >>> mysol.volume = '200 mL')
+            >>> print(mysol.volume)
+            0.2 l
+            >>> mysol.list_concentrations()
+            {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
 
         """
         # figure out the factor to multiply the old concentrations by
@@ -1186,15 +1180,11 @@ class Solution(MSONable):
     def add_solute(self, formula: str, amount: str):
         """Primary method for adding substances to a pyEQL solution.
 
-        Parameters
-        ----------
-        formula : str
-            Chemical formula for the solute.
-            Charged species must contain a + or - and (for polyvalent solutes) a number representing the
-            net charge (e.g. 'SO4-2').
-        amount : str
-            The amount of substance in the specified unit system. The string should contain both a quantity and
-            a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'
+        Args:
+            formula (str): Chemical formula for the solute. Charged species must contain a + or - and
+            (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+            amount (str): The amount of substance in the specified unit system. The string should contain
+            both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1454,13 +1444,12 @@ class Solution(MSONable):
     def get_osmolarity(self, activity_correction=False) -> Quantity:
         """Return the osmolarity of the solution in Osm/L.
 
-        Parameters
-        ----------
-        activity_correction : bool
-            If TRUE, the osmotic coefficient is used to calculate the
-            osmolarity. This correction is appropriate when trying to predict
-            the osmolarity that would be measured from e.g. freezing point
-            depression. Defaults to FALSE if omitted.
+        Args:
+            activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point
+                depression. Defaults to FALSE if omitted.
         """
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
         return factor * self.get_total_moles_solute() / self.volume.to("L")
@@ -1468,13 +1457,12 @@ class Solution(MSONable):
     def get_osmolality(self, activity_correction=False) -> Quantity:
         """Return the osmolality of the solution in Osm/kg.
 
-        Parameters
-        ----------
-        activity_correction : bool
-            If TRUE, the osmotic coefficient is used to calculate the
-            osmolarity. This correction is appropriate when trying to predict
-            the osmolarity that would be measured from e.g. freezing point
-            depression. Defaults to FALSE if omitted.
+        Args:
+            activity_correction : bool
+                If TRUE, the osmotic coefficient is used to calculate the
+                osmolarity. This correction is appropriate when trying to predict
+                the osmolarity that would be measured from e.g. freezing point
+                depression. Defaults to FALSE if omitted.
         """
         factor = self.get_osmotic_coefficient() if activity_correction is True else 1
         return factor * self.get_total_moles_solute() / self.solvent_mass.to("kg")
@@ -2282,30 +2270,21 @@ class Solution(MSONable):
         r"""
         Calculate the ionic mobility of the solute.
 
-        Parameters
-        ----------
-        solute : str
-            String identifying the solute for which the mobility is
-            to be calculated.
+        Args:
+            solute (str): String identifying the solute for which the mobility is to be calculated.
 
         Returns:
-        -------
-        float : The ionic mobility. Zero if the solute is not charged.
+            float: The ionic mobility. Zero if the solute is not charged.
 
+        Note:
+            This function uses the Einstein relation to convert a diffusion coefficient into an ionic mobility [smed]_
 
-        Notes:
-        -----
-        This function uses the Einstein relation to convert a diffusion coefficient
-        into an ionic mobility [smed]_
+            .. math::
 
-        .. math::
-
-            \mu_i = {F |z_i| D_i \over RT}
+                \mu_i = {F |z_i| D_i \over RT}
 
         References:
-        ----------
-        .. [smed] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
-
+            Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
         """
         D = self.get_diffusion_coefficient(solute)
 

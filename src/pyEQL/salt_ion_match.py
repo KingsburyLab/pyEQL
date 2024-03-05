@@ -25,22 +25,17 @@ class Salt(MSONable):
         Create a Salt object based on its component ions.
 
         Parameters:
-        ----------
-        cation, anion : str
-                Chemical formula of the cation and anion, respectively
+            cation, anion: (str) Chemical formula of the cation and anion, respectively.
 
-        Returns
-        -------
-        Salt : An object representing the properties of the salt
+        Returns:
+            Salt : An object representing the properties of the salt
 
         Examples:
-        --------
-        >>> Salt('Na+','Cl-').formula
-        'NaCl'
+            >>> Salt('Na+','Cl-').formula
+            'NaCl'
 
-        >>> Salt('Mg++','Cl-').formula
-        'MgCl2'
-
+            >>> Salt('Mg++','Cl-').formula
+            'MgCl2'
         """
         # create pymatgen Ion objects
         pmg_cat = Ion.from_formula(cation)

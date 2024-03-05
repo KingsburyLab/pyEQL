@@ -36,23 +36,15 @@ SPECIES_ALIAISES = {
 
 def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 K")):
     """
-    Calculate a parameter for the Pitzer model based on temperature-dependent
-    coefficients c1,c2,c3,c4,and c5.
+    Calculate a parameter for the Pitzer model based on temperature-dependent coefficients c1,c2,c3,c4,and c5.
 
-    Parameters
-    ----------
-    c1, c2, c3, c4, c5: float
-                Temperature-dependent coefficients for the pitzer parameter of
-                interest.
-    temp: Quantity
-                The temperature at which the Pitzer parameter is to be calculated
-    temp_ref: Quantity, optional
-                The reference temperature on which the parameters are based.
-                298.15 K if omitted.
+    Args:
+        c1, c2, c3, c4, c5 (float): Temperature-dependent coefficients for the pitzer parameter of interest.
+        temp (Quantity): The temperature at which the Pitzer parameter is to be calculated.
+        temp_ref (Quantity, optional): The reference temperature on which the parameters are based. Defaults to 298.15 K if omitted.
 
-    As described in the PHREEQC documentation
-
-
+    Note:
+        As described in the PHREEQC documentation.
     """
     return (
         c1
@@ -65,53 +57,37 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 
 
 
 def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=ureg.Quantity(25, "degC")):
-    r"""(float,float,number, optional number) -> float.
-
+    r"""
     Adjust a reaction equilibrium constant from one temperature to another.
 
-    Parameters
-    ----------
-    equilibrium_constant : float
-                           The reaction equilibrium constant for the reaction
-    enthalpy : Quantity
-               The enthalpy change (delta H) for the reaction in kJ/mol. Assumed
-               independent of temperature (see Notes).
-    temperature : Quantity
-                  the desired reaction temperature in degrees Celsius
-    reference_temperature : Quantity, optional
-                      the temperature at which equilibrium_constant is valid. (25 degrees C if omitted).
+    Args:
+        equilibrium_constant (float): The reaction equilibrium constant for the reaction.
+        enthalpy (Quantity): The enthalpy change (delta H) for the reaction in kJ/mol. Assumed independent of temperature (see Notes).
+        temperature (Quantity): The desired reaction temperature in degrees Celsius.
+        reference_temperature (Quantity, optional): The temperature at which equilibrium_constant is valid. Defaults to 25 degrees C if omitted.
 
-    Returns
-    -------
-    float
-        adjusted reaction equilibrium constant
+    Returns:
+        float: The adjusted reaction equilibrium constant.
 
-    Notes
-    -----
-    This function implements the Van't Hoff equation to adjust measured
-    equilibrium constants to other temperatures.
+    Note:
+        This function implements the Van't Hoff equation to adjust measured equilibrium constants to other temperatures.
 
-    .. math::
-        ln(K2 / K1) = {\delta H \over R} ( {1 \over T_1} - {1 \over T_2} )
+        .. math::
+            ln(K2 / K1) = {\delta H \over R} ( {1 \over T_1} - {1 \over T_2} )
 
-    This implementation assumes that the enthalpy is independent of temperature
-    over the range of interest.
+        This implementation assumes that the enthalpy is independent of temperature over the range of interest.
 
-    References
-    ----------
-    Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53.
-        Wiley Interscience, 1996.
+    References:
+        Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53. Wiley Interscience, 1996.
 
     Examples:
-    --------
-    >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC')) #doctest: +ELLIPSIS
-    0.00203566...
+        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC')) #doctest: +ELLIPSIS
+        0.00203566...
 
-    If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
+        If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
 
-    >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC')) #doctest: +ELLIPSIS
-    0.00203566...
-
+        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC')) #doctest: +ELLIPSIS
+        0.00203566...
     """
     output = equilibrium_constant * math.exp(
         enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
