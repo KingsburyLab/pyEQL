@@ -7,9 +7,12 @@ used by pyEQL's Solution class
 """
 
 import copy
+import os
+from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -109,14 +112,54 @@ def test_empty_solution_3():
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
-def test_diffusion_transport(s2):
-    d25 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
-    assert np.isclose(d25, 1.334e-9)
-    assert np.isclose(s2.get_transport_number("Na+"), 0.396, atol=1e-3)
-    assert np.isclose(s2.get_transport_number("Cl-"), 0.604, atol=1e-3)
+def test_diffusion_transport(s1, s2):
+    # test ionic strength adjustment
+    assert s1.get_diffusion_coefficient("H+") > s2.get_diffusion_coefficient("H+")
+
+    # for Na+, d=122, a1=1.52, a2=3.7, A=1.173802/2.303 at 25 DegC, B = 3.2843078+10
+    factor = np.exp(
+        -1.52
+        * 1.173802
+        / 2.303
+        * 1
+        * np.sqrt(s2.ionic_strength.magnitude)
+        / (1 + 3.2843078e10 * np.sqrt(s2.ionic_strength.magnitude) * 3.7 / (1 + s2.ionic_strength.magnitude**0.75))
+    )
+    assert np.isclose(
+        factor * s2.get_diffusion_coefficient("Na+").magnitude,
+        s2.get_diffusion_coefficient("Na+").magnitude,
+        atol=5e-11,
+    )
+    s_dilute = Solution({"Na+": "1 mmol/L", "Cl-": "1 mmol/L"})
+    assert np.isclose(
+        s_dilute.get_diffusion_coefficient("Na+", activity_correction=False).magnitude, 1.334e-9, atol=1e-12
+    )
+    assert np.isclose(s_dilute.get_transport_number("Na+"), 0.396, atol=1e-3)
+    assert np.isclose(s_dilute.get_transport_number("Cl-"), 0.604, atol=1e-3)
+
+    # test setting a default value
+    assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
+    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=False).magnitude == 1e-9
+    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=True).magnitude < 1e-9
+    d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
+    nu25 = s2.water_substance.nu
     s2.temperature = "40 degC"
-    d40 = s2.get_property("Na+", "transport.diffusion_coefficient").magnitude
-    assert np.isclose(d40, d25 * 40 / 25)
+    d40 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
+    nu40 = s2.water_substance.nu
+    assert np.isclose(
+        d40,
+        d25 * np.exp(122 / (273.15 + 40) - 122 / 298.15) * (nu25 / nu40),
+        atol=5e-11,
+    )
+
+    # test correction factors for concentration, as per Appelo 2017 Fig 5
+    D1 = Solution({"Na+": "1 umol/L", "Cl-": "1 umol/L"}).get_diffusion_coefficient("Na+").magnitude
+    D2 = Solution({"Na+": "1.7 mol/kg", "Cl-": "1.7 mol/kg"}).get_diffusion_coefficient("Na+").magnitude
+    assert np.isclose(D2 / D1, 0.54, atol=1e-2)
+
+    D1 = Solution({"K+": "1 umol/L", "Cl-": "1 umol/L"}).get_diffusion_coefficient("K+").magnitude
+    D2 = Solution({"K+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}).get_diffusion_coefficient("K+").magnitude
+    assert np.isclose(D2 / D1, 0.80, atol=1e-2)
 
 
 def test_init_raises():
@@ -414,24 +457,48 @@ def test_tds(s1, s2, s5):
 
 
 def test_conductivity(s1, s2):
-    # even an empty solution should have some conductivity
-    assert s1.conductivity > 0
-    s_nacl = Solution({"Na+": "2298 mg/L", "Cl-": "3544 ppm"})
-    assert np.isclose(s_nacl.conductivity.to("mS/cm").magnitude, 10, atol=1)  # conductivity ~ 10 mS/cm
-    # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
+    # per CRC handbook - "electrical conductiVity of Water" , conductivity of pure water
+    # at 25 and 100 C is 0.0550 and 0.765 uS/cm
+    assert np.isclose(s1.conductivity.to("uS/cm").magnitude, 0.055, atol=1e-3)
+
+    # TODO - seems to be a possible bug related to setting temperature here
+    # s1.temperature = "100 degC"
+    # s2 = Solution(temperature='100 degC')
+    # assert np.isclose(s1.conductivity.to('uS/cm').magnitude, 0.765, atol=1e-3)
+
+    # CRC handbook table - "equivalent conductivity of electrolytes in aqueous solution"
+    # nacl
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+        s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
+        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # higher concentration data points from Appelo, 2017 Figure 4.
+    s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
+    assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
+
+    # MgCl2
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
+        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # per CRC handbook "standard KCl solutions for calibrating conductivity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.25)  # conductivity is in S/m
 
     # TODO - expected failures due to limited temp adjustment of diffusion coeff
-    # s_kcl.temperature = '5 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+    s_kcl.temperature = "5 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.2)
 
-    # s_kcl.temperature = '50 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.02)
+    s_kcl.temperature = "50 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.2)
 
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
 
 
 def test_arithmetic_and_copy(s2, s6):
@@ -449,6 +516,9 @@ def test_arithmetic_and_copy(s2, s6):
 
     with pytest.raises(NotImplementedError):
         s6 - s6_scale
+
+    # confirm that a copied solution can be equilibrated
+    s6_scale.equilibrate()
 
     # TODO - test pH and pE
     s2.temperature = "35 degC"
@@ -576,3 +646,48 @@ def test_serialization(s1, s2, tmpdir):
     # also should point to different Store instances
     # TODO currently this test will fail due to a bug in maggma's __eq__
     # assert s2_new.database != s2.database
+
+
+def test_from_preset(tmpdir):
+    from monty.serialization import dumpfn
+
+    preset_name = "seawater"
+    solution = Solution.from_preset(preset_name)
+    with open(os.path.join("src/pyEQL/presets", f"{preset_name}.yaml")) as file:
+        data = yaml.load(file, Loader=yaml.FullLoader)
+    # test valid preset
+    assert isinstance(solution, Solution)
+    assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution.pH, data["pH"], atol=0.01)
+    for solute in solution._solutes:
+        assert solute in data["solutes"]
+    # test invalid preset
+    with pytest.raises(FileNotFoundError):
+        Solution.from_preset("nonexistent_preset")
+    # test json as preset
+    tmp_path = Path(tmpdir)
+    json_preset = tmp_path / "test.json"
+    dumpfn(solution, json_preset)
+    solution_json = Solution.from_preset(tmp_path / "test")
+    assert isinstance(solution_json, Solution)
+    assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution_json.pressure == ureg.Quantity(data["pressure"])
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
+
+
+def test_test_to_from_file(tmpdir, s1):
+    tmp_path = Path(tmpdir)
+    for f in ["test.json", "test.yaml"]:
+        filename = tmp_path / f
+        s1.to_file(filename)
+        assert filename.exists()
+        loaded_s1 = Solution().from_file(filename)
+        assert loaded_s1 is not None
+        assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+    # test invalid extension raises error
+    filename = tmp_path / "test_solution.txt"
+    with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
+        s1.to_file(filename)
+    with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
+        Solution().from_file(filename)

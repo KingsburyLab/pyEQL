@@ -8,28 +8,31 @@ pyEQL Solution Class.
 from __future__ import annotations
 
 import math
+import os
 import warnings
 from functools import lru_cache
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-from iapws import IAPWS95
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
+from monty.serialization import dumpfn, loadfn
 from pint import DimensionalityError, Quantity
 from pymatgen.core import Element
 from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
+from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 
 # logging system
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, standardize_formula
+from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 
@@ -54,6 +57,7 @@ class Solution(MSONable):
         database: str | Path | Store | None = None,
     ):
         """
+        Instantiate a Solution from a composition.
 
         Args:
             solutes : dict, optional. Keys must be the chemical formula, while values must be
@@ -89,7 +93,7 @@ class Solution(MSONable):
                 'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
                 redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be
                 added/subtracted to balance charge. If set to None, no charge balancing will be performed either on init
-                or when equilibrate() is called.
+                or when equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
             solvent: Formula of the solvent. Solvents other than water are not supported at
                 this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
@@ -113,6 +117,8 @@ class Solution(MSONable):
         # see https://rednafi.com/python/lru_cache_on_methods/
         self.get_property = lru_cache()(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
+        self.get_mobility = lru_cache()(self._get_mobility)
+        self.get_diffusion_coefficient = lru_cache()(self._get_diffusion_coefficient)
 
         # initialize the volume recalculation flag
         self.volume_update_required = False
@@ -123,7 +129,7 @@ class Solution(MSONable):
             self._volume = ureg.Quantity(volume).to("L")
         else:
             # volume_set = False
-            self._volume = ureg.Quantity("1 L")
+            self._volume = ureg.Quantity(1, "L")
         # store the initial conditions as private variables in case they are
         # changed later
         self._temperature = ureg.Quantity(temperature)
@@ -137,10 +143,7 @@ class Solution(MSONable):
             self.balance_charge = balance_charge
 
         # instantiate a water substance for property retrieval
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # create an empty dictionary of components. This dict comprises {formula: moles}
         #  where moles is the number of moles in the solution.
@@ -150,7 +153,7 @@ class Solution(MSONable):
         if database is None:
             # load the default database, which is a JSONStore
             db_store = IonDB
-        elif isinstance(database, (str, Path)):
+        elif isinstance(database, str | Path):
             db_store = JSONStore(str(database), key="formula")
             logger.info(f"Created maggma JSONStore from .json file {database}")
         else:
@@ -192,8 +195,8 @@ class Solution(MSONable):
         # self.add_solvent(self.solvent, kwargs["solvent"][1])
 
         # calculate the moles of solvent (water) on the density and the solution volume
-        moles = self.volume / ureg.Quantity("55.55 mol/L")
-        self.components["H2O"] = moles.magnitude
+        moles = self.volume.magnitude / 55.55  # molarity of pure water
+        self.components["H2O"] = moles
 
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
@@ -337,10 +340,7 @@ class Solution(MSONable):
         self._temperature = ureg.Quantity(temperature)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -348,6 +348,8 @@ class Solution(MSONable):
         # clear any cached solute properties that may depend on temperature
         self.get_property.cache_clear()
         self.get_molar_conductivity.cache_clear()
+        self.get_mobility.cache_clear()
+        self.get_diffusion_coefficient.cache_clear()
 
     @property
     def pressure(self) -> Quantity:
@@ -365,10 +367,7 @@ class Solution(MSONable):
         self._pressure = ureg.Quantity(pressure)
 
         # update the water substance
-        self.water_substance = IAPWS95(
-            T=self.temperature.magnitude,
-            P=self.pressure.to("MPa").magnitude,
-        )
+        self.water_substance = create_water_substance(self.temperature, self.pressure)
 
         # recalculate the volume
         self.volume_update_required = True
@@ -619,75 +618,51 @@ class Solution(MSONable):
         # calculate the kinematic viscosity
         nu = math.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
 
-        return ureg.Quantity(math.exp(nu), "m**2 / s")
+        return ureg.Quantity(np.exp(nu), "m**2 / s")
 
-    # TODO - need tests of conductivity
-    # TODO - update with newer conductivity model used since PHREEQC 3.4+
-    # https://www.hydrochemistry.eu/pub/appt_CCR17.pdf
     @property
     def conductivity(self) -> Quantity:
         """
         Compute the electrical conductivity of the solution.
 
-        Parameters
-        ----------
-        None
-
         Returns:
-        -------
-        Quantity
             The electrical conductivity of the solution in Siemens / meter.
 
         Notes:
-        -----
-        Conductivity is calculated by summing the molar conductivities of the respective
-        solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion models [aq]_ [hc]_
+            Conductivity is calculated by summing the molar conductivities of the respective
+            solutes.
 
-        .. math::
+            .. math::
 
-            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\\alpha} m_i
+                EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 m_i = \\sum_i \\lambda_i m_i
 
-        Where:
+            Where :math:`D_i` is the diffusion coefficient, :math:`m_i` is the molal concentration,
+            :math:`z_i` is the charge, and the summation extends over all species in the solution.
+            Alternatively, :math:`\\lambda_i` is the molar conductivity of solute i.
 
-        .. math::
-
-            \\alpha =
-            \\begin{cases}
-                {\\frac{0.6}{\\sqrt{| z_{i} | }}} & {I < 0.36 | z_{i} | }
-                {\\frac{\\sqrt{I}}{| z_i |}} & otherwise
-            \\end{cases}
-
-        Note: PHREEQC uses the molal rather than molar concentration according to
-        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
+            Diffusion coefficients :math:`D_i` (and molar conductivities :math:`\\lambda_i`) are
+            adjusted for the effects of temperature and ionic strength using the method implemented
+            in PHREEQC >= 3.4. [aq]_ [hc]_  See `get_diffusion_coefficient for` further details.
 
         References:
-        ----------
-        .. [aq] https://www.aqion.de/site/electrical-conductivity
-        .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
+            .. [aq] https://www.aqion.de/site/electrical-conductivity
+            .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
 
         See Also:
-        --------
-        :py:attr:`ionic_strength`
-        :py:meth:`get_molar_conductivity()`
-        :py:meth:`get_activity_coefficient()`
-
+            :py:attr:`get_diffusion_coefficient`
+            :py:meth:`get_molar_conductivity`
+            :py:attr:`ionic_strength`
         """
-        EC = ureg.Quantity("0 S/m")
-        IS = self.ionic_strength.magnitude
-
-        for item in self.components:
-            z = abs(self.get_property(item, "charge"))
-            # ignore uncharged species
-            if z != 0:
-                # determine the value of the exponent alpha
-                alpha = 0.6 / z**0.5 if 0.36 * z > IS else IS**0.5 / z
-
-                molar_cond = self.get_molar_conductivity(item)
-
-                EC += molar_cond * self.get_activity_coefficient(item) ** alpha * self.get_amount(item, "mol/L")
-
-        return EC.to("S/m")
+        EC = ureg.Quantity(
+            np.asarray(
+                [
+                    self.get_molar_conductivity(i).to("S*L/mol/m").magnitude * self.get_amount(i, "mol/L").magnitude
+                    for i in self.components
+                ]
+            ),
+            "S/m",
+        )
+        return np.sum(EC)
 
     @property
     def ionic_strength(self) -> Quantity:
@@ -743,9 +718,9 @@ class Solution(MSONable):
         on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
         have a small nonzero value. It is calculated according to:
 
-        .. math:: CB = \\sum_i n_i z_i
+        .. math:: CB = \\sum_i C_i z_i
 
-        where :math:`n_i` is the number of moles, and :math:`z_i` is the charge on species i.
+        where :math:`C_i` is the molar concentration, and :math:`z_i` is the charge on species i.
 
         Returns:
         -------
@@ -786,7 +761,7 @@ class Solution(MSONable):
         .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = ureg.Quantity("0 mol/L")
+        alkalinity = ureg.Quantity(0, "mol/L")
 
         base_cations = {
             "Li[+1]",
@@ -833,7 +808,7 @@ class Solution(MSONable):
             The hardness of the solution in mg/L as CaCO3
 
         """
-        hardness = ureg.Quantity("0 mol/L")
+        hardness = ureg.Quantity(0, "mol/L")
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -850,7 +825,7 @@ class Solution(MSONable):
 
         The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent), except for H[+1] and OH[-1]].
         """
-        tds = ureg.Quantity("0 mg/L")
+        tds = ureg.Quantity(0, "mg/L")
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
             if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
@@ -1104,7 +1079,7 @@ class Solution(MSONable):
         Return a list of all species associated with a given element. Elements (keys) are
         suffixed with their oxidation state in parentheses, e.g.,
 
-        {"Na(1)":["Na[+1]", "NaOH(aq)"]}
+        {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
 
         Species associated with each element are sorted in descending order of the amount
         present (i.e., the first species listed is the most abundant).
@@ -1136,7 +1111,7 @@ class Solution(MSONable):
         Return a dict of Element: amount in mol
 
         Elements (keys) are suffixed with their oxidation state in parentheses,
-        e.g. "Fe(2)", "Cl(-1)".
+        e.g. "Fe(2.0)", "Cl(-1.0)".
         """
         d = {}
         for s, mol in self.components.items():
@@ -1167,7 +1142,7 @@ class Solution(MSONable):
 
         Args:
             element: The symbol of the element of interest. The symbol can optionally be followed by the
-                oxidation state in parentheses, e.g., "Na(1)", "Fe(2)", or "O(0)". If no oxidation state
+                oxidation state in parentheses, e.g., "Na(1.0)", "Fe(2.0)", or "O(0.0)". If no oxidation state
                 is given, the total concentration of the element (over all oxidation states) is returned.
         units : str
                     Units desired for the output. Examples of valid units are
@@ -1279,7 +1254,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
             # set the volume recalculation flag
@@ -1383,7 +1358,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
@@ -1471,7 +1446,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity("0 kg"):
+            if self.solvent_mass <= ureg.Quantity(0, "kg"):
                 logger.error("All solvent has been depleted from the solution")
                 return
 
@@ -1780,14 +1755,14 @@ class Solution(MSONable):
         """
         # return unit activity coefficient if the concentration of the solute is zero
         if self.get_amount(solute, "mol").magnitude == 0:
-            return ureg.Quantity("1 dimensionless")
+            return ureg.Quantity(1, "dimensionless")
 
         try:
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
-        except ValueError:
+        except (ValueError, ZeroDivisionError):
             logger.warning("Calculation unsuccessful. Returning unit activity coefficient.")
-            return ureg.Quantity("1 dimensionless")
+            return ureg.Quantity(1, "dimensionless")
 
         # if necessary, convert the activity coefficient to another scale, and return the result
         if scale == "molal":
@@ -1795,11 +1770,11 @@ class Solution(MSONable):
         if scale == "molar":
             total_molality = self.get_total_moles_solute() / self.solvent_mass
             total_molarity = self.get_total_moles_solute() / self.volume
-            return (molal * self.water_substance.rho * ureg.Quantity("1 g/L") * total_molality / total_molarity).to(
+            return (molal * ureg.Quantity(self.water_substance.rho, "g/L") * total_molality / total_molarity).to(
                 "dimensionless"
             )
         if scale == "rational":
-            return molal * (1 + ureg.Quantity("0.018015 kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
+            return molal * (1 + ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
 
         raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
@@ -1881,7 +1856,7 @@ class Solution(MSONable):
                 / math.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
-            return math.exp(
+            return np.exp(
                 -molal_phi * ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass
                 - math.log(self.get_amount(self.solvent, "fraction"))
             ) * ureg.Quantity(1, "dimensionless")
@@ -1937,7 +1912,7 @@ class Solution(MSONable):
 
         logger.info("Calculated water activity using osmotic coefficient")
 
-        return ureg.Quantity(math.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
+        return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
 
     def get_chemical_potential_energy(self, activity_correction: bool = True) -> Quantity:
         """
@@ -1980,7 +1955,7 @@ class Solution(MSONable):
         .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions: A differential approach.* Elsevier, 2007, pp. 23-37.
 
         """
-        E = ureg.Quantity("0 J")
+        E = ureg.Quantity(0, "J")
 
         # loop through all the components and add their potential energy
         for item in self.components:
@@ -2023,7 +1998,7 @@ class Solution(MSONable):
         Quantity: The desired parameter or None if not found
 
         """
-        base_temperature = ureg.Quantity("25 degC")
+        base_temperature = ureg.Quantity(25, "degC")
         # base_pressure = ureg.Quantity("1 atm")
 
         # query the database using the standardized formula
@@ -2060,20 +2035,7 @@ class Solution(MSONable):
             if name == "transport.diffusion_coefficient":
                 data = doc["transport"]["diffusion_coefficient"]
                 if data is not None:
-                    # correct for temperature and viscosity
-                    # .. math:: D_1 \over D_2 = T_1 \over T_2 * \mu_2 \over \mu_1
-                    # where :math:`\mu` is the dynamic viscosity
-                    # assume that the base viscosity is that of pure water
-                    return (
-                        ureg.Quantity(data["value"]).to("m**2/s")
-                        * self.temperature.magnitude
-                        / 298.15
-                        * self.water_substance.mu
-                        / self.viscosity_dynamic.to("Pa*s").magnitude
-                    )
-
-            # logger.warning("Diffusion coefficient not found for species %s. Assuming zero." % (solute))
-            # return ureg.Quantity("0 m**2/s")
+                    return ureg.Quantity(data["value"]).to("m**2/s")
 
             # just return the base-value molar volume for now; find a way to adjust for concentration later
             if name == "size.molar_volume":
@@ -2147,21 +2109,18 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
-    def get_transport_number(self, solute, activity_correction=False) -> Quantity:
+    def get_transport_number(self, solute: str) -> Quantity:
         """Calculate the transport number of the solute in the solution.
 
         Args:
-            solute : String identifying the solute for which the transport number is
+            solute: Formula of the solute for which the transport number is
                 to be calculated.
 
-            activity_correction: If True, the transport number will be corrected for activity following
-                the same method used for solution conductivity. Defaults to False if omitted.
-
         Returns:
-                The transport number of `solute`
+                The transport number of `solute`, as a dimensionless Quantity.
 
         Notes:
-                Transport number is calculated according to :
+            Transport number is calculated according to :
 
                 .. math::
 
@@ -2171,47 +2130,34 @@ class Solution(MSONable):
                 coefficient, and :math:`z_i` is the charge, and the summation extends
                 over all species in the solution.
 
-                If `activity_correction` is True, the contribution of each ion to the
-                transport number is corrected with an activity factor. See the documentation
-                for Solution.conductivity for an explanation of this correction.
+                Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+                and ionic strength using the method implemented in PHREEQC >= 3.4.
+                See `get_diffusion_coefficient for` further details.
+
 
         References:
                 Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
                 ion effects on membrane potential and the permselectivity of ion exchange membranes.""
                 *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
+        See Also:
+            :py:meth:`get_diffusion_coefficient`
+            :py:meth:`get_molar_conductivity`
         """
         solute = standardize_formula(solute)
         denominator = numerator = 0
-        IS = self.ionic_strength.magnitude
 
         for item, mol in self.components.items():
-            z = self.get_property(item, "charge")
-            # neutral solutes do not contribute to transport number
-            if z == 0:
-                continue
-
             # the molar conductivity of each species is F/RT D * z^2, and the F/RT factor
             # cancels out
             # using species amounts in mol is equivalent to using concentrations in mol/L
             # since there is only one solution volume, and it's much faster.
             term = self.get_molar_conductivity(item).magnitude * mol
 
-            if activity_correction is True:
-                gamma = self.get_activity_coefficient(item).magnitude
+            if item == solute:
+                numerator = term
 
-                alpha = 0.6 / z**0.5 if 0.36 * z > IS else IS**0.5 / z
-
-                if item == solute:
-                    numerator = term * gamma**alpha
-
-                denominator += term * gamma**alpha
-
-            else:
-                if item == solute:
-                    numerator = term
-
-                denominator += term
+            denominator += term
 
         return ureg.Quantity(numerator / denominator, "dimensionless")
 
@@ -2232,16 +2178,26 @@ class Solution(MSONable):
 
             .. math::
 
-                \\kappa_i = {z_i^2 D_i F^2 \\over RT}
+                \\lambda_i = \\frac{F^2}{RT} D_i z_i^2
 
-            Note that the diffusion coefficient is strongly variable with temperature.
+            Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+            and ionic strength using the method implemented in PHREEQC >= 3.4.  See `get_diffusion_coefficient for` further details.
 
         References:
-            .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
-        """
-        D = self.get_property(solute, "transport.diffusion_coefficient")
+            1. .. [smed] Smedley, Stuart. The Interpretation of Ionic Conductivity in Liquids, pp 1-9. Plenum Press, 1980.
 
-        if D is not None:
+            2. https://www.hydrochemistry.eu/exmpls/sc.html
+
+            3. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free' water and a double layer. Cement and Concrete Research 101, 2017. https://dx.doi.org/10.1016/j.cemconres.2017.08.030
+
+            4. CRC Handbook of Chemistry and Physics
+
+        See Also:
+            :py:meth:`get_diffusion_coefficient`
+        """
+        D = self.get_diffusion_coefficient(solute, default=0)
+
+        if D != 0:
             molar_cond = (
                 D * (ureg.e * ureg.N_A) ** 2 * self.get_property(solute, "charge") ** 2 / (ureg.R * self.temperature)
             )
@@ -2252,7 +2208,106 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def get_mobility(self, solute: str) -> Quantity:
+    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True, default: float = 0) -> Quantity:
+        """
+        Get the **temperature-adjusted** diffusion coefficient of a solute.
+
+        Args:
+            solute: the solute for which to retrieve the diffusion coefficient.
+            activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
+                strength using a model from Ref 2.
+            default: The diffusion coefficient value to assume if data for the chosen solute are not found in
+                the database. If None (default), a diffusion coefficient of 0 will be returned.
+
+        Notes:
+            This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
+            ONLY when the Solution temperature is the same as the reference temperature for the diffusion coefficient
+            in the database (usually 25 C).
+
+            Otherwise, the reference D value is adjusted based on the Solution temperature and (optionally), ionic strength.
+            The adjustments are"
+
+            .. math::
+
+                D_T = D_{298} \\exp(\\frac{d}{T} - \\frac{d}{298}) \\frac{\\nu_{298}}{\\nu_T}
+
+            .. math::
+
+                D_{\\gamma} = D^0 \\exp(\\frac{-a1 A |z_i| \\sqrt{I}}{1+\\kappa a}
+
+            .. math::
+
+                 \\kappa a = B \\sqrt{I} \\frac{a2}{1+I^{0.75}}
+
+            where a1, a2, and d are parameters from Ref. 2, A and B are the parameters used in the Debye Huckel equation, and
+            I is the ionic strength. If the model parameters for a particular solute are not available,
+            default values of d=0, a1=1.6, and a2=4.73 (as recommended in Ref. 2) are used instead.
+
+        References:
+            1. https://www.hydrochemistry.eu/exmpls/sc.html
+            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free' water and a double layer. Cement and Concrete Research 101, 2017. https://dx.doi.org/10.1016/j.cemconres.2017.08.030
+            3. CRC Handbook of Chemistry and Physics
+
+        See Also:
+            pyEQL.activity_correction._debye_parameter_B
+            pyEQL.activity_correction._debye_parameter_activity
+
+        """
+        D = self.get_property(solute, "transport.diffusion_coefficient")
+        rform = standardize_formula(solute)
+        if D is None or D.magnitude == 0:
+            logger.info(f"Diffusion coefficient not found for species {rform}. Use default value of {default} m**2/s.")
+            D = ureg.Quantity(default, "m**2/s")
+
+        # assume reference temperature is 298.15 K (this is the case for all current DB entries)
+        T_ref = 298.15
+        mu_ref = 0.0008900225512925807  # water viscosity from IAPWS97 at 298.15 K
+        T_sol = self.temperature.to("K").magnitude
+        mu = self.water_substance.mu
+
+        # skip temperature correction if within 1 degree
+        if abs(T_sol - T_ref) > 1 or activity_correction is True:
+            # get the a1, a2, and d parameters required by the PHREEQC model
+            try:
+                doc = self.database.query_one({"formula": rform})
+                d = doc["model_parameters"]["diffusion_temp_smolyakov"]["d"]["value"]
+                a1 = doc["model_parameters"]["diffusion_temp_smolyakov"]["a1"]["value"]
+                a2 = doc["model_parameters"]["diffusion_temp_smolyakov"]["a2"]["value"]
+                # values will be a str, e.g. "1 dimensionless"
+                d = float(d.split(" ")[0])
+                a1 = float(a1.split(" ")[0])
+                a2 = float(a2.split(" ")[0])
+            except TypeError:
+                # this means the database doesn't contain a d value.
+                # according to Ref 2, the following are recommended default parameters
+                logger.info(
+                    f"Temperature and ionic strength correction parameters for solute {rform} diffusion "
+                    "coefficient not in database. Using recommended default values of a1=1.6, a2=4.73, and d=0."
+                )
+                d = 0
+                a1 = 1.6
+                a2 = 4.73
+
+            # use the PHREEQC model from Ref 2 to correct for temperature
+            D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+
+            if activity_correction:
+                A = _debye_parameter_activity(str(self.temperature)).to("kg**0.5/mol**0.5").magnitude / 2.303
+                B = _debye_parameter_B(str(self.temperature)).to("1/angstrom * kg**0.5/mol**0.5").magnitude
+                z = self.get_property(solute, "charge")
+                IS = self.ionic_strength.magnitude
+                kappaa = B * IS**0.5 * a2 / (1 + IS**0.75)
+                # correct for ionic strength
+                D_final *= np.exp(-a1 * A * abs(z) * IS**0.5 / (1 + kappaa))
+            # else:
+            #     # per CRC handbook, D increases by 2-3% per degree above 25 C
+            #     return D * (1 + 0.025 * (T_sol - T_ref))
+        else:
+            D_final = D
+
+        return D_final
+
+    def _get_mobility(self, solute: str) -> Quantity:
         """
         Calculate the ionic mobility of the solute.
 
@@ -2281,7 +2336,7 @@ class Solution(MSONable):
         .. [smed] Smedley, Stuart I. The Interpretation of Ionic Conductivity in Liquids. Plenum Press, 1980.
 
         """
-        D = self.get_property(solute, "transport.diffusion_coefficient")
+        D = self.get_diffusion_coefficient(solute)
 
         mobility = ureg.N_A * ureg.e * abs(self.get_property(solute, "charge")) * D / (ureg.R * self.temperature)
 
@@ -3224,3 +3279,113 @@ class Solution(MSONable):
         :py:meth:`get_salt_dict`
         """
         return self.get_salt_dict()
+
+    @classmethod
+    def from_preset(
+        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
+    ) -> Solution:
+        """Instantiate a solution from a preset composition.
+
+        Args:
+            preset (str): String representing the desired solution.
+              Valid entries are 'seawater', 'rainwater', 'wastewater',
+              'urine', 'normal saline' and 'Ringers lactate'.
+
+        Returns:
+            A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given preset file doesn't exist on the file system.
+
+        Notes:
+            The following sections explain the different solution options:
+
+            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
+            - 'urine' - typical human urine. See Table 3-15 of [2]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
+
+        References:
+            .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
+                the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+
+            .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+                    McGraw-Hill, 2013.
+
+            .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
+
+            .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+        """
+        # preset_dir = files("pyEQL") / "presets"
+        # Path to the YAML and JSON files corresponding to the preset
+        yaml_path = files("pyEQL") / "presets" / f"{preset}.yaml"
+        json_path = files("pyEQL") / "presets" / f"{preset}.json"
+
+        # Check if the file exists
+        if yaml_path.exists():
+            preset_path = yaml_path
+        elif json_path.exists():
+            preset_path = json_path
+        else:
+            logger.error("Invalid solution entered - %s" % preset)
+            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path} not found!")
+
+        # Create and return a Solution object
+        return cls().from_file(preset_path)
+
+    def to_file(self, filename: str | Path) -> None:
+        """Saving to a .yaml or .json file.
+
+        Args:
+            filename (str | Path): The path to the file to save Solution.
+              Valid extensions are .json or .yaml.
+        """
+        str_filename = str(filename)
+        if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
+            logger.error("Invalid file extension entered - %s" % str_filename)
+            raise ValueError("File extension must be .json or .yaml")
+        if "yaml" in str_filename.lower():
+            solution_dict = self.as_dict()
+            solution_dict.pop("database")
+            dumpfn(solution_dict, filename)
+        else:
+            dumpfn(self, filename)
+
+    def from_file(self, filename: str | Path) -> Solution:
+        """Loading from a .yaml or .json file.
+
+        Args:
+            filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
+              Valid extensions are .json or .yaml.
+
+        Returns:
+            A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given filename doesn't exist on the file system.
+        """
+        if not os.path.exists(filename):
+            logger.error("Invalid path to file entered - %s" % filename)
+            raise FileNotFoundError(f"File '{filename}' not found!")
+        str_filename = str(filename)
+        if "yaml" in str_filename.lower():
+            true_keys = [
+                "solutes",
+                "volume",
+                "temperature",
+                "pressure",
+                "pH",
+                "pE",
+                "balance_charge",
+                "solvent",
+                "engine",
+                # "database",
+            ]
+            solution_dict = loadfn(filename)
+            keys_to_delete = [key for key in solution_dict if key not in true_keys]
+            for key in keys_to_delete:
+                solution_dict.pop(key)
+            return Solution(**solution_dict)
+        return loadfn(filename)

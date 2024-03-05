@@ -5,6 +5,99 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- `Solution.__add_`: Bugfix in the addition operation `+` that could cause problems with
+  child classes (i.e., classes that inherit from `Solution`) to work improperly
+
+### Changed
+
+- Removed deprecated `pkg_resources` import in favor of `importlib.resources`
+
+## [0.11.1] - 2023-12-23
+
+### Added
+
+- Add tests for `gibbs_mix` and `entropy_mix` functions. Format docstrings in Google style.
+
+### Fixed
+
+- `Solution.from_preset`: Fixed a packaging error that made this method fail with a `FileNotFoundError`.
+
+### Removed
+
+- `functions.py` is no longer imported into the root namespace. You'll now need to say `from pyEQL.functions import gibbs_mix`
+  instead of `from pyEQL import gibbs_mix`
+
+## [0.11.0] - 2023-11-20
+
+### Changed
+
+- `PhreeqcEOS`: performance improvements for the `phreeqc` engine. The `EOS` instance now retains
+  the `phreeqpython` solution object in between calls, only re-initializing it if the composition
+  of the `Solution` has changed since the previous call.
+
+### Fixed
+
+- `equilibrate`: Fixed several bugs affecting `NativeEOS` and `PhreeqcEOS` in which calling `equilibrate()`
+  would mess up the charge balance. This was especially an issue if `balance_charge` was set to something
+  other than `pH`.
+
+### Removed
+
+- `equilibrium.equilibrate_phreeqc()` has been removed to reduce redundant code. All its
+  was absorbed into `NativeEOS` and `PhreeqcEOS`
+
+## [0.10.1] - 2023-11-12
+
+### Added
+
+- utility function `create_water_substance` with caching to speed up access to IAPWS instances
+
+### Changed
+
+- `Solution.get_diffusion_coefficient`: the default diffusion coefficient (returned when D for a solute is not found in
+  the database) is now adjusted for temperature and ionic strength.
+- `Solution.water_substance` - use the IAPWS97 model instead of IAPWS95 whenever possible, for a substantial speedup.
+
+## [0.10.0] - 2023-11-12
+
+### Added
+
+- `Solution`: Revamped docstrings for `conductivity`, `get_transport_number`, `get_molar_conductivity`, and
+  `get_diffusion_coefficient`.
+- `Solution`: new method `get_diffusion_coefficient` for dedicated retrieval of diffusion coefficients. This method
+  implements an improved algorithm for temperature adjustment and a new algorithm for adjusting infinite dilution D values
+  for ionic strengthe effects. The algorithm is identical to that implemented in PHREEQC >= 3.4.
+- Database: empirical parameters for temperature and ionic strength adjustment of diffusion coefficients for 15 solutes
+- Added tests for temperature and ionic strength adjustment and conductivity
+- Docs: new tutorial notebooks
+- Docs: remove duplicate contributing pages (Closes [#68](https://github.com/KingsburyLab/pyEQL/issues/68))
+- `Solution`: new method `to_file()` for more convenient saving Solution object to json or yaml files. (@kirill-push)
+- `Solution`: new method `from_file()` for more convenient loading Solution object from json or yaml files. (@kirill-push)
+- `Solution`: new classmethod `from_preset()` to `replace pyEQL.functions.autogenerate()` and instantiate a solution from a preset composition. (@kirill-push)
+
+### Changed
+
+- `Solution`: method af adjusting diffusion coefficients for temperature was updated (same as used in PHREEQC >= 3.4)
+- `Solution.conductvity`: improved equation (same as used in PHREEQC >= 3.4) which is more accurate at higher concentrations
+
+### Fixed
+
+- Database errors with `Cs[+1]` diffusion coefficient and `KBr` Pitzer parameters
+- Restored filter that suppresses duplicate log messages
+
+### Deprecated
+
+- `replace pyEQL.functions.autogenerate()` is now deprecated. Use `from_preset` instead.
+
+### Removed
+
+- The `activity_correction` kwarg in `get_transport_number` has been removed, because this now occurs by default and is
+  handled in `get_diffusion_coefficient`.
+
 ## [0.9.2] - 2023-11-07
 
 ### Fixed
@@ -122,7 +215,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-
 - `pyEQL.unit` was renamed to `pyEQL.ureg` (short for `UnitRegistry`) for consistency with the `pint` documentation and tutorials.
 
 ## [v0.6.0] - 2023-08-15
@@ -142,7 +234,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `pymatgen`, `monty`, and `maggma` as dependencies
 - Add `pre-commit` configuration
 - Add pull request template, new GitHub actions, and `tox -e autodocs` environment to serve and update docs in real time
-- Add pre-commit configuration and lint with `ruff` using  rulesets mostly borrowed from `pymatgen`
+- Add pre-commit configuration and lint with `ruff` using rulesets mostly borrowed from `pymatgen`
 - Add more comprehensive platform testing via `tox`
 
 ### Changed
@@ -172,9 +264,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.2] - 2020-04-21
 
- - Fix breaking bug introduced by upstream pint change to avogadro_number
- - Format project with black
- - Misc. linting and docstring changes
+- Fix breaking bug introduced by upstream pint change to avogadro_number
+- Format project with black
+- Misc. linting and docstring changes
 
 ## [0.5.0] 2018-09-19
 

@@ -6,6 +6,8 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
 
+import logging
+
 import numpy as np
 import pytest
 
@@ -37,7 +39,9 @@ def s5():
 @pytest.fixture()
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
-    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH")
+    return Solution(
+        [["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH", engine="phreeqc"
+    )
 
 
 @pytest.fixture()
@@ -56,6 +60,7 @@ def s6():
             ["Br-", "20 mM"],
         ],  # -20 meq/L
         volume="1 L",
+        engine="phreeqc",
     )
 
 
@@ -76,6 +81,7 @@ def s6_Ca():
         ],  # -20 meq/L
         volume="1 L",
         balance_charge="Ca+2",
+        engine="phreeqc",
     )
 
 
@@ -113,34 +119,54 @@ def test_init_engines():
     # with pytest.warns(match="Solute Mg+2 not found"):
     assert s.get_activity_coefficient("Mg+2").magnitude == 1
     assert s.get_activity("Mg+2").magnitude == 0
+    s.engine._destroy_ppsol()
+    assert s.engine.ppsol is None
 
 
-def test_conductivity(s1, s2):
+def test_conductivity(s1):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
-    # per CRC handbook "standard Kcl solutions for calibratinG conductiVity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
+
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+        s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
+        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # higher concentration data points from Appelo, 2017 Figure 4.
+    s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
+    assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
+
+    # MgCl2
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        assert np.isclose(
+            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
+        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+    # per CRC handbook "standard KCl solutions for calibrating conductiVity cells",
+    # 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
     assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.02)  # conductivity is in S/m
 
-    # TODO - expected failures due to limited temp adjustment of diffusion coeff
-    # s_kcl.temperature = '5 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.02)
+    s_kcl.temperature = "5 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.06)
 
-    # s_kcl.temperature = '50 degC'
-    # assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.02)
+    s_kcl.temperature = "50 degC"
+    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.18)
 
     # TODO - conductivity model not very accurate at high conc.
     s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.2)
+    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, rtol=0.05)
 
 
-def test_equilibrate(s1, s2, s5_pH):
+def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
     orig_pE = s1.pE
     s1.equilibrate()
     assert "H2(aq)" in s1.components
-    assert np.isclose(s1.charge_balance, 0, atol=1e-7)
+    assert np.isclose(s1.charge_balance, 0, atol=1e-8)
     assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
 
@@ -157,9 +183,23 @@ def test_equilibrate(s1, s2, s5_pH):
     assert np.isclose(s2.get_total_amount("Cl", "mol").magnitude, 8)
     assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
     assert np.isclose(s2.density.magnitude, orig_density)
-    assert np.isclose(s2.charge_balance, 0, atol=1e-7)
+    # this solution has balance_charge=None, therefore, the charge balance
+    # may be off after equilibration
+    assert not np.isclose(s2.charge_balance, 0, atol=1e-8)
     assert np.isclose(s2.pH, orig_pH, atol=0.01)
     assert np.isclose(s2.pE, orig_pE)
+    s2.balance_charge = "pH"
+    s2.equilibrate()
+    assert np.isclose(s2.charge_balance, 0, atol=1e-8)
+
+    # test log message if there is a species not present in the phreeqc database
+    s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")
+    totzr = s_zr.get_total_amount("Zr", "mol")
+    with caplog.at_level(logging.INFO, "pyEQL.logging_system"):
+        s_zr.equilibrate()
+        assert "likely absent from its database" in caplog.text
+        assert "Zr[+4]" in s_zr.components
+        assert s_zr.get_total_amount("Zr", "mol") == totzr
 
     # this solution is the only one in the test that contains alkalinity
     # and equilibrating it results in a shift in the pH
@@ -184,3 +224,11 @@ def test_equilibrate(s1, s2, s5_pH):
     assert "HCO3[-1]" in s5_pH.components
     assert s5_pH.pH > orig_pH
     assert np.isclose(s5_pH.pE, orig_pE)
+
+    # test equilibrate() with a non-pH balancing species
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+    initial_Ca = s6_Ca.get_total_amount("Ca", "mol").magnitude
+    assert s6_Ca.balance_charge == "Ca[+2]"
+    s6_Ca.equilibrate()
+    assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)

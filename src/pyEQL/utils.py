@@ -9,7 +9,10 @@ pyEQL utilities
 from collections import UserDict
 from functools import lru_cache
 
+from iapws import IAPWS95, IAPWS97
 from pymatgen.core.ion import Ion
+
+from pyEQL import ureg
 
 
 @lru_cache
@@ -54,6 +57,29 @@ def format_solutes_dict(solute_dict: dict, units: str):
         raise TypeError("solute_dict must be a dictionary. Refer to the doc for proper formatting.")
 
     return {key: f"{value!s} {units}" for key, value in solute_dict.items()}
+
+
+@lru_cache
+@ureg.wraps(ret=None, args=["K", "MPa"], strict=False)
+def create_water_substance(temperature: float, pressure: float):
+    """
+    Instantiate a water substance model from IAPWS
+
+    Args:
+        temperature: the desired temperature in K
+        pressure: the desired pressure in MPa
+
+    Notes:
+        The IAPWS97 model is much faster than IAPWS95, but the latter can do temp
+        below zero. See https://github.com/jjgomera/iapws/issues/14. Hence,
+        IAPWS97 will be used except when `temperature` is less than 0 degC.
+
+    Returns:
+        A IAPWS97 or IAPWS95 instance
+    """
+    if temperature >= 273.15:
+        return IAPWS97(T=temperature, P=pressure)
+    return IAPWS95(T=temperature, P=pressure)
 
 
 class FormulaDict(UserDict):

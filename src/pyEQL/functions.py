@@ -10,51 +10,44 @@ from typing import Literal
 
 from monty.dev import deprecated
 
-import pyEQL
-from pyEQL import ureg
+from pyEQL import Solution, ureg
 from pyEQL.logging_system import logger
 
 
-def gibbs_mix(Solution1, Solution2):
+def gibbs_mix(solution1: Solution, solution2: Solution):
     r"""
     Return the Gibbs energy change associated with mixing two solutions.
 
-    Parameters
-    ----------
-    Solution1, Solution2 : Solution objects
-        The two solutions to be mixed.
+    Args:
+        solution1, solution2: The two solutions to be mixed.
 
-    Returns
-    -------
-    Quantity
+    Returns:
         The change in Gibbs energy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes
-    -----
-    The Gibbs energy of mixing is calculated as follows
+    Notes:
+        The Gibbs energy of mixing is calculated as follows
 
-    .. math::
+        .. math::
 
-        \\Delta_{mix} G = \\sum_i (n_c + n_d) R T \\ln a_b - \\sum_i n_c R T \\ln a_c - \\sum_i n_d R T \\ln a_d
+            \\Delta_{mix} G = \\sum_i (n_c + n_d) R T \\ln a_b - \\sum_i n_c R T \\ln a_c - \\sum_i n_d R T \\ln a_d
 
-    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
-    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
-    Solutions, respectively.
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
+        Solutions, respectively.
 
-    Note that dissociated ions must be counted as separate components,
-    so a simple salt dissolved in water is a three component solution (cation,
-    anion, and water).
+        Note that dissociated ions must be counted as separate components,
+        so a simple salt dissolved in water is a three component solution (cation,
+        anion, and water).
 
-    References
-    ----------
-    Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-        A differential approach.* Elsevier, 2007, pp. 23-37.
+    References:
+        Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
+            A differential approach.* Elsevier, 2007, pp. 23-37.
 
     """
-    concentrate = Solution1
-    dilute = Solution2
-    blend = mix(Solution1, Solution2)
+    concentrate = solution1
+    dilute = solution2
+    blend = solution1 + solution2
     term_list = {concentrate: 0, dilute: 0, blend: 0}
 
     # calculate the entropy change and number of moles solute for each solution
@@ -68,46 +61,40 @@ def gibbs_mix(Solution1, Solution2):
     )
 
 
-def entropy_mix(Solution1, Solution2):
+def entropy_mix(solution1: Solution, solution2: Solution):
     r"""
     Return the ideal mixing entropy associated with mixing two solutions.
 
-    Parameters
-    ----------
-    Solution1, Solution2 : Solution objects
-        The two solutions to be mixed.
+    Parameters:
+        solution1, solution2: The two solutions to be mixed.
 
-    Returns
-    -------
-    Quantity
+    Returns:
         The ideal mixing entropy associated with complete mixing of the
         Solutions, in Joules.
 
-    Notes
-    -----
-    The ideal entropy of mixing is calculated as follows
+    Notes:
+        The ideal entropy of mixing is calculated as follows
 
-    .. math::
+        .. math::
 
-        \\Delta_{mix} S = \\sum_i (n_c + n_d) R T \\ln x_b - \\sum_i n_c R T \\ln x_c - \\sum_i n_d R T \\ln x_d
+            \\Delta_{mix} S = \\sum_i (n_c + n_d) R T \\ln x_b - \\sum_i n_c R T \\ln x_c - \\sum_i n_d R T \\ln x_d
 
-    Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
-    and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
-    Solutions, respectively.
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
+        Solutions, respectively.
 
-    Note that dissociated ions must be counted as separate components,
-    so a simple salt dissolved in water is a three component solution (cation,
-    anion, and water).
+        Note that dissociated ions must be counted as separate components,
+        so a simple salt dissolved in water is a three component solution (cation,
+        anion, and water).
 
-    References
-    ----------
-    Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-        A differential approach.* Elsevier, 2007, pp. 23-37.
+    References:
+        Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
+            A differential approach.* Elsevier, 2007, pp. 23-37.
 
     """
-    concentrate = Solution1
-    dilute = Solution2
-    blend = mix(Solution1, Solution2)
+    concentrate = solution1
+    dilute = solution2
+    blend = solution1 + solution2
     term_list = {concentrate: 0, dilute: 0, blend: 0}
 
     # calculate the entropy change and number of moles solute for each solution
@@ -123,67 +110,61 @@ def entropy_mix(Solution1, Solution2):
     )
 
 
-def donnan_eql(solution, fixed_charge):
+def donnan_eql(solution: Solution, fixed_charge: str):
     """
     Return a solution object in equilibrium with fixed_charge.
 
-    Parameters
-    ----------
-    solution : Solution object
-        The external solution to be brought into equilibrium with the fixed
-        charges
-    fixed_charge : str quantity
-        String representing the concentration of fixed charges, including sign.
-        May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
+    Parameters:
+        solution : Solution object
+            The external solution to be brought into equilibrium with the fixed
+            charges
+        fixed_charge : str quantity
+            String representing the concentration of fixed charges, including sign.
+            May be specified in mol/L or mol/kg units. e.g. '1 mol/kg'
 
-    Returns
-    -------
-    Solution
-        A solution that has established Donnan equilibrium with the external
+    Returns:
+        A Solution that has established Donnan equilibrium with the external
         (input) Solution
 
-    Notes
-    -----
-    The general equation representing the equilibrium between an external
-    electrolyte solution and an ion-exchange medium containing fixed charges
-    is
+    Notes:
+        The general equation representing the equilibrium between an external
+        electrolyte solution and an ion-exchange medium containing fixed charges
+        is
 
-    .. math::
+        .. math::
 
-        \\frac{a_{-}}{\\bar a_{-}}^{\\frac{1}{z_{-}} \\frac{\\bar a_{+}}{a_{+}}^{\\frac{1}{z_{+}} \
-        = exp(\\frac{\\Delta \\pi \\bar V}{{RT z_{+} \\nu_{+}}})
+            \\frac{a_{-}}{\\bar a_{-}}^{\\frac{1}{z_{-}} \\frac{\\bar a_{+}}{a_{+}}^{\\frac{1}{z_{+}} \
+            = exp(\\frac{\\Delta \\pi \\bar V}{{RT z_{+} \\nu_{+}}})
 
-    Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
-    the overbar indicates the membrane phase,
-    :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
-    coefficient, :math:`V` represents the partial molar volume of the salt, and
-    :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
-    solution phase.
+        Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
+        the overbar indicates the membrane phase,
+        :math:`a` represents activity, :math:`z` represents charge, :math:`\\nu` represents the stoichiometric
+        coefficient, :math:`V` represents the partial molar volume of the salt, and
+        :math:`\\Delta \\pi` is the difference in osmotic pressure between the membrane and the
+        solution phase.
 
-    In addition, electroneutrality must prevail within the membrane phase:
+        In addition, electroneutrality must prevail within the membrane phase:
 
-    .. math:: \\bar C_{+} z_{+} + \\bar X + \\bar C_{-} z_{-} = 0
+        .. math:: \\bar C_{+} z_{+} + \\bar X + \\bar C_{-} z_{-} = 0
 
-    Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
-    in the membrane or ion exchange phase.
+        Where :math:`C` represents concentration and :math:`X` is the fixed charge concentration
+        in the membrane or ion exchange phase.
 
-    This function solves these two equations simultaneously to arrive at the
-    concentrations of the cation and anion in the membrane phase. It returns
-    a solution equal to the input solution except that the concentrations of
-    the predominant cation and anion have been adjusted according to this
-    equilibrium.
+        This function solves these two equations simultaneously to arrive at the
+        concentrations of the cation and anion in the membrane phase. It returns
+        a solution equal to the input solution except that the concentrations of
+        the predominant cation and anion have been adjusted according to this
+        equilibrium.
 
-    NOTE that this treatment is only capable of equilibrating a single salt.
-    This salt is identified by the get_salt() method.
+        NOTE that this treatment is only capable of equilibrating a single salt.
+        This salt is identified by the get_salt() method.
 
-    References
-    ----------
-    Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. Chapter 2, p. 51.
+    References:
+        Strathmann, Heiner, ed. *Membrane Science and Technology* vol. 9, 2004. Chapter 2, p. 51.
            http://dx.doi.org/10.1016/S0927-5193(04)80033-0
 
     See Also:
-    --------
-    get_salt()
+        get_salt()
 
     """
     # identify the salt
@@ -286,7 +267,7 @@ def donnan_eql(solution, fixed_charge):
 @deprecated(
     message="mix() is deprecated and will be removed in the next release! You can now mix solutions using the addition operator, e.g. s_mix = s1 + s2."
 )
-def mix(s1, s2):
+def mix(s1, s2):  # pragma: no cover
     """
     Mix two solutions together.
 
@@ -305,7 +286,12 @@ def mix(s1, s2):
     return s1 + s2
 
 
-def autogenerate(solution: Literal["seawater", "rainwater", "wastewater", "urine", "Ringers lactate", "normal saline"]):
+@deprecated(
+    message="autogenerate() is deprecated and will be removed in the next release! Use Solution.from_preset() instead.)"
+)
+def autogenerate(
+    solution: Literal["seawater", "rainwater", "wastewater", "urine", "Ringers lactate", "normal saline"]
+):  # pragma: no cover
     """
     This method provides a quick way to create Solution objects representing
     commonly-encountered solutions, such as seawater, rainwater, and wastewater.
@@ -429,4 +415,4 @@ def autogenerate(solution: Literal["seawater", "rainwater", "wastewater", "urine
         logger.error("Invalid solution entered - %s" % solution)
         return None
 
-    return pyEQL.Solution(solutes, temperature=temperature, pressure=pressure, pH=pH)
+    return Solution(solutes, temperature=temperature, pressure=pressure, pH=pH)

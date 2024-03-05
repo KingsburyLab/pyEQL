@@ -1,7 +1,4 @@
 """
-pyEQL
-=====
-
 pyEQL is a python package for calculating the properties of aqueous solutions
 and performing chemical thermodynamics computations.
 
@@ -9,11 +6,10 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 """
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
+from importlib.resources import files
 
-from pint import UnitRegistry
-from pathlib import Path
 from maggma.stores import JSONStore
-from pkg_resources import resource_filename
+from pint import UnitRegistry
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -34,7 +30,7 @@ ureg = UnitRegistry(cache_folder=":auto:")
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
 ureg.autoconvert_offset_to_baseunit = True
 # append custom unit definitions and contexts
-fname = resource_filename("pyEQL", "pint_custom_units.txt")
+fname = files("pyEQL") / "pint_custom_units.txt"
 ureg.load_definitions(fname)
 # activate the "chemistry" context globally
 ureg.enable_contexts("chem")
@@ -42,13 +38,11 @@ ureg.enable_contexts("chem")
 ureg.default_format = "P~"
 
 # create a Store for the default database
-database_dir = resource_filename("pyEQL", "database")
-json = Path(database_dir) / "pyeql_db.json"
-IonDB = JSONStore(str(json), key="formula")
+json_db_file = files("pyEQL") / "database" / "pyeql_db.json"
+IonDB = JSONStore(str(json_db_file), key="formula")
 # By calling connect on init, we get the expensive JSON reading operation out
 # of the way. Subsequent calls to connect will bypass this and access the already-
 # instantiated Store in memory, which should speed up instantiation of Solution objects.
 IonDB.connect()
 
-from pyEQL.functions import *  # noqa: E402, F403
 from pyEQL.solution import Solution  # noqa: E402
