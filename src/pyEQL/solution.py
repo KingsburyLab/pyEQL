@@ -61,7 +61,7 @@ class Solution(MSONable):
         Instantiate a Solution from a composition.
 
         Args:
-            solutes : dict, optional. Keys must be the chemical formula, while values must be
+            solutes: dict, optional. Keys must be the chemical formula, while values must be
                 str Quantity representing the amount. For example:
 
                 {"Na+": "0.1 mol/L", "Cl-": "0.1 mol/L"}
@@ -73,16 +73,16 @@ class Solution(MSONable):
                 [["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]]
 
                 Defaults to empty (pure solvent) if omitted
-            volume : str, optional
+            volume: str, optional
                 Volume of the solvent, including the unit. Defaults to '1 L' if omitted.
                 Note that the total solution volume will be computed using partial molar
                 volumes of the respective solutes as they are added to the solution.
-            temperature : str, optional
+            temperature: str, optional
                 The solution temperature, including the ureg. Defaults to '25 degC' if omitted.
-            pressure : Quantity, optional
+            pressure: Quantity, optional
                 The ambient pressure of the solution, including the unit.
                 Defaults to '1 atm' if omitted.
-            pH : number, optional
+            pH: number, optional
                 Negative log of H+ activity. If omitted, the solution will be
                 initialized to pH 7 (neutral) with appropriate quantities of
                 H+ and OH- ions
