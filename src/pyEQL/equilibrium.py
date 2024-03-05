@@ -149,9 +149,12 @@ def alpha(n, pH, pKa_list):
     Returns the acid-base distribution coefficient (alpha) of an acid in the n-deprotonated form at a given pH.
 
     Args:
-        n (int): The number of protons that have been lost by the desired form of the acid. Also the subscript on the alpha value. E.g. for bicarbonate (HCO3-), n=1 because 1 proton has been lost from the fully-protonated carbonic acid (H2CO3) form.
+        n (int): The number of protons that have been lost by the desired form of the acid. Also the subscript on the
+            alpha value. E.g. for bicarbonate (HCO3-), n=1 because 1 proton has been lost from the fully-protonated
+            carbonic acid (H2CO3) form.
         pH (float or int): The pH of the solution.
-        pKa_list (list of floats or ints): The pKa values (negative log of equilibrium constants) for the acid of interest. There must be a minimum of n pKa values in the list.
+        pKa_list (list of floats or ints): The pKa values (negative log of equilibrium constants) for the acid of
+            interest. There must be a minimum of n pKa values in the list.
 
     Returns:
         float: The fraction of total acid present in the specified form.
@@ -188,41 +191,30 @@ def alpha(n, pH, pKa_list):
     """
     # generate an error if no pKa values are specified
     if len(pKa_list) == 0:
-        logger.error("No pKa values given. Cannot calculate distribution coefficient.")
-        return None
+        raise ValueError("No pKa values given. Cannot calculate distribution coefficient.")
 
     # generate an error if n > number of pKa values
     if len(pKa_list) < n:
-        logger.error("Insufficient number of pKa values given. Cannot calculate distribution coefficient.")
-        return None
+        raise ValueError("Insufficient number of pKa values given. Cannot calculate distribution coefficient.")
 
-    # convert pH to hydrogen ion concentration
-    Hplus = 10**-pH
+    # sort the pKa list
+    pKa_list = sorted(pKa_list)
 
     # determine how many protons the acid has
     num_protons = len(pKa_list)
 
     # build a list of terms where the term subscript corresponds to the list index
-    terms_list = []
-    k_term = 1
-
-    # the 'item' index counts from 0 to the number of protons, inclusive
-    for item in range(num_protons + 1):
-        # multiply the preceding k values together
-        for i in range(len(pKa_list[:item])):
-            k_term *= 10 ** -pKa_list[i]
-
-        # add the term to the list
-        terms_list.append(k_term * Hplus ** (num_protons - item))
-
-    # build the expression
-    numerator = terms_list[n]
-    denominator = 0
-    for item in terms_list:
-        denominator += item
+    terms_list = [10 ** (-pH * num_protons)]
+    for i in range(len(pKa_list)):
+        # multiply together all K values with
+        k_term = 1
+        for pK in pKa_list[0 : i + 1]:
+            k_term *= 10**-pK
+        terms_list.append(k_term * 10 ** (-pH * (num_protons - (i + 1))))
+    print(terms_list)
 
     # return the desired distribution factor
-    alpha = numerator / denominator
+    alpha = terms_list[n] / sum(terms_list)
     logger.info(
         "Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s % n,alpha,pKa_list,pH"
     )
