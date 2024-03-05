@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.13.0] - 2024-03-05
+
 ### Fixed
 
+- `equilibrium.alpha()`: Fixed incorrect calculation of acid-base distribution coefficient for multiprotic acids.
 - Docs: fixed many small problems in documentation causing equations and examples to
   render incorrectly.
 - `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
