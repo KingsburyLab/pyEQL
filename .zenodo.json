@@ -21,5 +21,5 @@
       }
     }
   ],
-  "title": "pyEQL: A python library for water chemistry"
+  "title": "pyEQL: A python interface for water chemistry"
 }

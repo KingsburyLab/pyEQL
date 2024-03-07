@@ -1,5 +1,5 @@
 ---
-title: 'pyEQL: A Python interface for water chemistry'
+title: "pyEQL: A Python interface for water chemistry"
 tags:
   - Python
   - environmental engineering
@@ -14,11 +14,10 @@ authors:
     equal-contrib: false
     affiliation: 1
 affiliations:
- - name: Department of Civil and Environmental Engineering and the Andlinger Center for Energy and the Environment, Princeton University, USA
-   index: 1
+  - name: Department of Civil and Environmental Engineering and the Andlinger Center for Energy and the Environment, Princeton University, USA
+    index: 1
 date: 5 November 2023
 bibliography: paper.bib
-
 ---
 
 # Summary
@@ -26,7 +25,7 @@ bibliography: paper.bib
 The properties and behavior of aqueous solutions -- that is, water containing dissolved
 minerals and other solutes -- are vital to understanding natural systems and to developing
 new technologies for water purification, wastewater treatment, and sustainable industrial
-processes [@Stumm1993)]. `pyEQL` provides object representations for aqueous solutions, creating a
+processes [@Stumm1993]. `pyEQL` provides object representations for aqueous solutions, creating a
 stable, intuitive, and easy to learn interface for calculating properties of solutions
 and dissolved solutes. Its purpose is to save researchers time by making a variety of
 different models accessible through a single interface and by aggregating hundreds of
@@ -38,19 +37,19 @@ Accurately predicting the thermodynamic and transport properties of complex elec
 solutions containing many solutes, especially at moderate to high salt concentrations
 commonly encountered in water desalination and resource recovery applications, remains a
 major scientific challenge [@rowland_ProgressAqueousSolution_2019]. This challenge is
-compounded by the fact that the best available models (such as the Pitzer model [@May2011b])
+compounded by the fact that the best available models (such as the Pitzer model @May2011b)
 are difficult to implement on an as-needed basis and require looking up many parameters.
 Researchers and practitioners in fields such as water treatment and desalination, electrochemistry,
 or environmental engineering need accurate information about electrolyte solutions to perform their work,
 but are typically not specialists in solution chemistry or electrolyte thermodynamics.
 
-Available software such as `PHREEQC` [@Charlton2011] (open source), `GeoChemist's Workbench` [@gwb], or
+Available software such as `PHREEQC` [@Charlton2011], `GeoChemist's Workbench` [@gwb], or
 OLI Studio [@oli] implement numerous electrolyte models and contain powerful capabilities for
-specialists, but are not highly accessible for routine use by others, due to a
+specialists. However, they are not highly accessible for routine use by others, due to a
 steep learning curve, difficult interoperability with other tools (such as external transport models),
 the lack of a freely-available version, and/or limitation to specific operating systems.
 Several `python` interfaces to the open-source `PHREEQC` software exist, including IPhreeqC [@Parkhurst2013],
-`phreeqpython` [@phreeqpython], and `pyeqion2` [@marcellos2021pyequion; @pyequion2]; however, these interfaces
+`phreeqpython` (https://github.com/Vitens/phreeqpython), and `pyeqion2` [@marcellos2021pyequion]. However, these interfaces
 are either not object-oriented, poorly documented, and/or only offer access to only a limited subset of the `PHREEQC`
 parameter databases. There are more subtle limitations as well. For example, `phreeqpython` is unable to calculate
 solution conductivity when used in conjunction with the `PHREEQC` `pitzer.dat` database (the most accurate for high
@@ -62,7 +61,7 @@ to piece together outputs from disparate models and literature -- a time-consumi
 and compiling the required parameters from literature. It defines a python `Solution` class from which properties
 can be easily retrieved. It implements the Pitzer model [@May2011b] for binary salts, with mixing rules [@Mistry2013]
 for more complex solutions, and decays gracefully to more approximate models (such as the Debye-Huckel activity
-model [@Stumm1993)]) when adequate data is not available. The built-in property database includes Pitzer model
+model @Stumm1993) when adequate data is not available. The built-in property database includes Pitzer model
 parameters [@May2011b] for more than 100 salts, diffusion coefficients [@CRCdiffusion] for more than 100 solutes,
 and an ever-expanding set of additional property data that make the best-available models transparently accessible
 to the end user.
@@ -83,7 +82,6 @@ solution chemistry. Specific use cases include, but are not limited to:
 - Looking up properties of individual ionic species, including molecular weight, diffusion coefficient,
   ionic, hydrated, and van der Waals radii, etc.
 
-
 # Design Principles
 
 ## Return the best answer possible
@@ -99,7 +97,7 @@ model parameters are missing from the database.
 ## Interoperate with other scientific codes
 
 `pyEQL` is built to be extensible, customizable, and easy to use in conjunction with widely-used scientific `python`
-libraries. Specifically, it makes use of `pint` [@pint] to provide automatic unit conversions and leverages codes in
+libraries. Specifically, it makes use of `pint` (https://github.com/hgrecco/pint) to provide automatic unit conversions and leverages codes in
 the Materials Project [@Jain2013] ecosystem -- namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular
 weight, parsing chemical formulae) and `maggma` [@maggma] for accessing the built-in property database.
 
