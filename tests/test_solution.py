@@ -8,6 +8,7 @@ used by pyEQL's Solution class
 
 import copy
 import os
+import platform
 from pathlib import Path
 
 import numpy as np
@@ -138,9 +139,12 @@ def test_diffusion_transport(s1, s2):
     assert np.isclose(s_dilute.get_transport_number("Cl-"), 0.604, atol=1e-3)
 
     # test setting a default value
+    s2.default_diffusion_coeff = 0
     assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
-    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=False).magnitude == 1e-9
-    assert s2.get_diffusion_coefficient("Cs+", default=1e-9, activity_correction=True).magnitude < 1e-9
+    s2.default_diffusion_coeff = 1e-9
+    assert s2.get_diffusion_coefficient("Cs+", activity_correction=False).magnitude == 1e-9
+    s2.default_diffusion_coeff = 0
+    assert s2.get_diffusion_coefficient("Cs+", activity_correction=True).magnitude < 1e-9
     d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
     nu25 = s2.water_substance.nu
     s2.temperature = "40 degC"
@@ -363,6 +367,8 @@ def test_components_by_element(s1, s2):
         "Na(1.0)": ["Na[+1]"],
         "Cl(-1.0)": ["Cl[-1]"],
     }
+    if platform.machine() == "arm64" and platform.system() == "Darwin":
+        pytest.skip(reason="arm64 not supported")
     s2.equilibrate()
     assert s2.get_components_by_element() == {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
@@ -389,14 +395,16 @@ def test_components_by_element(s1, s2):
 
 
 def test_get_total_amount(s2):
-    assert np.isclose(s2.get_total_amount("Na(1)", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Na(1)", "g").magnitude, 8 * 58, 44)
     assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
+    assert np.isclose(s2.get_total_amount("Na", "ppm").magnitude, 4 * 23300, rtol=0.02)
     sox = Solution({"Fe+2": "10 mM", "Fe+3": "40 mM", "Cl-": "50 mM"}, pH=3)
     assert np.isclose(sox.get_total_amount("Fe(2)", "mol/L").magnitude, 0.01)
     assert np.isclose(sox.get_total_amount("Fe(3)", "mol/L").magnitude, 0.04)
     assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_equilibrate(s1, s2, s5_pH):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
@@ -501,6 +509,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_arithmetic_and_copy(s2, s6):
     s6_scale = copy.deepcopy(s6)
     s6_scale *= 1.5
@@ -682,7 +691,7 @@ def test_test_to_from_file(tmpdir, s1):
         filename = tmp_path / f
         s1.to_file(filename)
         assert filename.exists()
-        loaded_s1 = Solution().from_file(filename)
+        loaded_s1 = Solution.from_file(filename)
         assert loaded_s1 is not None
         assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
     # test invalid extension raises error
@@ -690,4 +699,4 @@ def test_test_to_from_file(tmpdir, s1):
     with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
-        Solution().from_file(filename)
+        Solution.from_file(filename)

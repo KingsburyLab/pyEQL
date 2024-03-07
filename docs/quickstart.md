@@ -15,10 +15,10 @@ Create a Solution object by invoking the Solution class:
 ```{eval-rst}
 .. doctest::
 
-   >>> import pyEQL
-   >>> s1 = pyEQL.Solution()
+   >>> from pyEQL import Solution
+   >>> s1 = Solution()
    >>> s1
-   <pyEQL.pyEQL.Solution at 0x7f9d188309b0>
+   <pyEQL.Solution at 0x7f9d188309b0>
 
 ```
 
@@ -30,7 +30,7 @@ More usefully, you can specify solutes and bulk properties:
 ```{eval-rst}
 .. doctest::
 
-    >>> s2 = pyEQL.Solution({'Na+':'0.5 mol/kg', 'Cl-': '0.5 mol/kg'}, pH=8, temperature = '20 degC', volume='8 L')
+    >>> s2 = Solution({'Na+':'0.5 mol/kg', 'Cl-': '0.5 mol/kg'}, pH=8, temperature = '20 degC', volume='8 L')
 ```
 
 See [Creating a Solution](creating.md) for more details.
@@ -83,7 +83,7 @@ Quantity objects that contain both a magnitude and a unit.
 1.0
 ```
 
-Many `pyEQL` methods require physical quantities to be input as strings, then these methods return pint `Quantity`  objects. A string quantity must contain both a magnitude and a unit (e.g. '0.5 mol/L').
+Many `pyEQL` methods require physical quantities to be input as strings, then these methods return pint `Quantity` objects. A string quantity must contain both a magnitude and a unit (e.g. '0.5 mol/L').
 In general, pint recognizes common abbreviations and SI prefixes. Compound units must follow Python math syntax (e.g. cm\*\*2 not cm2).
 
 See the [Converting Units](units.md) for more details.

@@ -30,11 +30,11 @@ unit of mass or volume.
 <Quantity(1.21525e+10, 'nanogram / liter')>
 ```
 
-:::{important}
+```{important}
 The unit `'ppt'` is ambiguous in the water community. To most researchers, it means
 "parts per trillion" or ng/L, while to many engineers and operators it means "parts
 per THOUSAND" or g/L. `pyEQL` interprets `ppt` as **parts per trillion**.
-:::
+```
 
 You can also request dimensionless concentrations as weight percent (`'%'`),
 mole fraction (`'fraction'`) or the total _number_

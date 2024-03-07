@@ -7,7 +7,7 @@ ONLY those properties that DO NOT depend on solution composition.
 Solute properties such as activity coefficient or concentration
 that do depend on compsition are accessed via Solution class methods.
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -32,19 +32,23 @@ class Datum:
 
     @property
     def magnitude(self):
+        """Return the numerical value of a Datum."""
         return float(self.value.split(" ")[0])
 
     @property
     def unit(self):
+        """Return the unit of a Datum."""
         return self.value.split(" ")[-1]
 
     @property
     def uncertainty(self):
+        """Return the uncertainty of a Datum."""
         if len(self.value.split(" ")) > 3:
             return float(self.value.split(" ")[2])
         return np.nan
 
     def as_dict(self):
+        """Return a dictionary representation of the Datum."""
         return dict(asdict(self).items())
 
 
@@ -55,9 +59,8 @@ class Solute:
     transport numbers, concentration, activity, etc.
 
     Args:
-        formula : str
-                    Chemical formula for the solute.
-                    Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+        formula: Chemical formula for the solute. Charged species must contain a + or - and (for polyvalent solutes)
+            a number representing the net charge (e.g. 'SO4-2').
     """
 
     formula: str
@@ -115,13 +118,10 @@ class Solute:
         mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
         # store only the most likely oxi_state guesses
-        oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)
-        # TODO - hack to work around a pymatgen bug in Composition
-        # https://github.com/materialsproject/pymatgen/issues/3324
-        if oxi_states == []:
-            oxi_states = {els[0]: 0.0} if rform in ["O2(aq)", "O3(aq)", "Cl2(aq)", "F2(aq)"] else {}
-        else:
-            oxi_states = oxi_states[0]
+        try:
+            oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)[0]
+        except (IndexError, ValueError):
+            oxi_states = {}
 
         return cls(
             rform,
@@ -140,6 +140,7 @@ class Solute:
         )
 
     def as_dict(self):
+        """Return a dictionary representation of the Solute."""
         return dict(asdict(self).items())
 
     # set output of the print() statement

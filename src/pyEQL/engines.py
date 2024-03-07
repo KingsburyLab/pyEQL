@@ -1,7 +1,7 @@
 """
 pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
-:copyright: 2013-2023 by Ryan S. Kingsbury
+:copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 
 """
@@ -52,8 +52,7 @@ class EOS(ABC):
             Quantity: dimensionless quantity object
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -68,8 +67,7 @@ class EOS(ABC):
             Quantity: dimensionless molal scale osmotic coefficient
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -84,8 +82,7 @@ class EOS(ABC):
             Quantity: solute volume in L
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters.
         """
 
     @abstractmethod
@@ -102,8 +99,7 @@ class EOS(ABC):
             Nothing. The speciation of the Solution is modified in-place.
 
         Raises:
-            ValueError if the calculation cannot be completed, e.g. due to insufficient number of
-            parameters or lack of convergence.
+            ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters or lack of convergence.
         """
 
 
@@ -163,7 +159,15 @@ class NativeEOS(EOS):
             Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
         )
         # create the PhreeqcPython instance
-        self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+        # try/except added to catch unsupported architectures, such as Apple Silicon
+        try:
+            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+        except OSError:
+            logger.error(
+                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
+                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
+                " pyEQL will work, but equilibrate() will have no effect."
+            )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
@@ -238,7 +242,7 @@ class NativeEOS(EOS):
             self.ppsol = None
 
     def get_activity_coefficient(self, solution, solute):
-        """
+        r"""
         Whenever the appropriate parameters are available, the Pitzer model [may]_ is used.
         If no Pitzer parameters are available, then the appropriate equations are selected
         according to the following logic: [stumm]_.
@@ -250,17 +254,17 @@ class NativeEOS(EOS):
 
         The ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale. If a different
-        scale is given as input, then the molal-scale activity coefficient :math:`\\gamma_\\pm` is
+        scale is given as input, then the molal-scale activity coefficient :math:`\gamma_\pm` is
         converted according to [rbs]_
 
-        .. math:: f_\\pm = \\gamma_\\pm * (1 + M_w \\sum_i \\nu_i \\m_i)
+        .. math:: f_\pm = \gamma_\pm * (1 + M_w \sum_i \nu_i m_i)
 
-        .. math:: y_\\pm = m \\rho_w / C \\gamma_\\pm
+        .. math:: y_\pm = \frac{m \rho_w}{C \gamma_\pm}
 
-        where :math:`f_\\pm` is the rational activity coefficient, :math:`M_w` is
+        where :math:`f_\pm` is the rational activity coefficient, :math:`M_w` is
         the molecular weight of water, the summation represents the total molality of
-        all solute  species, :math:`y_\\pm` is the molar activity coefficient,
-        :math:`\\rho_w` is the density of pure water, :math:`m` and :math:`C` are
+        all solute  species, :math:`y_\pm` is the molar activity coefficient,
+        :math:`\rho_w` is the density of pure water, :math:`m` and :math:`C` are
         the molal and molar concentrations of the chosen salt (not individual solute), respectively.
 
         Args:
@@ -280,11 +284,11 @@ class NativeEOS(EOS):
             molality," which is the molality that would result in a single-salt
             mixture with the same total ionic strength as the multicomponent solution.
 
-            .. math:: m_effective = 2 I \\over (\\nu_{+} z_{+}^2 + \\nu{_}- z_{-} ^2)
+            .. math:: m_{effective} = \frac{2 I}{(\nu_{+} z_{+}^2 + \nu_{-}- z_{-}^2)}
 
         References:
-        .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
-               A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
+            .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
                *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
 
         .. [stumm] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed,
@@ -297,12 +301,11 @@ class NativeEOS(EOS):
                desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         See Also:
-            get_ionic_strength
-            get_salt
-            activity_correction.get_activity_coefficient_debyehuckel
-            activity_correction.get_activity_coefficient_guntelberg
-            activity_correction.get_activity_coefficient_davies
-            activity_correction.get_activity_coefficient_pitzer
+            :attr:`pyEQL.solution.Solution.ionic_strength`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_debyehuckel`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_guntelberg`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_davies`
+            :func:`pyEQL.activity_correction.get_activity_coefficient_pitzer`
         """
         # identify the predominant salt that this ion is a member of
         salt = None
@@ -418,7 +421,7 @@ class NativeEOS(EOS):
         return molal
 
     def get_osmotic_coefficient(self, solution):
-        """
+        r"""
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
 
@@ -427,28 +430,27 @@ class NativeEOS(EOS):
         coefficient of 1.
 
         If the 'rational' scale is given as input, then the molal-scale osmotic
-        coefficient :math:`\\phi` is converted according to [rbs]_
+        coefficient :math:`\phi` is converted according to [rbs]_
 
-        .. math:: g = - \\phi * M_{w} \\sum_{i} \\nu_{i} \\m_{i}) / \\ln x_{w}
+        .. math:: g = - \phi M_{w} \frac{\sum_{i} \nu_{i} m_{i}}{\ln x_{w}}
 
         where :math:`g` is the rational osmotic coefficient, :math:`M_{w}` is
         the molecular weight of water, the summation represents the total molality of
         all solute  species, and :math:`x_{w}` is the mole fraction of water.
 
         Args:
-            scale:
-            The concentration scale for the returned osmotic coefficient. Valid options are "molal",
-            "rational" (i.e., mole fraction), and "fugacity".  By default, the molal scale osmotic
-            coefficient is returned.
+            scale: The concentration scale for the returned osmotic coefficient. Valid options are "molal",
+                "rational" (i.e., mole fraction), and "fugacity".  By default, the molal scale osmotic
+                coefficient is returned.
 
-        Returns
+        Returns:
             Quantity:
                 The osmotic coefficient
 
         See Also:
-            get_water_activity
-            get_ionic_strength
-            get_salt
+            :meth:`pyEQL.solution.Solution.get_water_activity`
+            :meth:`pyEQL.solution.Solution.get_salt`
+            :attr:`pyEQL.solution.Solution.ionic_strength`
 
         Notes:
             For multicomponent mixtures, pyEQL adopts the "effective Pitzer model"
@@ -469,8 +471,7 @@ class NativeEOS(EOS):
             the author confirmed that the weight factor should be the true molality, and that is what is implemented
             in pyEQL.)
 
-        References
-
+        References:
             .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
                 A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and
                 25 °C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
@@ -482,7 +483,6 @@ class NativeEOS(EOS):
                behavior on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         Examples:
-
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.923715281, 'dimensionless')>

@@ -5,11 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.14.0] - 2024-03-05
+
+### Added
+
+- `NativeEOS` / `PhreeqcEOS`: Added `try`/`catch` so that `pyEQL` can still be used on platforms that PHREEQC does
+  not support, such as Apple Silicon. In such cases, functions like `equilibrate` that depend on PHREEQC will
+  raise errors, but everything else can still be used.
+- CI: Added Apple M1 runner (GitHub: `macos-14`) to the CI tests.
 
 ### Fixed
 
-- `Solution.__add_`: Bugfix in the addition operation `+` that could cause problems with
+- CI: Addressed several issues in the testing configuration which had resulted in testing
+  fewer operating systems x python version combinations than intended. CI tests now
+  correctly and comprehensively test every supported version of python on every os
+  (macos, windows, ubuntu).
+- `utils.FormulaDict`: implemented `__contains__` so that `get()` works correctly in
+  python 3.12+. See https://github.com/python/cpython/issues/105524
+- Docs: fixed many small problems in documentation causing equations and examples to
+  render incorrectly.
+- `Solution.from_file`: Add missing `@classmethod` decorator; update documentation.
+
+## [0.13.0] - 2024-03-05
+
+### Fixed
+
+- `equilibrium.alpha()`: Fixed incorrect calculation of acid-base distribution coefficient for multiprotic acids.
+
+## [0.12.2] - 2024-02-25
+
+### Fixed
+
+- `Solution.get_total_amount`: Fix bug that would cause the method to fail if
+  units with names not natively understood by `pint` (e.g., 'ppm') were passed.
+
+## [0.12.1] - 2024-02-25
+
+### Fixed
+
+- `Solute.from_formula`: Fix bug in which an uncaught exception could occur when
+  if `pymatgen` failed to guess the oxidation state of a solute. (Issue #103 - thanks to @xiaoxiaozhu123 for reporting).
+- `Solution.get_total_amount`: Fix bug that would cause the method to fail if
+  mass-based units such as mg/L or ppm were requested.
+
+## [0.12.0] - 2024-02-15
+
+### Added
+
+- `Solution`: new kwarg `default_diffusion_coeff` which allows the user to specify a value to use
+  when a species diffusion coefficient is missing from the database. By default, the value for NaCl
+  salt (1.61e-9 m2/s) is used. This is important for conductivity and transport number calculations,
+  which perform weighted summations of diffusion coefficients over every species in the solution.
+  Previously, species with missing diffusion coefficients would be excluded from such calculations,
+  possibly resulting in inaccuracies, particularly after calling `equilibrate()`, which often
+  generates charged complexes such as NaSO4- or MgCl+.
+
+### Fixed
+
+- `Solution.__add__`: Bugfix in the addition operation `+` that could cause problems with
   child classes (i.e., classes that inherit from `Solution`) to work improperly
 
 ### Changed

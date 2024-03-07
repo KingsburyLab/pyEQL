@@ -8,7 +8,9 @@ You can help the project simply by using pyEQL and comparing the output to exper
 If you encounter any bugs, packaging issues, feature requests, comments, or questions, please report them
 using the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) on [github](https://github.com/KingsburyLab/pyeql).
 
-:::{tip} Please don't forget to include the closed issues in your search. Sometimes a solution was already reported, and the problem is considered solved. :::
+```{tip}
+Please don't forget to include the closed issues in your search. Sometimes a solution was already reported, and the problem is considered solved.
+```
 
 New issue reports should include information about your programming environment (e.g., operating system, Python version) and steps to reproduce the problem. Please try also to simplify the reproduction steps to a very minimal example that still illustrates the problem you are facing. By removing other factors, you help us to identify the root cause of the issue.
 
@@ -17,31 +19,23 @@ New issue reports should include information about your programming environment 
 You can help improve `pyEQL` docs by making them more readable and coherent, or
 by adding missing information and correcting mistakes.
 
-`pyEQL` documentation uses [Sphinx] as its main documentation compiler.
+`pyEQL` documentation uses [Sphinx](https://www.sphinx-doc.org/en/master/) as its main documentation compiler.
 This means that the docs are kept in the same repository as the project code, and
 that any documentation update is done in the same way was a code contribution.
 
-```{todo} Don't forget to mention which markup language you are using.
+```{tip}
+Please notice that the [GitHub web interface] provides a quick way of
+propose changes in `pyEQL`'s files. While this mechanism can
+be tricky for normal code contributions, it works perfectly fine for
+contributing to the docs, and can be quite handy.
 
-    e.g.,  [reStructuredText] or [CommonMark] with [MyST] extensions.
-```
-
-```{todo} If your project is hosted on GitHub, you can also mention the following tip:
-
-   :::{tip}
-      Please notice that the [GitHub web interface] provides a quick way of
-      propose changes in `pyEQL`'s files. While this mechanism can
-      be tricky for normal code contributions, it works perfectly fine for
-      contributing to the docs, and can be quite handy.
-
-      If you are interested in trying this method out, please navigate to
-      the `docs` folder in the source [repository], find which file you
-      would like to propose changes and click in the little pencil icon at the
-      top, to open [GitHub's code editor]. Once you finish editing the file,
-      please write a message in the form at the bottom of the page describing
-      which changes have you made and what are the motivations behind them and
-      submit your proposal.
-   :::
+If you are interested in trying this method out, please navigate to
+the `docs` folder in the source [repository], find which file you
+would like to propose changes and click in the little pencil icon at the
+top, to open [GitHub's code editor]. Once you finish editing the file,
+please write a message in the form at the bottom of the page describing
+which changes have you made and what are the motivations behind them and
+submit your proposal.
 ```
 
 When working on documentation changes in your local machine, you can
@@ -91,11 +85,15 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
    ```
    git checkout -b mybranch
    ```
+
    or
+
    ```
    git checkout -b doc-mydoc
    ```
+
    or
+
    ```
    git checkout -b feature-myfeature
    ```
@@ -109,7 +107,6 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
    ```
 
 7. Create a pull request with your changes. See [this tutorial](https://yangsu.github.io/pull-request-tutorial) for instructions.
-
 
 ## Guidelines
 
@@ -132,7 +129,6 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 ## Documentation
 
 Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to http://localhost:8000/ so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
-
 
 ## Changelog
 
