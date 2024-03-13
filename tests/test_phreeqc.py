@@ -201,9 +201,11 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     # this solution has balance_charge=None, therefore, the charge balance
     # may be off after equilibration
     assert not np.isclose(s2.charge_balance, 0, atol=1e-8)
+    eq_Hplus = s2.components["H+"]
     s2.balance_charge = "pH"
     s2.equilibrate()
     assert np.isclose(s2.charge_balance, 0, atol=1e-8)
+    assert s2.components["H+"] > eq_Hplus
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")
