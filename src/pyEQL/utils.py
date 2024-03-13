@@ -18,6 +18,27 @@ from pyEQL import ureg
 logger = logging.getLogger(__name__)
 
 
+def interpret_units(unit: str) -> str:
+    """
+    Translate commonly used environmental units such as 'ppm' into strings that `pint` can understand.
+
+    Args:
+        unit: string representing the unit to translate
+
+    Returns: a unit that pint can understand
+    """
+    if unit == "m":  # molal
+        return "mol/kg"
+    if unit == "ppm":
+        return "mg/L"
+    if unit == "ppb":
+        return "ug/L"
+    if unit == "ppt":
+        return "ng/L"
+    # if all else fails, return the unit we were provided
+    return unit
+
+
 @lru_cache
 def standardize_formula(formula: str):
     """
