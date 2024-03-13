@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Solution`: Fixed an issue in which repeated calls to `equilibrate` when using `NativeEOS` or `PHREEQCEOS` would
+  change the mass of the `Solution` slightly. This was attributed to the fact that `pyEQL` and `PHREEQC` use slightly
+  different molecular weights for water.
 - `Solution`: `get_total_amount` and related methods could fail when the oxidation state of an element was
   unknown (e.g., 'Br') (Issue [#116](https://github.com/KingsburyLab/pyEQL/issues/116))
 

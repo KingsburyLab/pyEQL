@@ -168,18 +168,25 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
     orig_pE = s1.pE
+    orig_mass = s1.mass
+    orig_density = s2.density.magnitude
+    orig_solv_mass = s2.solvent_mass.magnitude
     s1.equilibrate()
     assert "H2(aq)" in s1.components
     assert np.isclose(s1.charge_balance, 0, atol=1e-8)
     assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
+    # assert np.isclose(s1.mass, orig_mass)
+    # assert np.isclose(s1.density.magnitude, orig_density)
+    # assert np.isclose(s1.solvent_mass.magnitude, orig_solv_mass)
 
     assert "NaOH(aq)" not in s2.components
-    s2.equilibrate()
-    orig_pH = s2.pH
-    orig_pE = s2.pE
     orig_density = s2.density.magnitude
     orig_solv_mass = s2.solvent_mass.magnitude
+    orig_pH = s2.pH
+    orig_pE = s2.pE
+    orig_mass = s2.mass
+    s2.equilibrate()
     assert "NaOH(aq)" in s2.components
 
     # total element concentrations should be conserved after equilibrating
@@ -187,14 +194,18 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert np.isclose(s2.get_total_amount("Cl", "mol").magnitude, 8)
     assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
     assert np.isclose(s2.density.magnitude, orig_density)
+    # the pH should drop due to hydrolysis of Ca+2
+    assert s2.pH < orig_pH
+    assert np.isclose(s2.pE, orig_pE)
+    assert np.isclose(s2.mass, orig_mass)
     # this solution has balance_charge=None, therefore, the charge balance
     # may be off after equilibration
     assert not np.isclose(s2.charge_balance, 0, atol=1e-8)
-    assert np.isclose(s2.pH, orig_pH, atol=0.01)
-    assert np.isclose(s2.pE, orig_pE)
+    eq_Hplus = s2.components["H+"]
     s2.balance_charge = "pH"
     s2.equilibrate()
     assert np.isclose(s2.charge_balance, 0, atol=1e-8)
+    assert s2.components["H+"] > eq_Hplus
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")
