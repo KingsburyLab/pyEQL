@@ -6,6 +6,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 """
 
+import logging
 import os
 import warnings
 from abc import ABC, abstractmethod
@@ -14,19 +15,16 @@ from typing import Literal
 
 from phreeqpython import PhreeqPython
 
-# internal pyEQL imports
 import pyEQL.activity_correction as ac
-
-# import the parameters database
-# the pint unit registry
 from pyEQL import ureg
-from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.utils import standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
 SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
+
+logger = logging.getLogger(__name__)
 
 
 class EOS(ABC):
@@ -367,14 +365,14 @@ class NativeEOS(EOS):
                 str(solution.temperature),
             )
 
-            logger.info(
+            logger.debug(
                 f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt {salt} using Pitzer model"
             )
             molal = activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif solution.ionic_strength.magnitude <= 0.005:
-            logger.info(
+            logger.debug(
                 "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient." % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_debyehuckel(
@@ -385,7 +383,7 @@ class NativeEOS(EOS):
 
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif solution.ionic_strength.magnitude <= 0.1:
-            logger.info(
+            logger.debug(
                 "Ionic strength = %s. Using Guntelberg to calculate activity coefficient." % solution.ionic_strength
             )
             molal = ac.get_activity_coefficient_guntelberg(
@@ -396,7 +394,7 @@ class NativeEOS(EOS):
 
         # use the Davies equation for 0.1 < I < 0.5
         elif solution.ionic_strength.magnitude <= 0.5:
-            logger.info(
+            logger.debug(
                 "Ionic strength = %s. Using Davies equation to calculate activity coefficient."
                 % solution.ionic_strength
             )
@@ -544,7 +542,7 @@ class NativeEOS(EOS):
                     str(solution.temperature),
                 )
 
-                logger.info(
+                logger.debug(
                     f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt {item.formula} using Pitzer model"
                 )
                 effective_osmotic_sum += concentration * osmotic_coefficient
@@ -554,7 +552,7 @@ class NativeEOS(EOS):
                     "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
                     % item.formula
                 )
-                effective_osmotic_sum += concentration * osmotic_coefficient
+                return 1
 
         try:
             return effective_osmotic_sum / molality_sum
@@ -621,7 +619,7 @@ class NativeEOS(EOS):
 
             pitzer_calc = True
 
-            logger.info("Updated solution volume using Pitzer model for solute %s" % salt.formula)
+            logger.debug("Updated solution volume using Pitzer model for solute %s" % salt.formula)
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
@@ -637,7 +635,7 @@ class NativeEOS(EOS):
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
                 solute_vol += part_vol * ureg.Quantity(mol, "mol")
-                logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
+                logger.debug("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
                 logger.warning(

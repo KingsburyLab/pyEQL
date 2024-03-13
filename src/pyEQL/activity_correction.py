@@ -12,13 +12,16 @@ are called from within the get_activity_coefficient method of the Solution class
 :license: LGPL, see LICENSE for more details.
 
 """
+
+import logging
 import math
 
 from pint import Quantity
 
 from pyEQL import ureg
-from pyEQL.logging_system import logger
 from pyEQL.utils import create_water_substance
+
+logger = logging.getLogger(__name__)
 
 
 def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
@@ -115,7 +118,7 @@ def _debye_parameter_activity(temperature: str = "25 degC") -> "Quantity":
         / (4 * math.pi * ureg.epsilon_0 * water_substance.epsilon * ureg.boltzmann_constant * T) ** 1.5
     )
 
-    logger.info(rf"Computed Debye-Huckel Limiting Law Constant A^{{\gamma}} = {debyeparam} at {temperature}")
+    logger.debug(rf"Computed Debye-Huckel Limiting Law Constant A^{{\gamma}} = {debyeparam} at {temperature}")
     return debyeparam.to("kg ** 0.5 / mol ** 0.5")
 
 
@@ -149,7 +152,7 @@ def _debye_parameter_osmotic(temperature="25 degC"):
 
     """
     output = 1 / 3 * _debye_parameter_activity(temperature)
-    logger.info(f"Computed Debye-Huckel Limiting slope for osmotic coefficient A^phi = {output} at {temperature}")
+    logger.debug(f"Computed Debye-Huckel Limiting slope for osmotic coefficient A^phi = {output} at {temperature}")
     return output.to("kg ** 0.5 /mol ** 0.5")
 
 
@@ -206,7 +209,7 @@ def _debye_parameter_volume(temperature="25 degC"):
     if T.to("degC").magnitude != 25:
         logger.warning("Debye-Huckel limiting slope for volume is approximate when T is not equal to 25 degC")
 
-    logger.info(f"Computed Debye-Huckel Limiting Slope for volume A^V = {result} at {temperature}")
+    logger.debug(f"Computed Debye-Huckel Limiting Slope for volume A^V = {result} at {temperature}")
 
     return result.to("cm ** 3 * kg ** 0.5 /  mol ** 1.5")
 
@@ -280,9 +283,7 @@ def get_activity_coefficient_guntelberg(ionic_strength, z=1, temperature="25 deg
     if not ionic_strength.magnitude <= 0.1:
         logger.warning("Ionic strength exceeds valid range of the Guntelberg approximation")
 
-    log_f = (
-        -_debye_parameter_activity(temperature) * z**2 * ionic_strength**0.5 / (1 + ionic_strength.magnitude**0.5)
-    )
+    log_f = -_debye_parameter_activity(temperature) * z**2 * ionic_strength**0.5 / (1 + ionic_strength.magnitude**0.5)
 
     return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
@@ -615,9 +616,7 @@ def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
         :func:`_pitzer_f1`
 
     """
-    coeff = (
-        beta0 + beta1 * _pitzer_f1(alpha1 * ionic_strength**0.5) + beta2 * _pitzer_f1(alpha2 * ionic_strength**0.5)
-    )
+    coeff = beta0 + beta1 * _pitzer_f1(alpha1 * ionic_strength**0.5) + beta2 * _pitzer_f1(alpha2 * ionic_strength**0.5)
     return coeff.magnitude
 
 

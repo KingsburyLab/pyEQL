@@ -8,6 +8,7 @@ pyEQL Solution Class.
 
 from __future__ import annotations
 
+import logging
 import math
 import os
 import warnings
@@ -30,7 +31,6 @@ from pyEQL.activity_correction import _debye_parameter_activity, _debye_paramete
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 
 # logging system
-from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
@@ -59,6 +59,7 @@ class Solution(MSONable):
         engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
+        log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "ERROR",
     ):
         """
         Instantiate a Solution from a composition.
@@ -103,6 +104,8 @@ class Solution(MSONable):
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
+            log_level: Log messages of this or higher severity will be printed to stdout. Defaults to 'ERROR', meaning
+                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
                 important property calculations including conductivity and transport number, which are related to the
@@ -125,8 +128,20 @@ class Solution(MSONable):
             Temperature: 293.150 K
             Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
         """
-        # create a logger attached to this class
-        # self.logger = logging.getLogger(type(self).__name__)
+        # create a logger and attach it to this class
+        self.log_level = log_level.upper()
+        self.logger = logging.getLogger(type(self).__name__)
+        self.logger.setLevel(self.log_level)
+        # this line prevents duplicate handlers
+        if not self.logger.handlers:
+            # use rich for pretty log formatting, if installed
+            try:
+                from rich.logging import RichHandler
+
+                sh = RichHandler(rich_tracebacks=True)
+            except ImportError:
+                sh = logging.StreamHandler()
+            self.logger.addHandler(sh)
 
         # per-instance cache of get_property and other calls that do not depend
         # on composition
@@ -174,13 +189,13 @@ class Solution(MSONable):
             db_store = IonDB
         elif isinstance(database, (str, Path)):
             db_store = JSONStore(str(database), key="formula")
-            logger.info(f"Created maggma JSONStore from .json file {database}")
+            self.logger.debug(f"Created maggma JSONStore from .json file {database}")
         else:
             db_store = database
         self.database = db_store
         """`Store` instance containing the solute property database."""
         self.database.connect()
-        logger.info(f"Connected to property database {self.database!s}")
+        self.logger.debug(f"Connected to property database {self.database!s}")
 
         # set the equation of state engine
         self._engine = engine
@@ -209,7 +224,7 @@ class Solution(MSONable):
         # TODO - do I need the ability to specify the solvent mass?
         # # raise an error if the solvent volume has also been given
         # if volume_set is True:
-        #     logger.error(
+        #     self.logger.error(
         #         "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
         #     )
         # # add the solvent and the mass
@@ -231,7 +246,7 @@ class Solution(MSONable):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
-            logger.warning(
+            self.logger.warning(
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
                 '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
@@ -242,7 +257,9 @@ class Solution(MSONable):
         cb = self.charge_balance
         if not np.isclose(cb, 0, atol=1e-8) and self.balance_charge is not None:
             balanced = False
-            logger.info(f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate.")
+            self.logger.info(
+                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate."
+            )
             if self.balance_charge == "pH":
                 self.components["H+"] += (
                     -1 * cb * self.volume.to("L").magnitude
@@ -469,7 +486,7 @@ class Solution(MSONable):
                 if coefficient is not None:
                     denominator += coefficient * fraction
                 # except TypeError:
-                #     logger.warning("No dielectric parameters found for species %s." % item)
+                #     self.logger.warning("No dielectric parameters found for species %s." % item)
                 # continue
 
         return ureg.Quantity(di_water / denominator, "dimensionless")
@@ -538,7 +555,7 @@ class Solution(MSONable):
     # model should be integrated here as a fallback, in case salt parameters for the
     # other model are not available.
     # if self.ionic_strength.magnitude > 0.2:
-    #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+    #   self.logger.warning('Viscosity calculation has limited accuracy above 0.2m')
 
     #        viscosity_rel = 1
     #        for item in self.components:
@@ -607,7 +624,9 @@ class Solution(MSONable):
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            logger.info("Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula)
+            self.logger.warning(
+                "Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula
+            )
             G_123 = G_23 = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
@@ -955,7 +974,7 @@ class Solution(MSONable):
         osmotic_pressure = (
             -1 * ureg.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
         )
-        logger.info(
+        self.logger.debug(
             f"Computed osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
         )
         return osmotic_pressure.to("Pa")
@@ -1024,7 +1043,7 @@ class Solution(MSONable):
             try:
                 return ureg.Quantity(0, _units)
             except DimensionalityError:
-                logger.warning(
+                self.logger.error(
                     f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0."
                 )
                 return ureg.Quantity(0, "dimensionless")
@@ -1079,7 +1098,7 @@ class Solution(MSONable):
                     oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"No oxidation state found for element {el}")
+                    self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
@@ -1109,7 +1128,7 @@ class Solution(MSONable):
                     oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"Guessing oxi states failed for {s}")
+                    self.logger.error(f"Guessing oxi states failed for {s}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
@@ -1233,7 +1252,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.error("All solvent has been depleted from the solution")
                 return
             # set the volume recalculation flag
             self.volume_update_required = True
@@ -1291,7 +1310,7 @@ class Solution(MSONable):
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
             if self.get_amount(solute, "mol").magnitude < 0:
-                logger.warning(
+                self.logger.error(
                     "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
                 )
                 self.set_amount(solute, "0 mol")
@@ -1327,7 +1346,7 @@ class Solution(MSONable):
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
             if self.get_amount(solute, "mol").magnitude < 0:
-                logger.warning(
+                self.logger.error(
                     "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
                 )
                 self.set_amount(solute, "0 mol")
@@ -1335,7 +1354,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.error("All solvent has been depleted from the solution")
                 return
 
             # set the volume recalculation flag
@@ -1367,7 +1386,7 @@ class Solution(MSONable):
         """
         # raise an error if a negative amount is specified
         if ureg.Quantity(amount).magnitude < 0:
-            logger.error("Negative amount specified for solute %s. Concentration not changed." % solute)
+            self.logger.error(f"Negative amount specified for solute {solute}. Concentration not changed.")
 
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1421,7 +1440,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.critical("All solvent has been depleted from the solution")
                 return
 
             self._update_volume()
@@ -1594,7 +1613,7 @@ class Solution(MSONable):
 
         # warn if something other than water is the predominant component
         if next(iter(components)) != "H2O(aq)":
-            logger.warning("H2O(aq) is not the most prominent component in this Solution!")
+            self.logger.warning("H2O(aq) is not the most prominent component in this Solution!")
 
         # equivalents (charge-weighted moles) of cations and anions
         cations = set(self.cations.keys()).intersection(components.keys())
@@ -1727,7 +1746,7 @@ class Solution(MSONable):
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
         except (ValueError, ZeroDivisionError):
-            logger.warning("Calculation unsuccessful. Returning unit activity coefficient.")
+            self.logger.error("Calculation unsuccessful. Returning unit activity coefficient.")
             return ureg.Quantity(1, "dimensionless")
 
         # if necessary, convert the activity coefficient to another scale, and return the result
@@ -1797,7 +1816,7 @@ class Solution(MSONable):
                 raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
             activity = (self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)).magnitude
-            logger.info(f"Calculated {scale} scale activity of solute {solute} as {activity}")
+            self.logger.debug(f"Calculated {scale} scale activity of solute {solute} as {activity}")
 
         return ureg.Quantity(activity, "dimensionless")
 
@@ -1865,13 +1884,13 @@ class Solution(MSONable):
         osmotic_coefficient = self.get_osmotic_coefficient()
 
         if osmotic_coefficient == 1:
-            logger.warning("Pitzer parameters not found. Water activity set equal to mole fraction")
+            self.logger.warning("Pitzer parameters not found. Water activity set equal to mole fraction")
             return self.get_amount("H2O", "fraction")
 
         concentration_sum = np.sum([mol for item, mol in self.components.items() if item != "H2O(aq)"])
         concentration_sum /= self.solvent_mass.to("kg").magnitude  # converts to mol/kg
 
-        logger.info("Calculated water activity using osmotic coefficient")
+        self.logger.debug("Calculated water activity using osmotic coefficient")
 
         return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
 
@@ -1968,7 +1987,7 @@ class Solution(MSONable):
         # formulas should always be unique in the database. len==0 indicates no
         # data. len>1 indicates duplicate data.
         if len(data) > 1:
-            logger.warning(f"Duplicate database entries for solute {solute} found!")
+            self.logger.warning(f"Duplicate database entries for solute {solute} found!")
         if len(data) == 0:
             # TODO - add molar volume of water to database?
             if name == "size.molar_volume" and rform == "H2O(aq)":
@@ -1999,7 +2018,9 @@ class Solution(MSONable):
                 if data is not None:
                     base_value = ureg.Quantity(doc["size"]["molar_volume"].get("value"))
                     if self.temperature != base_temperature:
-                        logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
+                        self.logger.warning(
+                            "Partial molar volume for species %s not corrected for temperature" % solute
+                        )
                     return base_value
                 return data
 
@@ -2034,12 +2055,12 @@ class Solution(MSONable):
                 return doc.get(name)
 
             val = doc[name].get("value")
-            # logger.warning("%s has not been corrected for solution conditions" % name)
+            # self.logger.warning("%s has not been corrected for solution conditions" % name)
             if val is not None:
                 return ureg.Quantity(val)
 
         except KeyError:
-            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
+            self.logger.error(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
 
         if name == "model_parameters.molar_volume_pitzer":
@@ -2060,7 +2081,7 @@ class Solution(MSONable):
             return doc.get(name)
 
         val = doc[name].get("value")
-        # logger.warning("%s has not been corrected for solution conditions" % name)
+        # self.logger.warning("%s has not been corrected for solution conditions" % name)
         if val is not None:
             return ureg.Quantity(val)
         return None
@@ -2163,7 +2184,7 @@ class Solution(MSONable):
         else:
             molar_cond = ureg.Quantity(0, "mS / cm / (mol/L)")
 
-        logger.info(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
         return molar_cond.to("mS / cm / (mol/L)")
 
@@ -2215,7 +2236,7 @@ class Solution(MSONable):
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            logger.info(
+            self.logger.warning(
                 f"Diffusion coefficient not found for species {rform}. Using default value of "
                 f"{self.default_diffusion_coeff} m**2/s."
             )
@@ -2242,7 +2263,7 @@ class Solution(MSONable):
             except TypeError:
                 # this means the database doesn't contain a d value.
                 # according to Ref 2, the following are recommended default parameters
-                logger.info(
+                self.logger.warning(
                     f"Temperature and ionic strength correction parameters for solute {rform} diffusion "
                     "coefficient not in database. Using recommended default values of a1=1.6, a2=4.73, and d=0."
                 )
@@ -2293,7 +2314,7 @@ class Solution(MSONable):
 
         mobility = ureg.N_A * ureg.e * abs(self.get_property(solute, "charge")) * D / (ureg.R * self.temperature)
 
-        logger.info(f"Computed ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Computed ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
 
         return mobility.to("m**2/V/s")
 
@@ -2359,6 +2380,7 @@ class Solution(MSONable):
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
         d["engine"] = self._engine
+        # d["logger"] = self.logger.__dict__
         return d
 
     @classmethod
@@ -2424,12 +2446,14 @@ class Solution(MSONable):
 
         # check to see if the solutions have the same temperature and pressure
         if p1 != p2:
-            logger.info("Adding two solutions of different pressure. Pressures will be averaged (weighted by volume)")
+            self.logger.info(
+                "Adding two solutions of different pressure. Pressures will be averaged (weighted by volume)"
+            )
 
         mix_pressure = (p1 * v1 + p2 * v2) / (mix_vol)
 
         if t1 != t2:
-            logger.info(
+            self.logger.info(
                 "Adding two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
             )
 
@@ -2789,7 +2813,7 @@ class Solution(MSONable):
 
         """
         # if self.ionic_strength.magnitude > 0.2:
-        #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+        #   self.logger.warning('Viscosity calculation has limited accuracy above 0.2m')
 
         #        viscosity_rel = 1
         #        for item in self.components:
@@ -3279,7 +3303,6 @@ class Solution(MSONable):
         elif json_path.exists():
             preset_path = json_path
         else:
-            logger.error("Invalid solution entered - %s" % preset)
             raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path} not found!")
 
         # Create and return a Solution object
@@ -3294,7 +3317,7 @@ class Solution(MSONable):
         """
         str_filename = str(filename)
         if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            logger.error("Invalid file extension entered - %s" % str_filename)
+            self.logger.error("Invalid file extension entered - %s" % str_filename)
             raise ValueError("File extension must be .json or .yaml")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()
@@ -3318,7 +3341,6 @@ class Solution(MSONable):
             FileNotFoundError: If the given filename doesn't exist on the file system.
         """
         if not os.path.exists(filename):
-            logger.error("Invalid path to file entered - %s" % filename)
             raise FileNotFoundError(f"File '{filename}' not found!")
         str_filename = str(filename)
         if "yaml" in str_filename.lower():

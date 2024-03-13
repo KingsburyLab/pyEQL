@@ -14,6 +14,7 @@ that do depend on compsition are accessed via Solution class methods.
 
 from __future__ import annotations
 
+import logging
 import warnings
 from dataclasses import asdict, dataclass, field
 from typing import Literal
@@ -22,6 +23,8 @@ import numpy as np
 from pymatgen.core.ion import Ion
 
 from pyEQL.utils import standardize_formula
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass

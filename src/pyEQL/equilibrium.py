@@ -8,12 +8,14 @@ NOTE: these methods are not currently used but are here for the future.
 :license: LGPL, see LICENSE for more details.
 
 """
+
 # import libraries for scientific functions
+import logging
 import math
 
-# the pint unit registry
 from pyEQL import ureg
-from pyEQL.logging_system import logger
+
+logger = logging.getLogger(__name__)
 
 # TODO - not used. Remove?
 SPECIES_ALIAISES = {
@@ -93,11 +95,13 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
         enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
-    logger.info(
+    logger.debug(
         "Adjusted equilibrium constant K=%s from %s to %s degrees Celsius with Delta H = %s. Adjusted K = %s % equilibrium_constant,reference_temperature,temperature,enthalpy,output"
     )
 
-    logger.warning("Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest")
+    logger.info(
+        "Note that the Van't Hoff equation assumes enthalpy is independent of temperature over the range of interest"
+    )
     return output
 
 
@@ -137,7 +141,7 @@ def adjust_temp_arrhenius(
         activation_energy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
-    logger.info(
+    logger.debug(
         "Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output"
     )
 
@@ -215,7 +219,7 @@ def alpha(n, pH, pKa_list):
 
     # return the desired distribution factor
     alpha = terms_list[n] / sum(terms_list)
-    logger.info(
+    logger.debug(
         "Calculated %s-deprotonated acid distribution coefficient of %s for pKa=%s at pH %s % n,alpha,pKa_list,pH"
     )
     return alpha
