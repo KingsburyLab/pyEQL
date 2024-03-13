@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- `utils.interpret_units`: New method to "sanitize" environmental engineering units like ppm to strings that `pint`
+  can understand, e.g. ppm -> mg/L. This method is now used in `get_amount` and `get_total_amount` to ensure consistency
+  in how they process units.
+
 ### Changed
 
 - CI: `pre-commit autoupdate`
 
 ### Fixed
 
+- `Solution.get_total_amount`: Fixed an issue in which `ppm` units would fail.
 - `Solution`: Fixed an issue in which repeated calls to `equilibrate` when using `NativeEOS` or `PHREEQCEOS` would
   change the mass of the `Solution` slightly. This was attributed to the fact that `pyEQL` and `PHREEQC` use slightly
   different molecular weights for water.
