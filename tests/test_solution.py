@@ -114,6 +114,7 @@ def test_empty_solution_3():
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_oxi_state_handling():
     # see https://github.com/KingsburyLab/pyEQL/issues/116
     # and https://github.com/materialsproject/pymatgen/issues/3687

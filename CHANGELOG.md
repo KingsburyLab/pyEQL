@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- CI: `pre-commit autoupdate`
+
 ### Fixed
 
 - `Solution`: `get_total_amount` and related methods could fail when the oxidation state of an element was
