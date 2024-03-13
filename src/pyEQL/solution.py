@@ -5,6 +5,7 @@ pyEQL Solution Class.
 :license: LGPL, see LICENSE for more details.
 
 """
+
 from __future__ import annotations
 
 import math
@@ -35,6 +36,8 @@ from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
+# string to denote unknown oxidation states
+UNKNOWN_OXI_STATE = "unk"
 
 
 class Solution(MSONable):
@@ -1074,10 +1077,10 @@ class Solution(MSONable):
             for el in elements:
                 try:
                     oxi_states = self.get_property(s, "oxi_state_guesses")
-                    oxi_state = oxi_states.get(el)
+                    oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"Guessing oxi states failed for {s}")
-                    oxi_state = "unk"
+                    warnings.warn(f"No oxidation state found for element {el}")
+                    oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
                     d[key].append(s)
@@ -1104,10 +1107,10 @@ class Solution(MSONable):
                 stoich = pmg_ion_dict.get(el)
                 try:
                     oxi_states = self.get_property(s, "oxi_state_guesses")
-                    oxi_state = oxi_states.get(el)
+                    oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     warnings.warn(f"Guessing oxi states failed for {s}")
-                    oxi_state = "unk"
+                    oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
                     d[key] += stoich * mol
@@ -1143,7 +1146,7 @@ class Solution(MSONable):
         comp_by_element = self.get_components_by_element()
 
         # compile list of species in different ways depending whether there is an oxidation state
-        if "(" in element:
+        if "(" in element and UNKNOWN_OXI_STATE not in element:
             ox = float(element.split("(")[-1].split(")")[0])
             key = f"{el}({ox})"
             species = comp_by_element.get(key)
