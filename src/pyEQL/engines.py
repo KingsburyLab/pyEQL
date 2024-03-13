@@ -5,6 +5,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 :license: LGPL, see LICENSE for more details.
 
 """
+
 import os
 import warnings
 from abc import ABC, abstractmethod
@@ -189,7 +190,6 @@ class NativeEOS(EOS):
             # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
             # really have to specify the solvent mass in 1 liter of solution
             "water": solv_mass,
-            "density": solution.density.to("g/mL").magnitude,
         }
         if solution.balance_charge == "pH":
             d["pH"] = str(d["pH"]) + " charge"
@@ -234,9 +234,7 @@ class NativeEOS(EOS):
         self.ppsol = ppsol
 
     def _destroy_ppsol(self):
-        """
-        Remove the PhreeqPython solution from memory
-        """
+        """Remove the PhreeqPython solution from memory"""
         if self.ppsol is not None:
             self.ppsol.forget()
             self.ppsol = None
@@ -370,9 +368,7 @@ class NativeEOS(EOS):
             )
 
             logger.info(
-                "Calculated activity coefficient of species {} as {} based on salt {} using Pitzer model".format(
-                    solute, activity_coefficient, salt
-                )
+                f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt {salt} using Pitzer model"
             )
             molal = activity_coefficient
 
@@ -549,9 +545,7 @@ class NativeEOS(EOS):
                 )
 
                 logger.info(
-                    "Calculated osmotic coefficient of water as {} based on salt {} using Pitzer model".format(
-                        osmotic_coefficient, item.formula
-                    )
+                    f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt {item.formula} using Pitzer model"
                 )
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
@@ -658,7 +652,9 @@ class NativeEOS(EOS):
         if self.ppsol is not None:
             self.ppsol.forget()
         self._setup_ppsol(solution)
-        # self._stored_comp = solution.components
+
+        # store the original solvent mass
+        orig_solvent_moles = solution.components[solution.solvent]
 
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
@@ -679,17 +675,28 @@ class NativeEOS(EOS):
             )
         for s in missing_species:
             charge_adjust += -1 * solution.get_amount(s, "eq").magnitude
+        if charge_adjust != 0:
+            logger.warning(
+                "After equilibration, the charge balance of the solution was not electroneutral."
+                f" {charge_adjust} eq of charge were added via {solution.balance_charge}"
+            )
 
-        # re-adjust charge balance
-        if solution.balance_charge is None:
-            pass
-        elif solution.balance_charge == "pH":
-            solution.components["H+"] += charge_adjust
-        elif solution.balance_charge == "pE":
-            raise NotImplementedError
-        else:
-            z = solution.get_property(solution.balance_charge, "charge")
-            solution.add_amount(solution.balance_charge, f"{charge_adjust/z} mol")
+            # re-adjust charge balance
+            if solution.balance_charge is None:
+                pass
+            elif solution.balance_charge == "pH":
+                solution.components["H+"] += charge_adjust
+            elif solution.balance_charge == "pE":
+                raise NotImplementedError
+            else:
+                z = solution.get_property(solution.balance_charge, "charge")
+                solution.add_amount(solution.balance_charge, f"{charge_adjust/z} mol")
+
+        # rescale the solvent mass to ensure the total mass of solution does not change
+        # this is important because PHREEQC and the pyEQL database may use slightly different molecular
+        # weights for water. Since water amount is passed to PHREEQC in kg but returned in moles, each
+        # call to equilibrate can thus result in a slight change in the Solution mass.
+        solution.components[solution.solvent] = orig_solvent_moles
 
     def __deepcopy__(self, memo):
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
