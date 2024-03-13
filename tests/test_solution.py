@@ -17,6 +17,7 @@ import yaml
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.solution import UNKNOWN_OXI_STATE
 
 
 @pytest.fixture()
@@ -111,6 +112,14 @@ def test_empty_solution_3():
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
+
+
+def test_oxi_state_handling():
+    # see https://github.com/KingsburyLab/pyEQL/issues/116
+    # and https://github.com/materialsproject/pymatgen/issues/3687
+    s = Solution({"Na+": "0.5 mol/kg", "Br-": "0.5 mol/kg"}, pH=7, balance_charge="Br-")
+    s.equilibrate()
+    assert f"Br({UNKNOWN_OXI_STATE})" in s.get_components_by_element()
 
 
 def test_diffusion_transport(s1, s2):

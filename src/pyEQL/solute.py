@@ -11,8 +11,10 @@ that do depend on compsition are accessed via Solution class methods.
 :license: LGPL, see LICENSE for more details.
 
 """
+
 from __future__ import annotations
 
+import warnings
 from dataclasses import asdict, dataclass, field
 from typing import Literal
 
@@ -121,6 +123,7 @@ class Solute:
         try:
             oxi_states = pmg_ion.oxi_state_guesses(all_oxi_states=True)[0]
         except (IndexError, ValueError):
+            warnings.warn(f"Guessing oxi states failed for {formula}")
             oxi_states = {}
 
         return cls(
