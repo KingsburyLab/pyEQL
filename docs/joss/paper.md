@@ -99,7 +99,7 @@ model parameters are missing from the database.
 `pyEQL` is built to be extensible, customizable, and easy to use in conjunction with widely-used scientific `python`
 libraries. Specifically, it makes use of `pint` ([https://github.com/hgrecco/pint](https://github.com/hgrecco/pint)) to provide automatic unit conversions and leverages codes in
 the Materials Project [@Jain2013] ecosystem -- namely, `pymatgen` [@Ong2013] for chemical informatics (e.g., molecular
-weight, parsing chemical formulae) and `maggma` [@maggma] for accessing the built-in property database.
+weight, parsing chemical formulae) and `maggma` ([https://github.com/materialsproject/maggma](https://github.com/materialsproject/maggma)) for accessing the built-in property database.
 
 # Architecture
 
@@ -123,7 +123,7 @@ approximation, a built-in implementation of the Pitzer model, and the `PHREEQC` 
 
 `pyEQL` also provides `Solute`, a `dataclass` that defines a structured schema for solute property data.
 The database distributed with `pyEQL` is a list of serialized `Solute` objects stored in a `.json` file, which is
-accessed via the `maggma` `Store` API [@maggma]. The database used by a particular `Solution` instance can be specified
+accessed via the `maggma` `Store` API ([https://github.com/materialsproject/maggma](https://github.com/materialsproject/maggma)). The database used by a particular `Solution` instance can be specified
 by keyword argument when the object is created, which makes it possible in principle to use customized databases. Furthermore,
 using the `Store` API means that such databases can be stored in any format supported by `maggma` (e.g., Mongo Database,
 .json file, etc.).
