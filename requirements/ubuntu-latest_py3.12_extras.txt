@@ -24,9 +24,9 @@ black==24.2.0
     # via pyEQL (setup.py)
 blinker==1.7.0
     # via flask
-boto3==1.34.46
+boto3==1.34.59
     # via maggma
-botocore==1.34.46
+botocore==1.34.59
     # via
     #   boto3
     #   s3transfer
@@ -48,9 +48,9 @@ click==8.1.7
     #   uvicorn
 contourpy==1.2.0
     # via matplotlib
-coverage[toml]==7.4.2
+coverage[toml]==7.4.3
     # via pytest-cov
-cryptography==42.0.4
+cryptography==42.0.5
     # via paramiko
 cycler==0.12.1
     # via matplotlib
@@ -65,7 +65,7 @@ docutils==0.20.1
     #   myst-parser
     #   sphinx
     #   sphinx-rtd-theme
-fastapi==0.109.2
+fastapi==0.110.0
     # via maggma
 filelock==3.13.1
     # via
@@ -110,11 +110,11 @@ jsonschema-specifications==2023.12.1
     # via jsonschema
 kiwisolver==1.4.5
     # via matplotlib
-latexcodec==2.0.1
+latexcodec==3.0.0
     # via pybtex
 linkify-it-py==2.0.3
     # via myst-parser
-maggma==0.63.2
+maggma==0.63.4
     # via pyEQL (setup.py)
 markdown-it-py==3.0.0
     # via
@@ -135,16 +135,16 @@ mongogrant==0.3.3
     # via maggma
 mongomock==4.1.2
     # via maggma
-monty==2024.2.2
+monty==2024.2.26
     # via
     #   maggma
     #   pyEQL (setup.py)
     #   pymatgen
 mpmath==1.3.0
     # via sympy
-msgpack==1.0.7
+msgpack==1.0.8
     # via maggma
-mypy==1.8.0
+mypy==1.9.0
     # via pyEQL (setup.py)
 mypy-extensions==1.0.0
     # via
@@ -180,7 +180,7 @@ packaging==23.2
     #   tox
 palettable==3.3.3
     # via pymatgen
-pandas==2.2.0
+pandas==2.2.1
     # via pymatgen
 paramiko==3.4.0
     # via sshtunnel
@@ -212,12 +212,12 @@ pybtex==0.24.0
     # via pymatgen
 pycparser==2.21
     # via cffi
-pydantic==2.6.1
+pydantic==2.6.3
     # via
     #   fastapi
     #   maggma
     #   pydantic-settings
-pydantic-core==2.16.2
+pydantic-core==2.16.3
     # via pydantic
 pydantic-settings==2.2.1
     # via maggma
@@ -227,25 +227,25 @@ pygments==2.17.2
     # via
     #   rich
     #   sphinx
-pymatgen==2024.2.20
+pymatgen==2024.3.1
     # via pyEQL (setup.py)
-pymongo==4.6.1
+pymongo==4.6.2
     # via
     #   maggma
     #   mongogrant
 pynacl==1.5.0
     # via paramiko
-pyparsing==3.1.1
+pyparsing==3.1.2
     # via
     #   matplotlib
     #   periodictable
-pytest==8.0.1
+pytest==8.1.1
     # via
     #   pyEQL (setup.py)
     #   pytest-cov
 pytest-cov==4.1.0
     # via pyEQL (setup.py)
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   maggma
@@ -271,7 +271,7 @@ requests==2.31.0
     #   mongogrant
     #   pymatgen
     #   sphinx
-rich==13.7.0
+rich==13.7.1
     # via pyEQL (setup.py)
 rpds-py==0.18.0
     # via
@@ -283,7 +283,7 @@ ruamel-yaml==0.17.40
     #   pymatgen
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.2.2
+ruff==0.3.2
     # via pyEQL (setup.py)
 s3transfer==0.10.0
     # via boto3
@@ -297,11 +297,10 @@ sentinels==1.0.0
     # via mongomock
 six==1.16.0
     # via
-    #   latexcodec
     #   pybtex
     #   python-dateutil
     #   tox
-sniffio==1.3.0
+sniffio==1.3.1
     # via anyio
 snowballstemmer==2.2.0
     # via sphinx
@@ -345,7 +344,7 @@ tqdm==4.66.2
     # via
     #   maggma
     #   pymatgen
-typing-extensions==4.9.0
+typing-extensions==4.10.0
     # via
     #   fastapi
     #   mypy
@@ -363,9 +362,9 @@ urllib3==2.0.7
     # via
     #   botocore
     #   requests
-uvicorn==0.27.1
+uvicorn==0.28.0
     # via maggma
-virtualenv==20.25.0
+virtualenv==20.25.1
     # via
     #   pre-commit
     #   tox

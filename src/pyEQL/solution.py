@@ -5,6 +5,7 @@ pyEQL Solution Class.
 :license: LGPL, see LICENSE for more details.
 
 """
+
 from __future__ import annotations
 
 import math
@@ -32,9 +33,11 @@ from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, create_water_substance, standardize_formula
+from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
+# string to denote unknown oxidation states
+UNKNOWN_OXI_STATE = "unk"
 
 
 class Solution(MSONable):
@@ -994,23 +997,17 @@ class Solution(MSONable):
             :meth:`get_osmolarity`
             :meth:`get_osmolality`
             :meth:`get_total_moles_solute`
+            :func:`pyEQL.utils.interpret_units`
         """
         z = 1
         # sanitized unit to be passed to pint
-        _units = units
         if "eq" in units:
             _units = units.replace("eq", "mol")
             z = self.get_property(solute, "charge")
             if z == 0:  # uncharged solutes have zero equiv concentration
                 return ureg.Quantity(0, _units)
-        elif units == "m":  # molal
-            _units = "mol/kg"
-        elif units == "ppm":
-            _units = "mg/L"
-        elif units == "ppb":
-            _units = "ug/L"
-        elif units == "ppt":
-            _units = "ng/L"
+        else:
+            _units = interpret_units(units)
 
         # retrieve the number of moles of solute and its molecular weight
         try:
@@ -1074,10 +1071,10 @@ class Solution(MSONable):
             for el in elements:
                 try:
                     oxi_states = self.get_property(s, "oxi_state_guesses")
-                    oxi_state = oxi_states.get(el)
+                    oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"Guessing oxi states failed for {s}")
-                    oxi_state = "unk"
+                    warnings.warn(f"No oxidation state found for element {el}")
+                    oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
                     d[key].append(s)
@@ -1104,10 +1101,10 @@ class Solution(MSONable):
                 stoich = pmg_ion_dict.get(el)
                 try:
                     oxi_states = self.get_property(s, "oxi_state_guesses")
-                    oxi_state = oxi_states.get(el)
+                    oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     warnings.warn(f"Guessing oxi states failed for {s}")
-                    oxi_state = "unk"
+                    oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
                     d[key] += stoich * mol
@@ -1116,7 +1113,7 @@ class Solution(MSONable):
 
         return d
 
-    def get_total_amount(self, element: str, units) -> Quantity:
+    def get_total_amount(self, element: str, units: str) -> Quantity:
         """
         Return the total amount of 'element' (across all solutes) in the solution.
 
@@ -1125,25 +1122,27 @@ class Solution(MSONable):
                 oxidation state in parentheses, e.g., "Na(1.0)", "Fe(2.0)", or "O(0.0)". If no oxidation state
                 is given, the total concentration of the element (over all oxidation states) is returned.
             units : str
-                        Units desired for the output. Examples of valid units are
-                        'mol/L','mol/kg','mol', 'kg', and 'g/L'
+                Units desired for the output. Any unit understood by `get_amount` can be used. Examples of valid
+                units are 'mol/L','mol/kg','mol', 'kg', and 'g/L'.
 
         Returns:
             The total amount of the element in the solution, in the specified units
 
         See Also:
             :meth:`get_amount`
+            :func:`pyEQL.utils.interpret_units`
         """
         TOT: Quantity = 0
 
-        # standardize the element formula
+        # standardize the element formula and units
         el = str(Element(element.split("(")[0]))
+        units = interpret_units(units)
 
         # enumerate the species whose concentrations we need
         comp_by_element = self.get_components_by_element()
 
         # compile list of species in different ways depending whether there is an oxidation state
-        if "(" in element:
+        if "(" in element and UNKNOWN_OXI_STATE not in element:
             ox = float(element.split("(")[-1].split(")")[0])
             key = f"{el}({ox})"
             species = comp_by_element.get(key)

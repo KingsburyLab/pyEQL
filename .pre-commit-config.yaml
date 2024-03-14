@@ -12,13 +12,13 @@ ci:
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.13
+    rev: v0.3.2
     hooks:
       - id: ruff
         args: [--fix, --ignore, "D,E501", "--show-fixes"]
 
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.2.0
     hooks:
       - id: black
 
