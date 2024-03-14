@@ -123,7 +123,7 @@ approximation, a built-in implementation of the Pitzer model, and the `PHREEQC` 
 
 `pyEQL` also provides `Solute`, a `dataclass` that defines a structured schema for solute property data.
 The database distributed with `pyEQL` is a list of serialized `Solute` objects stored in a `.json` file, which is
-accessed via the `maggma` `Store` API ([https://github.com/materialsproject/maggma](https://github.com/materialsproject/maggma)). The database used by a particular `Solution` instance can be specified
+accessed via the `maggma` `Store` API. The database used by a particular `Solution` instance can be specified
 by keyword argument when the object is created, which makes it possible in principle to use customized databases. Furthermore,
 using the `Store` API means that such databases can be stored in any format supported by `maggma` (e.g., Mongo Database,
 .json file, etc.).
