@@ -196,7 +196,7 @@ def donnan_eql(solution: Solution, fixed_charge: str):
         if cation_vol is not None and anion_vol is not None:
             molar_volume = cation_vol + anion_vol
         else:
-            logger.error("Required partial molar volume information not available. Aborting.")
+            logger.critical("Required partial molar volume information not available. Aborting.")
             return None
 
     # initialize the equilibrated solution - start with a direct copy of the

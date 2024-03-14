@@ -624,9 +624,7 @@ class Solution(MSONable):
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            self.logger.warning(
-                "Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula
-            )
+            self.logger.warning(f"Viscosity coefficients for {salt.formula} not found. Viscosity will be approximate.")
             G_123 = G_23 = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
@@ -975,7 +973,7 @@ class Solution(MSONable):
             -1 * ureg.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
         )
         self.logger.debug(
-            f"Computed osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
+            f"Calculated osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
         )
         return osmotic_pressure.to("Pa")
 
@@ -1122,7 +1120,7 @@ class Solution(MSONable):
                     oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    self.logger.error(f"Guessing oxi states failed for {s}. Assigning '{UNKNOWN_OXI_STATE}'")
+                    self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
@@ -1232,9 +1230,7 @@ class Solution(MSONable):
             # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
-                raise ValueError(
-                    f"Molecular weight for solvent {self.solvent} not found in database. This is required to proceed."
-                )
+                raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
             target_mol = target_mass.to("g") / mw.to("g/mol")
             self.components[self.solvent] = target_mol.magnitude
 
@@ -1382,12 +1378,12 @@ class Solution(MSONable):
         """
         # raise an error if a negative amount is specified
         if ureg.Quantity(amount).magnitude < 0:
-            self.logger.error(f"Negative amount specified for solute {solute}. Concentration not changed.")
+            raise ValueError(f"Negative amount specified for solute {solute}. Concentration not changed.")
 
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        elif ureg.Quantity(amount).dimensionality in (
+        if ureg.Quantity(amount).dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1742,7 +1738,7 @@ class Solution(MSONable):
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
         except (ValueError, ZeroDivisionError):
-            self.logger.error("Calculation unsuccessful. Returning unit activity coefficient.")
+            self.logger.error("Calculation unsuccessful. Returning unit activity coefficient.", exc_info=True)
             return ureg.Quantity(1, "dimensionless")
 
         # if necessary, convert the activity coefficient to another scale, and return the result
@@ -2014,9 +2010,7 @@ class Solution(MSONable):
                 if data is not None:
                     base_value = ureg.Quantity(doc["size"]["molar_volume"].get("value"))
                     if self.temperature != base_temperature:
-                        self.logger.warning(
-                            "Partial molar volume for species %s not corrected for temperature" % solute
-                        )
+                        self.logger.warning(f"Partial molar volume for species {solute} not corrected for temperature")
                     return base_value
                 return data
 
@@ -2180,7 +2174,7 @@ class Solution(MSONable):
         else:
             molar_cond = ureg.Quantity(0, "mS / cm / (mol/L)")
 
-        self.logger.debug(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Calculated molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
         return molar_cond.to("mS / cm / (mol/L)")
 
@@ -2310,7 +2304,7 @@ class Solution(MSONable):
 
         mobility = ureg.N_A * ureg.e * abs(self.get_property(solute, "charge")) * D / (ureg.R * self.temperature)
 
-        self.logger.debug(f"Computed ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Calculated ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
 
         return mobility.to("m**2/V/s")
 
@@ -3313,8 +3307,7 @@ class Solution(MSONable):
         """
         str_filename = str(filename)
         if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            self.logger.error("Invalid file extension entered - %s" % str_filename)
-            raise ValueError("File extension must be .json or .yaml")
+            raise ValueError("Invalid file extension entered. File extension must be .json or .yaml")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()
             solution_dict.pop("database")

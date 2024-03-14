@@ -142,7 +142,8 @@ def adjust_temp_arrhenius(
     )
 
     logger.debug(
-        "Adjusted parameter %s from %s to %s degrees Celsius with Activation Energy = %s kJ/mol. Adjusted value = %s % rate_constant,reference_temperature,temperature,activation_energy,output"
+        f"Adjusted parameter {rate_constant} from {reference_temperature} to {temperature} degrees Celsius with"
+        f"Activation Energy = {activation_energy}s kJ/mol. Adjusted value = {output}"
     )
 
     return output

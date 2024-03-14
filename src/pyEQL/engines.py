@@ -316,7 +316,7 @@ class NativeEOS(EOS):
 
         # show an error if no salt can be found that contains the solute
         if salt is None:
-            logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
+            logger.error("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
             return ureg.Quantity(1, "dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
@@ -366,14 +366,15 @@ class NativeEOS(EOS):
             )
 
             logger.debug(
-                f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt {salt} using Pitzer model"
+                f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt"
+                f" {salt} using Pitzer model"
             )
             molal = activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif solution.ionic_strength.magnitude <= 0.005:
             logger.debug(
-                "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient." % solution.ionic_strength
+                f"Ionic strength = {solution.ionic_strength}. Using Debye-Huckel to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_debyehuckel(
                 solution.ionic_strength,
@@ -384,7 +385,7 @@ class NativeEOS(EOS):
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif solution.ionic_strength.magnitude <= 0.1:
             logger.debug(
-                "Ionic strength = %s. Using Guntelberg to calculate activity coefficient." % solution.ionic_strength
+                f"Ionic strength = {solution.ionic_strength}. Using Guntelberg to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_guntelberg(
                 solution.ionic_strength,
@@ -395,8 +396,7 @@ class NativeEOS(EOS):
         # use the Davies equation for 0.1 < I < 0.5
         elif solution.ionic_strength.magnitude <= 0.5:
             logger.debug(
-                "Ionic strength = %s. Using Davies equation to calculate activity coefficient."
-                % solution.ionic_strength
+                f"Ionic strength = {solution.ionic_strength}. Using Davies equation to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_davies(
                 solution.ionic_strength,
@@ -405,9 +405,9 @@ class NativeEOS(EOS):
             )
 
         else:
-            logger.warning(
-                "Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient"
-                % solute
+            logger.error(
+                f"Ionic strength too high to estimate activity for species {solute}. Specify parameters for Pitzer "
+                "model. Returning unit activity coefficient"
             )
 
             molal = ureg.Quantity(1, "dimensionless")
@@ -543,14 +543,15 @@ class NativeEOS(EOS):
                 )
 
                 logger.debug(
-                    f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt {item.formula} using Pitzer model"
+                    f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt "
+                    f"{item.formula} using Pitzer model"
                 )
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
             else:
-                logger.warning(
-                    "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
-                    % item.formula
+                logger.error(
+                    f"Cannot calculate osmotic coefficient because Pitzer parameters for salt {item.formula} are not "
+                    "specified. Returning unit osmotic coefficient"
                 )
                 return 1
 

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution.__init__`: new keyword argument `log_level` allows user to control the verbosity of log messages by setting
+  the level (e.g., ERROR, WARNING, etc.) that will be shown in stdout.
 - `utils.interpret_units`: New method to "sanitize" environmental engineering units like ppm to strings that `pint`
   can understand, e.g. ppm -> mg/L. This method is now used in `get_amount` and `get_total_amount` to ensure consistency
   in how they process units.
