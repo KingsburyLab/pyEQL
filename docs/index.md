@@ -3,7 +3,7 @@ Date: "{{ today }}"
 Release: "{{ release }}"
 ---
 
-![pyeql-logo](../pyeql-logo.png)
+<img src="../pyeql-logo.png" alt="pyEQL logo" style="width:600px;"/>
 
 # `pyEQL`: A python interface for water chemistry
 
