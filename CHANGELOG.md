@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.__init__`: The deprecated format for specifying solutes (e.g., `[["Na+", "0.5 mol/L]]`)
   which previously only generated log warning message, now raises a `DeprecationWarning`. Use dict-style input (e.g.,
   `{"Na+":"0.5 mol/L"}`) instead.
+- Docs: added a note about a workaround for Apple M1/M2 Macs proposed by @xiaoxiaozhu123
+- New logo! Updated the `pyEQL` logo (for the first time in 9 years!) to address an obsolete font in the .svg
+  and modernize the design.
 
 ## [0.15.1] - 2024-03-13
 
