@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution`: `get_total_amount` and related methods could fail when the oxidation state of an element was
   unknown (e.g., 'Br') (Issue [#116](https://github.com/KingsburyLab/pyEQL/issues/116))
 
+### Removed
+
+- **BREAKING** All methods and functions (with the exception of `Solution.list_XXX` methods) previously marked with
+  deprecation warnings have been removed.
+
 ## [0.14.0] - 2024-03-05
 
 ### Added
