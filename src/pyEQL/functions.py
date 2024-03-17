@@ -5,13 +5,16 @@ pyEQL functions that take Solution objects as inputs or return Solution objects.
 :license: LGPL, see LICENSE for more details.
 
 """
+
+import logging
 import math
 from typing import Literal
 
 from monty.dev import deprecated
 
 from pyEQL import Solution, ureg
-from pyEQL.logging_system import logger
+
+logger = logging.getLogger(__name__)
 
 
 def gibbs_mix(solution1: Solution, solution2: Solution):
