@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.0.0] - 2024-03-17
 
 ### Added
 
@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `{"Na+":"0.5 mol/L"}`) instead.
 - New logo! Updated the `pyEQL` logo (for the first time in 9 years!) to address an obsolete font in the .svg
   and modernize the design.
+
+### Removed
+
+- **BREAKING** All methods and functions (with the exception of `Solution.list_XXX` methods) previously marked with
+  deprecation warnings have been removed.
 
 ## [0.15.1] - 2024-03-13
 
