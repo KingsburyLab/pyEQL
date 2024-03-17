@@ -29,8 +29,6 @@ from pymatgen.core.ion import Ion
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
-
-# logging system
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -59,7 +57,7 @@ class Solution(MSONable):
         engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
-        log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "ERROR",
+        log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
     ):
         """
         Instantiate a Solution from a composition.
@@ -105,7 +103,7 @@ class Solution(MSONable):
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
             log_level: Log messages of this or higher severity will be printed to stdout. Defaults to 'ERROR', meaning
-                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not.
+                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not. If set to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
                 important property calculations including conductivity and transport number, which are related to the
@@ -130,10 +128,12 @@ class Solution(MSONable):
         """
         # create a logger and attach it to this class
         self.log_level = log_level.upper()
-        self.logger = logging.getLogger(type(self).__name__)
-        self.logger.setLevel(self.log_level)
-        # this line prevents duplicate handlers
-        if not self.logger.handlers:
+        self.logger = logging.getLogger("pyEQL")
+        if self.log_level is not None:
+            # set the level of the module logger
+            self.logger.setLevel(self.log_level)
+            # clear handlers and add a StreamHandler
+            self.logger.handlers.clear()
             # use rich for pretty log formatting, if installed
             try:
                 from rich.logging import RichHandler
@@ -141,6 +141,9 @@ class Solution(MSONable):
                 sh = RichHandler(rich_tracebacks=True)
             except ImportError:
                 sh = logging.StreamHandler()
+            # the formatter determines what our logs will look like
+            formatter = logging.Formatter("[%(asctime)s] [%(levelname)8s] --- %(message)s (%(filename)s:%(lineno)d)")
+            sh.setFormatter(formatter)
             self.logger.addHandler(sh)
 
         # per-instance cache of get_property and other calls that do not depend

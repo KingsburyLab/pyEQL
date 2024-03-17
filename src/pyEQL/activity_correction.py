@@ -21,7 +21,7 @@ from pint import Quantity
 from pyEQL import ureg
 from pyEQL.utils import create_water_substance
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"pyEQL.{__name__}")
 
 
 def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:

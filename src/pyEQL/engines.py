@@ -492,7 +492,7 @@ class NativeEOS(EOS):
         molality_sum = 0
 
         # loop through all the salts in the solution, calculate the osmotic
-        # coefficint for reach, and average them into an effective osmotic
+        # coefficint for each, and average them into an effective osmotic
         # coefficient
         for d in solution.get_salt_dict().values():
             item = Salt(d["cation"], d["anion"])
@@ -549,9 +549,8 @@ class NativeEOS(EOS):
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
             else:
-                logger.error(
-                    f"Cannot calculate osmotic coefficient because Pitzer parameters for salt {item.formula} are not "
-                    "specified. Returning unit osmotic coefficient"
+                logger.debug(
+                    f"Returning unit osmotic coefficient for salt {item.formula} because Pitzer parameters are not available in database."
                 )
                 return 1
 
@@ -640,8 +639,7 @@ class NativeEOS(EOS):
 
             else:
                 logger.warning(
-                    "Partial molar volume data not available for solute %s. Solution volume will not be corrected."
-                    % solute
+                    f"Volume of solute {solute} will be ignored because partial molar volume data are not available."
                 )
 
         return solute_vol.to("L")
