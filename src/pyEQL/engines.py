@@ -550,9 +550,10 @@ class NativeEOS(EOS):
 
             else:
                 logger.debug(
-                    f"Returning unit osmotic coefficient for salt {item.formula} because Pitzer parameters are not available in database."
+                    f"Returning unit osmotic coefficient for salt {item.formula} because Pitzer parameters are not"
+                    "available in database."
                 )
-                return 1
+                effective_osmotic_sum += concentration * 1
 
         try:
             return effective_osmotic_sum / molality_sum
