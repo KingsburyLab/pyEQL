@@ -249,10 +249,12 @@ class Solution(MSONable):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
-            self.logger.warning(
+            msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
                 '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
+            self.logger.warning(msg)
+            warnings.warn(msg, DeprecationWarning)
             for item in self._solutes:
                 self.add_solute(*item)
 

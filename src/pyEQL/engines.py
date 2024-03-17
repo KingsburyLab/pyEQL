@@ -477,11 +477,11 @@ class NativeEOS(EOS):
                behavior on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         Examples:
-            >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+            >>> s1 = pyEQL.Solution({'Na+': '0.2 mol/kg', 'Cl-': '0.2 mol/kg'})
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.923715281, 'dimensionless')>
 
-            >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
+            >>> s1 = pyEQL.Solution({'Mg+2': '0.3 mol/kg', 'Cl-': '0.6 mol/kg'},temperature='30 degC')
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.891409618, 'dimensionless')>
 
