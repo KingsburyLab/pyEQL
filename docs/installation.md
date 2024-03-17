@@ -56,6 +56,9 @@ unavailable. Specifically, anything which depends on PHREEQC (e.g., the
  not available for this platform. All other functions of `pyEQL` should work as expected.
 
 Feel free to post your experiences or proposed solutions at https://github.com/KingsburyLab/pyEQL/issues/109
+
+NOTE: Some users have reported being able to use `phreeqpython` functions by installing
+an x86 version of `conda`/`miniconda`. See the issue report for more details.
 ```
 
 ## Other dependencies
