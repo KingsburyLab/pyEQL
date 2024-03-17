@@ -6,9 +6,9 @@
 [![PyPI version](https://badge.fury.io/py/pyEQL.svg)](https://badge.fury.io/py/pyEQL)
 [![status](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6/status.svg)](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6)
 
-![pyeql logo](pyeql-logo.png)
+<img src="pyeql-logo.jpg" alt="pyEQL logo" style="width:600px;"/>
 
-A python interface for water chemistry
+# A python interface for water chemistry
 
 ## Description
 
