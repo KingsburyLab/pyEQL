@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Solution.__init__`: new keyword argument `log_level` allows user to control the verbosity of log messages by setting
+  the level (e.g., ERROR, WARNING, etc.) that will be shown in stdout.
+- Docs: added a note about a workaround for Apple M1/M2 Macs proposed by @xiaoxiaozhu123
+
+### Changed
+
+- `Solution.__init__`: The deprecated format for specifying solutes (e.g., `[["Na+", "0.5 mol/L]]`)
+  which previously only generated log warning message, now raises a `DeprecationWarning`. Use dict-style input (e.g.,
+  `{"Na+":"0.5 mol/L"}`) instead.
+- New logo! Updated the `pyEQL` logo (for the first time in 9 years!) to address an obsolete font in the .svg
+  and modernize the design.
+
+## [0.15.1] - 2024-03-13
+
+### Fixed
+
+- `Solution.get_total_amount`: Fixed an issue in which `ppm` units would fail.
+
+## [0.15.0] - 2024-03-13
+
+### Added
+
 - `utils.interpret_units`: New method to "sanitize" environmental engineering units like ppm to strings that `pint`
   can understand, e.g. ppm -> mg/L. This method is now used in `get_amount` and `get_total_amount` to ensure consistency
   in how they process units.
@@ -19,7 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `Solution.get_total_amount`: Fixed an issue in which `ppm` units would fail.
 - `Solution`: Fixed an issue in which repeated calls to `equilibrate` when using `NativeEOS` or `PHREEQCEOS` would
   change the mass of the `Solution` slightly. This was attributed to the fact that `pyEQL` and `PHREEQC` use slightly
   different molecular weights for water.
