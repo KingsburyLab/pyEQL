@@ -90,7 +90,7 @@ Recognizing that accurate modeling of complex electrolyte solutions can be diffi
 `pyEQL` is designed to return **the best answer possible** given the data and models available. For example,
 to calculate the osmotic pressure of a solution, the built-in modeling engine first attempts to use the
 Pitzer model, but if parameters are not available, it reverts to a more approximate formula rather than
-raising an error. To maintain transpranency, log messages (and where appropriate, warnings) are generated
+raising an error. To maintain transparency, log messages (and where appropriate, warnings) are generated
 throughout the codebase to document when assumptions or approximations have to be invoked or when important
 model parameters are missing from the database.
 
