@@ -128,7 +128,7 @@ def adjust_temp_arrhenius(
         TODO - add better reference
 
         .. math::
-            ln(\frac{K2}{K1} = \frac{E_a}{R} ( \frac{1}{T_{1}} - {\frac{1}{T_2}} )
+            ln(\frac{K2}{K1}) = \frac{E_a}{R} ( \frac{1}{T_{1}} - {\frac{1}{T_2}} )
 
     References:
         http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
