@@ -105,7 +105,7 @@ weight, parsing chemical formulae) and `maggma` ([https://github.com/materialspr
 
 ## The `Solution` class
 
-The primary user-facing object in `pyEQL` is the `Solution` class. This class contains constituitive relationships
+The primary user-facing object in `pyEQL` is the `Solution` class. This class contains constitutive relationships
 for calculating most solution properties that depend on composition, such as total dissolved solids, ionic strength,
 density, conductivity, and many others (\autoref{fig:example}). Calculations that require information about non-idealities
 (e.g., activity coefficients) are handled by a "modeling engine" that is stored in `Solution` as an attribute.
