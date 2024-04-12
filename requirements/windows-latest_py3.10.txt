@@ -65,7 +65,7 @@ h11==0.14.0
     # via uvicorn
 iapws==1.5.3
     # via pyEQL (setup.py)
-idna==3.6
+idna==3.7
     # via
     #   anyio
     #   requests
