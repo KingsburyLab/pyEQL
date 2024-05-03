@@ -340,7 +340,7 @@ tenacity==8.2.3
     # via plotly
 tox==3.28.0
     # via pyEQL (setup.py)
-tqdm==4.66.2
+tqdm==4.66.3
     # via
     #   maggma
     #   pymatgen
