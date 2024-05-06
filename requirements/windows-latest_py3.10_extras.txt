@@ -389,7 +389,7 @@ virtualenv==20.25.1
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.1
+werkzeug==3.0.3
     # via flask
 
 # The following packages are considered to be unsafe in a requirements file:

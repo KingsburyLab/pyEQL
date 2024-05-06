@@ -390,7 +390,7 @@ virtualenv==20.25.1
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.1
+werkzeug==3.0.3
     # via flask
 zipp==3.17.0
     # via
