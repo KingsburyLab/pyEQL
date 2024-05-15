@@ -61,7 +61,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-exclude = "tests"
+exclude = ["tests"]
 
 [tool.setuptools_scm]
 # See configuration details in https://github.com/pypa/setuptools_scm
