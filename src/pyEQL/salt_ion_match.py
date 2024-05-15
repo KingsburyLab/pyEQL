@@ -11,6 +11,7 @@ species (e.g. Na+)
 :license: LGPL, see LICENSE for more details.
 
 """
+
 from monty.json import MSONable
 from pymatgen.core.ion import Ion
 

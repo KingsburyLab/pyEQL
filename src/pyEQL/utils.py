@@ -6,6 +6,7 @@ pyEQL utilities
 
 """
 
+import logging
 from collections import UserDict
 from functools import lru_cache
 
@@ -13,6 +14,8 @@ from iapws import IAPWS95, IAPWS97
 from pymatgen.core.ion import Ion
 
 from pyEQL import ureg
+
+logger = logging.getLogger(__name__)
 
 
 def interpret_units(unit: str) -> str:

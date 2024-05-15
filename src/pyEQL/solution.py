@@ -8,6 +8,7 @@ pyEQL Solution Class.
 
 from __future__ import annotations
 
+import logging
 import math
 import os
 import warnings
@@ -28,9 +29,6 @@ from pymatgen.core.ion import Ion
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
-
-# logging system
-from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -59,6 +57,7 @@ class Solution(MSONable):
         engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
+        log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
     ):
         """
         Instantiate a Solution from a composition.
@@ -103,6 +102,8 @@ class Solution(MSONable):
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
+            log_level: Log messages of this or higher severity will be printed to stdout. Defaults to 'ERROR', meaning
+                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not. If set to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
                 important property calculations including conductivity and transport number, which are related to the
@@ -125,8 +126,25 @@ class Solution(MSONable):
             Temperature: 293.150 K
             Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
         """
-        # create a logger attached to this class
-        # self.logger = logging.getLogger(type(self).__name__)
+        # create a logger and attach it to this class
+        self.log_level = log_level.upper()
+        self.logger = logging.getLogger("pyEQL")
+        if self.log_level is not None:
+            # set the level of the module logger
+            self.logger.setLevel(self.log_level)
+            # clear handlers and add a StreamHandler
+            self.logger.handlers.clear()
+            # use rich for pretty log formatting, if installed
+            try:
+                from rich.logging import RichHandler
+
+                sh = RichHandler(rich_tracebacks=True)
+            except ImportError:
+                sh = logging.StreamHandler()
+            # the formatter determines what our logs will look like
+            formatter = logging.Formatter("[%(asctime)s] [%(levelname)8s] --- %(message)s (%(filename)s:%(lineno)d)")
+            sh.setFormatter(formatter)
+            self.logger.addHandler(sh)
 
         # per-instance cache of get_property and other calls that do not depend
         # on composition
@@ -174,13 +192,13 @@ class Solution(MSONable):
             db_store = IonDB
         elif isinstance(database, (str, Path)):
             db_store = JSONStore(str(database), key="formula")
-            logger.info(f"Created maggma JSONStore from .json file {database}")
+            self.logger.debug(f"Created maggma JSONStore from .json file {database}")
         else:
             db_store = database
         self.database = db_store
         """`Store` instance containing the solute property database."""
         self.database.connect()
-        logger.info(f"Connected to property database {self.database!s}")
+        self.logger.debug(f"Connected to property database {self.database!s}")
 
         # set the equation of state engine
         self._engine = engine
@@ -209,7 +227,7 @@ class Solution(MSONable):
         # TODO - do I need the ability to specify the solvent mass?
         # # raise an error if the solvent volume has also been given
         # if volume_set is True:
-        #     logger.error(
+        #     self.logger.error(
         #         "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
         #     )
         # # add the solvent and the mass
@@ -231,10 +249,12 @@ class Solution(MSONable):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
-            logger.warning(
+            msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
                 '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
+            self.logger.warning(msg)
+            warnings.warn(msg, DeprecationWarning)
             for item in self._solutes:
                 self.add_solute(*item)
 
@@ -242,7 +262,9 @@ class Solution(MSONable):
         cb = self.charge_balance
         if not np.isclose(cb, 0, atol=1e-8) and self.balance_charge is not None:
             balanced = False
-            logger.info(f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate.")
+            self.logger.info(
+                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate."
+            )
             if self.balance_charge == "pH":
                 self.components["H+"] += (
                     -1 * cb * self.volume.to("L").magnitude
@@ -469,7 +491,7 @@ class Solution(MSONable):
                 if coefficient is not None:
                     denominator += coefficient * fraction
                 # except TypeError:
-                #     logger.warning("No dielectric parameters found for species %s." % item)
+                #     self.logger.warning("No dielectric parameters found for species %s." % item)
                 # continue
 
         return ureg.Quantity(di_water / denominator, "dimensionless")
@@ -538,7 +560,7 @@ class Solution(MSONable):
     # model should be integrated here as a fallback, in case salt parameters for the
     # other model are not available.
     # if self.ionic_strength.magnitude > 0.2:
-    #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
+    #   self.logger.warning('Viscosity calculation has limited accuracy above 0.2m')
 
     #        viscosity_rel = 1
     #        for item in self.components:
@@ -607,7 +629,7 @@ class Solution(MSONable):
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            logger.info("Viscosity coefficients for %s not found. Viscosity will be approximate." % salt.formula)
+            self.logger.warning(f"Viscosity coefficients for {salt.formula} not found. Viscosity will be approximate.")
             G_123 = G_23 = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
@@ -955,8 +977,8 @@ class Solution(MSONable):
         osmotic_pressure = (
             -1 * ureg.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
         )
-        logger.info(
-            f"Computed osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
+        self.logger.debug(
+            f"Calculated osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
         )
         return osmotic_pressure.to("Pa")
 
@@ -1018,7 +1040,7 @@ class Solution(MSONable):
             try:
                 return ureg.Quantity(0, _units)
             except DimensionalityError:
-                logger.warning(
+                self.logger.error(
                     f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0."
                 )
                 return ureg.Quantity(0, "dimensionless")
@@ -1073,7 +1095,7 @@ class Solution(MSONable):
                     oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"No oxidation state found for element {el}")
+                    self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
@@ -1103,7 +1125,7 @@ class Solution(MSONable):
                     oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
-                    warnings.warn(f"Guessing oxi states failed for {s}")
+                    self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
                 key = f"{el}({oxi_state})"
                 if d.get(key):
@@ -1213,9 +1235,7 @@ class Solution(MSONable):
             # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
-                raise ValueError(
-                    f"Molecular weight for solvent {self.solvent} not found in database. This is required to proceed."
-                )
+                raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
             target_mol = target_mass.to("g") / mw.to("g/mol")
             self.components[self.solvent] = target_mol.magnitude
 
@@ -1229,7 +1249,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.error("All solvent has been depleted from the solution")
                 return
             # set the volume recalculation flag
             self.volume_update_required = True
@@ -1287,7 +1307,7 @@ class Solution(MSONable):
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
             if self.get_amount(solute, "mol").magnitude < 0:
-                logger.warning(
+                self.logger.error(
                     "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
                 )
                 self.set_amount(solute, "0 mol")
@@ -1323,7 +1343,7 @@ class Solution(MSONable):
             # set the amount to zero and log a warning if the desired amount
             # change would result in a negative concentration
             if self.get_amount(solute, "mol").magnitude < 0:
-                logger.warning(
+                self.logger.error(
                     "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
                 )
                 self.set_amount(solute, "0 mol")
@@ -1331,7 +1351,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.error("All solvent has been depleted from the solution")
                 return
 
             # set the volume recalculation flag
@@ -1363,12 +1383,12 @@ class Solution(MSONable):
         """
         # raise an error if a negative amount is specified
         if ureg.Quantity(amount).magnitude < 0:
-            logger.error("Negative amount specified for solute %s. Concentration not changed." % solute)
+            raise ValueError(f"Negative amount specified for solute {solute}. Concentration not changed.")
 
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        elif ureg.Quantity(amount).dimensionality in (
+        if ureg.Quantity(amount).dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1417,7 +1437,7 @@ class Solution(MSONable):
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                logger.error("All solvent has been depleted from the solution")
+                self.logger.critical("All solvent has been depleted from the solution")
                 return
 
             self._update_volume()
@@ -1590,7 +1610,7 @@ class Solution(MSONable):
 
         # warn if something other than water is the predominant component
         if next(iter(components)) != "H2O(aq)":
-            logger.warning("H2O(aq) is not the most prominent component in this Solution!")
+            self.logger.warning("H2O(aq) is not the most prominent component in this Solution!")
 
         # equivalents (charge-weighted moles) of cations and anions
         cations = set(self.cations.keys()).intersection(components.keys())
@@ -1723,7 +1743,7 @@ class Solution(MSONable):
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
         except (ValueError, ZeroDivisionError):
-            logger.warning("Calculation unsuccessful. Returning unit activity coefficient.")
+            self.logger.error("Calculation unsuccessful. Returning unit activity coefficient.", exc_info=True)
             return ureg.Quantity(1, "dimensionless")
 
         # if necessary, convert the activity coefficient to another scale, and return the result
@@ -1793,7 +1813,7 @@ class Solution(MSONable):
                 raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
             activity = (self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)).magnitude
-            logger.info(f"Calculated {scale} scale activity of solute {solute} as {activity}")
+            self.logger.debug(f"Calculated {scale} scale activity of solute {solute} as {activity}")
 
         return ureg.Quantity(activity, "dimensionless")
 
@@ -1861,13 +1881,13 @@ class Solution(MSONable):
         osmotic_coefficient = self.get_osmotic_coefficient()
 
         if osmotic_coefficient == 1:
-            logger.warning("Pitzer parameters not found. Water activity set equal to mole fraction")
+            self.logger.warning("Pitzer parameters not found. Water activity set equal to mole fraction")
             return self.get_amount("H2O", "fraction")
 
         concentration_sum = np.sum([mol for item, mol in self.components.items() if item != "H2O(aq)"])
         concentration_sum /= self.solvent_mass.to("kg").magnitude  # converts to mol/kg
 
-        logger.info("Calculated water activity using osmotic coefficient")
+        self.logger.debug("Calculated water activity using osmotic coefficient")
 
         return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
 
@@ -1964,7 +1984,7 @@ class Solution(MSONable):
         # formulas should always be unique in the database. len==0 indicates no
         # data. len>1 indicates duplicate data.
         if len(data) > 1:
-            logger.warning(f"Duplicate database entries for solute {solute} found!")
+            self.logger.warning(f"Duplicate database entries for solute {solute} found!")
         if len(data) == 0:
             # TODO - add molar volume of water to database?
             if name == "size.molar_volume" and rform == "H2O(aq)":
@@ -1995,7 +2015,7 @@ class Solution(MSONable):
                 if data is not None:
                     base_value = ureg.Quantity(doc["size"]["molar_volume"].get("value"))
                     if self.temperature != base_temperature:
-                        logger.warning("Partial molar volume for species %s not corrected for temperature" % solute)
+                        self.logger.warning(f"Partial molar volume for species {solute} not corrected for temperature")
                     return base_value
                 return data
 
@@ -2030,12 +2050,12 @@ class Solution(MSONable):
                 return doc.get(name)
 
             val = doc[name].get("value")
-            # logger.warning("%s has not been corrected for solution conditions" % name)
+            # self.logger.warning("%s has not been corrected for solution conditions" % name)
             if val is not None:
                 return ureg.Quantity(val)
 
         except KeyError:
-            logger.warning(f"Property {name} for solute {solute} not found in database. Returning None.")
+            self.logger.error(f"Property {name} for solute {solute} not found in database. Returning None.")
             return None
 
         if name == "model_parameters.molar_volume_pitzer":
@@ -2056,7 +2076,7 @@ class Solution(MSONable):
             return doc.get(name)
 
         val = doc[name].get("value")
-        # logger.warning("%s has not been corrected for solution conditions" % name)
+        # self.logger.warning("%s has not been corrected for solution conditions" % name)
         if val is not None:
             return ureg.Quantity(val)
         return None
@@ -2159,7 +2179,7 @@ class Solution(MSONable):
         else:
             molar_cond = ureg.Quantity(0, "mS / cm / (mol/L)")
 
-        logger.info(f"Computed molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Calculated molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
         return molar_cond.to("mS / cm / (mol/L)")
 
@@ -2211,7 +2231,7 @@ class Solution(MSONable):
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
-            logger.info(
+            self.logger.warning(
                 f"Diffusion coefficient not found for species {rform}. Using default value of "
                 f"{self.default_diffusion_coeff} m**2/s."
             )
@@ -2238,7 +2258,7 @@ class Solution(MSONable):
             except TypeError:
                 # this means the database doesn't contain a d value.
                 # according to Ref 2, the following are recommended default parameters
-                logger.info(
+                self.logger.warning(
                     f"Temperature and ionic strength correction parameters for solute {rform} diffusion "
                     "coefficient not in database. Using recommended default values of a1=1.6, a2=4.73, and d=0."
                 )
@@ -2289,7 +2309,7 @@ class Solution(MSONable):
 
         mobility = ureg.N_A * ureg.e * abs(self.get_property(solute, "charge")) * D / (ureg.R * self.temperature)
 
-        logger.info(f"Computed ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
+        self.logger.debug(f"Calculated ionic mobility as {mobility} from D = {D!s} at T={self.temperature}")
 
         return mobility.to("m**2/V/s")
 
@@ -2355,6 +2375,7 @@ class Solution(MSONable):
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
         d["engine"] = self._engine
+        # d["logger"] = self.logger.__dict__
         return d
 
     @classmethod
@@ -2379,6 +2400,115 @@ class Solution(MSONable):
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
         return new_sol
+
+    @classmethod
+    def from_preset(
+        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
+    ) -> Solution:
+        """Instantiate a solution from a preset composition.
+
+        Args:
+            preset (str): String representing the desired solution.
+              Valid entries are 'seawater', 'rainwater', 'wastewater',
+              'urine', 'normal saline' and 'Ringers lactate'.
+
+        Returns:
+            A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given preset file doesn't exist on the file system.
+
+        Notes:
+            The following sections explain the different solution options:
+
+            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
+            - 'urine' - typical human urine. See Table 3-15 of [2]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
+
+        References:
+            .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
+                   the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+
+            .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+                   McGraw-Hill, 2013.
+
+            .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
+
+            .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+        """
+        # preset_dir = files("pyEQL") / "presets"
+        # Path to the YAML and JSON files corresponding to the preset
+        yaml_path = files("pyEQL") / "presets" / f"{preset}.yaml"
+        json_path = files("pyEQL") / "presets" / f"{preset}.json"
+
+        # Check if the file exists
+        if yaml_path.exists():
+            preset_path = yaml_path
+        elif json_path.exists():
+            preset_path = json_path
+        else:
+            raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
+
+        # Create and return a Solution object
+        return cls().from_file(preset_path)
+
+    def to_file(self, filename: str | Path) -> None:
+        """Saving to a .yaml or .json file.
+
+        Args:
+            filename (str | Path): The path to the file to save Solution.
+              Valid extensions are .json or .yaml.
+        """
+        str_filename = str(filename)
+        if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
+            self.logger.error("Invalid file extension entered - %s" % str_filename)
+            raise ValueError("File extension must be .json or .yaml")
+        if "yaml" in str_filename.lower():
+            solution_dict = self.as_dict()
+            solution_dict.pop("database")
+            dumpfn(solution_dict, filename)
+        else:
+            dumpfn(self, filename)
+
+    @classmethod
+    def from_file(self, filename: str | Path) -> Solution:
+        """Loading from a .yaml or .json file.
+
+        Args:
+            filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
+              Valid extensions are .json or .yaml.
+
+        Returns:
+            A pyEQL Solution object.
+
+        Raises:
+            FileNotFoundError: If the given filename doesn't exist on the file system.
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"File '{filename}' not found!")
+        str_filename = str(filename)
+        if "yaml" in str_filename.lower():
+            true_keys = [
+                "solutes",
+                "volume",
+                "temperature",
+                "pressure",
+                "pH",
+                "pE",
+                "balance_charge",
+                "solvent",
+                "engine",
+                # "database",
+            ]
+            solution_dict = loadfn(filename)
+            keys_to_delete = [key for key in solution_dict if key not in true_keys]
+            for key in keys_to_delete:
+                solution_dict.pop(key)
+            return Solution(**solution_dict)
+        return loadfn(filename)
 
     # arithmetic operations
     def __add__(self, other: Solution):
@@ -2420,12 +2550,14 @@ class Solution(MSONable):
 
         # check to see if the solutions have the same temperature and pressure
         if p1 != p2:
-            logger.info("Adding two solutions of different pressure. Pressures will be averaged (weighted by volume)")
+            self.logger.info(
+                "Adding two solutions of different pressure. Pressures will be averaged (weighted by volume)"
+            )
 
         mix_pressure = (p1 * v1 + p2 * v2) / (mix_vol)
 
         if t1 != t2:
-            logger.info(
+            self.logger.info(
                 "Adding two solutions of different temperature. Temperatures will be averaged (weighted by volume)"
             )
 
@@ -2629,710 +2761,3 @@ class Solution(MSONable):
         print("=====================\n")
         for i in self.components:
             print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
-
-    @deprecated(
-        message="get_solute() is deprecated and will be removed in the next release! Access solutes via the Solution.components attribute and their properties via Solution.get_property(solute, ...)"
-    )
-    def get_solute(self, i):  # pragma: no cover
-        """Return the specified solute object.
-
-        :meta private:
-        """
-        return self.components[i]
-
-    @deprecated(
-        message="get_solvent is deprecated and will be removed in the next release! Use Solution.solvent instead."
-    )
-    def get_solvent(self):  # pragma: no cover
-        """Return the solvent object.
-
-        :meta private:
-        """
-        return self.components[self.solvent]
-
-    @deprecated(
-        message="get_temperature() will be removed in the next release. Access the temperature directly via the property Solution.temperature"
-    )
-    def get_temperature(self):  # pragma: no cover
-        """
-        Return the temperature of the solution.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity: The temperature of the solution, in Kelvin.
-
-        :meta private:
-        """
-        return self.temperature
-
-    @deprecated(
-        message="set_temperature() will be removed in the next release. Set the temperature directly via the property Solution.temperature"
-    )
-    def set_temperature(self, temperature):  # pragma: no cover
-        """
-        Set the solution temperature.
-
-        Parameters
-        ----------
-        temperature : str
-            String representing the temperature, e.g. '25 degC'
-
-        :meta private:
-        """
-        self.temperature = ureg.Quantity(temperature)
-
-        # recalculate the volume
-        self._update_volume()
-
-    @deprecated(
-        message="get_pressure() will be removed in the next release. Access the pressure directly via the property Solution.pressure"
-    )
-    def get_pressure(self):  # pragma: no cover
-        """
-        Return the hydrostatic pressure of the solution.
-
-        Returns:
-        -------
-        Quantity: The hydrostatic pressure of the solution, in atm.
-
-        :meta private:
-        """
-        return self.pressure
-
-    @deprecated(
-        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
-    )
-    def set_pressure(self, pressure):  # pragma: no cover
-        """
-        Set the hydrostatic pressure of the solution.
-
-        Parameters
-        ----------
-        pressure : str
-            String representing the temperature, e.g. '25 degC'
-
-        :meta private:
-        """
-        self._pressure = ureg.Quantity(pressure)
-
-    @deprecated(
-        message="get_volume() will be removed in the next release. Access the volume directly via Solution.volume"
-    )
-    def get_volume(self):  # pragma: no cover
-        """ """
-        return self.volume
-
-    @deprecated(
-        message="set_pressure() will be removed in the next release. Set the pressure directly via Solution.pressure"
-    )
-    def set_volume(self, volume: str):  # pragma: no cover
-        """ """
-        self.volume = volume  # type: ignore
-
-    @deprecated(message="get_mass() will be removed in the next release. Use the Solution.mass property instead.")
-    def get_mass(self):  # pragma: no cover
-        """
-        Return the total mass of the solution.
-
-        The mass is calculated each time this method is called.
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity: the mass of the solution, in kg
-
-        :meta private:
-
-        """
-        return self.mass
-
-    @deprecated(message="get_density() will be removed in the next release. Use the Solution.density property instead.")
-    def get_density(self):  # pragma: no cover
-        """
-        Return the density of the solution.
-
-        Density is calculated from the mass and volume each time this method is called.
-
-        Returns:
-        -------
-        Quantity: The density of the solution.
-
-        :meta private:
-        """
-        return self.density
-
-    @deprecated(message="get_viscosity_relative() will be removed in the next release.")
-    def get_viscosity_relative(self):  # pragma: no cover
-        r"""
-        Return the viscosity of the solution relative to that of water.
-
-        This is calculated using a simplified form of the Jones-Dole equation:
-
-        .. math:: \eta_{rel} = 1 + \sum_i B_i m_i
-
-        Where :math:`m` is the molal concentration and :math:`B` is an empirical parameter.
-
-        See
-        <http://www.nrcresearchpress.com/doi/pdf/10.1139/v77-148>
-
-        :meta private:
-
-        """
-        # if self.ionic_strength.magnitude > 0.2:
-        #   logger.warning('Viscosity calculation has limited accuracy above 0.2m')
-
-        #        viscosity_rel = 1
-        #        for item in self.components:
-        #            # ignore water
-        #            if item != 'H2O':
-        #                # skip over solutes that don't have parameters
-        #                try:
-        #                    conc = self.get_amount(item,'mol/kg').magnitude
-        #                    coefficients= self.get_property(item, 'jones_dole_viscosity')
-        #                    viscosity_rel += coefficients[0] * conc ** 0.5 + coefficients[1] * conc + \
-        #                    coefficients[2] * conc ** 2
-        #                except TypeError:
-        #                    continue
-        return ureg.Quantity(self.viscosity_dynamic / self.water_substance.mu, "Pa*s")
-
-    @deprecated(
-        message="get_viscosity_dynamic() will be removed in the next release. Access directly via the property Solution.viscosity_dynamic."
-    )
-    def get_viscosity_dynamic(self):  # pragma: no cover
-        """
-        Return the dynamic (absolute) viscosity of the solution.
-
-        Calculated from the kinematic viscosity
-
-        See Also:
-        --------
-        get_viscosity_kinematic
-
-        :meta private:
-        """
-        return self.viscosity_dynamic
-
-    @deprecated(
-        message="get_viscosity_kinematic() will be removed in the next release. Access directly via the property Solution.viscosity_kinematic."
-    )
-    def get_viscosity_kinematic(self):  # pragma: no cover
-        """
-        Return the kinematic viscosity of the solution.
-
-        Notes:
-        -----
-        The calculation is based on a model derived from the Eyring equation
-        and presented by Vásquez-Castillo et al.
-
-        .. math::
-
-            \\ln \nu = \\ln {\nu_w MW_w \\over \\sum_i x_i MW_i } +
-            15 x_+^2 + x_+^3  \\delta G^*_{123} + 3 x_+ \\delta G^*_{23} (1-0.05x_+)
-
-        Where:
-
-        .. math:: \\delta G^*_{123} = a_o + a_1 (T)^{0.75}
-        .. math:: \\delta G^*_{23} = b_o + b_1 (T)^{0.5}
-
-        In which :math:`\nu` is the kinematic viscosity, MW is the molecular weight,
-        `x_+` is the mole fraction of cations, and T is the temperature in degrees C.
-
-        The a and b fitting parameters for a variety of common salts are included in the
-        database.
-
-        References:
-        ----------
-        Vásquez-Castillo, G.; Iglesias-Silva, G. a.; Hall, K. R. An extension
-        of the McAllister model to correlate kinematic viscosity of electrolyte solutions.
-        Fluid Phase Equilib. 2013, 358, 44-49.
-
-        See Also:
-        --------
-        viscosity_dynamic
-
-        :meta private:
-
-        """
-        return self.viscosity_kinematic
-
-    @deprecated(
-        message="get_conductivity() will be removed in the next release. Access directly via the property Solution.conductivity."
-    )
-    def get_conductivity(self):  # pragma: no cover
-        """
-        Compute the electrical conductivity of the solution.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity
-            The electrical conductivity of the solution in Siemens / meter.
-
-        Notes:
-        -----
-        Conductivity is calculated by summing the molar conductivities of the respective
-        solutes, but they are activity-corrected and adjusted using an empricial exponent.
-        This approach is used in PHREEQC and Aqion models [#]_ [#]_
-
-        .. math::
-
-            EC = {F^2 \\over R T} \\sum_i D_i z_i ^ 2 \\gamma_i ^ {\alpha} m_i
-
-        Where:
-
-        .. math::
-
-            \alpha = \begin{cases} {0.6 \\over \\sqrt{|z_i|}} & {I < 0.36|z_i|} \\ {\\sqrt{I} \\over |z_i|} & otherwise \\end{cases}
-
-        Note: PHREEQC uses the molal rather than molar concentration according to
-        http://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/phreeqc3-html/phreeqc3-43.htm
-
-        References:
-        ----------
-        .. [#] https://www.aqion.de/site/electrical-conductivity
-        .. [#] http://www.hydrochemistry.eu/exmpls/sc.html
-
-        See Also:
-        --------
-        ionic_strength
-        get_molar_conductivity()
-        get_activity_coefficient()
-
-        :meta private:
-
-        """
-        return self.conductivity
-
-    @deprecated(
-        replacement=get_amount,
-        message="get_mole_fraction() will be removed in the next release. Use get_amount() with units='fraction' instead.",
-    )
-    def get_mole_fraction(self, solute):  # pragma: no cover
-        """
-        Return the mole fraction of 'solute' in the solution.
-
-        Notes:
-        -----
-        This function is DEPRECATED.
-        Use get_amount() instead and specify 'fraction' as the unit type.
-
-        :meta private:
-        """
-
-    @deprecated(
-        message="get_ionic_strength() will be removed in the next release. Access directly via the property Solution.ionic_strength"
-    )
-    def get_ionic_strength(self):  # pragma: no cover
-        r"""
-        Return the ionic strength of the solution.
-
-        Return the ionic strength of the solution, calculated as 1/2 * sum ( molality * charge ^2) over all the ions.
-        Molal (mol/kg) scale concentrations are used for compatibility with the activity correction formulas.
-
-        Returns:
-        -------
-        Quantity:
-            The ionic strength of the parent solution, mol/kg.
-
-        See Also:
-        --------
-        get_activity
-        get_water_activity
-
-        Notes:
-        -----
-        The ionic strength is calculated according to:
-
-        .. math:: I = \sum_i m_i z_i^2
-
-        Where :math:`m_i` is the molal concentration and :math:`z_i` is the charge on species i.
-
-        Examples:
-        --------
-        >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-        >>> s1.ionic_strength
-        <Quantity(0.20000010029672785, 'mole / kilogram')>
-
-        >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
-        >>> s1.ionic_strength
-        <Quantity(1.0000001004383303, 'mole / kilogram')>
-
-        :meta private:
-        """
-        return self.ionic_strength
-
-    @deprecated(
-        message="get_charge_balance() will be removed in the next release. Access directly via the property Solution.charge_balance"
-    )
-    def get_charge_balance(self):  # pragma: no cover
-        r"""
-        Return the charge balance of the solution.
-
-        Return the charge balance of the solution. The charge balance represents the net electric charge
-        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-        have a small nonzero value.
-
-        Returns:
-        -------
-        float :
-            The charge balance of the solution, in equivalents.
-
-        Notes:
-        -----
-        The charge balance is calculated according to:
-
-        .. math:: CB = F \sum_i n_i z_i
-
-        Where :math:`n_i` is the number of moles, :math:`z_i` is the charge on species i, and :math:`F` is the Faraday constant.
-
-        :meta private:
-
-        """
-        return self.charge_balance
-
-    @deprecated(
-        message="get_alkalinity() will be removed in the next release. Access directly via the property Solution.alkalinity"
-    )
-    def get_alkalinity(self):  # pragma: no cover
-        r"""
-        Return the alkalinity or acid neutralizing capacity of a solution.
-
-        Returns:
-        -------
-        Quantity:
-            The alkalinity of the solution in mg/L as CaCO3
-
-        Notes:
-        -----
-        The alkalinity is calculated according to:
-
-        .. math:: Alk = F \sum_i z_i C_B - \sum_i z_i C_A
-
-        Where :math:`C_B` and :math:`C_A` are conservative cations and anions, respectively
-        (i.e. ions that do not participate in acid-base reactions), and :math:`z_i` is their charge.
-        In this method, the set of conservative cations is all Group I and Group II cations, and the conservative anions are all the anions of strong acids.
-
-        References:
-        ----------
-        Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed,
-               pp 165. Wiley Interscience, 1996.
-
-        :meta private:
-
-        """
-        return self.alkalinity
-
-    @deprecated(
-        message="get_hardness() will be removed in the next release. Access directly via the property Solution.hardness"
-    )
-    def get_hardness(self):  # pragma: no cover
-        """
-        Return the hardness of a solution.
-
-        Hardness is defined as the sum of the equivalent concentrations
-        of multivalent cations as calcium carbonate.
-
-        NOTE: at present pyEQL cannot distinguish between mg/L as CaCO3
-        and mg/L units. Use with caution.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity
-            The hardness of the solution in mg/L as CaCO3
-
-        :meta private:
-
-        """
-        return self.hardness
-
-    @deprecated(
-        message="get_debye_length() will be removed in the next release. Access directly via the property Solution.debye_length"
-    )
-    def get_debye_length(self):  # pragma: no cover
-        r"""
-        Return the Debye length of a solution.
-
-        Debye length is calculated as
-
-        .. math::
-
-            \kappa^{-1} = \sqrt({\epsilon_r \epsilon_o k_B T \over (2 N_A e^2 I)})
-
-        where :math:`I` is the ionic strength, :math:`epsilon_r` and :math:`epsilon_r`
-        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
-        Boltzmann constant, and :math:`T` is the temperature, :math:`e` is the
-        elementary charge, and :math:`N_A` is Avogadro's number.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity
-            The Debye length, in nanometers.
-
-        References:
-        ----------
-        https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
-
-        See Also:
-        --------
-        ionic_strength
-        get_dielectric_constant()
-
-        :meta private:
-
-        """
-        return self.debye_length
-
-    @deprecated(
-        message="get_bjerrum_length() will be removed in the next release. Access directly via the property Solution.bjerrum_length"
-    )
-    def get_bjerrum_length(self):  # pragma: no cover
-        r"""
-        Return the Bjerrum length of a solution.
-
-        Bjerrum length represents the distance at which electrostatic
-        interactions between particles become comparable in magnitude
-        to the thermal energy.:math:`\lambda_B` is calculated as
-
-        .. math::
-
-            \lambda_B = {e^2 \over (4 \pi \epsilon_r \epsilon_o k_B T)}
-
-        where :math:`e` is the fundamental charge, :math:`epsilon_r` and :math:`epsilon_r`
-        are the relative permittivity and vacuum permittivity, :math:`k_B` is the
-        Boltzmann constant, and :math:`T` is the temperature.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity
-            The Bjerrum length, in nanometers.
-
-        References:
-        ----------
-        https://en.wikipedia.org/wiki/Bjerrum_length
-
-        Examples:
-        --------
-        >>> s1 = pyEQL.Solution()
-        >>> s1.get_bjerrum_length()
-        <Quantity(0.7152793009386953, 'nanometer')>
-
-        See Also:
-        --------
-        get_dielectric_constant()
-
-        :meta private:
-
-        """
-        return self.bjerrum_length
-
-    @deprecated(
-        message="get_dielectric_constant() will be removed in the next release. Access directly via the property Solution.dielectric_constant"
-    )
-    def get_dielectric_constant(self):  # pragma: no cover
-        """
-        Returns the dielectric constant of the solution.
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity: the dielectric constant of the solution, dimensionless.
-
-        Notes:
-        -----
-        Implements the following equation as given by [zub]_
-
-        .. math:: \\epsilon = \\epsilon_solvent \\over 1 + \\sum_i \alpha_i x_i
-
-        where :math:`\alpha_i` is a coefficient specific to the solvent and ion, and :math:`x_i`
-        is the mole fraction of the ion in solution.
-
-
-        References:
-        ----------
-        .. [zub] A. Zuber, L. Cardozo-Filho, V.F. Cabral, R.F. Checoni, M. Castier,
-        An empirical equation for the dielectric constant in aqueous and nonaqueous
-        electrolyte mixtures, Fluid Phase Equilib. 376 (2014) 116-123.
-        doi:10.1016/j.fluid.2014.05.037.
-
-        :meta private:
-        """
-        return self.dielectric_constant
-
-    @deprecated(
-        message="get_solvent_mass() will be removed in the next release. Access directly via the property Solution.solvent_mass"
-    )
-    def get_solvent_mass(self):  # pragma: no cover
-        """
-        Return the mass of the solvent.
-
-        This method is used whenever mol/kg (or similar) concentrations
-        are requested by get_amount()
-
-        Parameters
-        ----------
-        None
-
-        Returns:
-        -------
-        Quantity: the mass of the solvent, in kg
-
-        See Also:
-        --------
-        :py:meth:`get_amount()`
-
-        :meta private:
-        """
-        return self.solvent_mass
-
-    @deprecated(
-        message="osmotic_pressure will be removed in the next release. Access directly via the property Solution.osmotic_pressure"
-    )
-    def get_osmotic_pressure(self):  # pragma: no cover
-        """:meta private:"""
-        return self.osmotic_pressure
-
-    @deprecated(message="get_salt_list() will be removed in the next release. Use get_salt_dict() instead.")
-    def get_salt_list(self):  # pragma: no cover
-        """
-        See get_salt_dict().
-
-        See Also:
-        --------
-        :py:meth:`get_salt_dict`
-        """
-        return self.get_salt_dict()
-
-    @classmethod
-    def from_preset(
-        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
-    ) -> Solution:
-        """Instantiate a solution from a preset composition.
-
-        Args:
-            preset (str): String representing the desired solution.
-              Valid entries are 'seawater', 'rainwater', 'wastewater',
-              'urine', 'normal saline' and 'Ringers lactate'.
-
-        Returns:
-            A pyEQL Solution object.
-
-        Raises:
-            FileNotFoundError: If the given preset file doesn't exist on the file system.
-
-        Notes:
-            The following sections explain the different solution options:
-
-            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
-            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
-            - 'urine' - typical human urine. See Table 3-15 of [2]_
-            - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
-            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
-
-        References:
-            .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
-                   the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
-
-            .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
-                   McGraw-Hill, 2013.
-
-            .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
-
-            .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
-        """
-        # preset_dir = files("pyEQL") / "presets"
-        # Path to the YAML and JSON files corresponding to the preset
-        yaml_path = files("pyEQL") / "presets" / f"{preset}.yaml"
-        json_path = files("pyEQL") / "presets" / f"{preset}.json"
-
-        # Check if the file exists
-        if yaml_path.exists():
-            preset_path = yaml_path
-        elif json_path.exists():
-            preset_path = json_path
-        else:
-            logger.error("Invalid solution entered - %s" % preset)
-            raise FileNotFoundError(f"Files '{yaml_path}' and '{json_path} not found!")
-
-        # Create and return a Solution object
-        return cls().from_file(preset_path)
-
-    def to_file(self, filename: str | Path) -> None:
-        """Saving to a .yaml or .json file.
-
-        Args:
-            filename (str | Path): The path to the file to save Solution.
-              Valid extensions are .json or .yaml.
-        """
-        str_filename = str(filename)
-        if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            logger.error("Invalid file extension entered - %s" % str_filename)
-            raise ValueError("File extension must be .json or .yaml")
-        if "yaml" in str_filename.lower():
-            solution_dict = self.as_dict()
-            solution_dict.pop("database")
-            dumpfn(solution_dict, filename)
-        else:
-            dumpfn(self, filename)
-
-    @classmethod
-    def from_file(self, filename: str | Path) -> Solution:
-        """Loading from a .yaml or .json file.
-
-        Args:
-            filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
-              Valid extensions are .json or .yaml.
-
-        Returns:
-            A pyEQL Solution object.
-
-        Raises:
-            FileNotFoundError: If the given filename doesn't exist on the file system.
-        """
-        if not os.path.exists(filename):
-            logger.error("Invalid path to file entered - %s" % filename)
-            raise FileNotFoundError(f"File '{filename}' not found!")
-        str_filename = str(filename)
-        if "yaml" in str_filename.lower():
-            true_keys = [
-                "solutes",
-                "volume",
-                "temperature",
-                "pressure",
-                "pH",
-                "pE",
-                "balance_charge",
-                "solvent",
-                "engine",
-                # "database",
-            ]
-            solution_dict = loadfn(filename)
-            keys_to_delete = [key for key in solution_dict if key not in true_keys]
-            for key in keys_to_delete:
-                solution_dict.pop(key)
-            return Solution(**solution_dict)
-        return loadfn(filename)

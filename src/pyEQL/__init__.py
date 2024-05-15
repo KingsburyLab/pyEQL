@@ -6,6 +6,7 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 """
 
+import logging
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 from importlib.resources import files
 
@@ -20,6 +21,12 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+# logging
+logger = logging.getLogger("pyEQL")
+logger.setLevel(logging.WARNING)
+logger.addHandler(logging.NullHandler())
+
 
 # Units handling
 # per the pint documentation, it's important that pint and its associated Unit

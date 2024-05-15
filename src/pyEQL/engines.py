@@ -6,6 +6,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 """
 
+import logging
 import os
 import warnings
 from abc import ABC, abstractmethod
@@ -14,19 +15,16 @@ from typing import Literal
 
 from phreeqpython import PhreeqPython
 
-# internal pyEQL imports
 import pyEQL.activity_correction as ac
-
-# import the parameters database
-# the pint unit registry
 from pyEQL import ureg
-from pyEQL.logging_system import logger
 from pyEQL.salt_ion_match import Salt
 from pyEQL.utils import standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
 SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
+
+logger = logging.getLogger(__name__)
 
 
 class EOS(ABC):
@@ -318,7 +316,7 @@ class NativeEOS(EOS):
 
         # show an error if no salt can be found that contains the solute
         if salt is None:
-            logger.warning("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
+            logger.error("No salts found that contain solute %s. Returning unit activity coefficient." % solute)
             return ureg.Quantity(1, "dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
@@ -367,15 +365,16 @@ class NativeEOS(EOS):
                 str(solution.temperature),
             )
 
-            logger.info(
-                f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt {salt} using Pitzer model"
+            logger.debug(
+                f"Calculated activity coefficient of species {solute} as {activity_coefficient} based on salt"
+                f" {salt} using Pitzer model"
             )
             molal = activity_coefficient
 
         # for very low ionic strength, use the Debye-Huckel limiting law
         elif solution.ionic_strength.magnitude <= 0.005:
-            logger.info(
-                "Ionic strength = %s. Using Debye-Huckel to calculate activity coefficient." % solution.ionic_strength
+            logger.debug(
+                f"Ionic strength = {solution.ionic_strength}. Using Debye-Huckel to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_debyehuckel(
                 solution.ionic_strength,
@@ -385,8 +384,8 @@ class NativeEOS(EOS):
 
         # use the Guntelberg approximation for 0.005 < I < 0.1
         elif solution.ionic_strength.magnitude <= 0.1:
-            logger.info(
-                "Ionic strength = %s. Using Guntelberg to calculate activity coefficient." % solution.ionic_strength
+            logger.debug(
+                f"Ionic strength = {solution.ionic_strength}. Using Guntelberg to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_guntelberg(
                 solution.ionic_strength,
@@ -396,9 +395,8 @@ class NativeEOS(EOS):
 
         # use the Davies equation for 0.1 < I < 0.5
         elif solution.ionic_strength.magnitude <= 0.5:
-            logger.info(
-                "Ionic strength = %s. Using Davies equation to calculate activity coefficient."
-                % solution.ionic_strength
+            logger.debug(
+                f"Ionic strength = {solution.ionic_strength}. Using Davies equation to calculate activity coefficient."
             )
             molal = ac.get_activity_coefficient_davies(
                 solution.ionic_strength,
@@ -407,9 +405,9 @@ class NativeEOS(EOS):
             )
 
         else:
-            logger.warning(
-                "Ionic strength too high to estimate activity for species %s. Specify parameters for Pitzer model. Returning unit activity coefficient"
-                % solute
+            logger.error(
+                f"Ionic strength too high to estimate activity for species {solute}. Specify parameters for Pitzer "
+                "model. Returning unit activity coefficient"
             )
 
             molal = ureg.Quantity(1, "dimensionless")
@@ -479,11 +477,11 @@ class NativeEOS(EOS):
                behavior on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
 
         Examples:
-            >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
+            >>> s1 = pyEQL.Solution({'Na+': '0.2 mol/kg', 'Cl-': '0.2 mol/kg'})
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.923715281, 'dimensionless')>
 
-            >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Cl-','0.6 mol/kg']],temperature='30 degC')
+            >>> s1 = pyEQL.Solution({'Mg+2': '0.3 mol/kg', 'Cl-': '0.6 mol/kg'},temperature='30 degC')
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.891409618, 'dimensionless')>
 
@@ -494,7 +492,7 @@ class NativeEOS(EOS):
         molality_sum = 0
 
         # loop through all the salts in the solution, calculate the osmotic
-        # coefficint for reach, and average them into an effective osmotic
+        # coefficint for each, and average them into an effective osmotic
         # coefficient
         for d in solution.get_salt_dict().values():
             item = Salt(d["cation"], d["anion"])
@@ -544,17 +542,18 @@ class NativeEOS(EOS):
                     str(solution.temperature),
                 )
 
-                logger.info(
-                    f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt {item.formula} using Pitzer model"
+                logger.debug(
+                    f"Calculated osmotic coefficient of water as {osmotic_coefficient} based on salt "
+                    f"{item.formula} using Pitzer model"
                 )
                 effective_osmotic_sum += concentration * osmotic_coefficient
 
             else:
-                logger.warning(
-                    "Cannot calculate osmotic coefficient because Pitzer parameters for salt %s are not specified. Returning unit osmotic coefficient"
-                    % item.formula
+                logger.debug(
+                    f"Returning unit osmotic coefficient for salt {item.formula} because Pitzer parameters are not"
+                    "available in database."
                 )
-                effective_osmotic_sum += concentration * osmotic_coefficient
+                effective_osmotic_sum += concentration * 1
 
         try:
             return effective_osmotic_sum / molality_sum
@@ -621,7 +620,7 @@ class NativeEOS(EOS):
 
             pitzer_calc = True
 
-            logger.info("Updated solution volume using Pitzer model for solute %s" % salt.formula)
+            logger.debug("Updated solution volume using Pitzer model for solute %s" % salt.formula)
 
         # add the partial molar volume of any other solutes, except for water
         # or the parent salt, which is already accounted for by the Pitzer parameters
@@ -637,12 +636,11 @@ class NativeEOS(EOS):
             part_vol = solution.get_property(solute, "size.molar_volume")
             if part_vol is not None:
                 solute_vol += part_vol * ureg.Quantity(mol, "mol")
-                logger.info("Updated solution volume using direct partial molar volume for solute %s" % solute)
+                logger.debug("Updated solution volume using direct partial molar volume for solute %s" % solute)
 
             else:
                 logger.warning(
-                    "Partial molar volume data not available for solute %s. Solution volume will not be corrected."
-                    % solute
+                    f"Volume of solute {solute} will be ignored because partial molar volume data are not available."
                 )
 
         return solute_vol.to("L")

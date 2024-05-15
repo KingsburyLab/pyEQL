@@ -6,11 +6,9 @@
 [![PyPI version](https://badge.fury.io/py/pyEQL.svg)](https://badge.fury.io/py/pyEQL)
 [![status](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6/status.svg)](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6)
 
+<img src="pyeql-logo.png" alt="pyEQL logo" style="width:600px;"/>
 
-![pyeql logo](pyeql-logo.svg)
-
-A python interface for water chemistry
-
+# A python interface for water chemistry
 
 ## Description
 
@@ -78,8 +76,8 @@ Detailed documentation is available at [https://pyeql.readthedocs.io/](https://p
 - [maggma](https://materialsproject.github.io/maggma/) - interface for accessing the property database
 - [scipy](https://www.scipy.org/) - for certain nonlinear equation solvers
 
-<!-- pyscaffold-notes -->
----
+## <!-- pyscaffold-notes -->
+
 pyEQL is licensed under LGPL.
 
 This project has been set up using PyScaffold 4.5. For details and usage

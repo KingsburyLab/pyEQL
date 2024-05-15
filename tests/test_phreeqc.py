@@ -208,9 +208,11 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert s2.components["H+"] > eq_Hplus
 
     # test log message if there is a species not present in the phreeqc database
-    s_zr = Solution({"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc")
+    s_zr = Solution(
+        {"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc", log_level="WARNING"
+    )
     totzr = s_zr.get_total_amount("Zr", "mol")
-    with caplog.at_level(logging.INFO, "pyEQL.logging_system"):
+    with caplog.at_level(logging.WARNING, "pyEQL.engines"):
         s_zr.equilibrate()
         assert "likely absent from its database" in caplog.text
         assert "Zr[+4]" in s_zr.components
