@@ -144,7 +144,8 @@ addopts = [
   "--color=yes",
   "--import-mode=importlib",
   "--durations=30"
-  "--cov pyEQL --cov-report term-missing",
+  "--cov pyEQL",
+  "--cov-report term-missing",
   "--verbose",
 ]
 norecursedirs = [
