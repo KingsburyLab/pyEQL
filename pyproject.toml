@@ -52,7 +52,7 @@ docs = [
     "sphinx-rtd-theme",
     "myst-parser[linkify]",
     ]
-full = [rich]
+full = ["rich"]
 
 [build-system]
 # AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
