@@ -1,7 +1,67 @@
+[project]
+name = "pyEQL"
+readme = "README.md"
+dynamic = ["version"]
+description="A python interace for solution chemistry"
+authors =[
+    {name = "Ryan Kingsbury", email = "kingsbury@princeton.edu"}
+]
+classifiers=[
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering",
+    ]
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+dependencies = [
+        "pint>=0.19",
+        "numpy",
+        "scipy",
+        "pymatgen>=2023.10.11",
+        "iapws",
+        "monty",
+        "maggma>=0.67.0",
+        "phreeqpython",
+    ]
+
+[project.urls]
+Docs = "https://pyeql.readthedocs.io/"
+Repo = "https://github.com/KingsburyLab/pyEQL"
+Package = "https://pypi.org/project/pyEQL"
+
+
+[project.optional-dependencies]
+testing = [
+    "setuptools",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "black",
+    "mypy",
+    "ruff",
+    "tox<4",
+    ]
+docs = [
+    "sphinx>=3.2.1",
+    "sphinx-rtd-theme",
+    "myst-parser[linkify]",
+    ]
+full = [rich]
+
 [build-system]
 # AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
 requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = "tests"
 
 [tool.setuptools_scm]
 # See configuration details in https://github.com/pypa/setuptools_scm
@@ -84,6 +144,13 @@ addopts = [
   "--color=yes",
   "--import-mode=importlib",
   "--durations=30"
+  "--cov pyEQL --cov-report term-missing",
+  "--verbose",
+]
+norecursedirs = [
+  "dist",
+  "build",
+  ".tox",
 ]
 xfail_strict = true
 filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
