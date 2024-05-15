@@ -5,6 +5,7 @@ and performing chemical thermodynamics computations.
 :copyright: 2013-2024 by Ryan S. Kingsbury
 :license: LGPL, see LICENSE for more details.
 """
+
 from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 from importlib.resources import files
 
@@ -39,7 +40,7 @@ ureg.default_format = "P~"
 
 # create a Store for the default database
 json_db_file = files("pyEQL") / "database" / "pyeql_db.json"
-IonDB = JSONStore(str(json_db_file), key="formula")
+IonDB = JSONStore(str(json_db_file), key="formula", encoding="utf8")
 # By calling connect on init, we get the expensive JSON reading operation out
 # of the way. Subsequent calls to connect will bypass this and access the already-
 # instantiated Store in memory, which should speed up instantiation of Solution objects.
