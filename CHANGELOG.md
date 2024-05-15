@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- `UnicodeDecodeError` when trying to connect to ion database on non-English platforms ([#122](https://github.com/KingsburyLab/pyEQL/issues/122))
+
+### Changed
+
+- Docs: Fix missing close parentheses in docstring (@Andrew S. Rosen)
+
 ## [1.0.0] - 2024-03-17
 
 ### Added
