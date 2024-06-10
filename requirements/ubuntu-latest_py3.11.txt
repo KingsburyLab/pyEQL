@@ -6,13 +6,15 @@
 #
 aioitertools==0.11.0
     # via maggma
-annotated-types==0.6.0
+annotated-types==0.7.0
     # via pydantic
-anyio==4.3.0
+anyio==4.4.0
     # via
     #   httpx
     #   starlette
     #   watchfiles
+appdirs==1.4.4
+    # via pint
 attrs==23.2.0
     # via
     #   jsonschema
@@ -21,13 +23,13 @@ bcrypt==4.1.3
     # via paramiko
 blinker==1.8.2
     # via flask
-boto3==1.34.102
+boto3==1.34.122
     # via maggma
-botocore==1.34.102
+botocore==1.34.122
     # via
     #   boto3
     #   s3transfer
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   httpcore
     #   httpx
@@ -46,7 +48,7 @@ click==8.1.7
     #   uvicorn
 contourpy==1.2.1
     # via matplotlib
-cryptography==42.0.7
+cryptography==42.0.8
     # via paramiko
 cycler==0.12.1
     # via matplotlib
@@ -58,17 +60,17 @@ dnspython==2.6.1
 email-validator==2.1.1
     # via fastapi
 fastapi==0.111.0
-    # via
-    #   fastapi-cli
-    #   maggma
-fastapi-cli==0.0.3
+    # via maggma
+fastapi-cli==0.0.4
     # via fastapi
 flask==3.0.3
     # via mongogrant
-fonttools==4.51.0
+flexcache==0.3
+    # via pint
+flexparser==0.3.1
+    # via pint
+fonttools==4.53.0
     # via matplotlib
-future==1.0.0
-    # via uncertainties
 h11==0.14.0
     # via
     #   httpcore
@@ -107,7 +109,7 @@ kiwisolver==1.4.5
     # via matplotlib
 latexcodec==3.0.0
     # via pybtex
-maggma==0.66.0
+maggma==0.67.0
     # via pyEQL (setup.py)
 markdown-it-py==3.0.0
     # via rich
@@ -115,7 +117,7 @@ markupsafe==2.1.5
     # via
     #   jinja2
     #   werkzeug
-matplotlib==3.8.4
+matplotlib==3.9.0
     # via pymatgen
 mdurl==0.1.2
     # via markdown-it-py
@@ -123,7 +125,7 @@ mongogrant==0.3.3
     # via maggma
 mongomock==4.1.2
     # via maggma
-monty==2024.4.17
+monty==2024.5.24
     # via
     #   maggma
     #   pyEQL (setup.py)
@@ -149,7 +151,7 @@ orjson==3.10.3
     # via
     #   fastapi
     #   maggma
-packaging==24.0
+packaging==24.1
     # via
     #   matplotlib
     #   mongomock
@@ -166,7 +168,7 @@ phreeqpython==1.5.2
     # via pyEQL (setup.py)
 pillow==10.3.0
     # via matplotlib
-pint==0.23
+pint==0.24
     # via pyEQL (setup.py)
 plotly==5.22.0
     # via pymatgen
@@ -174,22 +176,22 @@ pybtex==0.24.0
     # via pymatgen
 pycparser==2.22
     # via cffi
-pydantic==2.7.1
+pydantic==2.7.3
     # via
     #   fastapi
     #   maggma
     #   pydantic-settings
-pydantic-core==2.18.2
+pydantic-core==2.18.4
     # via pydantic
-pydantic-settings==2.2.1
+pydantic-settings==2.3.1
     # via maggma
 pydash==8.0.1
     # via maggma
 pygments==2.18.0
     # via rich
-pymatgen==2024.5.1
+pymatgen==2024.6.4
     # via pyEQL (setup.py)
-pymongo==4.7.2
+pymongo==4.7.3
     # via
     #   maggma
     #   mongogrant
@@ -223,7 +225,7 @@ referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.31.0
+requests==2.32.3
     # via
     #   mongogrant
     #   pymatgen
@@ -241,7 +243,7 @@ ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
 s3transfer==0.10.1
     # via boto3
-scipy==1.13.0
+scipy==1.13.1
     # via
     #   iapws
     #   phreeqpython
@@ -265,7 +267,7 @@ sshtunnel==0.4.0
     # via maggma
 starlette==0.37.2
     # via fastapi
-sympy==1.12
+sympy==1.12.1
     # via pymatgen
 tabulate==0.9.0
     # via pymatgen
@@ -277,9 +279,11 @@ tqdm==4.66.4
     #   pymatgen
 typer==0.12.3
     # via fastapi-cli
-typing-extensions==4.11.0
+typing-extensions==4.12.2
     # via
     #   fastapi
+    #   flexcache
+    #   flexparser
     #   pint
     #   pydantic
     #   pydantic-core
@@ -287,22 +291,21 @@ typing-extensions==4.11.0
     #   typer
 tzdata==2024.1
     # via pandas
-ujson==5.9.0
+ujson==5.10.0
     # via fastapi
-uncertainties==3.1.7
+uncertainties==3.2.1
     # via pymatgen
 urllib3==2.2.1
     # via
     #   botocore
     #   requests
-uvicorn[standard]==0.29.0
+uvicorn[standard]==0.30.1
     # via
     #   fastapi
-    #   fastapi-cli
     #   maggma
 uvloop==0.19.0
     # via uvicorn
-watchfiles==0.21.0
+watchfiles==0.22.0
     # via uvicorn
 websockets==12.0
     # via uvicorn
