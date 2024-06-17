@@ -430,7 +430,7 @@ ujson==5.10.0
     # via fastapi
 uncertainties==3.2.1
     # via pymatgen
-urllib3==1.26.18
+urllib3==1.26.19
     # via
     #   botocore
     #   requests
