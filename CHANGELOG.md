@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace `math` with `numpy` functions throughout. This mainly changed calls to `log` and `exp`.
 - Docs: Fix missing close parentheses in docstring (@Andrew S. Rosen)
 
 ## [1.0.0] - 2024-03-17

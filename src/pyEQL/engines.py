@@ -47,7 +47,7 @@ class EOS(ABC):
             solution: pyEQL Solution object
             solute: str identifying the solute of interest
 
-        Returns
+        Returns:
             Quantity: dimensionless quantity object
 
         Raises:
@@ -62,7 +62,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Quantity: dimensionless molal scale osmotic coefficient
 
         Raises:
@@ -77,7 +77,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Quantity: solute volume in L
 
         Raises:
@@ -94,7 +94,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Nothing. The speciation of the Solution is modified in-place.
 
         Raises:

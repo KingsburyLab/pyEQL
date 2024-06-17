@@ -14,8 +14,8 @@ are called from within the get_activity_coefficient method of the Solution class
 """
 
 import logging
-import math
 
+import numpy as np
 from pint import Quantity
 
 from pyEQL import ureg
@@ -114,8 +114,8 @@ def _debye_parameter_activity(temperature: str = "25 degC") -> "Quantity":
 
     debyeparam = (
         ureg.elementary_charge**3
-        * (2 * math.pi * ureg.N_A * ureg.Quantity(water_substance.rho, "g/L")) ** 0.5
-        / (4 * math.pi * ureg.epsilon_0 * water_substance.epsilon * ureg.boltzmann_constant * T) ** 1.5
+        * (2 * np.pi * ureg.N_A * ureg.Quantity(water_substance.rho, "g/L")) ** 0.5
+        / (4 * np.pi * ureg.epsilon_0 * water_substance.epsilon * ureg.boltzmann_constant * T) ** 1.5
     )
 
     logger.debug(rf"Computed Debye-Huckel Limiting Law Constant A^{{\gamma}} = {debyeparam} at {temperature}")
@@ -248,7 +248,7 @@ def get_activity_coefficient_debyehuckel(ionic_strength, z=1, temperature="25 de
 
     log_f = -_debye_parameter_activity(temperature) * z**2 * ionic_strength**0.5
 
-    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
+    return np.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_guntelberg(ionic_strength, z=1, temperature="25 degC"):
@@ -285,7 +285,7 @@ def get_activity_coefficient_guntelberg(ionic_strength, z=1, temperature="25 deg
 
     log_f = -_debye_parameter_activity(temperature) * z**2 * ionic_strength**0.5 / (1 + ionic_strength.magnitude**0.5)
 
-    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
+    return np.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_davies(ionic_strength, z=1, temperature="25 degC"):
@@ -327,7 +327,7 @@ def get_activity_coefficient_davies(ionic_strength, z=1, temperature="25 degC"):
         * (ionic_strength.magnitude**0.5 / (1 + ionic_strength.magnitude**0.5) - 0.2 * ionic_strength.magnitude)
     )
 
-    return math.exp(log_f) * ureg.Quantity(1, "dimensionless")
+    return np.exp(log_f) * ureg.Quantity(1, "dimensionless")
 
 
 def get_activity_coefficient_pitzer(
@@ -437,7 +437,7 @@ def get_activity_coefficient_pitzer(
         b,
     )
 
-    return math.exp(loggamma) * ureg.Quantity(1, "dimensionless")
+    return np.exp(loggamma) * ureg.Quantity(1, "dimensionless")
 
 
 def get_apparent_volume_pitzer(
@@ -533,7 +533,7 @@ def get_apparent_volume_pitzer(
         (nu_cation + nu_anion)
         * abs(z_cation * z_anion)
         * (_debye_parameter_volume(temperature) / 2 / b)
-        * math.log(1 + b * ionic_strength**0.5)
+        * np.log(1 + b * ionic_strength**0.5)
     )
 
     third_term = (
@@ -566,7 +566,7 @@ def _pitzer_f1(x):
     # return 0 if the input is 0
     if x == 0:
         return 0
-    return 2 * (1 - (1 + x) * math.exp(-x)) / x**2
+    return 2 * (1 - (1 + x) * np.exp(-x)) / x**2
 
 
 def _pitzer_f2(x):
@@ -586,7 +586,7 @@ def _pitzer_f2(x):
     # return 0 if the input is 0
     if x == 0:
         return 0
-    return -2 * (1 - (1 + x + x**2 / 2) * math.exp(-x)) / x**2
+    return -2 * (1 - (1 + x + x**2 / 2) * np.exp(-x)) / x**2
 
 
 def _pitzer_B_MX(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
@@ -692,7 +692,7 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
         and Representation with an Ion Interaction (Pitzer) Model.
         Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
     """
-    return beta0 + beta1 * math.exp(-alpha1 * ionic_strength**0.5) + beta2 * math.exp(-alpha2 * ionic_strength**0.5)
+    return beta0 + beta1 * np.exp(-alpha1 * ionic_strength**0.5) + beta2 * np.exp(-alpha2 * ionic_strength**0.5)
 
 
 # def _pitzer_C_MX(C_phi,z_cation,z_anion):
@@ -772,7 +772,7 @@ def _pitzer_log_gamma(
         -1
         * abs(z_cation * z_anion)
         * _debye_parameter_osmotic(temperature)
-        * (ionic_strength**0.5 / (1 + b * ionic_strength**0.5) + 2 / b * math.log(1 + b * ionic_strength**0.5))
+        * (ionic_strength**0.5 / (1 + b * ionic_strength**0.5) + 2 / b * np.log(1 + b * ionic_strength**0.5))
     )
     second_term = 2 * molality * nu_cation * nu_anion / (nu_cation + nu_anion) * (B_MX + B_phi)
     third_term = 3 * molality**2 * (nu_cation * nu_anion) ** 1.5 / (nu_cation + nu_anion) * C_phi

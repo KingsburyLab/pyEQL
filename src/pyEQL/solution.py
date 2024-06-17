@@ -9,7 +9,6 @@ pyEQL Solution Class.
 from __future__ import annotations
 
 import logging
-import math
 import os
 import warnings
 from functools import lru_cache
@@ -434,8 +433,8 @@ class Solution(MSONable):
         """
         try:
             if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
+                return -1 * np.log10(self.get_activity(solute))
+            return -1 * np.log10(self.get_amount(solute, "mol/L").magnitude)
         # if the solute has zero concentration, the log will generate a ValueError
         except ValueError:
             return 0
@@ -647,7 +646,7 @@ class Solution(MSONable):
         x_cat = self.get_amount(salt.cation, "fraction").magnitude
 
         # calculate the kinematic viscosity
-        nu = math.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
+        nu = np.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
 
         return ureg.Quantity(np.exp(nu), "m**2 / s")
 
@@ -930,9 +929,7 @@ class Solution(MSONable):
             :attr:`dielectric_constant`
 
         """
-        bjerrum_length = ureg.e**2 / (
-            4 * math.pi * self.dielectric_constant * ureg.epsilon_0 * ureg.k * self.temperature
-        )
+        bjerrum_length = ureg.e**2 / (4 * np.pi * self.dielectric_constant * ureg.epsilon_0 * ureg.k * self.temperature)
         return bjerrum_length.to("nm")
 
     @property
@@ -975,7 +972,7 @@ class Solution(MSONable):
         partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
 
         osmotic_pressure = (
-            -1 * ureg.R * self.temperature / partial_molar_volume_water * math.log(self.get_water_activity())
+            -1 * ureg.R * self.temperature / partial_molar_volume_water * np.log(self.get_water_activity())
         )
         self.logger.debug(
             f"Calculated osmotic pressure of solution as {osmotic_pressure} Pa at T= {self.temperature} degrees C"
@@ -1835,12 +1832,12 @@ class Solution(MSONable):
                 * ureg.Quantity(0.018015, "kg/mol")
                 * self.get_total_moles_solute()
                 / self.solvent_mass
-                / math.log(self.get_amount(self.solvent, "fraction"))
+                / np.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
             return np.exp(
                 -molal_phi * ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass
-                - math.log(self.get_amount(self.solvent, "fraction"))
+                - np.log(self.get_amount(self.solvent, "fraction"))
             ) * ureg.Quantity(1, "dimensionless")
 
         raise ValueError("Invalid scale argument. Pass 'molal', 'rational', or 'fugacity'.")
@@ -1939,14 +1936,14 @@ class Solution(MSONable):
                         ureg.R
                         * self.temperature.to("K")
                         * self.get_amount(item, "mol")
-                        * math.log(self.get_activity(item))
+                        * np.log(self.get_activity(item))
                     )
                 else:
                     E += (
                         ureg.R
                         * self.temperature.to("K")
                         * self.get_amount(item, "mol")
-                        * math.log(self.get_amount(item, "fraction"))
+                        * np.log(self.get_amount(item, "fraction"))
                     )
             # If we have a solute with zero concentration, we will get a ValueError
             except ValueError:
@@ -2582,12 +2579,12 @@ class Solution(MSONable):
             "this property is planned for a future release."
         )
         # calculate the new pH and pE (before reactions) by mixing
-        mix_pH = -math.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
+        mix_pH = -np.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
         mol_e_other = 10 ** (-1 * other.pE) * other.volume.to("L").magnitude
-        mix_pE = -math.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
+        mix_pE = -np.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
 
         # create a new solution
         return Solution(
