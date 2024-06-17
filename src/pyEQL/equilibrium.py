@@ -11,7 +11,8 @@ NOTE: these methods are not currently used but are here for the future.
 
 # import libraries for scientific functions
 import logging
-import math
+
+import numpy as np
 
 from pyEQL import ureg
 
@@ -51,7 +52,7 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 
     return (
         c1
         + c2 * (1 / temp + 1 / temp_ref)
-        + c2 * math.log(temp / temp_ref)
+        + c2 * np.log(temp / temp_ref)
         + c3 * (temp - temp_ref)
         + c4 * (temp**2 - temp_ref**2)
         + c5 * (temp**-2 - temp_ref**-2)
@@ -91,7 +92,7 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
         >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC')) #doctest: +ELLIPSIS
         0.00203566...
     """
-    output = equilibrium_constant * math.exp(
+    output = equilibrium_constant * np.exp(
         enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 
@@ -137,7 +138,7 @@ def adjust_temp_arrhenius(
         >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC')) #doctest: +ELLIPSIS
         1.8867225...e-24
     """
-    output = rate_constant * math.exp(
+    output = rate_constant * np.exp(
         activation_energy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
     )
 

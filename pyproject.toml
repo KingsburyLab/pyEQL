@@ -47,6 +47,7 @@ select = [
   "UP",   # pyupgrade
   "W",    # pycodestyle warning
   "YTT",  # flake8-2020
+  "NPY201", # Numpy 2.0 migration
 ]
 ignore = [
   "B008",    # Do not perform function call `unit` in argument defaults

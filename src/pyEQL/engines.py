@@ -47,7 +47,7 @@ class EOS(ABC):
             solution: pyEQL Solution object
             solute: str identifying the solute of interest
 
-        Returns
+        Returns:
             Quantity: dimensionless quantity object
 
         Raises:
@@ -62,7 +62,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Quantity: dimensionless molal scale osmotic coefficient
 
         Raises:
@@ -77,7 +77,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Quantity: solute volume in L
 
         Raises:
@@ -94,7 +94,7 @@ class EOS(ABC):
         Args:
             solution: pyEQL Solution object
 
-        Returns
+        Returns:
             Nothing. The speciation of the Solution is modified in-place.
 
         Raises:
@@ -173,9 +173,7 @@ class NativeEOS(EOS):
         self._stored_comp = None
 
     def _setup_ppsol(self, solution):
-        """
-        Helper method to set up a PhreeqPython solution for subsequent analysis.
-        """
+        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
         # inherit bulk solution properties
@@ -197,6 +195,16 @@ class NativeEOS(EOS):
         # add the composition to the dict
         # also, skip H and O
         for el, mol in solution.get_el_amt_dict().items():
+            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
+            # all distinct oxi states of each element present. If there are elements present whose oxi states
+            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
+            # entered into the composition dict. This can especially cause problems after equilibrate() has already
+            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
+            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
+            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
+            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
+            # oxi state happens to be iterated through last.
+
             # strip off the oxi state
             bare_el = el.split("(")[0]
             if bare_el in SPECIAL_ELEMENTS:
@@ -208,7 +216,12 @@ class NativeEOS(EOS):
             else:
                 key = bare_el
 
-            d[key] = str(mol / solv_mass)
+            if key in d:
+                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
+                # add all their amounts together
+                d[key] += str(mol / solv_mass)
+            else:
+                d[key] = str(mol / solv_mass)
 
             # tell PHREEQC which species to use for charge balance
             if (
@@ -660,7 +673,6 @@ class NativeEOS(EOS):
             solution.components[s] = mol
 
         # make sure all species are accounted for
-        charge_adjust = 0
         assert set(self._stored_comp.keys()) - set(solution.components.keys()) == set()
 
         # log a message if any components were not touched by PHREEQC
@@ -671,6 +683,11 @@ class NativeEOS(EOS):
                 f"After equilibration, the amounts of species {missing_species} were not modified "
                 "by PHREEQC. These species are likely absent from its database."
             )
+
+        # re-adjust charge balance for any missing species
+        # note that if balance_charge is set, it will have been passed to PHREEQC, so we only need to adjust
+        # for any missing species here.
+        charge_adjust = 0
         for s in missing_species:
             charge_adjust += -1 * solution.get_amount(s, "eq").magnitude
         if charge_adjust != 0:
@@ -679,11 +696,10 @@ class NativeEOS(EOS):
                 f" {charge_adjust} eq of charge were added via {solution.balance_charge}"
             )
 
-            # re-adjust charge balance
             if solution.balance_charge is None:
                 pass
             elif solution.balance_charge == "pH":
-                solution.components["H+"] += charge_adjust
+                solution.components["H+"] += charge_adjust.magnitude
             elif solution.balance_charge == "pE":
                 raise NotImplementedError
             else:
