@@ -432,9 +432,13 @@ class Solution(MSONable):
                 activity = False) of the solute.
         """
         try:
+            # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
+            # Using np.exp raises ZeroDivisionError
+            import math
+
             if activity is True:
-                return -1 * np.log10(self.get_activity(solute))
-            return -1 * np.log10(self.get_amount(solute, "mol/L").magnitude)
+                return -1 * math.log10(self.get_activity(solute))
+            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
         # if the solute has zero concentration, the log will generate a ValueError
         except ValueError:
             return 0

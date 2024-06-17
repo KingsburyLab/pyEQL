@@ -692,7 +692,11 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
         and Representation with an Ion Interaction (Pitzer) Model.
         Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
     """
-    return beta0 + beta1 * np.exp(-alpha1 * ionic_strength**0.5) + beta2 * np.exp(-alpha2 * ionic_strength**0.5)
+    import math
+
+    # TODO - for some reason this specific method requires the use of math.exp rather than np.exp. Using np.exp raises
+    # a dimensionalityerror.
+    return beta0 + beta1 * math.exp(-alpha1 * ionic_strength**0.5) + beta2 * math.exp(-alpha2 * ionic_strength**0.5)
 
 
 # def _pitzer_C_MX(C_phi,z_cation,z_anion):
