@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Added `NPY201` ruleset to `ruff` configuration to check support for `numpy` 2.0
+
 ### Fixed
 
 - `UnicodeDecodeError` when trying to connect to ion database on non-English platforms ([#122](https://github.com/KingsburyLab/pyEQL/issues/122))
