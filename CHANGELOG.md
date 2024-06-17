@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `NativeEOS` and `PHREEQCEOS` `equilibrate`: Fixed a charge balancing bug that cause repeated calls to `equlibrate` to
+  severely distort the pH and/or the composition. (#141)[https://github.com/KingsburyLab/pyEQL/issues/141]
 - `UnicodeDecodeError` when trying to connect to ion database on non-English platforms ([#122](https://github.com/KingsburyLab/pyEQL/issues/122))
 
 ### Changed
