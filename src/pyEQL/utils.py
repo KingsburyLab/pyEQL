@@ -60,7 +60,16 @@ def standardize_formula(formula: str):
         be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+',
         'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
     """
-    return Ion.from_formula(formula).reduced_formula
+    sform = Ion.from_formula(formula).reduced_formula
+
+    # TODO - manual formula adjustments. May be implemented upstream in pymatgen in the future
+    if sform == "H4N[+1]":
+        sform = "NH4[+1]"
+    elif sform == "H3N(aq)":
+        sform = "NH3(aq)"
+
+    # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
+    return sform
 
 
 def format_solutes_dict(solute_dict: dict, units: str):
