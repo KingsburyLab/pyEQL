@@ -139,7 +139,7 @@ class NativeEOS(EOS):
     def __init__(
         self,
         phreeqc_db: Literal["vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"] = "llnl.dat",
-    ):
+    ) -> None:
         """
         Args:
             phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
@@ -712,7 +712,7 @@ class NativeEOS(EOS):
         # call to equilibrate can thus result in a slight change in the Solution mass.
         solution.components[solution.solvent] = orig_solvent_moles
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> "NativeEOS":
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
         # is not pickle-able.
         import copy
@@ -736,7 +736,7 @@ class PhreeqcEOS(NativeEOS):
         phreeqc_db: Literal[
             "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
         ] = "phreeqc.dat",
-    ):
+    ) -> None:
         """
         Args:
         phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics

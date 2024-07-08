@@ -9,6 +9,7 @@ pyEQL utilities
 import logging
 from collections import UserDict
 from functools import lru_cache
+from typing import Any
 
 from iapws import IAPWS95, IAPWS97
 from pymatgen.core.ion import Ion
@@ -115,18 +116,18 @@ class FormulaDict(UserDict):
     formula notation (e.g., "Na+", "Na+1", "Na[+]" all have the same effect)
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Any:
         return super().__getitem__(standardize_formula(key))
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         super().__setitem__(standardize_formula(key), value)
         # sort contents anytime an item is set
         self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 
     # Necessary to define this so that .get() works properly in python 3.12+
     # see https://github.com/python/cpython/issues/105524
-    def __contains__(self, key):
+    def __contains__(self, key) -> bool:
         return standardize_formula(key) in self.data
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         super().__delitem__(standardize_formula(key))

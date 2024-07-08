@@ -21,7 +21,7 @@ from pyEQL.utils import standardize_formula
 class Salt(MSONable):
     """Class to represent a salt."""
 
-    def __init__(self, cation, anion):
+    def __init__(self, cation, anion) -> None:
         """
         Create a Salt object based on its component ions.
 

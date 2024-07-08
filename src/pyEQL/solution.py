@@ -57,7 +57,7 @@ class Solution(MSONable):
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
-    ):
+    ) -> None:
         """
         Instantiate a Solution from a composition.
 
@@ -2512,7 +2512,7 @@ class Solution(MSONable):
         return loadfn(filename)
 
     # arithmetic operations
-    def __add__(self, other: Solution):
+    def __add__(self, other: Solution) -> Solution:
         """
         Solution addition: mix two solutions together.
 
@@ -2600,10 +2600,10 @@ class Solution(MSONable):
             pE=mix_pE,
         )
 
-    def __sub__(self, other: Solution):
+    def __sub__(self, other: Solution) -> None:
         raise NotImplementedError("Subtraction of solutions is not implemented.")
 
-    def __mul__(self, factor: float):
+    def __mul__(self, factor: float) -> None:
         """
         Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
         every component (including solvent). No other properties will change.
@@ -2611,7 +2611,7 @@ class Solution(MSONable):
         self.volume *= factor
         return self
 
-    def __truediv__(self, factor: float):
+    def __truediv__(self, factor: float) -> None:
         """
         Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
         of every compoonents (including solvent). No other properties will change.
@@ -2657,7 +2657,7 @@ class Solution(MSONable):
 
             print(f"{i}:\t {amt:0.{places}f}")
 
-    def __str__(self):
+    def __str__(self) -> str:
         # set output of the print() statement for the solution
         l1 = f"Volume: {self.volume:.3f~}"
         l2 = f"Temperature: {self.temperature:.3f~}"
