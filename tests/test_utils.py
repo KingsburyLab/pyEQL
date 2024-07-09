@@ -2,6 +2,7 @@
 Tests of pyEQL.utils module
 
 """
+
 from iapws import IAPWS95, IAPWS97
 from pytest import raises
 
@@ -19,6 +20,18 @@ def test_standardize_formula():
     assert standardize_formula("SO4--") == "SO4[-2]"
     assert standardize_formula("Mg+2") == "Mg[+2]"
     assert standardize_formula("O2") == "O2(aq)"
+    assert standardize_formula("NH4+") == "NH4[+1]"
+    assert standardize_formula("NH3") == "NH3(aq)"
+    assert standardize_formula("HPO4--") == "HPO4[-2]"
+    assert standardize_formula("H2PO4-") == "H2PO4[-1]"
+    assert standardize_formula("SCN-") == "SCN[-1]"
+    assert standardize_formula("I3-") == "I3[-1]"
+    assert standardize_formula("HCOO-") == "HCO2[-1]"
+    assert standardize_formula("CO2-1") == "C2O4[-2]"
+    assert standardize_formula("C2O4--") == "C2O4[-2]"
+    assert standardize_formula("H3PO4") == "H3PO4(aq)"
+    assert standardize_formula("H2SO4") == "H2SO4(aq)"
+    assert standardize_formula("HClO4") == "HClO4(aq)"
 
 
 def test_formula_dict():

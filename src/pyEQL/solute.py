@@ -150,7 +150,7 @@ class Solute:
         return dict(asdict(self).items())
 
     # set output of the print() statement
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "Species "
             + str(self.formula)

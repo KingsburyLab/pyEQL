@@ -9,6 +9,7 @@ pyEQL utilities
 import logging
 from collections import UserDict
 from functools import lru_cache
+from typing import Any
 
 from iapws import IAPWS95, IAPWS97
 from pymatgen.core.ion import Ion
@@ -59,7 +60,39 @@ def standardize_formula(formula: str):
         be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+',
         'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
     """
-    return Ion.from_formula(formula).reduced_formula
+    sform = Ion.from_formula(formula).reduced_formula
+
+    # TODO - manual formula adjustments. May be implemented upstream in pymatgen in the future
+    # thanks to @xiaoxiaozhu123 for pointing out these issues in
+    # https://github.com/KingsburyLab/pyEQL/issues/136
+
+    # ammonia
+    if sform == "H4N[+1]":
+        sform = "NH4[+1]"
+    elif sform == "H3N(aq)":
+        sform = "NH3(aq)"
+    # phosphoric acid system
+    elif sform == "PH3O4(aq)":
+        sform = "H3PO4(aq)"
+    elif sform == "PHO4[-2]":
+        sform = "HPO4[-2]"
+    elif sform == "P(HO2)2[-1]":
+        sform = "H2PO4[-1]"
+    # thiocyanate
+    elif sform == "CSN[-1]":
+        sform = "SCN[-1]"
+    # triiodide
+    elif sform == "I[-0.33333333]":
+        sform = "I3[-1]"
+    # formate
+    elif sform == "HCOO[-1]":
+        sform = "HCO2[-1]"
+    # oxalate
+    elif sform == "CO2[-1]":
+        sform = "C2O4[-2]"
+
+    # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
+    return sform
 
 
 def format_solutes_dict(solute_dict: dict, units: str):
@@ -115,18 +148,18 @@ class FormulaDict(UserDict):
     formula notation (e.g., "Na+", "Na+1", "Na[+]" all have the same effect)
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Any:
         return super().__getitem__(standardize_formula(key))
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         super().__setitem__(standardize_formula(key), value)
         # sort contents anytime an item is set
         self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 
     # Necessary to define this so that .get() works properly in python 3.12+
     # see https://github.com/python/cpython/issues/105524
-    def __contains__(self, key):
+    def __contains__(self, key) -> bool:
         return standardize_formula(key) in self.data
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         super().__delitem__(standardize_formula(key))
