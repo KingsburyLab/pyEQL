@@ -63,10 +63,33 @@ def standardize_formula(formula: str):
     sform = Ion.from_formula(formula).reduced_formula
 
     # TODO - manual formula adjustments. May be implemented upstream in pymatgen in the future
+    # thanks to @xiaoxiaozhu123 for pointing out these issues in
+    # https://github.com/KingsburyLab/pyEQL/issues/136
+
+    # ammonia
     if sform == "H4N[+1]":
         sform = "NH4[+1]"
     elif sform == "H3N(aq)":
         sform = "NH3(aq)"
+    # phosphoric acid system
+    elif sform == "PH3O4(aq)":
+        sform = "H3PO4(aq)"
+    elif sform == "PHO4[-2]":
+        sform = "HPO4[-2]"
+    elif sform == "P(HO2)2[-1]":
+        sform = "H2PO4[-1]"
+    # thiocyanate
+    elif sform == "CSN[-1]":
+        sform = "SCN[-1]"
+    # triiodide
+    elif sform == "I[-0.33333333]":
+        sform = "I3[-1]"
+    # formate
+    elif sform == "HCOO[-1]":
+        sform = "HCO2[-1]"
+    # oxalate
+    elif sform == "CO2[-1]":
+        sform = "C2O4[-2]"
 
     # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
     return sform
