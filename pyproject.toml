@@ -107,6 +107,7 @@ select = [
   "UP",   # pyupgrade
   "W",    # pycodestyle warning
   "YTT",  # flake8-2020
+  "NPY201", # Numpy 2.0 migration
 ]
 ignore = [
   "B008",    # Do not perform function call `unit` in argument defaults
@@ -171,5 +172,5 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
 [tool.codespell]
-ignore-words-list = "nd"
+ignore-words-list = "nd,formate"
 skip = "tests/test_files/*,src/pyEQL/database/*"

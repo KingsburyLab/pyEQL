@@ -7,7 +7,8 @@ pyEQL functions that take Solution objects as inputs or return Solution objects.
 """
 
 import logging
-import math
+
+import numpy as np
 
 from pyEQL import Solution, ureg
 
@@ -55,7 +56,7 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
     for solution in term_list:
         for solute in solution.components:
             if solution.get_amount(solute, "fraction") != 0:
-                term_list[solution] += solution.get_amount(solute, "mol") * math.log(solution.get_activity(solute))
+                term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_activity(solute))
 
     return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
@@ -102,7 +103,7 @@ def entropy_mix(solution1: Solution, solution2: Solution):
     for solution in term_list:
         for solute in solution.components:
             if solution.get_amount(solute, "fraction") != 0:
-                term_list[solution] += solution.get_amount(solute, "mol") * math.log(
+                term_list[solution] += solution.get_amount(solute, "mol") * np.log(
                     solution.get_amount(solute, "fraction")
                 )
 
@@ -242,7 +243,7 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
         return (act_cation_mem / act_cation_soln) ** (1 / z_cation) * (act_anion_soln / act_anion_mem) ** (
             1 / z_anion
-        ) - math.exp(delta_pi * exp_term)
+        ) - np.exp(delta_pi * exp_term)
 
     # solve the function above using one of scipy's nonlinear solvers
 

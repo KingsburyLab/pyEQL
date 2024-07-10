@@ -176,9 +176,6 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert np.isclose(s1.charge_balance, 0, atol=1e-8)
     assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
-    # assert np.isclose(s1.mass, orig_mass)
-    # assert np.isclose(s1.density.magnitude, orig_density)
-    # assert np.isclose(s1.solvent_mass.magnitude, orig_solv_mass)
 
     assert "NaOH(aq)" not in s2.components
     orig_density = s2.density.magnitude
@@ -187,6 +184,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     orig_pE = s2.pE
     orig_mass = s2.mass
     s2.equilibrate()
+    assert np.isclose(s2.mass, orig_mass)
+    assert np.isclose(s2.density.magnitude, orig_density)
+    assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
     assert "NaOH(aq)" in s2.components
 
     # total element concentrations should be conserved after equilibrating
@@ -239,8 +239,16 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert np.isclose(s5_pH.charge_balance, 0)
     assert "CaOH[+1]" in s5_pH.components
     assert "HCO3[-1]" in s5_pH.components
-    assert s5_pH.pH > orig_pH
+    s5_pH_after = s5_pH.pH
+    assert s5_pH_after > orig_pH
     assert np.isclose(s5_pH.pE, orig_pE)
+
+    # repeated calls to equilibrate should not change the properties (much)
+    for i in range(10):
+        s5_pH.equilibrate()
+        assert np.isclose(s5_pH.charge_balance, 0, atol=1e-8), f"C.B. failed at iteration {i}"
+        assert np.isclose(s5_pH.pH, s5_pH_after, atol=0.01), f"pH failed at iteration {i}"
+        assert np.isclose(s5_pH.pE, orig_pE), f"pE failed at iteration {i}"
 
     # test equilibrate() with a non-pH balancing species
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
