@@ -42,6 +42,7 @@ testing = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "pytest-xdist",
     "black",
     "mypy",
     "ruff",
