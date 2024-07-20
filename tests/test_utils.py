@@ -26,12 +26,17 @@ def test_standardize_formula():
     assert standardize_formula("H2PO4-") == "H2PO4[-1]"
     assert standardize_formula("SCN-") == "SCN[-1]"
     assert standardize_formula("I3-") == "I3[-1]"
+    assert standardize_formula("N3-") == "N3[-1]"
+    assert standardize_formula("P3-") == "P3[-1]"
     assert standardize_formula("HCOO-") == "HCO2[-1]"
     assert standardize_formula("CO2-1") == "C2O4[-2]"
     assert standardize_formula("C2O4--") == "C2O4[-2]"
     assert standardize_formula("H3PO4") == "H3PO4(aq)"
     assert standardize_formula("H2SO4") == "H2SO4(aq)"
     assert standardize_formula("HClO4") == "HClO4(aq)"
+    # superscripts, subscripts, and permuted sign/charge number
+    assert standardize_formula("PO₄³⁻") == "PO4[-3]"
+    assert standardize_formula("Co²⁺") == "Co[+2]"
 
 
 def test_formula_dict():

@@ -23,7 +23,8 @@ Here are some examples:
 | Sodium Sulfate  |      "Na2(SO4)" or "Na2SO4"       |    "Na(SO4)(aq)"    |
 | Sodium Ion      | "Na+", "Na+1", "Na1+", or "Na[+]" |      "Na[+1]"       |
 | Magnesium Ion   |    "Mg+2", "Mg++", or "Mg[++]"    |      "Mg[+2]"       |
-| Methanol        |          "CH3OH", "CH4O"          |    "'CH3OH(aq)'"    |
+| Methanol        |          "CH3OH", "CH4O"          |     "CH3OH(aq)"     |
+| Phosphate Ion   |         "PO4-3", "PO₄³⁻"          |      "PO4[-3]"      |
 
 Specifically, `standardize_formula` uses `Ion.from_formula(<formula>).reduced_formla` (shown in the right hand column
 of the table) to identify solutes. Notice that for charged species, the charges are always placed inside square brackets
@@ -33,6 +34,11 @@ by `(aq)` to disambiguate them from solids.
 ```{important}
 **When writing multivalent ion formulas, it is strongly recommended that you put the charge number AFTER the + or -
 sign** (e.g., type "Mg+2" NOT "Mg2+"). The latter formula is ambiguous - it could mean $Mg_2^+$ or $Mg^{+2}$ and it will be processed incorrectly into `Mg[+0.5]`
+
+There is **one exception** to the rule above. If you really want to list the charge number
+first , you can use unicode superscript characters (e.g., "Co²⁺"), and `pyEQL` will understand
+these regardless of the order of the `+` and the `2`. So you can write "Co²⁺" and it will be
+correctly standardized to `Co[+2]`
 ```
 
 (manual-testing)=
