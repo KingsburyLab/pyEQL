@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or subscript characters, which makes input even more flexible. For example, `"PO₄³⁻"` and `"Co²⁺"`
   will now standardize correctly to `"PO4[-3]"` and `"Co[+2]"`, respectively.
 
+### Changed
+
+- Housekeeping: move all project configuration to `pyproject.toml`
+
 ## [1.0.2] - 2024-07-09
 
 ### Fixed
