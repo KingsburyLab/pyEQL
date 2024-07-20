@@ -106,6 +106,9 @@ def standardize_formula(formula: str):
     # oxalate
     elif sform == "CO2[-1]":
         sform = "C2O4[-2]"
+    # triflate
+    elif sform == "CS(OF)3[-1]":
+        sform = "CF3SO3[-1]"
     # haloacetic acids of F, Cl, Br, I
     elif sform == "C2Cl3O2[-1]":
         sform = "CCl3COO[-1]"
