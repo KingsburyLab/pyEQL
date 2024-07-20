@@ -26,12 +26,32 @@ def test_standardize_formula():
     assert standardize_formula("H2PO4-") == "H2PO4[-1]"
     assert standardize_formula("SCN-") == "SCN[-1]"
     assert standardize_formula("I3-") == "I3[-1]"
+    assert standardize_formula("N3-") == "N3[-1]"
+    assert standardize_formula("P3-") == "P3[-1]"
     assert standardize_formula("HCOO-") == "HCO2[-1]"
     assert standardize_formula("CO2-1") == "C2O4[-2]"
     assert standardize_formula("C2O4--") == "C2O4[-2]"
     assert standardize_formula("H3PO4") == "H3PO4(aq)"
     assert standardize_formula("H2SO4") == "H2SO4(aq)"
     assert standardize_formula("HClO4") == "HClO4(aq)"
+    assert standardize_formula("CF3SO3-") == "CF3SO3[-1]"
+    # superscripts, subscripts, and permuted sign/charge number
+    assert standardize_formula("PO₄³⁻") == "PO4[-3]"
+    assert standardize_formula("Co²⁺") == "Co[+2]"
+    # haloacetic acids
+    assert standardize_formula("CCl3COO-") == "CCl3COO[-1]"
+    assert standardize_formula("CF3COO-") == "CF3COO[-1]"
+    assert standardize_formula("CI3COO-") == "CI3COO[-1]"
+    assert standardize_formula("CBr3COO-") == "CBr3COO[-1]"
+    # Cl+F
+    assert standardize_formula("CCl2FCOO-") == "CFCl2COO[-1]"
+    assert standardize_formula("CClF2COO-") == "CF2ClCOO[-1]"
+    # Cl+I
+    assert standardize_formula("CCl2ICOO-") == "CICl2COO[-1]"
+    assert standardize_formula("CClI2COO-") == "CI2ClCOO[-1]"
+    # Cl+Br
+    assert standardize_formula("CBrCl2COO-") == "CBrCl2COO[-1]"
+    assert standardize_formula("CBr2ClCOO-") == "CBr2ClCOO[-1]"
 
 
 def test_formula_dict():

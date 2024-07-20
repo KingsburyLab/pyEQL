@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.0.3] - 2024-07-20
+
+### Fixed
+
+- `standardize_formula`: Fix incorrect display of additional formulas, including methane which
+  was shown as "H4C(aq)", other tri-anions (N3-, P3-), and a variety of haloacetic acids. For
+  example, tricholoracetic acid was previously shown as `'C2Cl3O2[-1]'` but will now display
+  as `'CCl3COO[-1]'`.
+
+### Added
+
+- `standardize_formula`: `pyEQL` can now parse ion formulas that contain unicode superscript
+  or subscript characters, which makes input even more flexible. For example, `"PO₄³⁻"` and `"Co²⁺"`
+  will now standardize correctly to `"PO4[-3]"` and `"Co[+2]"`, respectively.
 
 ### Changed
 
