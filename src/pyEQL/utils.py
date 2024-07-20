@@ -109,24 +109,30 @@ def standardize_formula(formula: str):
     # haloacetic acids of F, Cl, Br, I
     elif sform == "C2Cl3O2[-1]":
         sform = "CCl3COO[-1]"
-    elif sform == "C2F3O2[-1]":
+    elif sform == "C2O2F3[-1]":
         sform = "CF3COO[-1]"
     elif sform == "C2I3O2[-1]":
         sform = "CI3COO[-1]"
     elif sform == "C2Br3O2[-1]":
         sform = "CBr3COO[-1]"
 
-    # F+Cl
+    # Cl+F
     elif sform == "C2Cl2O2F[-1]":
         sform = "CFCl2COO[-1]"
     elif sform == "C2Cl(OF)2[-1]":
         sform = "CF2ClCOO[-1]"
 
     # Cl+Br
-    elif sform == "C2Cl2O2Br[-1]":
-        sform = "CFCl2COO[-1]"
+    elif sform == "C2Br(ClO)2[-1]":
+        sform = "CCl2BrCOO[-1]"
     elif sform == "C2Cl(OBr)2[-1]":
-        sform = "CF2ClCOO[-1]"
+        sform = "CClBr2ClCOO[-1]"
+
+    # Cl+I
+    elif sform == "C2I(ClO)2[-1]":
+        sform = "CCl2ICOO[-1]"
+    elif sform == "C2Cl(OI)2[-1]":
+        sform = "CClI2COO[-1]"
 
     # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
     return sform

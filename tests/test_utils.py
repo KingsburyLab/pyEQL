@@ -37,6 +37,14 @@ def test_standardize_formula():
     # superscripts, subscripts, and permuted sign/charge number
     assert standardize_formula("PO₄³⁻") == "PO4[-3]"
     assert standardize_formula("Co²⁺") == "Co[+2]"
+    # haloacetic acids
+    assert standardize_formula("CCl3COO-") == "CCl3COO[-1]"
+    assert standardize_formula("CF3COO-") == "CF3COO[-1]"
+    assert standardize_formula("CI3COO-") == "CI3COO[-1]"
+    assert standardize_formula("CBr3COO-") == "CBr3COO[-1]"
+    assert standardize_formula("CCl2ICOO-") == "CCl2ICOO[-1]"
+    assert standardize_formula("CCl2BrCOO-") == "CCl2BrCOO[-1]"
+    assert standardize_formula("CCl2FCOO-") == "CFCl2COO[-1]"
 
 
 def test_formula_dict():
