@@ -42,9 +42,15 @@ def test_standardize_formula():
     assert standardize_formula("CF3COO-") == "CF3COO[-1]"
     assert standardize_formula("CI3COO-") == "CI3COO[-1]"
     assert standardize_formula("CBr3COO-") == "CBr3COO[-1]"
-    assert standardize_formula("CCl2ICOO-") == "CCl2ICOO[-1]"
-    assert standardize_formula("CCl2BrCOO-") == "CCl2BrCOO[-1]"
+    # Cl+F
     assert standardize_formula("CCl2FCOO-") == "CFCl2COO[-1]"
+    assert standardize_formula("CClF2COO-") == "CF2ClCOO[-1]"
+    # Cl+I
+    assert standardize_formula("CCl2ICOO-") == "CICl2COO[-1]"
+    assert standardize_formula("CClI2COO-") == "CI2ClCOO[-1]"
+    # Cl+Br
+    assert standardize_formula("CBrCl2COO-") == "CBrCl2COO[-1]"
+    assert standardize_formula("CBr2ClCOO-") == "CBr2ClCOO[-1]"
 
 
 def test_formula_dict():

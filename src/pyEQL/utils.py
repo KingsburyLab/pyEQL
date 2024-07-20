@@ -124,15 +124,15 @@ def standardize_formula(formula: str):
 
     # Cl+Br
     elif sform == "C2Br(ClO)2[-1]":
-        sform = "CCl2BrCOO[-1]"
-    elif sform == "C2Cl(OBr)2[-1]":
-        sform = "CClBr2ClCOO[-1]"
+        sform = "CBrCl2COO[-1]"
+    elif sform == "C2Br2ClO2[-1]":
+        sform = "CBr2ClCOO[-1]"
 
     # Cl+I
     elif sform == "C2I(ClO)2[-1]":
-        sform = "CCl2ICOO[-1]"
-    elif sform == "C2Cl(OI)2[-1]":
-        sform = "CClI2COO[-1]"
+        sform = "CICl2COO[-1]"
+    elif sform == "C2I2ClO2[-1]":
+        sform = "CI2ClCOO[-1]"
 
     # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
     return sform
