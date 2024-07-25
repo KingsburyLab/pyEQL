@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Database: `size.radius_ionic` was missing units for `Ni[+2]` and `Cr[+3]`. Correct units have been added.
 
+### Changed
+
+- CI: Small updates to pre-commit and GitHub actions per scientific python [repo review](https://scientific-python.github.io/repo-review/?repo=kingsburylab%2FpyEQL&branch=main).
+
 ## [1.0.3] - 2024-07-20
 
 ### Fixed
