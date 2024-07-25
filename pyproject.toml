@@ -72,7 +72,6 @@ version_scheme = "no-guess-dev"
 line-length = 120
 
 [tool.ruff]
-target-version = "py39"
 line-length = 120
 exclude = [".dat"]
 src = ["src"]
