@@ -6698,7 +6698,7 @@
         "n_elements": 1,
         "size": {
             "radius_ionic": {
-                "value": "0.755",
+                "value": "0.755 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
@@ -24663,7 +24663,7 @@
         "n_elements": 1,
         "size": {
             "radius_ionic": {
-                "value": "0.83",
+                "value": "0.83 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
