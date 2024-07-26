@@ -27,7 +27,7 @@ SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from pyEQL import Solution  # noqa: TCH004
+    from pyEQL import Solution
 
 
 class EOS(ABC):
@@ -41,7 +41,7 @@ class EOS(ABC):
     """
 
     @abstractmethod
-    def get_activity_coefficient(self, solution: Solution, solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
@@ -58,7 +58,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def get_osmotic_coefficient(self, solution: Solution) -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of a Solution.
 
@@ -73,7 +73,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def get_solute_volume(self, solution: Solution) -> ureg.Quantity:
+    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
         """
         Return the volume of only the solutes.
 
@@ -88,7 +88,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def equilibrate(self, solution: Solution) -> None:
+    def equilibrate(self, solution: "Solution") -> None:
         """
         Adjust the speciation and pH of a Solution object to achieve chemical equilibrium.
 
@@ -108,25 +108,25 @@ class EOS(ABC):
 class IdealEOS(EOS):
     """Ideal solution equation of state engine."""
 
-    def get_activity_coefficient(self, solution: Solution, solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
         return ureg.Quantity(1, "dimensionless")
 
-    def get_osmotic_coefficient(self, solution: Solution) -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
         """
         return ureg.Quantity(1, "dimensionless")
 
-    def get_solute_volume(self, solution: Solution) -> ureg.Quantity:
+    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         return ureg.Quantity(0, "L")
 
-    def equilibrate(self, solution: Solution) -> None:
+    def equilibrate(self, solution: "Solution") -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         warnings.warn("equilibrate() has no effect in IdealEOS!")
         return
@@ -177,7 +177,7 @@ class NativeEOS(EOS):
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
-    def _setup_ppsol(self, solution: Solution) -> None:
+    def _setup_ppsol(self, solution: "Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -255,7 +255,7 @@ class NativeEOS(EOS):
             self.ppsol.forget()
             self.ppsol = None
 
-    def get_activity_coefficient(self, solution: Solution, solute: str):
+    def get_activity_coefficient(self, solution: "Solution", solute: str):
         r"""
         Whenever the appropriate parameters are available, the Pitzer model [may]_ is used.
         If no Pitzer parameters are available, then the appropriate equations are selected
@@ -432,7 +432,7 @@ class NativeEOS(EOS):
 
         return molal
 
-    def get_osmotic_coefficient(self, solution: Solution) -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
         r"""
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
@@ -579,7 +579,7 @@ class NativeEOS(EOS):
             # this means the solution is empty
             return 1
 
-    def get_solute_volume(self, solution: Solution) -> ureg.Quantity:
+    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         salt = solution.get_salt()
@@ -663,7 +663,7 @@ class NativeEOS(EOS):
 
         return solute_vol.to("L")
 
-    def equilibrate(self, solution: Solution) -> None:
+    def equilibrate(self, solution: "Solution") -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         if self.ppsol is not None:
             self.ppsol.forget()
@@ -756,7 +756,7 @@ class PhreeqcEOS(NativeEOS):
         """
         super().__init__(phreeqc_db=phreeqc_db)
 
-    def get_activity_coefficient(self, solution: Solution, solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
@@ -780,7 +780,7 @@ class PhreeqcEOS(NativeEOS):
 
         return ureg.Quantity(act, "dimensionless")
 
-    def get_osmotic_coefficient(self, solution: Solution) -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
@@ -792,7 +792,7 @@ class PhreeqcEOS(NativeEOS):
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
 
-    def get_solute_volume(self, solution: Solution) -> ureg.Quantity:
+    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
         return ureg.Quantity(0, "L")
