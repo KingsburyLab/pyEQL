@@ -1282,81 +1282,13 @@ class Solution(MSONable):
         Returns:
             Nothing. The concentration of solute is modified.
         """
-        # if units are given on a per-volume basis,
-        # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
-            "[substance]/[length]**3",
-            "[mass]/[length]**3",
-        ):
-            # store the original volume for later
-            orig_volume = self.volume
+        # Get the current amount of the solute
+        current_amt = self.get_amount(solute, amount.split(" ")[1])
+        if current_amt.magnitude == 0:
+            self.logger.warning(f"Add new solute {solute} to the solution")
+        new_amt = ureg.Quantity(amount) + current_amt
+        self.set_amount(solute, new_amt)
 
-            # change the amount of the solute present to match the desired amount
-            self.components[solute] += (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=self.get_property(solute, "molecular_weight"),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
-
-            # set the amount to zero and log a warning if the desired amount
-            # change would result in a negative concentration
-            if self.get_amount(solute, "mol").magnitude < 0:
-                self.logger.error(
-                    "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
-                )
-                self.set_amount(solute, "0 mol")
-
-            # calculate the volume occupied by all the solutes
-            solute_vol = self._get_solute_volume()
-
-            # determine the volume of solvent that will preserve the original volume
-            target_vol = orig_volume - solute_vol
-
-            # adjust the amount of solvent
-            # volume in L, density in kg/m3 = g/L
-            target_mass = target_vol * ureg.Quantity(self.water_substance.rho, "g/L")
-
-            mw = self.get_property(self.solvent, "molecular_weight")
-            target_mol = target_mass / mw
-            self.components[self.solvent] = target_mol.magnitude
-
-        else:
-            # change the amount of the solute present
-            self.components[solute] += (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=self.get_property(solute, "molecular_weight"),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
-
-            # set the amount to zero and log a warning if the desired amount
-            # change would result in a negative concentration
-            if self.get_amount(solute, "mol").magnitude < 0:
-                self.logger.error(
-                    "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
-                )
-                self.set_amount(solute, "0 mol")
-
-            # update the volume to account for the space occupied by all the solutes
-            # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                self.logger.error("All solvent has been depleted from the solution")
-                return
-
-            # set the volume recalculation flag
-            self.volume_update_required = True
 
     def set_amount(self, solute: str, amount: str):
         """

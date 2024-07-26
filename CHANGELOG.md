@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Solution.add_amount`: This method will now add solutes that are absent from the Solution. Previously, calling, e.g.,
+  `add_amount('Na+', '1 mol')` on a `Solution` that did not contain any sodium would result in an error. A warning
+  is logged if the method has to add a new solute.
 - Unit tests: update `tmpdir` to `tmp_path` text fixture.
 - CI: Small updates to pre-commit and GitHub actions per scientific python [repo review](https://scientific-python.github.io/repo-review/?repo=kingsburylab%2FpyEQL&branch=main).
 
