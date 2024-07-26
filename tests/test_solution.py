@@ -255,6 +255,23 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s6.charge_balance, -0.12)
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
 
+    # test auto charge balance
+    s=Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Mg+2", "5 mM"],  # 10 meq/L
+            ["Na+1", "10 mM"],  # 10 meq/L
+            ["Ag+1", "10 mM"],  # no contribution to alk or hardness
+            ["CO3-2", "6 mM"],  # no contribution to alk or hardness
+            ["SO4-2", "60 mM"],  # -120 meq/L
+            ["Br-", "20 mM"],
+        ],  # -20 meq/L
+        volume="1 L",
+        balance_charge="auto",
+    )
+    assert s.balance_charge == 'Na[+1]'
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+
 
 def test_alkalinity_hardness(s3, s5, s6):
     assert np.isclose(s3.hardness, 0)
