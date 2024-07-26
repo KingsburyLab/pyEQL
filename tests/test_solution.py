@@ -621,11 +621,11 @@ def test_as_from_dict(s1, s2):
     # assert s2_new.database != s2.database
 
 
-def test_serialization(s1, s2, tmpdir):
+def test_serialization(s1, s2, tmp_path):
     from monty.serialization import dumpfn, loadfn
 
-    dumpfn(s1, str(tmpdir / "s1.json"))
-    s1_new = loadfn(str(tmpdir / "s1.json"))
+    dumpfn(s1, str(tmp_path / "s1.json"))
+    s1_new = loadfn(str(tmp_path / "s1.json"))
     assert s1_new.volume.magnitude == 2
     assert s1_new._solutes["H[+1]"] == "2e-07 mol"
     assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
@@ -644,8 +644,8 @@ def test_serialization(s1, s2, tmpdir):
     # TODO currently this test will fail due to a bug in maggma's __eq__
     # assert s1_new.database != s1.database
 
-    dumpfn(s2, str(tmpdir / "s2.json"))
-    s2_new = loadfn(str(tmpdir / "s2.json"))
+    dumpfn(s2, str(tmp_path / "s2.json"))
+    s2_new = loadfn(str(tmp_path / "s2.json"))
     assert s2_new.volume == s2.volume
     # components concentrations should be the same
     assert s2_new.components == s2.components
@@ -667,7 +667,7 @@ def test_serialization(s1, s2, tmpdir):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset(tmpdir):
+def test_from_preset(tmp_path):
     from monty.serialization import dumpfn
 
     preset_name = "seawater"
@@ -685,7 +685,6 @@ def test_from_preset(tmpdir):
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
     # test json as preset
-    tmp_path = Path(tmpdir)
     json_preset = tmp_path / "test.json"
     dumpfn(solution, json_preset)
     solution_json = Solution.from_preset(tmp_path / "test")
@@ -695,8 +694,7 @@ def test_from_preset(tmpdir):
     assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
 
 
-def test_test_to_from_file(tmpdir, s1):
-    tmp_path = Path(tmpdir)
+def test_to_from_file(tmp_path, s1):
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
         s1.to_file(filename)

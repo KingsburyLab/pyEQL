@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Unit tests: update `tmpdir` to `tmp_path` text fixture.
 - CI: Small updates to pre-commit and GitHub actions per scientific python [repo review](https://scientific-python.github.io/repo-review/?repo=kingsburylab%2FpyEQL&branch=main).
 
 ## [1.0.3] - 2024-07-20
