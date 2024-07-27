@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.add_amount`: This method will now add solutes that are absent from the Solution. Previously, calling, e.g.,
   `add_amount('Na+', '1 mol')` on a `Solution` that did not contain any sodium would result in an error. A warning
   is logged if the method has to add a new solute.
+- Units: use the upstream chemistry context from `pint` instead of the custom one from 2013.
 - `pre-commit autoupdate`
 - Misc. linting and code quality improvements.
 - Unit tests: update `tmpdir` to `tmp_path` text fixture.
