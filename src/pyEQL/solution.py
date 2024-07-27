@@ -92,13 +92,13 @@ class Solution(MSONable):
                 -7 to +14. The default value corresponds to a pE value typical of natural
                 waters in equilibrium with the atmosphere.
             balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options
-                are 
+                are
                     - 'pH', which will adjust the solution pH to balance charge,
                     - 'auto' which will use the majority cation or anion (i.e., that with the largest concentration)
                     as needed,
                     - 'pE' (not currently implemented) which will adjust the redox equilibrium to balance charge, or
                     the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be added/subtracted to balance
-                    charge. 
+                    charge.
                     - None (default), in which case no charge balancing will be performed either on init or when
                     equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
             solvent: Formula of the solvent. Solvents other than water are not supported at this time.
@@ -279,9 +279,9 @@ class Solution(MSONable):
                 ions = set().union(*[self.cations, self.anions])  # all ions
                 if self.balance_charge == "auto":
                     # add the most abundant ion of the opposite charge
-                    if cb < 0:
+                    if cb <= 0:
                         self.balance_charge = max(self.cations, key=self.cations.get)
-                    elif cb >0:
+                    elif cb > 0:
                         self.balance_charge = max(self.anions, key=self.anions.get)
                 if self.balance_charge not in ions:
                     raise ValueError(
@@ -1299,7 +1299,6 @@ class Solution(MSONable):
         new_amt = ureg.Quantity(amount) + current_amt
         self.set_amount(solute, new_amt)
 
-
     def set_amount(self, solute: str, amount: str):
         """
         Set the amount of 'solute' in the parent solution.
@@ -2310,10 +2309,6 @@ class Solution(MSONable):
         if self.volume_update_required:
             self._update_volume()
         d = super().as_dict()
-        for k, v in d.items():
-            # convert all Quantity to str
-            if isinstance(v, Quantity):
-                d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
@@ -2407,7 +2402,7 @@ class Solution(MSONable):
         """
         str_filename = str(filename)
         if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            self.logger.error("Invalid file extension entered - %s" % str_filename)
+            self.logger.error("Invalid file extension entered - {str_filename}")
             raise ValueError("File extension must be .json or .yaml")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()
