@@ -37,11 +37,8 @@ ureg = UnitRegistry(cache_folder=":auto:")
 # convert "offset units" so that, e.g. Quantity('25 degC') works without error
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
 ureg.autoconvert_offset_to_baseunit = True
-# append custom unit definitions and contexts
-fname = files("pyEQL") / "pint_custom_units.txt"
-ureg.load_definitions(fname)
 # activate the "chemistry" context globally
-ureg.enable_contexts("chem")
+ureg.enable_contexts("chemistry")
 # set the default string formatting for pint quantities
 ureg.default_format = "P~"
 
