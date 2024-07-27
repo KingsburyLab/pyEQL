@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2024-07-26
+## [1.1.0] - 2024-07-27
 
 ### Fixed
 
@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.add_amount`: This method will now add solutes that are absent from the Solution. Previously, calling, e.g.,
   `add_amount('Na+', '1 mol')` on a `Solution` that did not contain any sodium would result in an error. A warning
   is logged if the method has to add a new solute.
+- `pre-commit autoupdate`
+- Misc. linting and code quality improvements.
 - Unit tests: update `tmpdir` to `tmp_path` text fixture.
 - CI: Small updates to pre-commit and GitHub actions per scientific python [repo review](https://scientific-python.github.io/repo-review/?repo=kingsburylab%2FpyEQL&branch=main).
 
