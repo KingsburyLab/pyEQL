@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.4] - 2024-07-26
+## [1.1.0] - 2024-07-27
 
 ### Fixed
 
@@ -13,8 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   balancing.
 - Database: `size.radius_ionic` was missing units for `Ni[+2]` and `Cr[+3]`. Correct units have been added.
 
+### Added
+
+- `Solution`: New automatic charge balancing method will automatically identify the majority (highest concentration)
+  cation or anion as appropriate (depending on the charge balance) for charge balancing. To use this mode, set
+  `balance_charge='auto'` when instantiating a `Solution`.
+
 ### Changed
 
+- `Solution.add_amount`: This method will now add solutes that are absent from the Solution. Previously, calling, e.g.,
+  `add_amount('Na+', '1 mol')` on a `Solution` that did not contain any sodium would result in an error. A warning
+  is logged if the method has to add a new solute.
+- Units: use the upstream chemistry context from `pint` instead of the custom one from 2013.
+- `pre-commit autoupdate`
+- Misc. linting and code quality improvements.
+- Unit tests: update `tmpdir` to `tmp_path` text fixture.
 - CI: Small updates to pre-commit and GitHub actions per scientific python [repo review](https://scientific-python.github.io/repo-review/?repo=kingsburylab%2FpyEQL&branch=main).
 
 ## [1.0.3] - 2024-07-20

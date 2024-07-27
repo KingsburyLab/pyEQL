@@ -216,6 +216,13 @@ class Test_solute_addition:
         s2.add_amount("Cl-", "-2 mol")
         assert np.allclose(s2.get_amount("Na+", "mol").magnitude, 6)
 
+    def test_add_amount_12(self, s2):
+        # test behavior when the solute is initially absent from the solution
+        s2.add_amount("Ca+2", "1 mol")
+        s2.add_amount("Br-", "1 mol")
+        assert np.allclose(s2.get_amount("Ca+2", "mol/L").magnitude, 0.5, atol=0.002)
+        assert np.allclose(s2.get_amount("Br-", "mol/L").magnitude, 0.5, atol=0.002)
+
 
 class Test_get_amount:
     """

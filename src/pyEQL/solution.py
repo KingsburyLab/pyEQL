@@ -92,11 +92,15 @@ class Solution(MSONable):
                 -7 to +14. The default value corresponds to a pE value typical of natural
                 waters in equilibrium with the atmosphere.
             balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options
-                are 'pH', which will adjust the solution pH to balance charge, 'pE' which will adjust the
-                redox equilibrium to balance charge, or the name of a dissolved species e.g. 'Ca+2' or 'Cl-'
-                that will be added/subtracted to balance charge. If set to None, no charge balancing will be
-                performed either on init or when equilibrate() is called. Note that in this case, equilibrate()
-                can distort the charge balance!
+                are
+                    - 'pH', which will adjust the solution pH to balance charge,
+                    - 'auto' which will use the majority cation or anion (i.e., that with the largest concentration)
+                    as needed,
+                    - 'pE' (not currently implemented) which will adjust the redox equilibrium to balance charge, or
+                    the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be added/subtracted to balance
+                    charge.
+                    - None (default), in which case no charge balancing will be performed either on init or when
+                    equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
             solvent: Formula of the solvent. Solvents other than water are not supported at this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
@@ -171,7 +175,7 @@ class Solution(MSONable):
         self._pE = pE
         self._pH = pH
         self.pE = self._pE
-        if isinstance(balance_charge, str) and balance_charge not in ["pH", "pE"]:
+        if isinstance(balance_charge, str) and balance_charge not in ["pH", "pE", "auto"]:
             self.balance_charge = standardize_formula(balance_charge)
         else:
             self.balance_charge = balance_charge  #: Standardized formula of the species used for charge balancing.
@@ -273,13 +277,19 @@ class Solution(MSONable):
                 raise NotImplementedError("Balancing charge via redox (pE) is not yet implemented!")
             else:
                 ions = set().union(*[self.cations, self.anions])  # all ions
+                if self.balance_charge == "auto":
+                    # add the most abundant ion of the opposite charge
+                    if cb <= 0:
+                        self.balance_charge = max(self.cations, key=self.cations.get)
+                    elif cb > 0:
+                        self.balance_charge = max(self.anions, key=self.anions.get)
                 if self.balance_charge not in ions:
                     raise ValueError(
                         f"Charge balancing species {self.balance_charge} was not found in the solution!. "
                         f"Species {ions} were found."
                     )
-                z = self.get_property(balance_charge, "charge")
-                self.components[balance_charge] += -1 * cb / z * self.volume.to("L").magnitude
+                z = self.get_property(self.balance_charge, "charge")
+                self.components[self.balance_charge] += -1 * cb / z * self.volume.to("L").magnitude
                 balanced = True
 
             if not balanced:
@@ -1282,81 +1292,12 @@ class Solution(MSONable):
         Returns:
             Nothing. The concentration of solute is modified.
         """
-        # if units are given on a per-volume basis,
-        # iteratively solve for the amount of solute that will preserve the
-        # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
-            "[substance]/[length]**3",
-            "[mass]/[length]**3",
-        ):
-            # store the original volume for later
-            orig_volume = self.volume
-
-            # change the amount of the solute present to match the desired amount
-            self.components[solute] += (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=self.get_property(solute, "molecular_weight"),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
-
-            # set the amount to zero and log a warning if the desired amount
-            # change would result in a negative concentration
-            if self.get_amount(solute, "mol").magnitude < 0:
-                self.logger.error(
-                    "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
-                )
-                self.set_amount(solute, "0 mol")
-
-            # calculate the volume occupied by all the solutes
-            solute_vol = self._get_solute_volume()
-
-            # determine the volume of solvent that will preserve the original volume
-            target_vol = orig_volume - solute_vol
-
-            # adjust the amount of solvent
-            # volume in L, density in kg/m3 = g/L
-            target_mass = target_vol * ureg.Quantity(self.water_substance.rho, "g/L")
-
-            mw = self.get_property(self.solvent, "molecular_weight")
-            target_mol = target_mass / mw
-            self.components[self.solvent] = target_mol.magnitude
-
-        else:
-            # change the amount of the solute present
-            self.components[solute] += (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=self.get_property(solute, "molecular_weight"),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
-
-            # set the amount to zero and log a warning if the desired amount
-            # change would result in a negative concentration
-            if self.get_amount(solute, "mol").magnitude < 0:
-                self.logger.error(
-                    "Attempted to set a negative concentration for solute %s. Concentration set to 0" % solute
-                )
-                self.set_amount(solute, "0 mol")
-
-            # update the volume to account for the space occupied by all the solutes
-            # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity(0, "kg"):
-                self.logger.error("All solvent has been depleted from the solution")
-                return
-
-            # set the volume recalculation flag
-            self.volume_update_required = True
+        # Get the current amount of the solute
+        current_amt = self.get_amount(solute, amount.split(" ")[1])
+        if current_amt.magnitude == 0:
+            self.logger.warning(f"Add new solute {solute} to the solution")
+        new_amt = ureg.Quantity(amount) + current_amt
+        self.set_amount(solute, new_amt)
 
     def set_amount(self, solute: str, amount: str):
         """
@@ -2465,7 +2406,7 @@ class Solution(MSONable):
         """
         str_filename = str(filename)
         if not ("yaml" in str_filename.lower() or "json" in str_filename.lower()):
-            self.logger.error("Invalid file extension entered - %s" % str_filename)
+            self.logger.error("Invalid file extension entered - {str_filename}")
             raise ValueError("File extension must be .json or .yaml")
         if "yaml" in str_filename.lower():
             solution_dict = self.as_dict()

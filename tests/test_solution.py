@@ -9,7 +9,6 @@ used by pyEQL's Solution class
 import copy
 import os
 import platform
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -254,6 +253,31 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s5_pH.charge_balance, 0, atol=1e-8)
     assert np.isclose(s6.charge_balance, -0.12)
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+    # test auto charge balance
+    s = Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Mg+2", "5 mM"],  # 10 meq/L
+            ["Na+1", "10 mM"],  # 10 meq/L
+            ["Ag+1", "10 mM"],  # no contribution to alk or hardness
+            ["CO3-2", "6 mM"],  # no contribution to alk or hardness
+            ["SO4-2", "60 mM"],  # -120 meq/L
+            ["Br-", "20 mM"],
+        ],  # -20 meq/L
+        volume="1 L",
+        balance_charge="auto",
+    )
+    assert s.balance_charge == "Na[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    s.equilibrate()
+    assert s.balance_charge == "Na[+1]"
+
+    s = Solution({"Na+": "2 mM", "Cl-": "1 mM"}, balance_charge="auto")
+    assert s.balance_charge == "Cl[-1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    s.equilibrate()
+    assert s.balance_charge == "Cl[-1]"
 
 
 def test_alkalinity_hardness(s3, s5, s6):
@@ -621,11 +645,11 @@ def test_as_from_dict(s1, s2):
     # assert s2_new.database != s2.database
 
 
-def test_serialization(s1, s2, tmpdir):
+def test_serialization(s1, s2, tmp_path):
     from monty.serialization import dumpfn, loadfn
 
-    dumpfn(s1, str(tmpdir / "s1.json"))
-    s1_new = loadfn(str(tmpdir / "s1.json"))
+    dumpfn(s1, str(tmp_path / "s1.json"))
+    s1_new = loadfn(str(tmp_path / "s1.json"))
     assert s1_new.volume.magnitude == 2
     assert s1_new._solutes["H[+1]"] == "2e-07 mol"
     assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
@@ -644,8 +668,8 @@ def test_serialization(s1, s2, tmpdir):
     # TODO currently this test will fail due to a bug in maggma's __eq__
     # assert s1_new.database != s1.database
 
-    dumpfn(s2, str(tmpdir / "s2.json"))
-    s2_new = loadfn(str(tmpdir / "s2.json"))
+    dumpfn(s2, str(tmp_path / "s2.json"))
+    s2_new = loadfn(str(tmp_path / "s2.json"))
     assert s2_new.volume == s2.volume
     # components concentrations should be the same
     assert s2_new.components == s2.components
@@ -667,7 +691,7 @@ def test_serialization(s1, s2, tmpdir):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset(tmpdir):
+def test_from_preset(tmp_path):
     from monty.serialization import dumpfn
 
     preset_name = "seawater"
@@ -685,7 +709,6 @@ def test_from_preset(tmpdir):
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
     # test json as preset
-    tmp_path = Path(tmpdir)
     json_preset = tmp_path / "test.json"
     dumpfn(solution, json_preset)
     solution_json = Solution.from_preset(tmp_path / "test")
@@ -695,8 +718,7 @@ def test_from_preset(tmpdir):
     assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
 
 
-def test_test_to_from_file(tmpdir, s1):
-    tmp_path = Path(tmpdir)
+def test_to_from_file(tmp_path, s1):
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
         s1.to_file(filename)
