@@ -9,7 +9,6 @@ used by pyEQL's Solution class
 import copy
 import os
 import platform
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -256,7 +255,7 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
 
     # test auto charge balance
-    s=Solution(
+    s = Solution(
         [
             ["Ca+2", "1 mM"],  # 2 meq/L
             ["Mg+2", "5 mM"],  # 10 meq/L
@@ -269,8 +268,10 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
         volume="1 L",
         balance_charge="auto",
     )
-    assert s.balance_charge == 'Na[+1]'
+    assert s.balance_charge == "Na[+1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    s.equilibrate()
+    assert s.balance_charge == "Na[+1]"
 
 
 def test_alkalinity_hardness(s3, s5, s6):

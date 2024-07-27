@@ -709,6 +709,9 @@ class NativeEOS(EOS):
                 raise NotImplementedError
             else:
                 z = solution.get_property(solution.balance_charge, "charge")
+                from icecream import ic
+
+                ic(charge_adjust, solution.balance_charge)
                 solution.add_amount(solution.balance_charge, f"{charge_adjust/z} mol")
 
         # rescale the solvent mass to ensure the total mass of solution does not change
