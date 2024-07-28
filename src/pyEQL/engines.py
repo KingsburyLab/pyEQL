@@ -687,20 +687,8 @@ class NativeEOS(EOS):
             )
 
         # re-adjust charge balance for any missing species
-        # note that if balance_charge is set, it will have been passed to PHREEQC, so we only need to adjust
-        # for any missing species here.
-        charge_adjust = 0
-        for s in missing_species:
-            charge_adjust += -1 * solution.get_amount(s, "eq").magnitude
-        if charge_adjust != 0:
-            logger.warning(
-                "After equilibration, the charge balance of the solution was not electroneutral."
-                f" {charge_adjust} eq of charge were added via {solution._cb_species}"
-            )
-
-            if solution.balance_charge is not None:
-                z = solution.get_property(solution._cb_species, "charge")
-                solution.add_amount(solution._cb_species, f"{charge_adjust/z} mol")
+        # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
+        solution._adjust_charge_balance()
 
         # rescale the solvent mass to ensure the total mass of solution does not change
         # this is important because PHREEQC and the pyEQL database may use slightly different molecular

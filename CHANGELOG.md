@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2024-07-28
+
+### Fixed
+
+- `Solution`: Fix a bug in which setting `balance_charge` to `pH` could result in
+  negative concentration errors when charge balancing or after `equilibrate` was
+  called. `Solution` now correctly enforces the ion product of water (Kw=1e-14)
+  whenever adjusting the amounts of H+ or OH- for charge balancing.
+
+### Added
+
+- `Solution._adjust_charge_balance`: Added a privat helper method to consolidate charge
+  balancing code used in `__init__` and `equilibrate`.
+
 ## [1.1.2] - 2024-07-28
 
 ### Fixed
