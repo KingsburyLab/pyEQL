@@ -295,6 +295,9 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert s._cb_species == "Na[+1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
 
+    with pytest.raises(ValueError, match=r"Charge balancing species Zr\[\+4\] was not found"):
+        s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="Zr[+4]")
+
 
 def test_alkalinity_hardness(s3, s5, s6):
     assert np.isclose(s3.hardness, 0)
