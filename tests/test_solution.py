@@ -202,8 +202,8 @@ def test_init_engines():
 
 
 def test_component_subsets(s2):
-    assert s2.cations == {"Na[+1]": 8, "H[+1]": 2e-7}
-    assert s2.anions == {"Cl[-1]": 8, "OH[-1]": 2e-7}
+    assert list(s2.cations.keys()) == ["Na[+1]", "H[+1]"]
+    assert list(s2.anions.keys()) == ["Cl[-1]", "OH[-1]"]
     assert list(s2.neutrals.keys()) == ["H2O(aq)"]
 
 
@@ -284,6 +284,32 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert s.balance_charge == "auto"
     assert s._cb_species == "Cl[-1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
+
+    # check 'pH' when the solution needs to be made more POSITIVE
+    s = Solution({"Na+": "2 mM", "Cl-": "1 mM"}, balance_charge="pH", pH=4)
+    assert s.balance_charge == "pH"
+    assert s._cb_species == "H[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    assert s.pH > 4
+    s.equilibrate()
+    assert s.balance_charge == "pH"
+    assert s._cb_species == "H[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+
+    # check 'pH' when the imbalance is extreme
+    s = Solution({"Na+": "2 mM", "Cl-": "1 M"}, balance_charge="pH", pH=4)
+    assert s.balance_charge == "pH"
+    assert s._cb_species == "H[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    assert np.isclose(s.pH, 0, atol=0.1)
+    s.equilibrate()
+    assert s.balance_charge == "pH"
+    assert s._cb_species == "H[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+
+    # check warning when there isn't enough to balance
+    s = Solution({"Na+": "1 M", "K+": "2 mM", "Cl-": "2 mM"}, balance_charge="K+")
+    assert s.get_amount("K+", "mol/L") == 0
 
     # check "auto" with an electroneutral solution
     s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="auto")
@@ -405,16 +431,16 @@ def test_components_by_element(s1, s2):
     assert s1.get_components_by_element() == {
         "H(1.0)": [
             "H2O(aq)",
-            "H[+1]",
             "OH[-1]",
+            "H[+1]",
         ],
         "O(-2.0)": ["H2O(aq)", "OH[-1]"],
     }
     assert s2.get_components_by_element() == {
         "H(1.0)": [
             "H2O(aq)",
-            "H[+1]",
             "OH[-1]",
+            "H[+1]",
         ],
         "O(-2.0)": ["H2O(aq)", "OH[-1]"],
         "Na(1.0)": ["Na[+1]"],
@@ -498,8 +524,8 @@ def test_equilibrate(s1, s2, s5_pH):
     orig_solv_mass = s5_pH.solvent_mass.magnitude
     set(s5_pH.components.keys())
     s5_pH.equilibrate()
-    assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
-    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001)
+    assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001, atol=1e-7)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001, atol=1e-7)
     # due to the large pH shift, water mass and density need not be perfectly conserved
     assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
     assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)

@@ -35,6 +35,7 @@ from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, st
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 # string to denote unknown oxidation states
 UNKNOWN_OXI_STATE = "unk"
+K_W = 1e-14  # ion product of water at 25 degC
 
 
 class Solution(MSONable):
@@ -242,7 +243,7 @@ class Solution(MSONable):
 
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
-        self.add_solute("OH-", str(10 ** (-1 * (14 - pH))) + "mol/L")
+        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
 
         # populate the other solutes
         self._solutes = solutes
@@ -288,17 +289,7 @@ class Solution(MSONable):
                 )
 
         # adjust charge balance, if necessary
-        if not np.isclose(cb, 0, atol=1e-8) and self.balance_charge is not None:
-            balanced = False
-            self.logger.info(
-                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {self._cb_species} to compensate."
-            )
-            z = self.get_property(self._cb_species, "charge")
-            self.components[self._cb_species] += -1 * cb / z * self.volume.to("L").magnitude
-            if np.isclose(self.charge_balance, 0, atol=1e-8):
-                balanced = True
-            if not balanced:
-                warnings.warn(f"Unable to balance charge using species {self._cb_species}")
+        self._adjust_charge_balance()
 
     @property
     def mass(self) -> Quantity:
@@ -2292,6 +2283,57 @@ class Solution(MSONable):
         distance = (self.get_amount(solute, "mol/L") * ureg.N_A) ** (-1 / 3)
 
         return distance.to("nm")
+
+    def _adjust_charge_balance(self, atol=1e-8) -> None:
+        """Helper method to adjust the charge balance of the Solution."""
+        cb = self.charge_balance
+        if not np.isclose(cb, 0, atol=atol):
+            self.logger.info(f"Solution is not electroneutral (C.B. = {cb} eq/L).")
+            if self.balance_charge is None:
+                # Nothing to do.
+                self.logger.info("balance_charge is None, so no charge balancing will be performed.")
+                return
+
+            self.logger.info(
+                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adjusting {self._cb_species} to compensate."
+            )
+
+            if self.balance_charge == "pH":
+                # the charge imbalance associated with the H+ / OH- system can be expressed
+                # as ([H+] - [OH-]) or ([H+] - K_W/[H+]). If we adjust H+, we also have to
+                # adjust OH- to maintain water equilibrium.
+                C_hplus = self.get_amount("H+", "mol/L").magnitude
+                start_imbalance = C_hplus - K_W / C_hplus
+                new_imbalance = start_imbalance - cb
+                # calculate the new concentration of H+ that will balance the charge
+                # solve H^2 - new_imbalance H - K_W  = 0, so a=1, b=-new_imbalance, c=-K_W
+                # check b^2 - 4ac; are there any real roots?
+                if new_imbalance**2 - 4 * 1 * K_W < 0:
+                    self.logger.error("Cannot balance charge by adjusting pH. The imbalance is too large.")
+                    return
+                new_hplus = max(
+                    [
+                        (new_imbalance + np.sqrt(new_imbalance**2 + 4 * 1 * K_W)) / 2,
+                        (new_imbalance - np.sqrt(new_imbalance**2 + 4 * 1 * K_W)) / 2,
+                    ]
+                )
+                self.set_amount("H+", f"{new_hplus} mol/L")
+                self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
+                assert np.isclose(self.charge_balance, 0, atol=atol), f"{self.charge_balance}"
+                return
+
+            z = self.get_property(self._cb_species, "charge")
+            try:
+                self.add_amount(self._cb_species, f"{-1*cb/z} mol")
+                return
+            except ValueError:
+                # if the concentration is negative, it must mean there is not enough present.
+                # remove everything that's present and log an error.
+                self.components[self._cb_species] = 0
+                self.logger.error(
+                    f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
+                )
+                return
 
     def _update_volume(self):
         """Recalculate the solution volume based on composition."""
