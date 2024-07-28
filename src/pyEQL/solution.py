@@ -261,39 +261,44 @@ class Solution(MSONable):
             for item in self._solutes:
                 self.add_solute(*item)
 
-        # adjust the charge balance, if necessary
+        # determine the species that will be used for charge balancing, when needed.
+        # this is necessary to do even if the composition is already electroneutral,
+        # because the appropriate species also needs to be passed to equilibrate
+        # to keep from distorting the charge balance.
         cb = self.charge_balance
+        if self.balance_charge is None:
+            self._cb_species = None
+        elif self.balance_charge == "pH":
+            self._cb_species = "H[+1]"
+        elif self.balance_charge == "pE":
+            raise NotImplementedError("Balancing charge via redox (pE) is not yet implemented!")
+        elif self.balance_charge == "auto":
+            # add the most abundant ion of the opposite charge
+            if cb <= 0:
+                self._cb_species = max(self.cations, key=self.cations.get)
+            elif cb > 0:
+                self._cb_species = max(self.anions, key=self.anions.get)
+        else:
+            ions = set().union(*[self.cations, self.anions])  # all ions
+            self._cb_species = self.balance_charge
+            if self._cb_species not in ions:
+                raise ValueError(
+                    f"Charge balancing species {self._cb_species} was not found in the solution!. "
+                    f"Species {ions} were found."
+                )
+
+        # adjust charge balance, if necessary
         if not np.isclose(cb, 0, atol=1e-8) and self.balance_charge is not None:
             balanced = False
             self.logger.info(
-                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {balance_charge} to compensate."
+                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adding {self._cb_species} to compensate."
             )
-            if self.balance_charge == "pH":
-                self.components["H+"] += (
-                    -1 * cb * self.volume.to("L").magnitude
-                )  # if C.B. is negative, we need to add cations. H+ is 1 eq/mol
+            z = self.get_property(self._cb_species, "charge")
+            self.components[self._cb_species] += -1 * cb / z * self.volume.to("L").magnitude
+            if np.isclose(self.charge_balance, 0, atol=1e-8):
                 balanced = True
-            elif self.balance_charge == "pE":
-                raise NotImplementedError("Balancing charge via redox (pE) is not yet implemented!")
-            else:
-                ions = set().union(*[self.cations, self.anions])  # all ions
-                if self.balance_charge == "auto":
-                    # add the most abundant ion of the opposite charge
-                    if cb <= 0:
-                        self.balance_charge = max(self.cations, key=self.cations.get)
-                    elif cb > 0:
-                        self.balance_charge = max(self.anions, key=self.anions.get)
-                if self.balance_charge not in ions:
-                    raise ValueError(
-                        f"Charge balancing species {self.balance_charge} was not found in the solution!. "
-                        f"Species {ions} were found."
-                    )
-                z = self.get_property(self.balance_charge, "charge")
-                self.components[self.balance_charge] += -1 * cb / z * self.volume.to("L").magnitude
-                balanced = True
-
             if not balanced:
-                warnings.warn(f"Unable to balance charge using species {self.balance_charge}")
+                warnings.warn(f"Unable to balance charge using species {self._cb_species}")
 
     @property
     def mass(self) -> Quantity:
