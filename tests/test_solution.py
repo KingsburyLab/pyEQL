@@ -268,16 +268,32 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
         volume="1 L",
         balance_charge="auto",
     )
-    assert s.balance_charge == "Na[+1]"
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Na[+1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
     s.equilibrate()
-    assert s.balance_charge == "Na[+1]"
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Na[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
 
     s = Solution({"Na+": "2 mM", "Cl-": "1 mM"}, balance_charge="auto")
-    assert s.balance_charge == "Cl[-1]"
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Cl[-1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
     s.equilibrate()
-    assert s.balance_charge == "Cl[-1]"
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Cl[-1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+
+    # check "auto" with an electroneutral solution
+    s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="auto")
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Na[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
+    s.equilibrate()
+    assert s.balance_charge == "auto"
+    assert s._cb_species == "Na[+1]"
+    assert np.isclose(s.charge_balance, 0, atol=1e-8)
 
 
 def test_alkalinity_hardness(s3, s5, s6):

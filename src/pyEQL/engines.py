@@ -229,10 +229,7 @@ class NativeEOS(EOS):
                 d[key] = str(mol / solv_mass)
 
             # tell PHREEQC which species to use for charge balance
-            if (
-                solution.balance_charge is not None
-                and solution.balance_charge in solution.get_components_by_element()[el]
-            ):
+            if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
                 d[key] += " charge"
 
         # create the PHREEQC solution object
@@ -698,18 +695,12 @@ class NativeEOS(EOS):
         if charge_adjust != 0:
             logger.warning(
                 "After equilibration, the charge balance of the solution was not electroneutral."
-                f" {charge_adjust} eq of charge were added via {solution.balance_charge}"
+                f" {charge_adjust} eq of charge were added via {solution._cb_species}"
             )
 
-            if solution.balance_charge is None:
-                pass
-            elif solution.balance_charge == "pH":
-                solution.components["H+"] += charge_adjust
-            elif solution.balance_charge == "pE":
-                raise NotImplementedError
-            else:
-                z = solution.get_property(solution.balance_charge, "charge")
-                solution.add_amount(solution.balance_charge, f"{charge_adjust/z} mol")
+            if solution.balance_charge is not None:
+                z = solution.get_property(solution._cb_species, "charge")
+                solution.add_amount(solution._cb_species, f"{charge_adjust/z} mol")
 
         # rescale the solvent mass to ensure the total mass of solution does not change
         # this is important because PHREEQC and the pyEQL database may use slightly different molecular
