@@ -307,6 +307,10 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert s._cb_species == "H[+1]"
     assert np.isclose(s.charge_balance, 0, atol=1e-8)
 
+    # check warning when there isn't enough to balance
+    s = Solution({"Na+": "1 M", "K+": "2 mM", "Cl-": "2 mM"}, balance_charge="K+")
+    assert s.get_amount("K+", "mol/L") == 0
+
     # check "auto" with an electroneutral solution
     s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="auto")
     assert s.balance_charge == "auto"
