@@ -2306,11 +2306,8 @@ class Solution(MSONable):
                 start_imbalance = C_hplus - K_W / C_hplus
                 new_imbalance = start_imbalance - cb
                 # calculate the new concentration of H+ that will balance the charge
-                # solve H^2 - new_imbalance H - K_W  = 0, so a=1, b=-new_imbalance, c=-K_W
-                # check b^2 - 4ac; are there any real roots?
-                if new_imbalance**2 - 4 * 1 * K_W < 0:
-                    self.logger.error("Cannot balance charge by adjusting pH. The imbalance is too large.")
-                    return
+                # solve H^2 - new_imbalance H - K_W  = 0, so a=1, b=-new_imbalance, c=-K_W. Note that this is guaranteed to have real roots as
+                # b^2-4ac > 0
                 new_hplus = max(
                     [
                         (new_imbalance + np.sqrt(new_imbalance**2 + 4 * 1 * K_W)) / 2,
