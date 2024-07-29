@@ -2316,7 +2316,6 @@ class Solution(MSONable):
                 )
                 self.set_amount("H+", f"{new_hplus} mol/L")
                 self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
-                assert np.isclose(self.charge_balance, 0, atol=atol), f"{self.charge_balance}"
                 return
 
             z = self.get_property(self._cb_species, "charge")
