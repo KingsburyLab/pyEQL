@@ -58,6 +58,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install uv
           uv pip install '.[${{ matrix.version.extras }}]' --system --resolution=${{ matrix.version.resolution }}
+          #uv pip install '.[tests,${{ matrix.version.extras }}]' --system --resolution=${{ matrix.version.resolution }}
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml
