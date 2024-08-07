@@ -52,7 +52,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.version.python }}
+          python-version: ${{ matrix.version.python }}${{ matrix.dev }}
       - name: Install test requirements
         run: |
           python -m pip install --upgrade pip
