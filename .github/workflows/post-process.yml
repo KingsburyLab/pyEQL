@@ -45,14 +45,14 @@ jobs:
           - macos-14
         exclude:
           - os: macos-14
-            python-version: "3.9"
+            python-version: ${{ matrix.version.python }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.version.python }}${{ matrix.dev }}
+          python-version: ${{ matrix.version.python }}
       - name: Install test requirements
         run: |
           python -m pip install --upgrade pip
