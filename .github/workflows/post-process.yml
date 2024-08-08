@@ -33,7 +33,11 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        version:
+          - { python: "3.9", resolution: highest, extras: testing }
+          - { python: "3.10", resolution: lowest-direct, extras: testing }
+          - { python: "3.11", resolution: highest, extras: testing }
+          - { python: "3.12", resolution: lowest-direct, extras: testing }
         os:
           - ubuntu-latest
           - macos-latest
@@ -48,11 +52,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}${{ matrix.dev }}
+          python-version: ${{ matrix.version.python }}${{ matrix.dev }}
       - name: Install test requirements
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[testing]"
+          pip install uv
+          uv pip install '.[${{ matrix.version.extras }}]' --system --resolution=${{ matrix.version.resolution }}
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml
