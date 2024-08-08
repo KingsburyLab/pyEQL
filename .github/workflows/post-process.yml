@@ -45,7 +45,7 @@ jobs:
           - macos-14
         exclude:
           - os: macos-14
-            python-version: ${{ matrix.version.python }}
+            version.python: "3.9"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
