@@ -40,7 +40,7 @@ Package = "https://pypi.org/project/pyEQL"
 testing = [
     "setuptools",
     "pre-commit",
-    "pytest",
+    "pytest>=7",
     "pytest-cov",
     "pytest-xdist",
     "black",
