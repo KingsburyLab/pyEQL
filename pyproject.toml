@@ -22,7 +22,7 @@ requires-python = ">=3.9"
 dependencies = [
         "pint>=0.19",
         "numpy<2",
-        "scipy",
+        "scipy>1.10",
         "pymatgen==2024.5.1",
         "iapws",
         "monty>=2024.7.12",
@@ -38,14 +38,14 @@ Package = "https://pypi.org/project/pyEQL"
 
 [project.optional-dependencies]
 testing = [
-    "setuptools",
-    "pre-commit",
-    "pytest",
+    "setuptools>=46",
+    "pre-commit>=2",
+    "pytest>=7",
     "pytest-cov",
     "pytest-xdist",
     "black",
-    "mypy",
-    "ruff",
+    "mypy>1",
+    "ruff>0.0.100",
     "tox<4",
     ]
 docs = [
