@@ -2295,7 +2295,7 @@ class Solution(MSONable):
                 return
 
             self.logger.info(
-                f"Solution is not electroneutral (C.B. = {cb} eq/L). Adjusting {self._cb_species} to compensate."
+                f"Adjusting {self._cb_species} to compensate."
             )
 
             if self.balance_charge == "pH":
