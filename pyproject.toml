@@ -27,7 +27,7 @@ dependencies = [
         "iapws>=1.5.3",
         "monty>=2024.7.12",
         "maggma>=0.67.0",
-        "phreeqpython>=1.4",
+        "phreeqpython>=1.5",
     ]
 
 [project.urls]
