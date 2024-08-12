@@ -41,7 +41,7 @@ testing = [
     "setuptools>=68",
     "pre-commit>=2",
     "pytest>=7",
-    "pytest-cov",
+    "pytest-cov>=2.11",
     "pytest-xdist>2",
     "black",
     "mypy>1",
