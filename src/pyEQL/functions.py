@@ -34,7 +34,7 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
 
             \Delta_{mix} G = \sum_i {(n_c + n_d) R T \ln a_b} - \sum_i {n_c R T \ln a_c} - \sum_i {n_d R T \ln a_d}
 
-        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin, :math:`a` is the activity of substance,
         and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
         Solutions, respectively.
 
@@ -72,16 +72,16 @@ def entropy_mix(solution1: Solution, solution2: Solution):
 
     Returns:
         The ideal mixing entropy associated with complete mixing of the
-        Solutions, in Joules.
+        Solutions, in Joules per Kelvin.
 
     Notes:
         The ideal entropy of mixing is calculated as follows
 
         .. math::
 
-            \Delta_{mix} S = \sum_i {(n_c + n_d) R T \ln x_b} - \sum_i {n_c R T \ln x_c} - \sum_i {n_d R T \ln x_d}
+            \Delta_{mix} S = \sum_i {(n_c + n_d) R \ln x_b} - \sum_i {n_c R \ln x_c} - \sum_i {n_d R \ln x_d}
 
-        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin, :math:`x` is the molar ratio of substances,
         and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
         Solutions, respectively.
 
@@ -135,9 +135,9 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
         .. math::
 
-            \big(\frac{a_{-}}{\bar a_{-}} \big)^(\frac{1}{z_{-})
-            \big(\frac{\bar a_{+}}{a_{+}}\big)^(\frac{1}{z_{+})
-            \exp(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}})
+            \big(\frac{a_{-}}{\bar a_{-}} \big)^{(\frac{1}{z_{-}})} 
+            \big(\frac{\bar a_{+}}{a_{+}}\big)^{(\frac{1}{z_{+}})}
+            =\exp \big(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}}\big)
 
         Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
         the overbar indicates the membrane phase,
