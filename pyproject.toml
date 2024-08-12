@@ -21,13 +21,13 @@ license = {file = "LICENSE"}
 requires-python = ">=3.9"
 dependencies = [
         "pint>=0.19",
-        "numpy<2",
-        "scipy",
+        "numpy>1.26,<2",
+        "scipy>=1.12",
         "pymatgen==2024.5.1",
-        "iapws>=1.0.1",
+        "iapws>=1.5.3",
         "monty>=2024.7.12",
         "maggma>=0.67.0",
-        "phreeqpython",
+        "phreeqpython>=1.5.2",
     ]
 
 [project.urls]
@@ -38,14 +38,14 @@ Package = "https://pypi.org/project/pyEQL"
 
 [project.optional-dependencies]
 testing = [
-    "setuptools",
-    "pre-commit",
+    "setuptools>=68",
+    "pre-commit>=2",
     "pytest>=7",
-    "pytest-cov",
-    "pytest-xdist",
+    "pytest-cov>=2.11",
+    "pytest-xdist>2",
     "black",
-    "mypy",
-    "ruff",
+    "mypy>1",
+    "ruff>0.0.100",
     "tox<4",
     ]
 docs = [
