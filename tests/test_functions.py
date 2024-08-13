@@ -18,7 +18,7 @@ def s1():
 
 @pytest.fixture()
 def s2():
-    return Solution({"Na+": "1 mol/L", "Cl": "1 mol/L"}, volume="10 L")
+    return Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, volume="10 L")
 
 
 @pytest.fixture()
