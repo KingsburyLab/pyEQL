@@ -73,7 +73,7 @@ def gibbs_mix(solution1: Solution, solution2: Solution, activity_correction: boo
         for solution in term_list:
             for solute in solution.components:
                 if solution.get_amount(solute, "fraction") != 0:
-                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_amount(item, "fraction"))
+                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_amount(solute, "fraction"))
 
     return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
