@@ -15,13 +15,17 @@ from pyEQL import Solution, ureg
 logger = logging.getLogger(__name__)
 
 
-def gibbs_mix(solution1: Solution, solution2: Solution):
+def gibbs_mix(solution1: Solution, solution2: Solution, activity_correction: bool = True):
     r"""
     Return the Gibbs energy change associated with mixing two solutions.
 
     Args:
         solution1: a solution to be mixed.
         solution2: a solution to be mixed.
+        activity_correction : bool, optional
+            If True, activities will be used to calculate the true energy of
+            mixing. If False, mole fraction will be used, resulting in a
+            calculation of the ideal energy of mixing (i.e., :math:`\Delta_{mix} S \times T` )
 
     Returns:
         The change in Gibbs energy associated with complete mixing of the
@@ -32,10 +36,17 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
 
         .. math::
 
-            \Delta_{mix} G = \sum_i {(n_c + n_d) R T \ln a_b} - \sum_i {n_c R T \ln a_c} - \sum_i {n_d R T \ln a_d}
+            \Delta_{mix} G_{true} = \sum_i {(n_c + n_d) R T \ln a_b} - \sum_i {n_c R T \ln a_c} - \sum_i {n_d R T \ln a_d}
 
-        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
-        and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
+        or
+
+        .. math::      
+        
+            \Delta_{mix} G_{ideal} = \sum_i {(n_c + n_d) R T \ln x_b} - \sum_i {n_c R T \ln x_c} - \sum_i {n_d R T \ln x_d}
+
+
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin, :math:`a` is the activity of solute :math:`i`,
+        :math:`x` is the mole fraction of solute :math:`i`, and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
         Solutions, respectively.
 
         Note that dissociated ions must be counted as separate components,
@@ -56,7 +67,10 @@ def gibbs_mix(solution1: Solution, solution2: Solution):
     for solution in term_list:
         for solute in solution.components:
             if solution.get_amount(solute, "fraction") != 0:
-                term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_activity(solute))
+                if activity_correction is True:
+                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_activity(solute))
+                else:
+                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_amount(solute, "fraction"))
 
     return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
@@ -72,16 +86,16 @@ def entropy_mix(solution1: Solution, solution2: Solution):
 
     Returns:
         The ideal mixing entropy associated with complete mixing of the
-        Solutions, in Joules.
+        Solutions, in Joules per Kelvin.
 
     Notes:
         The ideal entropy of mixing is calculated as follows
 
         .. math::
 
-            \Delta_{mix} S = \sum_i {(n_c + n_d) R T \ln x_b} - \sum_i {n_c R T \ln x_c} - \sum_i {n_d R T \ln x_d}
+            \Delta_{mix} S = \sum_i {(n_c + n_d) R \ln x_b} - \sum_i {n_c R \ln x_c} - \sum_i {n_d R \ln x_d}
 
-        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin,
+        Where :math:`n` is the number of moles of substance, :math:`T` is the temperature in kelvin, :math:`x` is the mole fraction of solute :math:`i`,
         and  subscripts :math:`b`, :math:`c`, and :math:`d` refer to the concentrated, dilute, and blended
         Solutions, respectively.
 
@@ -107,8 +121,8 @@ def entropy_mix(solution1: Solution, solution2: Solution):
                     solution.get_amount(solute, "fraction")
                 )
 
-    return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
-        "J"
+    return (ureg.R * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
+        "J/K"
     )
 
 
@@ -135,9 +149,9 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
         .. math::
 
-            \big(\frac{a_{-}}{\bar a_{-}} \big)^(\frac{1}{z_{-})
-            \big(\frac{\bar a_{+}}{a_{+}}\big)^(\frac{1}{z_{+})
-            \exp(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}})
+            \big(\frac{a_{-}}{\bar a_{-}} \big)^{(\frac{1}{z_{-}})} 
+            \big(\frac{\bar a_{+}}{a_{+}}\big)^{(\frac{1}{z_{+}})}
+            =\exp \big(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}}\big)
 
         Where subscripts :math:`+` and :math:`-` indicate the cation and anion, respectively,
         the overbar indicates the membrane phase,

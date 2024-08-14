@@ -57,7 +57,6 @@ def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
         # H20: 55.5 * 2 mol + 55.5 * 10 mol, x1 = 0.9999 x2 = 0.9645, mixture = 0.9703 = approximately -9043 J
         s_theoretical = (
             8.314
-            * 298.15
             * (
                 (dil + conc).get_amount("H2O", "mol").magnitude
                 * np.log((dil + conc).get_amount("H2O", "fraction").magnitude)
@@ -72,7 +71,24 @@ def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
             )
         )
         assert np.isclose(entropy_mix(dil, conc).magnitude, s_theoretical, rtol=0.005)
-        g_theoretical = (
+        g_ideal_theoretical = (
+            8.314
+            * 298.15
+            * (
+                (dil + conc).get_amount("H2O", "mol").magnitude
+                * np.log((dil + conc).get_amount("H2O", "fraction").magnitude)
+                + (dil + conc).get_amount("Na+", "mol").magnitude
+                * np.log((dil + conc).get_amount("Na+", "fraction").magnitude)
+                + (dil + conc).get_amount("Cl-", "mol").magnitude
+                * np.log((dil + conc).get_amount("Cl-", "fraction").magnitude)
+                - dil.get_amount("H2O", "mol").magnitude * np.log(dil.get_amount("H2O", "fraction").magnitude)
+                - conc.get_amount("H2O", "mol").magnitude * np.log(conc.get_amount("H2O", "fraction").magnitude)
+                - conc.get_amount("Na+", "mol").magnitude * np.log(conc.get_amount("Na+", "fraction").magnitude)
+                - conc.get_amount("Cl-", "mol").magnitude * np.log(conc.get_amount("Cl-", "fraction").magnitude)
+            )
+        )
+        assert np.isclose(gibbs_mix(dil, conc, False).magnitude, g_ideal_theoretical, rtol=0.005)
+        g_true_theoretical = (
             8.314
             * 298.15
             * (
@@ -85,4 +101,4 @@ def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
                 - conc.get_amount("Cl-", "mol").magnitude * np.log(conc.get_activity("Cl-").magnitude)
             )
         )
-        assert np.isclose(gibbs_mix(dil, conc).magnitude, g_theoretical, rtol=0.005)
+        assert np.isclose(gibbs_mix(dil, conc).magnitude, g_true_theoretical, rtol=0.005)
