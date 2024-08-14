@@ -64,15 +64,12 @@ def gibbs_mix(solution1: Solution, solution2: Solution, activity_correction: boo
     term_list = {concentrate: 0, dilute: 0, blend: 0}
 
     # calculate the entropy change and number of moles solute for each solution
-    if activity_correction is True:
-        for solution in term_list:
-            for solute in solution.components:
-                if solution.get_amount(solute, "fraction") != 0:
+    for solution in term_list:
+        for solute in solution.components:
+            if solution.get_amount(solute, "fraction") != 0:
+                if activity_correction is True:
                     term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_activity(solute))
-    else:
-        for solution in term_list:
-            for solute in solution.components:
-                if solution.get_amount(solute, "fraction") != 0:
+                else:
                     term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_amount(solute, "fraction"))
 
     return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
