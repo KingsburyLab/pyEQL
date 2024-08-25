@@ -2352,10 +2352,6 @@ class Solution(MSONable):
         if self.volume_update_required:
             self._update_volume()
         d = super().as_dict()
-        for k, v in d.items():
-            # convert all Quantity to str
-            if isinstance(v, Quantity):
-                d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
