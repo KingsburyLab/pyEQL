@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without specifying an oxidation state. For example, `get_total_amount('N')` could raise
   an exception in a solution containing `Na` (but no `N`) due to a flaw in a logical
   test.
+- `Solution._adjust_charge_balance`: Removed a misleading and redundant log message (#162, @SuixiongTay)
 
 ### Added
 

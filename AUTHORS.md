@@ -7,9 +7,10 @@ Other contributors, listed alphabetically, are:
 
 - Arpit Bhardwaj (@abhardwaj73)
 - Dhruv Duseja (@DhruvDuseja)
+- Hernan Grecco (@hgrecco)
 - Jaebeom Park (@Jaebeom-P)
 - Kirill Pushkarev (@kirill-push)
 - Andrew Rosen (@arosen93)
-- Hernan Grecco (@hgrecco)
+- Sui Xiong Tay (@SuixiongTay)
 
 (If you think that your name belongs here, please let the maintainer know)
