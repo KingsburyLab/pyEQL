@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] - 2024-09-01
+
+### Fixed
+
+- `Solution.get_total_amount`: Bugfix that caused an error when called on certain elements
+  without specifying an oxidation state. For example, `get_total_amount('N')` could raise
+  an exception in a solution containing `Na` (but no `N`) due to a flaw in a logical
+  test.
+- `Solution._adjust_charge_balance`: Removed a misleading and redundant log message (#162, @SuixiongTay)
+
+### Added
+
+- `gibbs_mix`: A new keyword argument `activity_correction` was added to `gibbs_mix`. It defaults
+  to `True` (no change from prior behavior), but can be set to `False` in order to calculate the
+  ideal mixing energy, which is equivalent to only considering entropic effects. (#178, @Jaebeom-P)
+- `standardize_formula`: Improve formatting of ammonium sulfate salts. Aqueous ammonium sulfate previously
+  standardized to `H8S(NO2)2(aq)`, now it will display as `(NH4)2SO4(aq)`.
+
+### Changed
+
+- **BREAKING** `entropy_mix` now returns the ideal mixing _entropy_ in units of J/K rather than the mixing
+  _energy_ in J. This was done to improve clarity with respect to the function name. An `activity_correction`
+  kwarg was added to `gibbs_mix` so that you can still calculate the ideal mixing energy by setting it to `False`.
+  (#178, @Jaebeom-P)
+- Revise documentation of `gibbs_mix`, `entropy_mix`, and `donnan_eql`. (#178, @Jaebeom-P)
+- CI: Improve comprehensiveness of CI dependency testing. (#163, #164, @abhardwaj73)
+
 ## [1.1.5] - 2024-07-28
 
 ### Fixed

@@ -1161,7 +1161,8 @@ class Solution(MSONable):
             :meth:`get_amount`
             :func:`pyEQL.utils.interpret_units`
         """
-        TOT: Quantity = 0
+        _units = interpret_units(units)
+        TOT: Quantity = ureg.Quantity(0, _units)
 
         # standardize the element formula and units
         el = str(Element(element.split("(")[0]))
@@ -1178,7 +1179,7 @@ class Solution(MSONable):
         else:
             species = []
             for k, v in comp_by_element.items():
-                if el in k:
+                if k.split("(")[0] == el:
                     species.extend(v)
 
         # loop through the species of interest, adding moles of element
@@ -2294,9 +2295,7 @@ class Solution(MSONable):
                 self.logger.info("balance_charge is None, so no charge balancing will be performed.")
                 return
 
-            self.logger.info(
-                f"Adjusting {self._cb_species} to compensate."
-            )
+            self.logger.info(f"Adjusting {self._cb_species} to compensate.")
 
             if self.balance_charge == "pH":
                 # the charge imbalance associated with the H+ / OH- system can be expressed
