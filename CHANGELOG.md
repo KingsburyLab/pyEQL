@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gibbs_mix`: A new keyword argument `activity_correction` was added to `gibbs_mix`. It defaults
   to `True` (no change from prior behavior), but can be set to `False` in order to calculate the
   ideal mixing energy, which is equivalent to only considering entropic effects. (#178, @Jaebeom-P)
+- `standardize_formula`: Improve formatting of ammonium sulfate salts. Aqueous ammonium sulfate previously
+  standardized to `H8S(NO2)2(aq)`, now it will display as `(NH4)2SO4(aq)`.
 
 ### Changed
 

@@ -137,6 +137,12 @@ def standardize_formula(formula: str):
     elif sform == "C2I2ClO2[-1]":
         sform = "CI2ClCOO[-1]"
 
+    # ammonium sulfate salts
+    elif sform == "H8S(NO2)2(aq)":
+        sform = "(NH4)2SO4(aq)"
+    elif sform == "H4SNO4[-1]":
+        sform = "NH4SO4[-1]"
+
     # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
     return sform
 
