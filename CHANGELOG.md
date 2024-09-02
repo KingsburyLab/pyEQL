@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an exception in a solution containing `Na` (but no `N`) due to a flaw in a logical
   test.
 
+### Added
+
+- `gibbs_mix`: A new keyword argument `activity_correction` was added to `gibbs_mix`. It defaults
+  to `True` (no change from prior behavior), but can be set to `False` in order to calculate the
+  ideal mixing energy, which is equivalent to only considering entropic effects. (#178, @Jaebeom-P)
+
+### Changed
+
+- **BREAKING** `entropy_mix` now returns the ideal mixing _entropy_ in units of J/K rather than the mixing
+  _energy_ in J. This was done to improve clarity with respect to the function name. An `activity_correction`
+  kwarg was added to `gibbs_mix` so that you can still calculate the ideal mixing energy by setting it to `False`.
+  (#178, @Jaebeom-P)
+- Revise documentation of `gibbs_mix`, `entropy_mix`, and `donnan_eql`. (#178, @Jaebeom-P)
+- CI: Improve comprehensiveness of CI dependency testing. (#163, #164, @abhardwaj73)
+
 ## [1.1.5] - 2024-07-28
 
 ### Fixed
