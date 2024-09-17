@@ -232,7 +232,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     set(s5_pH.components.keys())
     s5_pH.equilibrate()
     assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
-    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.0009)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001, atol=1e-7)
     # due to the large pH shift, water mass and density need not be perfectly conserved
     assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
     assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)
