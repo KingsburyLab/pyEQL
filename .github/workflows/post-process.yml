@@ -42,8 +42,6 @@ jobs:
           - macos-latest
           - windows-latest
           - macos-14
-        exclude:
-          - { os: macos-14 }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
