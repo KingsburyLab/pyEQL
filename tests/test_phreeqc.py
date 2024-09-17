@@ -131,7 +131,7 @@ def test_conductivity(s1):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
 
-    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
@@ -142,7 +142,7 @@ def test_conductivity(s1):
     assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
 
     # MgCl2
-    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
@@ -173,7 +173,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     orig_solv_mass = s2.solvent_mass.magnitude
     s1.equilibrate()
     assert "H2(aq)" in s1.components
-    assert np.isclose(s1.charge_balance, 0, atol=1e-6)
+    assert np.isclose(s1.charge_balance, 0, atol=1e-8)
     assert np.isclose(s1.pH, orig_pH, atol=0.01)
     assert np.isclose(s1.pE, orig_pE)
 
@@ -200,11 +200,11 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert np.isclose(s2.mass, orig_mass)
     # this solution has balance_charge=None, therefore, the charge balance
     # may be off after equilibration
-    assert not np.isclose(s2.charge_balance, 0, atol=1e-6)
+    assert not np.isclose(s2.charge_balance, 0, atol=1e-8)
     eq_Hplus = s2.components["H+"]
     s2.balance_charge = "pH"
     s2.equilibrate()
-    assert np.isclose(s2.charge_balance, 0, atol=1e-6)
+    assert np.isclose(s2.charge_balance, 0, atol=1e-8)
     assert s2.components["H+"] > eq_Hplus
 
     # test log message if there is a species not present in the phreeqc database
@@ -246,14 +246,14 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     # repeated calls to equilibrate should not change the properties (much)
     for i in range(10):
         s5_pH.equilibrate()
-        assert np.isclose(s5_pH.charge_balance, 0, atol=1e-6), f"C.B. failed at iteration {i}"
+        assert np.isclose(s5_pH.charge_balance, 0, atol=1e-8), f"C.B. failed at iteration {i}"
         assert np.isclose(s5_pH.pH, s5_pH_after, atol=0.01), f"pH failed at iteration {i}"
         assert np.isclose(s5_pH.pE, orig_pE), f"pE failed at iteration {i}"
 
     # test equilibrate() with a non-pH balancing species
-    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-6)
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
     initial_Ca = s6_Ca.get_total_amount("Ca", "mol").magnitude
     assert s6_Ca.balance_charge == "Ca[+2]"
     s6_Ca.equilibrate()
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
-    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-6)
+    assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
