@@ -52,6 +52,8 @@ def test_standardize_formula():
     # Cl+Br
     assert standardize_formula("CBrCl2COO-") == "CBrCl2COO[-1]"
     assert standardize_formula("CBr2ClCOO-") == "CBr2ClCOO[-1]"
+    assert standardize_formula("(NH4)2SO4") == "(NH4)2SO4(aq)"
+    assert standardize_formula("NH4SO4-") == "NH4SO4[-1]"
 
 
 def test_formula_dict():

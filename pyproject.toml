@@ -18,12 +18,12 @@ classifiers=[
         "Topic :: Scientific/Engineering",
     ]
 license = {file = "LICENSE"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
         "pint>=0.19",
         "numpy>1.26,<2",
         "scipy>=1.12",
-        "pymatgen==2024.5.1",
+        "pymatgen>=2024.9.10",
         "iapws>=1.5.3",
         "monty>=2024.7.29",
         "maggma>=0.67.0",
