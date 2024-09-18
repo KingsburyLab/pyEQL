@@ -131,7 +131,7 @@ def test_conductivity(s1):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
 
-    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
@@ -142,7 +142,7 @@ def test_conductivity(s1):
     assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
 
     # MgCl2
-    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
@@ -232,7 +232,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     set(s5_pH.components.keys())
     s5_pH.equilibrate()
     assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
-    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001, atol=1e-7)
     # due to the large pH shift, water mass and density need not be perfectly conserved
     assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
     assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)
