@@ -11601,7 +11601,7 @@
         "oxi_state_guesses": {
             "N": 5,
             "H": 1,
-            "Cl": -1,
+            "Cl": 7,
             "O": -2
         },
         "n_atoms": 10,
