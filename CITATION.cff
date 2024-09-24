@@ -1,16 +1,16 @@
 cff-version: "1.2.0"
 authors:
-- family-names: Kingsbury
-  given-names: Ryan
-  orcid: "https://orcid.org/0000-0002-7168-3967"
+  - family-names: Kingsbury
+    given-names: Ryan
+    orcid: "https://orcid.org/0000-0002-7168-3967"
 doi: 10.5281/zenodo.8332915
 message: If you use this software, please cite our article in the
   Journal of Open Source Software.
 preferred-citation:
   authors:
-  - family-names: Kingsbury
-    given-names: Ryan
-    orcid: "https://orcid.org/0000-0002-7168-3967"
+    - family-names: Kingsbury
+      given-names: Ryan
+      orcid: "https://orcid.org/0000-0002-7168-3967"
   date-published: 2024-03-25
   doi: 10.21105/joss.06295
   issn: 2475-9066

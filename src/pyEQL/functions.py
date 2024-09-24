@@ -40,8 +40,8 @@ def gibbs_mix(solution1: Solution, solution2: Solution, activity_correction: boo
 
         or
 
-        .. math::      
-        
+        .. math::
+
             \Delta_{mix} G_{ideal} = \sum_i {(n_c + n_d) R T \ln x_b} - \sum_i {n_c R T \ln x_c} - \sum_i {n_d R T \ln x_d}
 
 
@@ -70,7 +70,9 @@ def gibbs_mix(solution1: Solution, solution2: Solution, activity_correction: boo
                 if activity_correction is True:
                     term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_activity(solute))
                 else:
-                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(solution.get_amount(solute, "fraction"))
+                    term_list[solution] += solution.get_amount(solute, "mol") * np.log(
+                        solution.get_amount(solute, "fraction")
+                    )
 
     return (ureg.R * blend.temperature.to("K") * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
         "J"
@@ -121,9 +123,7 @@ def entropy_mix(solution1: Solution, solution2: Solution):
                     solution.get_amount(solute, "fraction")
                 )
 
-    return (ureg.R * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to(
-        "J/K"
-    )
+    return (ureg.R * (term_list[blend] - term_list[concentrate] - term_list[dilute])).to("J/K")
 
 
 def donnan_eql(solution: Solution, fixed_charge: str):
@@ -149,7 +149,7 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
         .. math::
 
-            \big(\frac{a_{-}}{\bar a_{-}} \big)^{(\frac{1}{z_{-}})} 
+            \big(\frac{a_{-}}{\bar a_{-}} \big)^{(\frac{1}{z_{-}})}
             \big(\frac{\bar a_{+}}{a_{+}}\big)^{(\frac{1}{z_{+}})}
             =\exp \big(\frac{\Delta \pi \bar V}{RT z_{+} \nu_{+}}\big)
 

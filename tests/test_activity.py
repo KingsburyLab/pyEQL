@@ -10,6 +10,7 @@ data rather than the theoretical result of the respective functions. In some
 cases, the output is also tested against a well-established model published
 by USGS(PHREEQC)
 """
+
 import platform
 
 import numpy as np
@@ -469,7 +470,7 @@ def test_activity_pitzer_nacl_1():
 
 
 # The pitzer model diverges a bit from experimental data at high concentration
-@pytest.mark.xfail()
+@pytest.mark.xfail
 def test_water_activity_pitzer_nacl_1():
     r"""
     calculate the water activity at each concentration and compare
