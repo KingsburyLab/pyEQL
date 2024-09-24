@@ -4290,9 +4290,21 @@
                 }
             },
             "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
+                "a1": {
+                    "value": "3.4 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "a2": {
+                    "value": "24.6 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "d": {
+                    "value": "97 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                }
             },
             "dielectric_zuber": {
                 "value": "-0.53 dimensionless",
@@ -19775,9 +19787,21 @@
                 }
             },
             "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
+                "a1": {
+                    "value": "2.4 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "a2": {
+                    "value": "13.7 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "d": {
+                    "value": "111 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                }
             },
             "dielectric_zuber": {
                 "value": "6.69 dimensionless",
