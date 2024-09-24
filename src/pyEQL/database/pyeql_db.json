@@ -29200,9 +29200,9 @@
         }
     },
     {
-        "formula": "SO3[-1]",
+        "formula": "S2O6[-2]",
         "charge": -2,
-        "molecular_weight": "80.0632 g/mol",
+        "molecular_weight": "160.12 g/mol",
         "elements": [
             "S",
             "O"
@@ -29216,10 +29216,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "SO<sub>3</sub><sup>-2</sup>",
-        "formula_latex": "SO$_{3}$$^{-2}$",
+        "formula_html": "S<sub>2</sub>O<sub>6</sub><sup>-2</sup>",
+        "formula_latex": "S$_{2}$O$_{6}$$^{-2}$",
         "formula_hill": "O6 S2",
-        "formula_pretty": "SO3^-2",
+        "formula_pretty": "S2O6^-2",
         "oxi_state_guesses": {
             "S": 5,
             "O": -2
@@ -29369,9 +29369,9 @@
         }
     },
     {
-        "formula": "SO4[-1]",
+        "formula": "S2O8[-2]",
         "charge": -2,
-        "molecular_weight": "96.0626 g/mol",
+        "molecular_weight": "192.1252 g/mol",
         "elements": [
             "S",
             "O"
@@ -29385,10 +29385,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "SO<sub>4</sub><sup>-2</sup>",
-        "formula_latex": "SO$_{4}$$^{-2}$",
+        "formula_html": "S<sub>2</sub>O<sub>8</sub><sup>-2</sup>",
+        "formula_latex": "S$_{2}$O$_{8}$$^{-2}$",
         "formula_hill": "O8 S2",
-        "formula_pretty": "SO4^-2",
+        "formula_pretty": "S2O8^-2",
         "oxi_state_guesses": {
             "S": 5,
             "O": -1.5
