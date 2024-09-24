@@ -12,22 +12,22 @@ import pytest
 import pyEQL
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1():
     return pyEQL.Solution(volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2():
     return pyEQL.Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s3():
     return pyEQL.Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s4():
     return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
@@ -160,7 +160,7 @@ class Test_solute_addition:
         assert np.isclose(s3.pH, 7.0, atol=0.05)
         assert np.isclose(s3.pE, 8.5)
 
-    def test_add_amount_12(self, s3):
+    def test_add_amount_55(self, s3):
         # If the concentration of a solute is directly increased with a substance / mass
         # unit, the resulting concentration should be exactly what was specified
         s3.add_amount("Na+", "1 mol/kg")

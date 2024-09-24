@@ -8,8 +8,9 @@ computations of pyEQL
 """
 
 import numpy as np
-import pyEQL
 import pytest
+
+import pyEQL
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.04
@@ -102,7 +103,7 @@ class Test_dielectric:
 
         assert np.isclose(result, expected, rtol=RTOL)
 
-    @pytest.mark.xfail()
+    @pytest.mark.xfail
     def test_dielectric_constant8(self):
         """
         12 mol/kg LiCl = 24

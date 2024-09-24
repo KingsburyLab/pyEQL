@@ -5,6 +5,7 @@ pyEQL salt matching test suite
 This file contains tests for the salt-matching algorithm used by pyEQL in
 salt_ion_match.py
 """
+
 import platform
 
 import numpy as np

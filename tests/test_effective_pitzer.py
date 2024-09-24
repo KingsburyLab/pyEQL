@@ -33,8 +33,9 @@ the paper, so perfect accuracy is not expected.
 """
 
 import numpy as np
-import pyEQL
 import pytest
+
+import pyEQL
 from pyEQL import ureg
 
 # relative tolerance between experimental and computed properties for this test file
@@ -183,7 +184,7 @@ class Test_effective_pitzer:
 
             assert np.isclose(result, expected[item], RTOL)
 
-    @pytest.mark.xfail()
+    @pytest.mark.xfail
     def test_effective_pitzer_na2so4_activity(self):
         # test the activity coefficient of Na2SO4
         # corresponds to 0.515m, 1.03m, 2.58m, and 4.1m

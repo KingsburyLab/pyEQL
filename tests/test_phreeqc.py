@@ -19,28 +19,28 @@ if platform.machine().startswith("arm64") and platform.system().startswith("Darw
     pytest.skip("skipping PHREEQC tests because arm64 is not supported", allow_module_level=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1():
     return Solution(volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2():
     return Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s3():
     return Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution(
@@ -48,7 +48,7 @@ def s5_pH():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
@@ -68,7 +68,7 @@ def s6():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6_Ca():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
