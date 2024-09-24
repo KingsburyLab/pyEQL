@@ -29345,92 +29345,6 @@
         }
     },
     {
-        "formula": "SO42[-1]",
-        "charge": -1,
-        "molecular_weight": "704.0398 g/mol",
-        "elements": [
-            "S",
-            "O"
-        ],
-        "chemsys": "O-S",
-        "pmg_ion": {
-            "S": 1,
-            "O": 42,
-            "charge": -1,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "SO<sub>42</sub><sup>-1</sup>",
-        "formula_latex": "SO$_{42}$$^{-1}$",
-        "formula_hill": "O42 S",
-        "formula_pretty": "SO42^-1",
-        "oxi_state_guesses": {
-            "S": 6,
-            "O": -0.16666666666666666
-        },
-        "n_atoms": 43,
-        "n_elements": 2,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": null,
-            "radius_vdw": {
-                "value": "1.8 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "Max_C": null
-            },
-            "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "V_o": null,
-                "Max_C": null
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            },
-            "diffusion_temp_smolyakov": {
-                "a1": {
-                    "value": "2.08 dimensionless",
-                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
-                    "data_type": "fitted"
-                },
-                "a2": {
-                    "value": "13.4 dimensionless",
-                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
-                    "data_type": "fitted"
-                },
-                "d": {
-                    "value": "34 dimensionless",
-                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
-                    "data_type": "fitted"
-                }
-            }
-        }
-    },
-    {
         "formula": "SO4[-1]",
         "charge": -2,
         "molecular_weight": "96.0626 g/mol",
@@ -29601,9 +29515,21 @@
                 }
             },
             "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
+                "a1": {
+                    "value": "2.08 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "a2": {
+                    "value": "13.4 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "d": {
+                    "value": "34 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                }
             },
             "dielectric_zuber": {
                 "value": "-0.66 dimensionless",
