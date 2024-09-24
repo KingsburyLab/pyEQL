@@ -34207,89 +34207,6 @@
         }
     },
     {
-        "formula": "WO4[-1]",
-        "charge": -1,
-        "molecular_weight": "247.8376 g/mol",
-        "elements": [
-            "W",
-            "O"
-        ],
-        "chemsys": "O-W",
-        "pmg_ion": {
-            "W": 1,
-            "O": 4,
-            "charge": -1,
-            "@module": "pymatgen.core.ion",
-            "@class": "Ion",
-            "@version": null
-        },
-        "formula_html": "WO<sub>4</sub><sup>-1</sup>",
-        "formula_latex": "WO$_{4}$$^{-1}$",
-        "formula_hill": "O4 W",
-        "formula_pretty": "WO4^-1",
-        "oxi_state_guesses": {
-            "W": 6,
-            "O": -1.75
-        },
-        "n_atoms": 5,
-        "n_elements": 2,
-        "size": {
-            "radius_ionic": {
-                "value": "None",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "radius_hydrated": {
-                "value": "3.93 Å",
-                "reference": "Nightingale1959",
-                "data_type": "experimental"
-            },
-            "radius_vdw": {
-                "value": "2.18 Å",
-                "reference": "pymatgen",
-                "data_type": "experimental"
-            },
-            "molar_volume": null,
-            "radius_ionic_marcus": {
-                "value": "2.7 ± 0.02 Å",
-                "reference": "Marcus2015",
-                "data_type": "experimental"
-            }
-        },
-        "thermo": {
-            "ΔG_hydration": null,
-            "ΔG_formation": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        },
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "Max_C": null
-            },
-            "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "V_o": null,
-                "Max_C": null
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            },
-            "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
-            }
-        }
-    },
-    {
         "formula": "WO4[-2]",
         "charge": -2,
         "molecular_weight": "247.8376 g/mol",
@@ -34322,13 +34239,22 @@
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "radius_hydrated": null,
+            "radius_hydrated": {
+                "value": "3.93 Å",
+                "reference": "Nightingale1959",
+                "data_type": "experimental"
+            },
             "radius_vdw": {
                 "value": "2.18 Å",
                 "reference": "pymatgen",
                 "data_type": "experimental"
             },
-            "molar_volume": null
+            "molar_volume": null,
+            "radius_ionic_marcus": {
+                "value": "2.7 ± 0.02 Å",
+                "reference": "Marcus2015",
+                "data_type": "experimental"
+            }
         },
         "thermo": {
             "ΔG_hydration": {
