@@ -3545,9 +3545,21 @@
                 }
             },
             "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
+                "a1": {
+                    "value": "1.12 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "a2": {
+                    "value": "2.84 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                },
+                "d": {
+                    "value": "0 dimensionless",
+                    "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
+                    "data_type": "fitted"
+                }
             }
         }
     },
