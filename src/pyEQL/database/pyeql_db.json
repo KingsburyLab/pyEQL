@@ -11332,7 +11332,7 @@
         }
     },
     {
-        "formula": "NH42O3(aq)",
+        "formula": "NH4NO3(aq)",
         "charge": 0,
         "molecular_weight": "80.04336 g/mol",
         "elements": [
@@ -11351,9 +11351,9 @@
             "@version": null
         },
         "formula_html": "H<sub>4</sub>N<sub>2</sub>O<sub>3</sub>",
-        "formula_latex": "H$_{4}$N$_{2}$O$_{3}$",
+        "formula_latex": "NH$_{4}$NO$_{3}$",
         "formula_hill": "H4 N2 O3",
-        "formula_pretty": "NH42O3",
+        "formula_pretty": "NH4NO3",
         "oxi_state_guesses": {
             "N": 1,
             "H": 1,
@@ -11453,7 +11453,7 @@
         }
     },
     {
-        "formula": "H4NCl(aq)",
+        "formula": "NH4Cl(aq)",
         "charge": 0,
         "molecular_weight": "53.491460000000004 g/mol",
         "elements": [
