@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2024-09-24
+
+### Fixed
+
+- Database: removed several erroneous species (such as `CO32-` which was really `CO3[-2]`),
+  corrected other parsing errors, and updated formula syntax for consistency with recent
+  `standardize_formula` changes (e.g., `H4NCl -> NH4Cl`) (#190, @rkingsbury)
+
+### Changed
+
+- Bump `pymatgen` to `v2024.9.10` for additional upstream formula fixes. (#188, @abhardwaj73)
+
+### Removed
+
+- **BREAKING** - dropped python 3.9 support, in accordance with numpy deprecation policy.
+  (#188, @abhardwaj73)
+
 ## [1.1.6] - 2024-09-01
 
 ### Fixed

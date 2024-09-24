@@ -61,15 +61,15 @@ def standardize_formula(formula: str):
         'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
     """
     # fix permuted sign and charge number (e.g. Co2+)
-    for str, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"]):
+    for str, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"], strict=False):
         formula = formula.replace(str, rep)
 
     # replace superscripts with non superscripts
-    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789"):
+    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789", strict=False):
         formula = formula.replace(char, rep)
 
     # replace subscripts with non subscripts
-    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789"):
+    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789", strict=False):
         formula = formula.replace(char, rep)
 
     sform = Ion.from_formula(formula).reduced_formula
@@ -144,7 +144,7 @@ def standardize_formula(formula: str):
         sform = "CI2ClCOO[-1]"
 
     # ammonium nitrate salts
-    elif sform == 'H4N2O3(aq)':
+    elif sform == "H4N2O3(aq)":
         sform = "NH4NO3(aq)"
     # ammonium sulfate salts
     elif sform == "H8S(NO2)2(aq)":
