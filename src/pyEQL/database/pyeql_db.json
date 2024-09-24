@@ -3478,7 +3478,7 @@
         }
     },
     {
-        "formula": "CSN[-1]",
+        "formula": "SCN[-1]",
         "charge": -1,
         "molecular_weight": "58.0824 g/mol",
         "elements": [
@@ -3496,10 +3496,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "CSN<sup>-1</sup>",
-        "formula_latex": "CSN$^{-1}$",
+        "formula_html": "SCN<sup>-1</sup>",
+        "formula_latex": "SCN$^{-1}$",
         "formula_hill": "C N S",
-        "formula_pretty": "CSN^-1",
+        "formula_pretty": "SCN^-1",
         "oxi_state_guesses": {
             "S": -2,
             "C": 4,
@@ -11320,7 +11320,7 @@
         }
     },
     {
-        "formula": "H4N2O3(aq)",
+        "formula": "NH42O3(aq)",
         "charge": 0,
         "molecular_weight": "80.04336 g/mol",
         "elements": [
@@ -11341,7 +11341,7 @@
         "formula_html": "H<sub>4</sub>N<sub>2</sub>O<sub>3</sub>",
         "formula_latex": "H$_{4}$N$_{2}$O$_{3}$",
         "formula_hill": "H4 N2 O3",
-        "formula_pretty": "H4N2O3",
+        "formula_pretty": "NH42O3",
         "oxi_state_guesses": {
             "N": 1,
             "H": 1,
@@ -11459,10 +11459,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "H<sub>4</sub>NCl",
-        "formula_latex": "H$_{4}$NCl",
+        "formula_html": "NH<sub>4</sub>Cl",
+        "formula_latex": "NH$_{4}$Cl",
         "formula_hill": "Cl H4 N",
-        "formula_pretty": "H4NCl",
+        "formula_pretty": "NH4Cl",
         "oxi_state_guesses": {
             "N": -3,
             "H": 1,
@@ -11562,7 +11562,7 @@
         }
     },
     {
-        "formula": "H4NClO4(aq)",
+        "formula": "NH4ClO4(aq)",
         "charge": 0,
         "molecular_weight": "117.48906 g/mol",
         "elements": [
@@ -11582,10 +11582,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "H<sub>4</sub>NClO<sub>4</sub>",
-        "formula_latex": "H$_{4}$NClO$_{4}$",
+        "formula_html": "NH<sub>4</sub>ClO<sub>4</sub>",
+        "formula_latex": "NH$_{4}$ClO$_{4}$",
         "formula_hill": "Cl H4 N O4",
-        "formula_pretty": "H4NClO4",
+        "formula_pretty": "NH4ClO4",
         "oxi_state_guesses": {
             "N": 5,
             "H": 1,
@@ -11686,7 +11686,7 @@
         }
     },
     {
-        "formula": "H4N[+1]",
+        "formula": "NH4[+1]",
         "charge": 1,
         "molecular_weight": "18.03846 g/mol",
         "elements": [
@@ -11705,7 +11705,7 @@
         "formula_html": "H<sub>4</sub>N<sup>+1</sup>",
         "formula_latex": "H$_{4}$N$^{+1}$",
         "formula_hill": "H4 N",
-        "formula_pretty": "H4N^+1",
+        "formula_pretty": "NH4^+1",
         "oxi_state_guesses": {
             "N": -3,
             "H": 1
@@ -12060,7 +12060,7 @@
         }
     },
     {
-        "formula": "H8S(NO2)2(aq)",
+        "formula": "(NH4)2SO4(aq)",
         "charge": 0,
         "molecular_weight": "132.13952 g/mol",
         "elements": [
@@ -12083,7 +12083,7 @@
         "formula_html": "H<sub>8</sub>S(NO<sub>2</sub>)<sub>2</sub>",
         "formula_latex": "H$_{8}$S(NO$_{2}$)$_{2}$",
         "formula_hill": "H8 N2 O4 S",
-        "formula_pretty": "H8S(NO2)2",
+        "formula_pretty": "(NH4)2SO4",
         "oxi_state_guesses": {
             "N": 1,
             "H": 1,
@@ -14670,7 +14670,7 @@
         }
     },
     {
-        "formula": "K2PHO4(aq)",
+        "formula": "K2HPO4(aq)",
         "charge": 0,
         "molecular_weight": "174.175902 g/mol",
         "elements": [
@@ -14690,10 +14690,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "K<sub>2</sub>PHO<sub>4</sub>",
-        "formula_latex": "K$_{2}$PHO$_{4}$",
+        "formula_html": "K<sub>2</sub>HPO<sub>4</sub>",
+        "formula_latex": "K$_{2}$HPO$_{4}$",
         "formula_hill": "H K2 O4 P",
-        "formula_pretty": "K2PHO4",
+        "formula_pretty": "K2HPO4",
         "oxi_state_guesses": {
             "K": 1,
             "H": 1,
@@ -15584,7 +15584,7 @@
         }
     },
     {
-        "formula": "KCSN(aq)",
+        "formula": "KSCN(aq)",
         "charge": 0,
         "molecular_weight": "97.18069999999999 g/mol",
         "elements": [
@@ -15604,10 +15604,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "KCSN",
-        "formula_latex": "KCSN",
+        "formula_html": "KSCN",
+        "formula_latex": "KSCN",
         "formula_hill": "C K N S",
-        "formula_pretty": "KCSN",
+        "formula_pretty": "KSCN",
         "oxi_state_guesses": {
             "K": 1,
             "S": -2,
@@ -16968,7 +16968,7 @@
         }
     },
     {
-        "formula": "KP(HO2)2(aq)",
+        "formula": "KH2PO4(aq)",
         "charge": 0,
         "molecular_weight": "136.085542 g/mol",
         "elements": [
@@ -16991,7 +16991,7 @@
         "formula_html": "KP(HO<sub>2</sub>)<sub>2</sub>",
         "formula_latex": "KP(HO$_{2}$)$_{2}$",
         "formula_hill": "H2 K O4 P",
-        "formula_pretty": "KP(HO2)2",
+        "formula_pretty": "KH2PO4",
         "oxi_state_guesses": {
             "K": 1,
             "H": 1,
@@ -20757,7 +20757,7 @@
         }
     },
     {
-        "formula": "N[-0.33333333]",
+        "formula": "N3[-1]",
         "charge": -1,
         "molecular_weight": "14.0067 g/mol",
         "elements": [
@@ -20772,9 +20772,9 @@
             "@version": null
         },
         "formula_html": "N<sup>-1</sup>",
-        "formula_latex": "N$^{-1}$",
+        "formula_latex": "N$_3^{-1}$",
         "formula_hill": "N3",
-        "formula_pretty": "N^-1",
+        "formula_pretty": "N_3^-1",
         "oxi_state_guesses": {
             "N": -0.3333333333333333
         },
@@ -20957,7 +20957,7 @@
         }
     },
     {
-        "formula": "Na2PHO4(aq)",
+        "formula": "Na2HPO4(aq)",
         "charge": 0,
         "molecular_weight": "141.95884056 g/mol",
         "elements": [
@@ -20977,10 +20977,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "Na<sub>2</sub>PHO<sub>4</sub>",
-        "formula_latex": "Na$_{2}$PHO$_{4}$",
+        "formula_html": "Na<sub>2</sub>HPO<sub>4</sub>",
+        "formula_latex": "Na$_{2}$HPO$_{4}$",
         "formula_hill": "H Na2 O4 P",
-        "formula_pretty": "Na2PHO4",
+        "formula_pretty": "Na2HPO4",
         "oxi_state_guesses": {
             "Na": 1,
             "H": 1,
@@ -21772,7 +21772,7 @@
         }
     },
     {
-        "formula": "NaCSN(aq)",
+        "formula": "NaSCN(aq)",
         "charge": 0,
         "molecular_weight": "81.07216928 g/mol",
         "elements": [
@@ -21792,10 +21792,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "NaCSN",
-        "formula_latex": "NaCSN",
+        "formula_html": "NaSCN",
+        "formula_latex": "NaSCN",
         "formula_hill": "C N Na S",
-        "formula_pretty": "NaCSN",
+        "formula_pretty": "NaSCN",
         "oxi_state_guesses": {
             "Na": 1,
             "S": -2,
@@ -23425,7 +23425,7 @@
         }
     },
     {
-        "formula": "NaP(HO2)2(aq)",
+        "formula": "NaH2PO4(aq)",
         "charge": 0,
         "molecular_weight": "119.97701128 g/mol",
         "elements": [
@@ -23448,7 +23448,7 @@
         "formula_html": "NaP(HO<sub>2</sub>)<sub>2</sub>",
         "formula_latex": "NaP(HO$_{2}$)$_{2}$",
         "formula_hill": "H2 Na O4 P",
-        "formula_pretty": "NaP(HO2)2",
+        "formula_pretty": "NaH2PO4",
         "oxi_state_guesses": {
             "Na": 1,
             "H": 1,
@@ -25077,7 +25077,7 @@
         }
     },
     {
-        "formula": "P(HO2)2[-1]",
+        "formula": "H2PO4[-1]",
         "charge": -1,
         "molecular_weight": "96.98724200000001 g/mol",
         "elements": [
@@ -25098,7 +25098,7 @@
         "formula_html": "P(HO<sub>2</sub>)<sub>2</sub><sup>-1</sup>",
         "formula_latex": "P(HO$_{2}$)$_{2}$$^{-1}$",
         "formula_hill": "H2 O4 P",
-        "formula_pretty": "P(HO2)2^-1",
+        "formula_pretty": "H2PO4^-1",
         "oxi_state_guesses": {
             "H": 1,
             "P": 5,
@@ -25162,7 +25162,7 @@
         }
     },
     {
-        "formula": "P(HO2)2[-1]",
+        "formula": "H2PO4[-1]",
         "charge": -1,
         "molecular_weight": "96.98724200000001 g/mol",
         "elements": [
@@ -25183,7 +25183,7 @@
         "formula_html": "P(HO<sub>2</sub>)<sub>2</sub><sup>-1</sup>",
         "formula_latex": "P(HO$_{2}$)$_{2}$$^{-1}$",
         "formula_hill": "H2 O4 P",
-        "formula_pretty": "P(HO2)2^-1",
+        "formula_pretty": "H2PO4^-1",
         "oxi_state_guesses": {
             "H": 1,
             "P": 5,
@@ -25663,7 +25663,7 @@
         }
     },
     {
-        "formula": "PHO4[-2]",
+        "formula": "HPO4[-2]",
         "charge": -2,
         "molecular_weight": "95.979302 g/mol",
         "elements": [
@@ -25681,10 +25681,10 @@
             "@class": "Ion",
             "@version": null
         },
-        "formula_html": "PHO<sub>4</sub><sup>-2</sup>",
-        "formula_latex": "PHO$_{4}$$^{-2}$",
+        "formula_html": "HPO<sub>4</sub><sup>-2</sup>",
+        "formula_latex": "HPO$_{4}$$^{-2}$",
         "formula_hill": "H O4 P",
-        "formula_pretty": "PHO4^-2",
+        "formula_pretty": "HPO4^-2",
         "oxi_state_guesses": {
             "H": 1,
             "P": 5,
