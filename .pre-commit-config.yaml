@@ -14,8 +14,12 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.7
     hooks:
+      # Run the linter. filters are to exclude .ipynb files
       - id: ruff
-        args: [--fix, --ignore, "D,E501", "--show-fixes"]
+        types_or: [ python, pyi ]
+        args: [--fix, --ignore, "D,E501", --show-fixes]
+      # Run the formatter. This WILL run on .ipynb files
+      - id: ruff-format
 
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.8.0
@@ -41,8 +45,8 @@ repos:
         exclude_types: [svg]
       - id: trailing-whitespace
         exclude_types: [svg]
-      - id: pretty-format-json
-        indent: 4
-        exclude_types: [jupyter]
       - id: check-yaml
-      - id: check-toml
+      - id: check-json
+      - id: pretty-format-json
+        exclude_types: [jupyter]
+        args: [--autofix]
