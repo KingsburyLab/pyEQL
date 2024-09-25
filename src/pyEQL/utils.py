@@ -61,15 +61,15 @@ def standardize_formula(formula: str):
         'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
     """
     # fix permuted sign and charge number (e.g. Co2+)
-    for str, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"]):
+    for str, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"], strict=False):
         formula = formula.replace(str, rep)
 
     # replace superscripts with non superscripts
-    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789"):
+    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789", strict=False):
         formula = formula.replace(char, rep)
 
     # replace subscripts with non subscripts
-    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789"):
+    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789", strict=False):
         formula = formula.replace(char, rep)
 
     sform = Ion.from_formula(formula).reduced_formula
@@ -81,18 +81,24 @@ def standardize_formula(formula: str):
     # ammonia
     if sform == "H4N[+1]":
         sform = "NH4[+1]"
+    elif "H4NCl" in sform:
+        sform = sform.replace("H4NCl", "NH4Cl")
+    elif sform == "SO3[-1]":
+        sform = "S2O6[-2]"
+    elif sform == "SO4[-1]":
+        sform = "S2O8[-2]"
     elif sform == "H3N(aq)":
         sform = "NH3(aq)"
     # phosphoric acid system
     elif sform == "PH3O4(aq)":
         sform = "H3PO4(aq)"
-    elif sform == "PHO4[-2]":
-        sform = "HPO4[-2]"
-    elif sform == "P(HO2)2[-1]":
-        sform = "H2PO4[-1]"
+    elif "PHO4" in sform:
+        sform = sform.replace("PHO4", "HPO4")
+    elif "P(HO2)2" in sform:
+        sform = sform.replace("P(HO2)2", "H2PO4")
     # thiocyanate
-    elif sform == "CSN[-1]":
-        sform = "SCN[-1]"
+    elif "CSN" in sform:
+        sform = sform.replace("CSN", "SCN")
     # triiodide, nitride, an phosphide
     elif sform == "I[-0.33333333]":
         sform = "I3[-1]"
@@ -137,6 +143,9 @@ def standardize_formula(formula: str):
     elif sform == "C2I2ClO2[-1]":
         sform = "CI2ClCOO[-1]"
 
+    # ammonium nitrate salts
+    elif sform == "H4N2O3(aq)":
+        sform = "NH4NO3(aq)"
     # ammonium sulfate salts
     elif sform == "H8S(NO2)2(aq)":
         sform = "(NH4)2SO4(aq)"
