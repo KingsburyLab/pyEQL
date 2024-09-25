@@ -1,25 +1,25 @@
 {
-  "creators": [
-    {
-      "affiliation": "Princeton University",
-      "name": "Kingsbury, Ryan",
-      "orcid": "0000-0002-7168-3967"
-    }
-  ],
-  "rights": [
-    {
-      "description": {
-        "en": ""
-      },
-      "id": "lgpl-3.0-only",
-      "props": {
-        "scheme": "spdx",
-        "url": "https://www.gnu.org/licenses/lgpl-3.0-standalone.html"
-      },
-      "title": {
-        "en": "GNU Lesser General Public License v3.0 only"
-      }
-    }
-  ],
-  "title": "pyEQL: A python library for water chemistry"
+    "creators": [
+        {
+            "affiliation": "Princeton University",
+            "name": "Kingsbury, Ryan",
+            "orcid": "0000-0002-7168-3967"
+        }
+    ],
+    "rights": [
+        {
+            "description": {
+                "en": ""
+            },
+            "id": "lgpl-3.0-only",
+            "props": {
+                "scheme": "spdx",
+                "url": "https://www.gnu.org/licenses/lgpl-3.0-standalone.html"
+            },
+            "title": {
+                "en": "GNU Lesser General Public License v3.0 only"
+            }
+        }
+    ],
+    "title": "pyEQL: A python library for water chemistry"
 }
