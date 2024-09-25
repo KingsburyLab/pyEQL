@@ -4,7 +4,7 @@
 pint>=0.19
 numpy
 scipy
-pymatgen>=2023.10.11
+pymatgen>=2024.9.10
 iapws
 monty
 maggma

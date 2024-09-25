@@ -9,7 +9,6 @@ Solution class methods. Currently included methods are:
 
 """
 
-
 import pyEQL
 
 

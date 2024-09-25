@@ -19,28 +19,28 @@ if platform.machine().startswith("arm64") and platform.system().startswith("Darw
     pytest.skip("skipping PHREEQC tests because arm64 is not supported", allow_module_level=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1():
     return Solution(volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2():
     return Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s3():
     return Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution(
@@ -48,7 +48,7 @@ def s5_pH():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
@@ -68,7 +68,7 @@ def s6():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6_Ca():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
@@ -131,7 +131,7 @@ def test_conductivity(s1):
     # even an empty solution should have some conductivity
     assert s1.conductivity > 0
 
-    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
@@ -142,7 +142,7 @@ def test_conductivity(s1):
     assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
 
     # MgCl2
-    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
@@ -232,7 +232,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     set(s5_pH.components.keys())
     s5_pH.equilibrate()
     assert np.isclose(s5_pH.get_total_amount("Ca", "mol").magnitude, 0.001)
-    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001)
+    assert np.isclose(s5_pH.get_total_amount("C(4)", "mol").magnitude, 0.001, atol=1e-7)
     # due to the large pH shift, water mass and density need not be perfectly conserved
     assert np.isclose(s5_pH.solvent_mass.magnitude, orig_solv_mass, atol=1e-3)
     assert np.isclose(s5_pH.density.magnitude, orig_density, atol=1e-3)

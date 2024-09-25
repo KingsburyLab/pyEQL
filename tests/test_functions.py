@@ -2,6 +2,7 @@
 Tests of pyEQL.functions module
 
 """
+
 import platform
 
 import numpy as np
@@ -11,32 +12,32 @@ from pyEQL import Solution
 from pyEQL.functions import entropy_mix, gibbs_mix
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1():
     return Solution(volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2():
     return Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, volume="10 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1_p():
     return Solution(volume="2 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2_p():
     return Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, volume="10 L", engine="phreeqc")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1_i():
     return Solution(volume="2 L", engine="ideal")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2_i():
     return Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, volume="10 L", engine="ideal")
 
@@ -52,23 +53,20 @@ def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
     assert np.isclose(entropy_mix(s2_i, s2_i).magnitude, 0)
 
     # TODO - I have not tested how equilibrate() affects the results
-    for dil, conc in zip([s1, s1_p, s1_i], [s2, s2_p, s2_i]):
+    for dil, conc in zip([s1, s1_p, s1_i], [s2, s2_p, s2_i], strict=False):
         # for mixing 1 and 2, we should have
         # H20: 55.5 * 2 mol + 55.5 * 10 mol, x1 = 0.9999 x2 = 0.9645, mixture = 0.9703 = approximately -9043 J
-        s_theoretical = (
-            8.314
-            * (
-                (dil + conc).get_amount("H2O", "mol").magnitude
-                * np.log((dil + conc).get_amount("H2O", "fraction").magnitude)
-                + (dil + conc).get_amount("Na+", "mol").magnitude
-                * np.log((dil + conc).get_amount("Na+", "fraction").magnitude)
-                + (dil + conc).get_amount("Cl-", "mol").magnitude
-                * np.log((dil + conc).get_amount("Cl-", "fraction").magnitude)
-                - dil.get_amount("H2O", "mol").magnitude * np.log(dil.get_amount("H2O", "fraction").magnitude)
-                - conc.get_amount("H2O", "mol").magnitude * np.log(conc.get_amount("H2O", "fraction").magnitude)
-                - conc.get_amount("Na+", "mol").magnitude * np.log(conc.get_amount("Na+", "fraction").magnitude)
-                - conc.get_amount("Cl-", "mol").magnitude * np.log(conc.get_amount("Cl-", "fraction").magnitude)
-            )
+        s_theoretical = 8.314 * (
+            (dil + conc).get_amount("H2O", "mol").magnitude
+            * np.log((dil + conc).get_amount("H2O", "fraction").magnitude)
+            + (dil + conc).get_amount("Na+", "mol").magnitude
+            * np.log((dil + conc).get_amount("Na+", "fraction").magnitude)
+            + (dil + conc).get_amount("Cl-", "mol").magnitude
+            * np.log((dil + conc).get_amount("Cl-", "fraction").magnitude)
+            - dil.get_amount("H2O", "mol").magnitude * np.log(dil.get_amount("H2O", "fraction").magnitude)
+            - conc.get_amount("H2O", "mol").magnitude * np.log(conc.get_amount("H2O", "fraction").magnitude)
+            - conc.get_amount("Na+", "mol").magnitude * np.log(conc.get_amount("Na+", "fraction").magnitude)
+            - conc.get_amount("Cl-", "mol").magnitude * np.log(conc.get_amount("Cl-", "fraction").magnitude)
         )
         assert np.isclose(entropy_mix(dil, conc).magnitude, s_theoretical, rtol=0.005)
         g_ideal_theoretical = (

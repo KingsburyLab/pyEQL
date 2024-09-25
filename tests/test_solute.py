@@ -1,6 +1,7 @@
 """
 Tests for the solute.py module
 """
+
 from pyEQL.solute import Solute
 
 

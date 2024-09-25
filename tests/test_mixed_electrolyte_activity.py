@@ -18,8 +18,8 @@ DOI: 10.1021/je9004432
 """
 
 import numpy as np
+
 import pyEQL
-import pytest
 
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.25

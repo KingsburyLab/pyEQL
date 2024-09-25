@@ -34,7 +34,6 @@ jobs:
       max-parallel: 6
       matrix:
         version:
-          - { python: "3.9", resolution: highest, extras: testing }
           - { python: "3.10", resolution: lowest-direct, extras: testing }
           - { python: "3.11", resolution: highest, extras: testing }
           - { python: "3.12", resolution: lowest-direct, extras: testing }
@@ -43,10 +42,6 @@ jobs:
           - macos-latest
           - windows-latest
           - macos-14
-        exclude:
-          - {version: {
-               python: "3.9" },
-            os: macos-14 }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

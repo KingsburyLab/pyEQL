@@ -19,39 +19,39 @@ from pyEQL.engines import IdealEOS, NativeEOS
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
 
-@pytest.fixture()
+@pytest.fixture
 def s1():
     return Solution(volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s2():
     return Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s3():
     return Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s4():
     return Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]])
 
 
-@pytest.fixture()
+@pytest.fixture
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], balance_charge="pH")
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
@@ -70,7 +70,7 @@ def s6():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def s6_Ca():
     # non-electroneutral solution with lots of hardness
     # alk = -118 meq/L * 50 = -5900 mg/L, hardness = 12*50 = 600 mg/L as CaCO3
@@ -362,12 +362,13 @@ def test_get_el_amt_dict(s6):
     for el, amt in zip(
         ["H(1.0)", "O(-2.0)", "Ca(2.0)", "Mg(2.0)", "Na(1.0)", "Ag(1.0)", "C(4.0)", "S(6.0)", "Br(-1.0)"],
         [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
+        strict=False,
     ):
         assert np.isclose(d[el], amt, atol=1e-3)
 
     s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
     d = s.get_el_amt_dict()
-    for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015]):
+    for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015], strict=False):
         assert np.isclose(d[el], amt, atol=1e-3)
 
 
@@ -556,7 +557,7 @@ def test_conductivity(s1, s2):
 
     # CRC handbook table - "equivalent conductivity of electrolytes in aqueous solution"
     # nacl
-    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
@@ -567,7 +568,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
 
     # MgCl2
-    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05]):
+    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1

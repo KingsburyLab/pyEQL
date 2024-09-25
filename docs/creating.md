@@ -2,7 +2,6 @@
 
 The `Solution` class defines a pythonic interface for **creating**, **modifying**, and **estimating properties** of electrolyte solutions. It is the core feature of `pyEQL` and the primary user-facing class. There are several ways to create a `Solution`.
 
-
 ## Empty solution
 
 With no input arguments, you get an empty `Solution` at pH 7 and 1 atm pressure.
@@ -28,7 +27,6 @@ passed as a `dict` with amounts given **as strings** that include units (see [un
 ```
 
 You can also specify conditions such as temperature, pressure, pH, and pE (redox potential).
-
 
 Finally, you can manually create a solution with any list of solutes, temperature, pressure, etc. that you need:
 
