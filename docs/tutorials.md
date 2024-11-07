@@ -9,8 +9,17 @@ browser using Binder by clicking the respective links below.
 [View Notebook on GitHub](https://github.com/KingsburyLab/pyEQL/tree/main/docs/examples/pyeql_demo.ipynb) | Try Interactive Notebook on Binder [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KingsburyLab/pyEQL/main?labpath=docs%2Fexamples%2Fpyeql_demo.ipynb)
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 examples/pyeql_demo
+```
+
+## Overview of Activity Coefficient Methods
+
+[View Notebook on GitHub](https://github.com/KingsburyLab/pyEQL/tree/main/docs/examples/pyeql_tutorial_activity.ipynb) | Try Interactive Notebook on Binder [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KingsburyLab/pyEQL/main?labpath=docs%2Fexamples%2Fpyeql_tutorial_activity.ipynb)
+
+```{toctree}
+:maxdepth: 2
+examples/pyeql_tutorial_activity
 ```
 
 ## Calculating Osmotic Pressure
