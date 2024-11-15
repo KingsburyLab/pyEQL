@@ -250,12 +250,11 @@ class Solution(MSONable):
         if self._solutes is None:
             self._solutes = {}
 
-        # if user specifies non-default pH AND has H+ in solutes
-        if self._pH != 7 and "H+" in self._solutes:
-            raise ValueError("Cannot specify both a non-default pH and H+ at the same time. Please provide only one.")
-
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
+                # if user specifies non-default pH AND has H+ in solutes
+                if standardize_formula(k) == "H[+1]" and self._pH != 7:
+                    raise ValueError("Cannot specify both a non-default pH and H+ at the same time. Please provide only one.")
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
             msg = (
