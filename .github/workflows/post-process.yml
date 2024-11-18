@@ -57,7 +57,7 @@ jobs:
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
