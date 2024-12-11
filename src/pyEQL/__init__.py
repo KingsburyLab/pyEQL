@@ -40,7 +40,7 @@ ureg.autoconvert_offset_to_baseunit = True
 # activate the "chemistry" context globally
 ureg.enable_contexts("chemistry")
 # set the default string formatting for pint quantities
-ureg.default_format = "P~"
+ureg.formatter.default_format = "P~"
 
 # create a Store for the default database
 json_db_file = files("pyEQL") / "database" / "pyeql_db.json"
