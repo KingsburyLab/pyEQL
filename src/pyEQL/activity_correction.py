@@ -34,7 +34,7 @@ def _debye_parameter_B(temperature: str = "25 degC") -> Quantity:
 
     Returns:
         The parameter B for use in extended Debye-Huckel equation (base e). For base 10,
-        divide the resulting value by 2.303. Note that A is often given in base 10 terms
+        divide the resulting value by 2.303. Note that B is often given in base 10 terms
         in older textbooks and reference material (0.3281 at 25 degC).
 
     Notes:
