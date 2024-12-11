@@ -7,6 +7,7 @@ used by pyEQL's Solution class
 """
 
 import copy
+import logging
 import os
 import platform
 
@@ -175,13 +176,20 @@ def test_diffusion_transport(s1, s2):
     assert np.isclose(D2 / D1, 0.80, atol=1e-2)
 
 
-def test_init_raises():
+def test_init_raises(caplog):
     with pytest.raises(ValueError, match="random is not a valid value"):
         Solution(engine="random")
     with pytest.raises(ValueError, match="Non-aqueous solvent detected"):
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
+    with pytest.raises(ValueError, match="Cannot specify both a non-default pH and H+"):
+        Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, pH=10)
+    module_log = logging.getLogger("pyEQL")
+    with caplog.at_level(logging.WARNING, "pyEQL"):
+        Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, log_level="warning")
+        assert module_log.level == logging.WARNING
+        assert "WARNING" in caplog.text
 
 
 def test_init_engines():

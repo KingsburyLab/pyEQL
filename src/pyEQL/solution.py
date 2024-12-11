@@ -253,8 +253,13 @@ class Solution(MSONable):
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
                 # if user specifies non-default pH AND has H+ in solutes
-                if standardize_formula(k) == "H[+1]" and self._pH != 7:
-                    raise ValueError("Cannot specify both a non-default pH and H+ at the same time. Please provide only one.")
+                if standardize_formula(k) == "H[+1]":
+                    if self._pH != 7:
+                        raise ValueError(
+                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                        )
+                    # if user specifies default pH AND has H+ in solutes
+                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
             msg = (
