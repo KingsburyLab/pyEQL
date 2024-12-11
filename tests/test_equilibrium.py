@@ -2,6 +2,7 @@
 Tests of pyEQL.equilibrium module
 
 """
+
 import numpy as np
 
 from pyEQL.equilibrium import alpha

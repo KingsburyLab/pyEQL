@@ -8,6 +8,7 @@ computations of pyEQL
 """
 
 import numpy as np
+
 import pyEQL
 
 # relative tolerance between experimental and computed properties for this test file
