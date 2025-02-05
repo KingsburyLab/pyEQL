@@ -2145,7 +2145,7 @@ class Solution(MSONable):
 
             .. math::
 
-                D_{\gamma} = D^0 \exp(\frac{-a1 A |z_i| \sqrt{I}}{1+\kappa a}
+                D_{\gamma} = D^0 \exp(\frac{-a1 A |z_i| \sqrt{I}}{1+\kappa a})
 
             .. math::
 
@@ -2182,9 +2182,8 @@ class Solution(MSONable):
         T_sol = self.temperature.to("K").magnitude
         mu = self.water_substance.mu
 
-        # skip temperature correction if within 1 degree
+        # get the a1, a2, and d parameters required by the PHREEQC model
         if abs(T_sol - T_ref) > 1 or activity_correction is True:
-            # get the a1, a2, and d parameters required by the PHREEQC model
             try:
                 doc = self.database.query_one({"formula": rform})
                 d = doc["model_parameters"]["diffusion_temp_smolyakov"]["d"]["value"]
@@ -2206,7 +2205,11 @@ class Solution(MSONable):
                 a2 = 4.73
 
             # use the PHREEQC model from Ref 2 to correct for temperature
-            D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            if abs(T_sol - T_ref) > 1:
+                D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            # skip temperature correction if within 1 degree
+            else:
+                D_final = D
 
             if activity_correction:
                 A = _debye_parameter_activity(str(self.temperature)).to("kg**0.5/mol**0.5").magnitude / 2.303
