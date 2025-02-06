@@ -368,7 +368,7 @@ urllib3==2.3.0
     # via
     #   botocore
     #   requests
-virtualenv==20.28.1
+virtualenv==20.26.6
     # via
     #   pre-commit
     #   tox
