@@ -4,9 +4,10 @@ from unittest import TestCase
 
 import numpy as np
 import pytest
+import pyEQL
 
 from pymatgen.core import Composition, Element
-from pymatgen.core.ion import Ion
+from pyEQL.pourbaix.ion import Ion
 
 
 class TestIon(TestCase):

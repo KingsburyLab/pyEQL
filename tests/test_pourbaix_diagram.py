@@ -9,7 +9,7 @@ import numpy as np
 from monty.serialization import dumpfn, loadfn
 from pytest import approx
 
-from pyEQL.Pourbaix.pourbaix_diagram import (
+from pyEQL.pourbaix.pourbaix_diagram import (
     IonEntry,
     MultiEntry,
     PourbaixDiagram,
@@ -18,7 +18,7 @@ from pyEQL.Pourbaix.pourbaix_diagram import (
     ion_or_solid_comp_object,
 )
 from pymatgen.core.composition import Composition
-from pymatgen.core.ion import Ion
+from pyEQL.pourbaix.ion import Ion
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.util.testing import TEST_FILES_DIR, PymatgenTest
 
