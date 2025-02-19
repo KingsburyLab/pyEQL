@@ -1,45 +1,21 @@
 from __future__ import annotations
 
 import copy
-import json
-import math
 import os
-import pyEQL
-from collections import defaultdict
-from pathlib import Path
-from typing import TYPE_CHECKING
-from unittest import TestCase
-
-import pytest
-from monty.json import MontyDecoder
-from pytest import approx
 
 import pymatgen.entries
-from pymatgen.core import Element, Species
+import pytest
 from pymatgen.core.composition import Composition
-from pymatgen.core.lattice import Lattice
-from pymatgen.core.structure import Structure
-from pyEQL.pourbaix.compatibility import (
-    MP2020_COMPAT_CONFIG,
-    MP_COMPAT_CONFIG,
-    MU_H2O,
-    AqueousCorrection,
-    Compatibility,
-    CompatibilityError,
-    MaterialsProjectAqueousCompatibility,
-    needs_u_correction,
-)
-from pymatgen.entries.computed_entries import ComputedEntry, ComputedStructureEntry, ConstantEnergyAdjustment
-from pymatgen.util.testing import TEST_FILES_DIR
+from pymatgen.entries.computed_entries import ComputedEntry
+from pytest import approx
 
-if TYPE_CHECKING:
-    from pymatgen.util.typing import CompositionLike
-
+from pyEQL.pourbaix.compatibility import MU_H2O, CompatibilityError, MaterialsProjectAqueousCompatibility
 
 PMG_ENTRIES_DIR = os.path.dirname(os.path.abspath(pymatgen.entries.__file__))
 
 ### Not sure to keep this line for the warning !!!!
 # @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
+
 
 class TestMaterialsProjectAqueousCompatibility:
     """
@@ -201,6 +177,3 @@ class TestMaterialsProjectAqueousCompatibility:
 
         entries = compat.process_entries(entry_list, inplace=False, n_workers=2, on_error="raise")
         assert len(entries) == 2
-
-
-

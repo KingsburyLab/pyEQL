@@ -1,14 +1,17 @@
 from __future__ import annotations
-import pymatgen
-import pyEQL
+
 import multiprocessing
 from unittest import TestCase
 
 import matplotlib.pyplot as plt
 import numpy as np
 from monty.serialization import dumpfn, loadfn
+from pymatgen.core.composition import Composition
+from pymatgen.entries.computed_entries import ComputedEntry
+from pymatgen.util.testing import PymatgenTest
 from pytest import approx
 
+from pyEQL.pourbaix.ion import Ion
 from pyEQL.pourbaix.pourbaix_diagram import (
     IonEntry,
     MultiEntry,
@@ -17,12 +20,8 @@ from pyEQL.pourbaix.pourbaix_diagram import (
     PourbaixPlotter,
     ion_or_solid_comp_object,
 )
-from pymatgen.core.composition import Composition
-from pyEQL.pourbaix.ion import Ion
-from pymatgen.entries.computed_entries import ComputedEntry
-from pymatgen.util.testing import TEST_FILES_DIR, PymatgenTest
 
-TEST_DIR = f"{TEST_FILES_DIR}/analysis/pourbaix_diagram"
+TEST_DIR = "./"
 
 
 class TestPourbaixEntry(PymatgenTest):
@@ -211,9 +210,9 @@ class TestPourbaixDiagram(TestCase):
     def test_get_decomposition(self):
         # Test a stable entry to ensure that it's zero in the stable region
         entry = self.test_data["Zn"][12]  # Should correspond to mp-2133
-        assert self.pbx.get_decomposition_energy(entry, 10, 1) == approx(0.0, 5), (
-            "Decomposition energy of ZnO is not 0."
-        )
+        assert self.pbx.get_decomposition_energy(entry, 10, 1) == approx(
+            0.0, 5
+        ), "Decomposition energy of ZnO is not 0."
 
         # Test an unstable entry to ensure that it's never zero
         entry = self.test_data["Zn"][11]
