@@ -16,19 +16,19 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from monty.json import MontyDecoder, MSONable
-from scipy.spatial import ConvexHull, HalfspaceIntersection
-from scipy.special import comb
-
 from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
 from pymatgen.analysis.reaction_calculator import Reaction, ReactionError
 from pymatgen.core import Composition, Element
-from pymatgen.core.ion import Ion
-from pymatgen.entries.compatibility import MU_H2O
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.util.coord import Simplex
 from pymatgen.util.due import Doi, due
 from pymatgen.util.plotting import pretty_plot
 from pymatgen.util.string import Stringify
+from scipy.spatial import ConvexHull, HalfspaceIntersection
+from scipy.special import comb
+
+from pyEQL.pourbaix.compatibility import MU_H2O
+from pyEQL.pourbaix.ion import Ion
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -36,10 +36,9 @@ if TYPE_CHECKING:
 
     import matplotlib.pyplot as plt
     from numpy.typing import NDArray
-    from typing_extensions import Self
-
     from pymatgen.core import DummySpecies, Species
     from pymatgen.entries.computed_entries import ComputedStructureEntry
+    from typing_extensions import Self
 
 __author__ = "Sai Jayaraman"
 __copyright__ = "Copyright 2012, The Materials Project"
