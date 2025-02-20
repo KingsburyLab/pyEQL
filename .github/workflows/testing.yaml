@@ -3,7 +3,8 @@ name: testing
 on:
   pull_request:
     branches:
-      - main, pourbaix
+      - main
+      - pourbaix
     paths-ignore:
       - CHANGELOG.md
 
