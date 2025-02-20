@@ -25,7 +25,7 @@ dependencies = [
         "scipy>=1.12",
         "pymatgen>=2024.9.10",
         "iapws>=1.5.3",
-        "monty>=2024.7.12",
+        "monty>=2024.12.10",
         "maggma>=0.67.0",
         "phreeqpython>=1.5.2",
     ]
@@ -153,7 +153,7 @@ norecursedirs = [
   ".tox",
 ]
 xfail_strict = true
-filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
+filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning", "ignore::FutureWarning"]
 log_cli_level = "warning"
 testpaths = [
   "tests",
