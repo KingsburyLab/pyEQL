@@ -23,16 +23,9 @@ _EMMET_SETTINGS = EmmetSettings()
 _MAPI_SETTINGS = MAPIClientSettings()
 
 class Pourbaix_api:
-    # json_path = str(files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json")
 
     def __init__(self, mpr):
-        # # Resolve path to the JSON file relative to the pourbaix_api.py module
-        # current_directory = Path(__file__).parent
-        # json_path = current_directory / 'mpr_reference_ion_database.json'
-        # self.json_path = json_path.resolve()
-
         ref_db_file = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
-        # ion_data = JSONStore(str(ref_db_file), key="formula", encoding="utf8")
         self.json_path = str(ref_db_file)
         self.mpr = mpr
     
