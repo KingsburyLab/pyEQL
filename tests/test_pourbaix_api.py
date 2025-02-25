@@ -5,29 +5,13 @@ import importlib
 
 import numpy as np
 import pytest
-from emmet.core.tasks import TaskDoc
-from emmet.core.vasp.calc_types import CalcType
+
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
-from pymatgen.analysis.wulff import WulffShape
-from pymatgen.core import SETTINGS
 from pymatgen.core.ion import Ion
-from pymatgen.core.periodic_table import Element
-from pymatgen.electronic_structure.bandstructure import (
-    BandStructure,
-    BandStructureSymmLine,
-)
-from pymatgen.electronic_structure.dos import CompleteDos
 from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
-from pymatgen.entries.computed_entries import ComputedEntry, GibbsComputedStructureEntry
-from pymatgen.io.cif import CifParser
-from pymatgen.io.vasp import Chgcar
-from pymatgen.phonon.bandstructure import PhononBandStructureSymmLine
-from pymatgen.phonon.dos import PhononDos
 
 from mp_api.client import MPRester
-from mp_api.client.core.client import MPRestError
-from mp_api.client.core.settings import MAPIClientSettings
 
 from pyEQL.pourbaix.pourbaix_api import Pourbaix_api
 
@@ -40,7 +24,7 @@ def mpr():
 
 @pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
 class TestMPRester:
-    fake_mp_api_key = "12345678901234567890123456789012"  # 32 chars
+    fake_mp_api_key = "12345678901234567890123456789012"  
     default_endpoint = "https://api.materialsproject.org/"
 
     @pytest.mark.skip(reason="SSL issues")
