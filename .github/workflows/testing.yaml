@@ -36,11 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[testing]"
-
-      - name: List installed requirements
-        run: |
-          pip freeze
-
+          pip install mp-api
       - name: Run tests
         run: |
           if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
