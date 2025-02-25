@@ -21,7 +21,7 @@ from pyEQL.pourbaix.pourbaix_diagram import (
     ion_or_solid_comp_object,
 )
 
-TEST_DIR = "./"
+TEST_DIR = "."
 
 
 class TestPourbaixEntry(PymatgenTest):
