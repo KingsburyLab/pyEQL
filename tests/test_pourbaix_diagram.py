@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import multiprocessing
 from unittest import TestCase
+from importlib.resources import files
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -107,7 +108,10 @@ class TestPourbaixEntry(PymatgenTest):
 class TestPourbaixDiagram(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        # cls.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        pourbaix_test_data = files("pyEQL") / "pourbaix" / "pourbaix_test_data.json"
+        pourbaix_test_dir = str(pourbaix_test_data)
+        cls.test_data = loadfn(pourbaix_test_dir)
         cls.pbx = PourbaixDiagram(cls.test_data["Zn"], filter_solids=True)
         cls.pbx_no_filter = PourbaixDiagram(cls.test_data["Zn"], filter_solids=False)
 
@@ -302,7 +306,9 @@ class TestPourbaixDiagram(TestCase):
 
 class TestPourbaixPlotter(TestCase):
     def setUp(self):
-        self.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        pourbaix_test_data = files("pyEQL") / "pourbaix" / "pourbaix_test_data.json"
+        pourbaix_test_dir = str(pourbaix_test_data)
+        self.test_data = loadfn(pourbaix_test_dir)
         self.pd = PourbaixDiagram(self.test_data["Zn"])
         self.plotter = PourbaixPlotter(self.pd)
 
