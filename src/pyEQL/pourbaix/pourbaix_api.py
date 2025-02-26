@@ -1,34 +1,25 @@
 import itertools
 import warnings
-from typing import Literal
-import os
-from pathlib import Path
 from importlib.resources import files
-from maggma.stores import JSONStore
+from typing import Literal
 
-from monty.serialization import loadfn
 from emmet.core.settings import EmmetSettings
-from pymatgen.analysis.phase_diagram import PhaseDiagram
-from pymatgen.analysis.pourbaix_diagram import IonEntry, Ion
-from pymatgen.core import Element, SETTINGS
-from mp_api.client import MPRester
-from mp_api.client.core import BaseRester, MPRestError
-from mp_api.client.routes.materials import TaskRester, ProvenanceRester
-from requests import Session
-from packaging import version
-
+from monty.serialization import loadfn
 from mp_api.client.core.settings import MAPIClientSettings
+from pymatgen.analysis.phase_diagram import PhaseDiagram
+from pymatgen.analysis.pourbaix_diagram import Ion, IonEntry
+from pymatgen.core import Element
 
 _EMMET_SETTINGS = EmmetSettings()
 _MAPI_SETTINGS = MAPIClientSettings()
 
-class Pourbaix_api:
 
+class Pourbaix_api:
     def __init__(self, mpr):
         ref_db_file = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
         self.json_path = str(ref_db_file)
         self.mpr = mpr
-    
+
     # @classmethod
     def get_ion_reference_data_for_chemsys(self, chemsys: str | list) -> list[dict]:
         """Download aqueous ion reference data used in the construction of Pourbaix diagrams.
@@ -70,9 +61,7 @@ class Pourbaix_api:
         return [d for d in ion_data if d["data"]["MajElements"] in chemsys]
 
     # @classmethod
-    def get_ion_entries(
-        self, pd: PhaseDiagram, ion_ref_data: list[dict] | None = None
-    ) -> list[IonEntry]:
+    def get_ion_entries(self, pd: PhaseDiagram, ion_ref_data: list[dict] | None = None) -> list[IonEntry]:
         """Retrieve IonEntry objects that can be used in the construction of
         Pourbaix Diagrams. The energies of the IonEntry are calculaterd from
         the solid energies in the provided Phase Diagram to be
@@ -105,8 +94,7 @@ class Pourbaix_api:
         # raise ValueError if O and H not in chemsys
         if "O" not in chemsys or "H" not in chemsys:
             raise ValueError(
-                "The phase diagram chemical system must contain O and H! Your"
-                f" diagram chemical system is {chemsys}."
+                "The phase diagram chemical system must contain O and H! Your" f" diagram chemical system is {chemsys}."
             )
 
         if not ion_ref_data:
@@ -118,11 +106,7 @@ class Pourbaix_api:
         ion_entries = []
         for _, i_d in enumerate(ion_data):
             ion = Ion.from_formula(i_d["formula"])
-            refs = [
-                e
-                for e in pd.all_entries
-                if e.composition.reduced_formula == i_d["data"]["RefSolid"]
-            ]
+            refs = [e for e in pd.all_entries if e.composition.reduced_formula == i_d["data"]["RefSolid"]]
             if not refs:
                 raise ValueError("Reference solid not contained in entry list")
             stable_ref = sorted(refs, key=lambda x: x.energy_per_atom)[0]
@@ -137,9 +121,7 @@ class Pourbaix_api:
                 # convert to eV/formula unit
                 ref_solid_energy = i_d["data"]["ΔGᶠRefSolid"]["value"] / 96485
             else:
-                raise ValueError(
-                    f"Ion reference solid energy has incorrect unit {i_d['data']['ΔGᶠRefSolid']['unit']}"
-                )
+                raise ValueError(f"Ion reference solid energy has incorrect unit {i_d['data']['ΔGᶠRefSolid']['unit']}")
             solid_diff = pd.get_form_energy(stable_ref) - ref_solid_energy * rf
             elt = i_d["data"]["MajElements"]
             correction_factor = ion.composition[elt] / stable_ref.composition[elt]
@@ -152,9 +134,7 @@ class Pourbaix_api:
                 # convert to eV/formula unit
                 ion_free_energy = i_d["data"]["ΔGᶠ"]["value"] / 96485
             else:
-                raise ValueError(
-                    f"Ion free energy has incorrect unit {i_d['data']['ΔGᶠ']['unit']}"
-                )
+                raise ValueError(f"Ion free energy has incorrect unit {i_d['data']['ΔGᶠ']['unit']}")
             energy = ion_free_energy + solid_diff * correction_factor
             ion_entries.append(IonEntry(ion, energy))
 
@@ -222,12 +202,8 @@ class Pourbaix_api:
         ion_data = self.get_ion_reference_data_for_chemsys(chemsys)
 
         # build the PhaseDiagram for get_ion_entries
-        ion_ref_comps = [
-            Ion.from_formula(d["data"]["RefSolid"]).composition for d in ion_data
-        ]
-        ion_ref_elts = set(
-            itertools.chain.from_iterable(i.elements for i in ion_ref_comps)
-        )
+        ion_ref_comps = [Ion.from_formula(d["data"]["RefSolid"]).composition for d in ion_data]
+        ion_ref_elts = set(itertools.chain.from_iterable(i.elements for i in ion_ref_comps))
         # TODO - would be great if the commented line below would work
         # However for some reason you cannot process GibbsComputedStructureEntry with
         # MaterialsProjectAqueousCompatibility
@@ -237,7 +213,7 @@ class Pourbaix_api:
         #     print("MPRester object is not provided, using default API key")
         #     api_key = os.getenv("MP_API_KEY", "12345678901234567890123456789012")
         #     mpr = MPRester(api_key=api_key)
-        
+
         ion_ref_entries = self.mpr.get_entries_in_chemsys(list([str(e) for e in ion_ref_elts] + ["O", "H"]))
 
         # suppress the warning about supplying the required energies; they will be calculated from the
@@ -250,9 +226,7 @@ class Pourbaix_api:
             compat = MaterialsProjectAqueousCompatibility(solid_compat=solid_compat)
         # suppress the warning about missing oxidation states
         with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore", message="Failed to guess oxidation states.*"
-            )
+            warnings.filterwarnings("ignore", message="Failed to guess oxidation states.*")
             ion_ref_entries = compat.process_entries(ion_ref_entries)  # type: ignore
         # TODO - if the commented line above would work, this conditional block
         # could be removed
@@ -260,32 +234,21 @@ class Pourbaix_api:
             # replace the entries with GibbsComputedStructureEntry
             from pymatgen.entries.computed_entries import GibbsComputedStructureEntry
 
-            ion_ref_entries = GibbsComputedStructureEntry.from_entries(
-                ion_ref_entries, temp=use_gibbs
-            )
+            ion_ref_entries = GibbsComputedStructureEntry.from_entries(ion_ref_entries, temp=use_gibbs)
         ion_ref_pd = PhaseDiagram(ion_ref_entries)  # type: ignore
 
         ion_entries = self.get_ion_entries(ion_ref_pd, ion_ref_data=ion_data)
         pbx_entries = [PourbaixEntry(e, f"ion-{n}") for n, e in enumerate(ion_entries)]
 
         # Construct the solid pourbaix entries from filtered ion_ref entries
-        extra_elts = (
-            set(ion_ref_elts)
-            - {Element(s) for s in chemsys}
-            - {Element("H"), Element("O")}
-        )
+        extra_elts = set(ion_ref_elts) - {Element(s) for s in chemsys} - {Element("H"), Element("O")}
         for entry in ion_ref_entries:
             entry_elts = set(entry.composition.elements)
             # Ensure no OH chemsys or extraneous elements from ion references
-            if not (
-                entry_elts <= {Element("H"), Element("O")}
-                or extra_elts.intersection(entry_elts)
-            ):
+            if not (entry_elts <= {Element("H"), Element("O")} or extra_elts.intersection(entry_elts)):
                 # Create new computed entry
                 form_e = ion_ref_pd.get_form_energy(entry)  # type: ignore
-                new_entry = ComputedEntry(
-                    entry.composition, form_e, entry_id=entry.entry_id
-                )
+                new_entry = ComputedEntry(entry.composition, form_e, entry_id=entry.entry_id)
                 pbx_entry = PourbaixEntry(new_entry)
                 pbx_entries.append(pbx_entry)
 

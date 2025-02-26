@@ -1,21 +1,18 @@
 import itertools
 import os
-import random
-import importlib
 
 import numpy as np
 import pytest
-
+from mp_api.client import MPRester
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
 from pymatgen.core.ion import Ion
 from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
 
-from mp_api.client import MPRester
-
 from pyEQL.pourbaix.pourbaix_api import Pourbaix_api
 
-@pytest.fixture()
+
+@pytest.fixture
 def mpr():
     rester = MPRester()
     yield rester
@@ -24,14 +21,14 @@ def mpr():
 
 @pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
 class TestMPRester:
-    fake_mp_api_key = "12345678901234567890123456789012"  
+    fake_mp_api_key = "12345678901234567890123456789012"
     default_endpoint = "https://api.materialsproject.org/"
 
     @pytest.mark.skip(reason="SSL issues")
     def test_get_ion_entries(self, mpr):
         entries = mpr.get_entries_in_chemsys("Ti-O-H")
         pd = PhaseDiagram(entries)
-        pourbaix_api = Pourbaix_api(mpr) # instantiated in test
+        pourbaix_api = Pourbaix_api(mpr)  # instantiated in test
         ion_entry_data = pourbaix_api.get_ion_reference_data_for_chemsys("Ti-O-H")
         ion_entries = pourbaix_api.get_ion_entries(pd, ion_entry_data)
         assert len(ion_entries) == 5
@@ -49,15 +46,9 @@ class TestMPRester:
 
         # test ion energy calculation
         ion_data = pourbaix_api.get_ion_reference_data_for_chemsys("S")
-        ion_ref_comps = [
-            Ion.from_formula(d["data"]["RefSolid"]).composition for d in ion_data
-        ]
-        ion_ref_elts = set(
-            itertools.chain.from_iterable(i.elements for i in ion_ref_comps)
-        )
-        ion_ref_entries = mpr.get_entries_in_chemsys(
-            [*map(str, ion_ref_elts), "O", "H"]
-        )
+        ion_ref_comps = [Ion.from_formula(d["data"]["RefSolid"]).composition for d in ion_data]
+        ion_ref_elts = set(itertools.chain.from_iterable(i.elements for i in ion_ref_comps))
+        ion_ref_entries = mpr.get_entries_in_chemsys([*map(str, ion_ref_elts), "O", "H"])
         mpc = MaterialsProjectAqueousCompatibility()
         ion_ref_entries = mpc.process_entries(ion_ref_entries)
         ion_ref_pd = PhaseDiagram(ion_ref_entries)
@@ -66,9 +57,7 @@ class TestMPRester:
         # In ion ref data, SO4-2 is -744.27 kJ/mol; ref solid is -1,279.0 kJ/mol
         # so the ion entry should have an energy (-744.27 +1279) = 534.73 kJ/mol
         # or 5.542 eV/f.u. above the energy of Na2SO4
-        so4_two_minus = [e for e in ion_entries if e.ion.reduced_formula == "SO4[-2]"][
-            0
-        ]
+        so4_two_minus = [e for e in ion_entries if e.ion.reduced_formula == "SO4[-2]"][0]
 
         # the ref solid is Na2SO4, ground state mp-4770
         # the rf factor correction is necessary to make sure the composition
@@ -78,11 +67,11 @@ class TestMPRester:
         solid_energy = ion_ref_pd.get_form_energy(ref_solid_entry) / rf
 
         assert np.allclose(so4_two_minus.energy, solid_energy + 5.542, atol=1e-3)
-    
+
     @pytest.mark.skip(reason="SSL issues")
     def test_get_pourbaix_entries(self, mpr):
         # test input chemsys as a list of elements
-        pourbaix_api = Pourbaix_api(mpr) # instantiated in test
+        pourbaix_api = Pourbaix_api(mpr)  # instantiated in test
         pbx_entries = pourbaix_api.get_pourbaix_entries(["Fe", "Cr"])
         for pbx_entry in pbx_entries:
             assert isinstance(pbx_entry, PourbaixEntry)

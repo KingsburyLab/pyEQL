@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import multiprocessing
-from unittest import TestCase
 from importlib.resources import files
+from unittest import TestCase
 
 import matplotlib.pyplot as plt
 import numpy as np
