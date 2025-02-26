@@ -28,6 +28,7 @@ dependencies = [
         "monty>=2024.12.10",
         "maggma>=0.67.0",
         "phreeqpython>=1.5.2",
+        "mp-api>=0.45.1"
     ]
 
 [project.urls]

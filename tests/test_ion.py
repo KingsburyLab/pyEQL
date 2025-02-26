@@ -4,9 +4,8 @@ from unittest import TestCase
 
 import numpy as np
 import pytest
-import pyEQL
-
 from pymatgen.core import Composition, Element
+
 from pyEQL.pourbaix.ion import Ion
 
 
@@ -88,9 +87,9 @@ class TestIon(TestCase):
             ("Zr(OH)4", "Zr(OH)4(aq)"),
         ]
         for tup in special_formulas:
-            assert Ion.from_formula(tup[0]).reduced_formula == tup[1], (
-                f"Expected {tup[1]} but got {Ion.from_formula(tup[0]).reduced_formula}"
-            )
+            assert (
+                Ion.from_formula(tup[0]).reduced_formula == tup[1]
+            ), f"Expected {tup[1]} but got {Ion.from_formula(tup[0]).reduced_formula}"
 
         assert Ion.from_formula("Fe(OH)4+").get_reduced_formula_and_factor(hydrates=True) == ("FeO2.2H2O", 1)
         assert Ion.from_formula("Zr(OH)4").get_reduced_formula_and_factor(hydrates=True) == ("ZrO2.2H2O", 1)

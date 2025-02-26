@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import multiprocessing
+from importlib.resources import files
 from unittest import TestCase
 
 import matplotlib.pyplot as plt
@@ -21,7 +22,7 @@ from pyEQL.pourbaix.pourbaix_diagram import (
     ion_or_solid_comp_object,
 )
 
-TEST_DIR = "./"
+TEST_DIR = "."
 
 
 class TestPourbaixEntry(PymatgenTest):
@@ -107,7 +108,10 @@ class TestPourbaixEntry(PymatgenTest):
 class TestPourbaixDiagram(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        # cls.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        pourbaix_test_data = files("pyEQL") / "pourbaix" / "pourbaix_test_data.json"
+        pourbaix_test_dir = str(pourbaix_test_data)
+        cls.test_data = loadfn(pourbaix_test_dir)
         cls.pbx = PourbaixDiagram(cls.test_data["Zn"], filter_solids=True)
         cls.pbx_no_filter = PourbaixDiagram(cls.test_data["Zn"], filter_solids=False)
 
@@ -302,7 +306,9 @@ class TestPourbaixDiagram(TestCase):
 
 class TestPourbaixPlotter(TestCase):
     def setUp(self):
-        self.test_data = loadfn(f"{TEST_DIR}/pourbaix_test_data.json")
+        pourbaix_test_data = files("pyEQL") / "pourbaix" / "pourbaix_test_data.json"
+        pourbaix_test_dir = str(pourbaix_test_data)
+        self.test_data = loadfn(pourbaix_test_dir)
         self.pd = PourbaixDiagram(self.test_data["Zn"])
         self.plotter = PourbaixPlotter(self.pd)
 

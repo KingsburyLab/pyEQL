@@ -50,5 +50,3 @@ examples/pyeql_tutorial_database
 :maxdepth: 2
 examples/pyeql_tutorial_carbonate
 ```
-
-
