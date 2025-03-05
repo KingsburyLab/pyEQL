@@ -183,6 +183,17 @@ def test_init_raises():
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
 
+def test_init_units():
+    # Test 1: Initialize with 'ppb'
+    sol = Solution({"Ca+2": "1000 ppb"})
+    assert sol.get_amount("Ca+2", "ppb") == 1000
+    # Test 2: Initialize with 'ppm'
+    sol = Solution({"Ca+2": "1 ppm"})
+    assert sol.get_amount("Ca+2", "ppm") == 1
+    # Test 3: Get amount in '%'
+    sol = Solution({"Ca+2": "1 ppm"})
+    amount = sol.get_amount("Ca+2", "%")
+
 
 def test_init_engines():
     """
