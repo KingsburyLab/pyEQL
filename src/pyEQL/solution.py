@@ -37,6 +37,87 @@ EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 UNKNOWN_OXI_STATE = "unk"
 K_W = 1e-14  # ion product of water at 25 degC
 
+from pyEQL import ureg
+
+# Extend the UnitRegistry with custom units
+ureg.define('ppb = 1e-9 * mole / mole = parts_per_billion')
+ureg.define('ppm = 1e-6 * mole / mole = parts_per_million')
+ureg.define('% = 0.01 * mole / mole = percent')
+
+
+def preprocess_units(amount: str) -> str:
+    """
+    Preprocess the unit string to handle custom units like 'ppb' and '%'.
+    Args:
+        amount (str): The input amount with units (e.g., '1000 ppb', '0.1%').
+    Returns:
+        str: A modified amount string compatible with Pint.
+    """
+    if "ppb" in amount:
+        return amount.replace("ppb", "microgram/liter")
+    elif "%" in amount:
+        # Convert '%' to a dimensionless fraction
+        value, unit = amount.split()
+        return f"{float(value) / 100} dimensionless"
+    return amount  # Return unchanged if no custom units
+
+def add_solute(self, formula: str, amount: str):
+    """
+    Primary method for adding substances to a pyEQL solution.
+    """
+    # Preprocess the amount to handle custom units
+    amount = preprocess_units(amount)
+
+    if ureg.Quantity(amount).dimensionality in (
+        "[substance]/[length]**3",
+        "[mass]/[length]**3",
+    ):
+        orig_volume = self.volume
+        quantity = ureg.Quantity(amount)
+        mw = self.get_property(formula, "molecular_weight")
+        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+        self.components[formula] = target_mol.to("moles").magnitude
+        solute_vol = self._get_solute_volume()
+        target_vol = orig_volume - solute_vol
+        target_mass = target_vol * ureg.Quantity(self.water_substance.rho, "g/L")
+        mw = self.get_property(self.solvent, "molecular_weight")
+        if mw is None:
+            raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
+        target_mol = target_mass.to("g") / mw.to("g/mol")
+        self.components[self.solvent] = target_mol.magnitude
+    else:
+        quantity = ureg.Quantity(amount)
+        mw = ureg.Quantity(self.get_property(formula, "molecular_weight"))
+        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+        self.components[formula] = target_mol.to("moles").magnitude
+        self.volume_update_required = True
+
+def __init__(
+    self,
+    solutes: list[list[str]] | dict[str, str] | None = None,
+    volume: str | None = None,
+    temperature: str = "298.15 K",
+    pressure: str = "1 atm",
+    pH: float = 7,
+    pE: float = 8.5,
+    balance_charge: str | None = None,
+    solvent: str | list = "H2O",
+    engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
+    database: str | Path | Store | None = None,
+    default_diffusion_coeff: float = 1.6106e-9,
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
+) -> None:
+    self.solvent = solvent
+    self.components = {}
+    if solutes:
+        if isinstance(solutes, dict):
+            for formula, amount in solutes.items():
+                self.add_solute(formula, amount)
+        elif isinstance(solutes, list):
+            for formula, amount in solutes:
+                self.add_solute(formula, amount)
+
+
 
 class Solution(MSONable):
     """
@@ -130,6 +211,68 @@ class Solution(MSONable):
             Temperature: 293.150 K
             Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
         """
+        # Initialize basic solution attributes
+        self.volume = ureg.Quantity(volume or "1 L")
+        self.temperature = ureg.Quantity(temperature)
+        self.pressure = ureg.Quantity(pressure)
+        self.pH = pH
+        self.pE = pE
+        self.balance_charge = balance_charge
+        self.solvent = solvent
+        self.engine = engine
+        self.database = database
+        self.default_diffusion_coeff = default_diffusion_coeff
+        self.logger = logging.getLogger("pyEQL.Solution")
+        if log_level:
+            self.logger.setLevel(log_level)
+
+        # Initialize solution components
+        self.components = {}
+
+        # Parse solutes
+        if solutes:
+            if isinstance(solutes, dict):
+                for formula, amount in solutes.items():
+                    self.add_solute(formula, amount)
+            elif isinstance(solutes, list) and all(isinstance(i, list) and len(i) == 2 for i in solutes):
+                for formula, amount in solutes:
+                    self.add_solute(formula, amount)
+            else:
+                raise ValueError("Solutes must be a dict or a list of [formula, amount] pairs.")
+
+        # Ensure volume consistency
+        self.volume_update_required = False
+
+        # Handle special units like "%" and "ppb"
+        for formula, amount in self.components.items():
+            if isinstance(amount, str) and ("%" in amount or "ppb" in amount):
+                try:
+                    self.components[formula] = ureg.Quantity(amount)
+                except UndefinedUnitError:
+                    self.logger.error(f"Unit {amount} for {formula} is not defined in the unit registry.")
+
+        def preprocess_units(amount: str) -> str:
+        """
+        Convert unsupported units into pint-compatible equivalents.
+        
+        Args:
+            amount: The input quantity string, e.g., '1000 ppb'.
+
+        Returns:
+            A pint-compatible quantity string.
+        """
+        if "ppb" in amount:
+            value = amount.replace("ppb", "").strip()
+            return f"{value} microgram/L"
+        elif "ppm" in amount:
+            value = amount.replace("ppm", "").strip()
+            return f"{value} milligram/L"
+        elif "%" in amount:
+            value = amount.replace("%", "").strip()
+            return f"{value} dimensionless"
+        return amount  # Return unchanged if no preprocessing needed
+
+        
         # create a logger and attach it to this class
         self.log_level = log_level.upper()
         self.logger = logging.getLogger("pyEQL")
@@ -1215,6 +1358,9 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should contain
             both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
+        # Preprocess the amount string to ensure compatibility with Pint
+        amount = preprocess_units(amount)
+
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
@@ -2722,6 +2868,8 @@ class Solution(MSONable):
 
         return result_list
 
+
+    
     @deprecated(
         message="list_activities() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
     )

@@ -50,4 +50,9 @@ IonDB = JSONStore(str(json_db_file), key="formula", encoding="utf8")
 # instantiated Store in memory, which should speed up instantiation of Solution objects.
 IonDB.connect()
 
+# Extend the UnitRegistry with custom units
+ureg.define("ppb = 1e-9 * mole / mole = parts_per_billion")
+ureg.define("ppm = 1e-6 * mole / mole = parts_per_million")
+ureg.define("% = 0.01 = percent")
+
 from pyEQL.solution import Solution  # noqa: E402
