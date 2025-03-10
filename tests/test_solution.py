@@ -15,6 +15,7 @@ import pytest
 import yaml
 
 from pyEQL import Solution, ureg
+ureg.define("ppb = microgram / liter")
 from pyEQL.engines import IdealEOS, NativeEOS
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
@@ -182,6 +183,21 @@ def test_init_raises():
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
+
+def test_init_units():
+    # Test 1: Initialize with 'ppb'
+    sol = Solution({"Ca+2": "1000 ppb"})
+    assert sol.get_amount("Ca+2", "ppb").magnitude == pytest.approx(1000, rel=1e-2)
+
+    # Test 2: Initialize with 'ppm'
+    sol = Solution({"Ca+2": "1 ppm"})
+    assert sol.get_amount("Ca+2", "ppm").magnitude == pytest.approx(1, rel=1e-2)
+
+    # Test 3: Get amount in '%'
+    sol = Solution({"Ca+2": "1 ppm"})
+    amount = sol.get_amount("Ca+2", "%")
+   
+    assert isinstance(amount, type(ureg.Quantity(0, "dimensionless")))
 
 
 def test_init_engines():
