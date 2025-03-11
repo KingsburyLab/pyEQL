@@ -21,9 +21,9 @@ bcrypt==4.3.0
     # via paramiko
 black==25.1.0
     # via pyEQL (setup.py)
-boto3==1.37.9
+boto3==1.37.10
     # via maggma
-botocore==1.37.9
+botocore==1.37.10
     # via
     #   boto3
     #   s3transfer
@@ -143,13 +143,13 @@ mypy-extensions==1.0.0
     #   mypy
 myst-parser[linkify]==4.0.1
     # via pyEQL (setup.py)
-narwhals==1.29.1
+narwhals==1.30.0
     # via plotly
 networkx==3.4.2
     # via pymatgen
 nodeenv==1.9.1
     # via pre-commit
-numpy==1.26.4
+numpy==2.2.3
     # via
     #   contourpy
     #   maggma
@@ -223,7 +223,7 @@ pygments==2.19.1
     # via
     #   rich
     #   sphinx
-pymatgen==2025.2.18
+pymatgen==2025.3.10
     # via pyEQL (setup.py)
 pymongo==4.10.1
     # via maggma
