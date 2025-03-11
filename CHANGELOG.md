@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Support `numpy>2.0`
-- Bump `pint` to `0.24.1` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
+- Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
 
 ## [1.2.0] - 2024-09-24
