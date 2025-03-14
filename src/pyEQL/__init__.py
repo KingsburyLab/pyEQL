@@ -34,6 +34,12 @@ logger.addHandler(logging.NullHandler())
 # here we assign the identifier 'unit' to the UnitRegistry
 # the cache_folder arg is added to speed up registry instantiation
 ureg = UnitRegistry(cache_folder=":auto:")
+
+# Define unit conversions for ppb, ppm, and ppt
+ureg.define("ppb = microgram / liter")
+ureg.define("ppm = milligram / liter")
+ureg.define("ppt = nanogram / liter")
+
 # convert "offset units" so that, e.g. Quantity('25 degC') works without error
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
 ureg.autoconvert_offset_to_baseunit = True

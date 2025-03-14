@@ -242,8 +242,8 @@ class Solution(MSONable):
         self.components["H2O"] = moles
 
         # set the pH with H+ and OH-
-        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
-        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
+        self.add_solute("H+", interpret_units(str(10 ** (-1 * pH)) + " mol/L"))
+        self.add_solute("OH-", interpret_units(str(K_W / (10 ** (-1 * pH))) + " mol/L"))
 
         # populate the other solutes
         self._solutes = solutes
@@ -251,15 +251,17 @@ class Solution(MSONable):
             self._solutes = {}
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
+                v = interpret_units(v)
                 self.add_solute(k, v)
         elif isinstance(self._solutes, list):
             msg = (
-                'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
-                '(e.g., {"Na+":"0.5 mol/L"} instead.)'
+                'List input of solutes (e.g., [["Na+", "0.5 mol/L"]]) is deprecated! Use dictionary formatted input '
+                '(e.g., {"Na+": "0.5 mol/L"} instead.)'
             )
             self.logger.warning(msg)
             warnings.warn(msg, DeprecationWarning)
             for item in self._solutes:
+                item[1] = interpret_units(item[1])
                 self.add_solute(*item)
 
         # determine the species that will be used for charge balancing, when needed.
@@ -2744,3 +2746,6 @@ class Solution(MSONable):
         print("=====================\n")
         for i in self.components:
             print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
+
+
+print(ureg.parse_expression("ppb"))  # Should print 'microgram / liter'
