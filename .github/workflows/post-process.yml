@@ -37,6 +37,7 @@ jobs:
           - { python: "3.10", resolution: lowest-direct, extras: testing }
           - { python: "3.11", resolution: highest, extras: testing }
           - { python: "3.12", resolution: lowest-direct, extras: testing }
+          - { python: "3.13", resolution: highest, extras: testing }
         os:
           - ubuntu-latest
           - macos-latest
