@@ -242,8 +242,8 @@ class Solution(MSONable):
         self.components["H2O"] = moles
 
         # set the pH with H+ and OH-
-        self.add_solute("H+", interpret_units(str(10 ** (-1 * pH)) + " mol/L"))
-        self.add_solute("OH-", interpret_units(str(K_W / (10 ** (-1 * pH))) + " mol/L"))
+        self.add_solute("H+", f"{10 ** (-1 * pH)} mol/L")
+        self.add_solute("OH-", f"{K_W / (10 ** (-1 * pH))} mol/L")
 
         # populate the other solutes
         self._solutes = solutes
@@ -2746,6 +2746,3 @@ class Solution(MSONable):
         print("=====================\n")
         for i in self.components:
             print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
-
-
-print(ureg.parse_expression("ppb"))  # Should print 'microgram / liter'
