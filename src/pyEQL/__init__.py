@@ -37,8 +37,9 @@ ureg = UnitRegistry(cache_folder=":auto:")
 
 # Define unit conversions for ppb, ppm, and ppt
 ureg.define("ppb = microgram / liter")
-ureg.define("ppm = 1e-6")
+ureg.define("ppm = milligram / liter")
 ureg.define("ppt = nanogram / liter")
+
 
 # convert "offset units" so that, e.g. Quantity('25 degC') works without error
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
