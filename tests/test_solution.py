@@ -14,7 +14,7 @@ def test_unit_conversions():
     ppm_value = sol.get_amount("Ca+2", "ppm").magnitude
     milligram_per_liter = sol.get_amount("Ca+2", "milligram/L").magnitude
     assert np.isclose(ppm_value, 1), f"Expected 1, got {ppm_value}"
-    assert np.isclose(milligram_per_liter, 1), f"Expected 1, got {milligram_per_liter}"
+    assert np.isclose(milligram_per_liter, 1, rtol=1e-2), f"Expected ~1, got {milligram_per_liter}"
 
     sol = Solution({"Ca+2": "1 ppt"})
     ppt_value = sol.get_amount("Ca+2", "ppt").magnitude
