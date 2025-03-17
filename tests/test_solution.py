@@ -1,7 +1,6 @@
 """
 pyEQL volume and concentration methods test suite
 =================================================
-
 This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class
 """
@@ -411,21 +410,32 @@ def test_get_amount(s3, s5):
         "mol",
         "eq",
     ]
-    # TODO - make this test more precise i.e. test numerical values
+    # Check that get_amount returns a valid quantity for all units.
     for u in TEST_UNITS:
         qty = s3.get_amount("Na+", u)
         assert isinstance(qty, ureg.Quantity), f"get_amount() failed for unit {u}"
-        assert qty.magnitude > 0
-    assert s3.get_amount("Na+", "ppm") == s3.get_amount("Na+", "mg/L")
-    assert s3.get_amount("Na+", "ppb") == s3.get_amount("Na+", "ug/L")
-    assert s3.get_amount("Na+", "ppt") == s3.get_amount("Na+", "ng/L")
+        assert qty.magnitude > 0, f"Quantity for unit {u} is non-positive"
+
+    # Compare ppm to mg/L by converting the ppm value to 'milligram / liter'
+    ppm_as_mgL = s3.get_amount("Na+", "ppm").to("milligram / liter").magnitude
+    mgL = s3.get_amount("Na+", "mg/L").magnitude
+    assert np.isclose(ppm_as_mgL, mgL, rtol=1e-12), f"Expected ppm to equal mg/L: got {ppm_as_mgL} vs {mgL}"
+
+    # Similarly for ppb to ug/L
+    ppb_as_ugL = s3.get_amount("Na+", "ppb").to("microgram / liter").magnitude
+    ugL = s3.get_amount("Na+", "ug/L").magnitude
+    assert np.isclose(ppb_as_ugL, ugL, rtol=1e-12), f"Expected ppb to equal ug/L: got {ppb_as_ugL} vs {ugL}"
+
+    # And for ppt to ng/L
+    ppt_as_ngL = s3.get_amount("Na+", "ppt").to("nanogram / liter").magnitude
+    ngL = s3.get_amount("Na+", "ng/L").magnitude
+    assert np.isclose(ppt_as_ngL, ngL, rtol=1e-12), f"Expected ppt to equal ng/L: got {ppt_as_ngL} vs {ngL}"
+
+    # The rest of the comparisons remain the same.
     assert s3.get_amount("Na+", "eq/L") == s3.get_amount("Na+", "M")
     assert s3.get_amount("Na+", "meq/L") == s3.get_amount("Na+", "mmol/L")
     assert s5.get_amount("CO3-2", "eq/L") == -2 * s5.get_amount("CO3-2", "M")
     assert s5.get_amount("CO3-2", "eq") == -2 * s5.get_amount("CO3-2", "mol")
-    # TODO - pint does not consider "mM" and "mmol/L" equivalent. Consider filing bug report? Or perhaps an issue with
-    # my unit definition file
-    # assert s3.get_amount('Na+', "mmol/L") == s3.get_amount('Na+', "mM")
 
 
 def test_components_by_element(s1, s2):
@@ -765,6 +775,20 @@ def test_from_preset(tmp_path):
     assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
 
 
+def test_unit_conversions():
+    sol = Solution({"Ca+2": "1000 ppb"})
+    ppb_value = sol.get_amount("Ca+2", "ppb").magnitude
+    microgram_per_liter = sol.get_amount("Ca+2", "microgram/L").magnitude
+    assert np.isclose(ppb_value, 1000), f"Expected 1000, got {ppb_value}"
+    assert np.isclose(microgram_per_liter, 1000), f"Expected 1000, got {microgram_per_liter}"
+
+    sol = Solution({"Ca+2": "1 ppm"})
+    ppm_value = sol.get_amount("Ca+2", "ppm").magnitude
+    milligram_per_liter = sol.get_amount("Ca+2", "milligram/L").magnitude
+    assert np.isclose(ppm_value, 1), f"Expected 1, got {ppm_value}"
+    assert np.isclose(milligram_per_liter, 1, rtol=1e-2), f"Expected ~1, got {milligram_per_liter}"
+
+
 def test_to_from_file(tmp_path, s1):
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
@@ -779,3 +803,8 @@ def test_to_from_file(tmp_path, s1):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
         Solution.from_file(filename)
+    sol = Solution({"Ca+2": "1 ppt"})
+    ppt_value = sol.get_amount("Ca+2", "ppt").magnitude
+    nanogram_per_liter = sol.get_amount("Ca+2", "nanogram/L").magnitude
+    assert np.isclose(ppt_value, 1), f"Expected 1, got {ppt_value}"
+    assert np.isclose(nanogram_per_liter, 1), f"Expected 1, got {nanogram_per_liter}"
