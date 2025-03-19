@@ -2350,10 +2350,6 @@ class Solution(MSONable):
         if self.volume_update_required:
             self._update_volume()
         d = super().as_dict()
-        for k, v in d.items():
-            # convert all Quantity to str
-            if isinstance(v, Quantity):
-                d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
         # replace the engine with the associated str
@@ -2367,7 +2363,7 @@ class Solution(MSONable):
         # because of the automatic volume updating that takes place during the __init__ process,
         # care must be taken here to recover the exact quantities of solute and volume
         # first we store the volume of the serialized solution
-        orig_volume = ureg.Quantity(d["volume"])
+        orig_volume = ureg.Quantity(d["volume"]["data"])
         # then instantiate a new one
         decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
         new_sol = cls(**decoded)
