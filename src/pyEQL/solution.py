@@ -2145,7 +2145,7 @@ class Solution(MSONable):
 
             .. math::
 
-                D_{\gamma} = D^0 \exp(\frac{-a1 A |z_i| \sqrt{I}}{1+\kappa a}
+                D_{\gamma} = D^0 \exp(\frac{-a1 A |z_i| \sqrt{I}}{1+\kappa a})
 
             .. math::
 
@@ -2205,8 +2205,9 @@ class Solution(MSONable):
                 a1 = 1.6
                 a2 = 4.73
 
-            # use the PHREEQC model from Ref 2 to correct for temperature
-            D_final = D * np.exp(d / T_sol - d / T_ref) * mu_ref / mu
+            # use the PHREEQC model from Ref 2 to correct for temperature if more than 1 degree different from T_ref
+            if abs(T_sol - T_ref) > 1:
+                D *= np.exp(d / T_sol - d / T_ref) * mu_ref / mu
 
             if activity_correction:
                 A = _debye_parameter_activity(str(self.temperature)).to("kg**0.5/mol**0.5").magnitude / 2.303
@@ -2215,14 +2216,12 @@ class Solution(MSONable):
                 IS = self.ionic_strength.magnitude
                 kappaa = B * IS**0.5 * a2 / (1 + IS**0.75)
                 # correct for ionic strength
-                D_final *= np.exp(-a1 * A * abs(z) * IS**0.5 / (1 + kappaa))
+                D *= np.exp(-a1 * A * abs(z) * IS**0.5 / (1 + kappaa))
             # else:
             #     # per CRC handbook, D increases by 2-3% per degree above 25 C
             #     return D * (1 + 0.025 * (T_sol - T_ref))
-        else:
-            D_final = D
 
-        return D_final
+        return D
 
     def _get_mobility(self, solute: str) -> Quantity:
         r"""
