@@ -648,10 +648,12 @@ class PourbaixDiagram(MSONable):
             list_combos.append(list(combo))
         all_combos = list_combos
 
+        elt_comps = self._elt_comp if isinstance(self._elt_comp, list) else [self._elt_comp]
+
         multi_entries: list = []
 
         # Parallel processing of multi-entry generation
-        for sub_comp in self._elt_comp:
+        for sub_comp in elt_comps:
             tot_comp = Composition(sub_comp)
             if nproc is not None:
                 func = partial(self.process_multientry, prod_comp=tot_comp)
