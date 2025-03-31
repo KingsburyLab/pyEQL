@@ -105,7 +105,7 @@ class Pourbaix_api:
         # position the ion energies relative to most stable reference state
         ion_entries = []
         for _, i_d in enumerate(ion_data):
-            formula_cleaned = re.sub(r"\(aq\)|\(s\)|\(l\)|\(g\)", "", i_d["formula"])
+            formula_cleaned = re.sub(r"\(aq\)|\(l\)|\(g\)", "", i_d["formula"])
             ion = Ion.from_formula(formula_cleaned)
             refs = [e for e in pd.all_entries if e.composition.reduced_formula == i_d["data"]["RefSolid"]]
             if not refs:
