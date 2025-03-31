@@ -14,6 +14,7 @@ import platform
 import numpy as np
 import pytest
 import yaml
+from importlib.resources import files
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -751,9 +752,10 @@ def test_from_preset(tmp_path):
 
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
-    with open(os.path.join("src/pyEQL/presets", f"{preset_name}.yaml")) as file:
+    preset_path = files("pyEQL") / "presets" / "seawater.yaml"
+    
+    with open(str(preset_path), "r") as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
-    # test valid preset
     assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution.pressure == ureg.Quantity(data["pressure"])
