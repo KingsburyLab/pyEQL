@@ -436,8 +436,7 @@ class PourbaixDiagram(MSONable):
     def __init__(
         self,
         entries: list[PourbaixEntry] | list[MultiEntry],
-        comp_dict: dict[str, float] | None = None,
-        multi_comp_dict: list[dict[str, float]] | None = None,
+        comp_dict: list[dict[str, float]] | dict[str, float] | None = None,
         conc_dict: dict[str, float] | None = None,
         filter_solids: bool = True,
         nproc: int | None = None,
@@ -492,7 +491,6 @@ class PourbaixDiagram(MSONable):
             self._conc_dict = conc_dict
 
             self._elt_comp = comp_dict
-            self._multi_elt_comp = multi_comp_dict
             self.pourbaix_elements = self.pbx_elts
 
             solid_entries = [entry for entry in entries if entry.phase_type == "Solid"]
@@ -520,18 +518,19 @@ class PourbaixDiagram(MSONable):
                 solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
 
             self._filtered_entries = solid_entries + ion_entries
-            if len(comp_dict) > 1:
-                self._multi_element = True
-                self._processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
-            else:
-                self._processed_entries = self._filtered_entries
-                self._multi_element = False
-
-            if multi_comp_dict:
-                for sub_comp_dict in multi_comp_dict:
-                    if len(sub_comp_dict) > 1:
-                        self._multi_element = True
-                        self._processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
+            if not isinstance(comp_dict, list):
+                comp_dict = [comp_dict]
+            all_processed_entries = []
+            for sub_comp_dict in comp_dict:
+                if len(sub_comp_dict) > 1:
+                    self._multi_element = True
+                    processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
+                else:
+                    processed_entries = self._filtered_entries
+                    self._multi_element = False
+                all_processed_entries.extend(processed_entries)
+            
+            self._processed_entries = all_processed_entries
 
         self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
 
@@ -630,9 +629,7 @@ class PourbaixDiagram(MSONable):
         Returns:
             list[MultiEntry]: stable MultiEntry candidates
         """
-        # Get composition
-        tot_comp = Composition(self._elt_comp)
-
+        
         min_entries, valid_facets = self._get_hull_in_nph_nphi_space(entries)
 
         combos: list[list[frozenset]] = []
@@ -654,7 +651,8 @@ class PourbaixDiagram(MSONable):
         multi_entries: list = []
 
         # Parallel processing of multi-entry generation
-        if tot_comp:
+        for sub_comp in self._elt_comp:
+            tot_comp = Composition(sub_comp)
             if nproc is not None:
                 func = partial(self.process_multientry, prod_comp=tot_comp)
                 with Pool(nproc) as proc_pool:
@@ -665,20 +663,6 @@ class PourbaixDiagram(MSONable):
                 for combo in all_combos:
                     if multi_entry := self.process_multientry(combo, prod_comp=tot_comp):
                         multi_entries.append(multi_entry)
-
-        if self._multi_elt_comp:
-            if nproc is not None:
-                for sub_comp in self._multi_elt_comp:
-                    func = partial(self.process_multientry, prod_comp=sub_comp)
-                    with Pool(nproc) as proc_pool:
-                        multi_entries = list(proc_pool.imap(func, all_combos))
-                    multi_entries = list(filter(bool, multi_entries))
-            else:
-                # Serial processing of multi-entry generation
-                for sub_comp in self._multi_elt_comp:
-                    for combo in all_combos:
-                        if multi_entry := self.process_multientry(combo, prod_comp=sub_comp):
-                            multi_entries.append(multi_entry)
 
         return multi_entries
 
