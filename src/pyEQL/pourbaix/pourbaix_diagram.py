@@ -529,7 +529,7 @@ class PourbaixDiagram(MSONable):
                     processed_entries = self._filtered_entries
                     self._multi_element = False
                 all_processed_entries.extend(processed_entries)
-            
+
             self._processed_entries = all_processed_entries
 
         self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
@@ -629,7 +629,7 @@ class PourbaixDiagram(MSONable):
         Returns:
             list[MultiEntry]: stable MultiEntry candidates
         """
-        
+
         min_entries, valid_facets = self._get_hull_in_nph_nphi_space(entries)
 
         combos: list[list[frozenset]] = []
