@@ -524,7 +524,7 @@ class PourbaixDiagram(MSONable):
             for sub_comp_dict in comp_dict:
                 if len(sub_comp_dict) > 1:
                     self._multi_element = True
-                    processed_entries = self._preprocess_pourbaix_entries.extend(self._filtered_entries, nproc=nproc)
+                    processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
                 else:
                     processed_entries = self._filtered_entries
                     self._multi_element = False
