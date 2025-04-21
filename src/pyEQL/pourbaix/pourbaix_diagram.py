@@ -526,15 +526,11 @@ class PourbaixDiagram(MSONable):
             for sub_comp_dict in comp_dict:
                 if len(sub_comp_dict) > 1:
                     self._multi_element = True
-                    processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
-                    self._processed_entries.extend(processed_entries)
+                    entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
                 else:
-                    # processed_entries = self._filtered_entries
                     self._multi_element = False
-                    self._processed_entries.extend(self._filtered_entries)
-                # all_processed_entries.extend(processed_entries)
-
-            # self._processed_entries = all_processed_entries
+                    entries = self._filtered_entries
+                self._processed_entries.extend(entries)
 
         self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
 
