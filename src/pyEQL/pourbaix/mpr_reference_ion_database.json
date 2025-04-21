@@ -23,7 +23,7 @@
                 "value": -580.1
             }
         },
-        "formula": "Be[2+]",
+        "formula": "Be[+2]",
         "identifier": "Be[2+]"
     },
     {
@@ -50,7 +50,7 @@
                 "value": -580.1
             }
         },
-        "formula": "BeO2[2-]",
+        "formula": "BeO2[-2]",
         "identifier": "BeO2[2-]"
     },
     {
@@ -77,7 +77,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "B4O7[2-]",
+        "formula": "B4O7[-2]",
         "identifier": "B4O7[2-]"
     },
     {
@@ -104,7 +104,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "H2B4O7(aq)",
+        "formula": "B4H2O7(aq)",
         "identifier": "H2B4O7(aq)"
     },
     {
@@ -131,7 +131,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "H5(BO3)2(H2O2)2[-]",
+        "formula": "B2H9O10[-1]",
         "identifier": "H5(BO3)2(H2O2)2[-]"
     },
     {
@@ -158,7 +158,7 @@
                 "value": 113.7
             }
         },
-        "formula": "NH4[+]",
+        "formula": "NH4[+1]",
         "identifier": "NH4[+]"
     },
     {
@@ -185,7 +185,7 @@
                 "value": 113.7
             }
         },
-        "formula": "N2H5[+]",
+        "formula": "H5N2[+1]",
         "identifier": "N2H5[+]"
     },
     {
@@ -212,7 +212,7 @@
                 "value": 113.7
             }
         },
-        "formula": "HONO(aq)",
+        "formula": "HNO2(aq)",
         "identifier": "HONO(aq)"
     },
     {
@@ -239,7 +239,7 @@
                 "value": -549.6
             }
         },
-        "formula": "F[-]",
+        "formula": "F[-1]",
         "identifier": "F[-]"
     },
     {
@@ -266,7 +266,7 @@
                 "value": -549.6
             }
         },
-        "formula": "HF2[-]",
+        "formula": "HF2[-1]",
         "identifier": "HF2[-]"
     },
     {
@@ -293,7 +293,7 @@
                 "value": -569.3
             }
         },
-        "formula": "MgOH[+]",
+        "formula": "MgOH[+1]",
         "identifier": "MgOH[+]"
     },
     {
@@ -320,7 +320,7 @@
                 "value": -1582.0
             }
         },
-        "formula": "AlO2[-]",
+        "formula": "AlO2[-1]",
         "identifier": "AlO2[-]"
     },
     {
@@ -374,7 +374,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "PO4[3-]",
+        "formula": "PO4[-3]",
         "identifier": "PO4[3-]"
     },
     {
@@ -401,7 +401,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "P2O7[4-]",
+        "formula": "P2O7[-4]",
         "identifier": "P2O7[4-]"
     },
     {
@@ -428,7 +428,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "HPO4[2-]",
+        "formula": "HPO4[-2]",
         "identifier": "HPO4[2-]"
     },
     {
@@ -482,7 +482,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "HP2O7[3-]",
+        "formula": "P2HO7[-3]",
         "identifier": "HP2O7[3-]"
     },
     {
@@ -509,7 +509,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "H3P2O7[-]",
+        "formula": "P2H3O7[-1]",
         "identifier": "H3P2O7[-]"
     },
     {
@@ -536,7 +536,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "H4P2O7(aq)",
+        "formula": "P2H4O7(aq)",
         "identifier": "H4P2O7(aq)"
     },
     {
@@ -563,7 +563,7 @@
                 "value": -391.3
             }
         },
-        "formula": "Cl3[-]",
+        "formula": "Cl[-0.33333333]",
         "identifier": "Cl3[-]"
     },
     {
@@ -590,7 +590,7 @@
                 "value": -391.3
             }
         },
-        "formula": "ClO2[-]",
+        "formula": "ClO2[-1]",
         "identifier": "ClO2[-]"
     },
     {
@@ -617,7 +617,7 @@
                 "value": -391.3
             }
         },
-        "formula": "ClO4[-]",
+        "formula": "ClO4[-1]",
         "identifier": "ClO4[-]"
     },
     {
@@ -644,7 +644,7 @@
                 "value": -322.1
             }
         },
-        "formula": "K[+]",
+        "formula": "K[+1]",
         "identifier": "K[+]"
     },
     {
@@ -671,7 +671,7 @@
                 "value": -1819.0
             }
         },
-        "formula": "Sc(OH)[2+]",
+        "formula": "ScOH[+2]",
         "identifier": "Sc(OH)[2+]"
     },
     {
@@ -698,7 +698,7 @@
                 "value": -888.8
             }
         },
-        "formula": "TiO[2+]",
+        "formula": "TiO[+2]",
         "identifier": "TiO[2+]"
     },
     {
@@ -725,7 +725,7 @@
                 "value": -888.8
             }
         },
-        "formula": "TiO2[2+]",
+        "formula": "TiO2[+2]",
         "identifier": "TiO2[2+]"
     },
     {
@@ -752,7 +752,7 @@
                 "value": -657.5
             }
         },
-        "formula": "V2O7[4-]",
+        "formula": "V2O7[-4]",
         "identifier": "V2O7[4-]"
     },
     {
@@ -779,7 +779,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VOH2O2[3+]",
+        "formula": "VH2O3[+3]",
         "identifier": "VOH2O2[3+]"
     },
     {
@@ -806,7 +806,7 @@
                 "value": -657.5
             }
         },
-        "formula": "HVO4(aq)",
+        "formula": "VHO4(aq)",
         "identifier": "HVO4(aq)"
     },
     {
@@ -833,7 +833,7 @@
                 "value": -657.5
             }
         },
-        "formula": "H2V10O28[4-]",
+        "formula": "V5HO14[-2]",
         "identifier": "H2V10O28[4-]"
     },
     {
@@ -860,7 +860,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "CrO4[2-]",
+        "formula": "CrO4[-2]",
         "identifier": "CrO4[2-]"
     },
     {
@@ -887,7 +887,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "Cr2O7[2-]",
+        "formula": "Cr2O7[-2]",
         "identifier": "Cr2O7[2-]"
     },
     {
@@ -914,7 +914,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "HCrO4[-]",
+        "formula": "CrHO4[-1]",
         "identifier": "HCrO4[-]"
     },
     {
@@ -941,7 +941,7 @@
                 "value": -466.1
             }
         },
-        "formula": "Mn[2+]",
+        "formula": "Mn[+2]",
         "identifier": "Mn[2+]"
     },
     {
@@ -968,7 +968,7 @@
                 "value": -466.1
             }
         },
-        "formula": "MnO4[-]",
+        "formula": "MnO4[-1]",
         "identifier": "MnO4[-]"
     },
     {
@@ -995,7 +995,7 @@
                 "value": -466.1
             }
         },
-        "formula": "MnOH[+]",
+        "formula": "MnOH[+1]",
         "identifier": "MnOH[+]"
     },
     {
@@ -1022,7 +1022,7 @@
                 "value": -466.1
             }
         },
-        "formula": "Mn(OH)3[-]",
+        "formula": "Mn(OH)3[-1]",
         "identifier": "Mn(OH)3[-]"
     },
     {
@@ -1076,7 +1076,7 @@
                 "value": -741.5
             }
         },
-        "formula": "Fe2(OH)2[4+]",
+        "formula": "FeOH[+2]",
         "identifier": "Fe2(OH)2[4+]"
     },
     {
@@ -1103,7 +1103,7 @@
                 "value": -795.0
             }
         },
-        "formula": "Co[2+]",
+        "formula": "Co[+2]",
         "identifier": "Co[2+]"
     },
     {
@@ -1157,7 +1157,7 @@
                 "value": -998.4
             }
         },
-        "formula": "Ga[2+]",
+        "formula": "Ga[+2]",
         "identifier": "Ga[2+]"
     },
     {
@@ -1184,7 +1184,7 @@
                 "value": -998.4
             }
         },
-        "formula": "Ga[3+]",
+        "formula": "Ga[+3]",
         "identifier": "Ga[3+]"
     },
     {
@@ -1211,7 +1211,7 @@
                 "value": -777.4
             }
         },
-        "formula": "H2AsO3[-]",
+        "formula": "AsH2O3[-1]",
         "identifier": "H2AsO3[-]"
     },
     {
@@ -1238,7 +1238,7 @@
                 "value": -777.4
             }
         },
-        "formula": "HAsO4[2-]",
+        "formula": "AsHO4[-2]",
         "identifier": "HAsO4[2-]"
     },
     {
@@ -1265,7 +1265,7 @@
                 "value": -777.4
             }
         },
-        "formula": "H3AsO4(aq)",
+        "formula": "AsH3O4(aq)",
         "identifier": "H3AsO4(aq)"
     },
     {
@@ -1292,7 +1292,7 @@
                 "value": -356.2
             }
         },
-        "formula": "Br3[-]",
+        "formula": "Br[-0.33333333]",
         "identifier": "Br3[-]"
     },
     {
@@ -1319,7 +1319,7 @@
                 "value": -356.2
             }
         },
-        "formula": "BrO[-]",
+        "formula": "BrO[-1]",
         "identifier": "BrO[-]"
     },
     {
@@ -1373,7 +1373,7 @@
                 "value": -300.0
             }
         },
-        "formula": "Rb[+]",
+        "formula": "Rb[+1]",
         "identifier": "Rb[+]"
     },
     {
@@ -1400,7 +1400,7 @@
                 "value": -1816.0
             }
         },
-        "formula": "Y[3+]",
+        "formula": "Y[+3]",
         "identifier": "Y[3+]"
     },
     {
@@ -1427,7 +1427,7 @@
                 "value": -1816.0
             }
         },
-        "formula": "Y2(OH)2[4+]",
+        "formula": "YOH[+2]",
         "identifier": "Y2(OH)2[4+]"
     },
     {
@@ -1454,7 +1454,7 @@
                 "value": -668.2
             }
         },
-        "formula": "MoO4[2-]",
+        "formula": "MoO4[-2]",
         "identifier": "MoO4[2-]"
     },
     {
@@ -1481,7 +1481,7 @@
                 "value": -252.8
             }
         },
-        "formula": "RuO4[2-]",
+        "formula": "RuO4[-2]",
         "identifier": "RuO4[2-]"
     },
     {
@@ -1508,7 +1508,7 @@
                 "value": -252.8
             }
         },
-        "formula": "RuO4[-]",
+        "formula": "RuO4[-1]",
         "identifier": "RuO4[-]"
     },
     {
@@ -1535,7 +1535,7 @@
                 "value": -252.8
             }
         },
-        "formula": "Ru(OH)2[2+]",
+        "formula": "H2RuO2[+2]",
         "identifier": "Ru(OH)2[2+]"
     },
     {
@@ -1562,7 +1562,7 @@
                 "value": -11.18
             }
         },
-        "formula": "Ag[+]",
+        "formula": "Ag[+1]",
         "identifier": "Ag[+]"
     },
     {
@@ -1616,7 +1616,7 @@
                 "value": -228.7
             }
         },
-        "formula": "CdOH[+]",
+        "formula": "CdOH[+1]",
         "identifier": "CdOH[+]"
     },
     {
@@ -1643,7 +1643,7 @@
                 "value": -831.9
             }
         },
-        "formula": "In[2+]",
+        "formula": "In[+2]",
         "identifier": "In[2+]"
     },
     {
@@ -1670,7 +1670,7 @@
                 "value": -831.9
             }
         },
-        "formula": "In[3+]",
+        "formula": "In[+3]",
         "identifier": "In[3+]"
     },
     {
@@ -1697,7 +1697,7 @@
                 "value": -251.9
             }
         },
-        "formula": "Sn[2+]",
+        "formula": "Sn[+2]",
         "identifier": "Sn[2+]"
     },
     {
@@ -1724,7 +1724,7 @@
                 "value": -251.9
             }
         },
-        "formula": "SnOH[+]",
+        "formula": "SnOH[+1]",
         "identifier": "SnOH[+]"
     },
     {
@@ -1751,7 +1751,7 @@
                 "value": -251.9
             }
         },
-        "formula": "SnO3[2-]",
+        "formula": "SnO3[-2]",
         "identifier": "SnO3[2-]"
     },
     {
@@ -1778,7 +1778,7 @@
                 "value": -864.9
             }
         },
-        "formula": "SbO2[-]",
+        "formula": "SbO2[-1]",
         "identifier": "SbO2[-]"
     },
     {
@@ -1805,7 +1805,7 @@
                 "value": -177.1
             }
         },
-        "formula": "I2(aq)",
+        "formula": "I(aq)",
         "identifier": "I2(aq)"
     },
     {
@@ -1832,7 +1832,7 @@
                 "value": -177.1
             }
         },
-        "formula": "IO[-]",
+        "formula": "IO[-1]",
         "identifier": "IO[-]"
     },
     {
@@ -1886,7 +1886,7 @@
                 "value": -1031.0
             }
         },
-        "formula": "Ce[3+]",
+        "formula": "Ce[+3]",
         "identifier": "Ce[3+]"
     },
     {
@@ -1913,7 +1913,7 @@
                 "value": -1031.0
             }
         },
-        "formula": "Ce[4+]",
+        "formula": "Ce[+4]",
         "identifier": "Ce[4+]"
     },
     {
@@ -1940,7 +1940,7 @@
                 "value": -1031.0
             }
         },
-        "formula": "Ce(OH)[3+]",
+        "formula": "CeOH[+3]",
         "identifier": "Ce(OH)[3+]"
     },
     {
@@ -1967,7 +1967,7 @@
                 "value": -1720.0
             }
         },
-        "formula": "PrOH[2+]",
+        "formula": "PrOH[+2]",
         "identifier": "PrOH[2+]"
     },
     {
@@ -1994,7 +1994,7 @@
                 "value": -1722.0
             }
         },
-        "formula": "Nd[3+]",
+        "formula": "Nd[+3]",
         "identifier": "Nd[3+]"
     },
     {
@@ -2021,7 +2021,7 @@
                 "value": -1734.0
             }
         },
-        "formula": "Sm[3+]",
+        "formula": "Sm[+3]",
         "identifier": "Sm[3+]"
     },
     {
@@ -2048,7 +2048,7 @@
                 "value": -1739.0
             }
         },
-        "formula": "Gd[3+]",
+        "formula": "Gd[+3]",
         "identifier": "Gd[3+]"
     },
     {
@@ -2075,7 +2075,7 @@
                 "value": -1771.0
             }
         },
-        "formula": "Dy[3+]",
+        "formula": "Dy[+3]",
         "identifier": "Dy[3+]"
     },
     {
@@ -2102,7 +2102,7 @@
                 "value": -1792.0
             }
         },
-        "formula": "Ho[3+]",
+        "formula": "Ho[+3]",
         "identifier": "Ho[3+]"
     },
     {
@@ -2129,7 +2129,7 @@
                 "value": -239.2
             }
         },
-        "formula": "H2OsO5[-]",
+        "formula": "H2OsO5[-1]",
         "identifier": "H2OsO5[-]"
     },
     {
@@ -2156,7 +2156,7 @@
                 "value": -0.0
             }
         },
-        "formula": "Pt[2+]",
+        "formula": "Pt[+2]",
         "identifier": "Pt[2+]"
     },
     {
@@ -2183,7 +2183,7 @@
                 "value": 77.76
             }
         },
-        "formula": "Au(OH)3(aq)",
+        "formula": "H3AuO3(aq)",
         "identifier": "Au(OH)3(aq)"
     },
     {
@@ -2237,7 +2237,7 @@
                 "value": -58.54
             }
         },
-        "formula": "Hg2[2+]",
+        "formula": "Hg[+1]",
         "identifier": "Hg2[2+]"
     },
     {
@@ -2264,7 +2264,7 @@
                 "value": -58.54
             }
         },
-        "formula": "Hg(OH)[+]",
+        "formula": "HgOH[+1]",
         "identifier": "Hg(OH)[+]"
     },
     {
@@ -2291,7 +2291,7 @@
                 "value": -58.54
             }
         },
-        "formula": "HHgO2[-]",
+        "formula": "HgHO2[-1]",
         "identifier": "HHgO2[-]"
     },
     {
@@ -2345,7 +2345,7 @@
                 "value": -138.6
             }
         },
-        "formula": "Tl[+]",
+        "formula": "Tl[+1]",
         "identifier": "Tl[+]"
     },
     {
@@ -2372,7 +2372,7 @@
                 "value": -138.6
             }
         },
-        "formula": "Tl[3+]",
+        "formula": "Tl[+3]",
         "identifier": "Tl[3+]"
     },
     {
@@ -2426,7 +2426,7 @@
                 "value": -138.6
             }
         },
-        "formula": "Tl(OH)2[+]",
+        "formula": "Tl(OH)2[+1]",
         "identifier": "Tl(OH)2[+]"
     },
     {
@@ -2453,7 +2453,7 @@
                 "value": -215.5
             }
         },
-        "formula": "Pb[4+]",
+        "formula": "Pb[+4]",
         "identifier": "Pb[4+]"
     },
     {
@@ -2480,7 +2480,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi6O6[6+]",
+        "formula": "BiO[+1]",
         "identifier": "Bi6O6[6+]"
     },
     {
@@ -2507,7 +2507,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi6O6(OH)3[3+]",
+        "formula": "Bi2HO3[+1]",
         "identifier": "Bi6O6(OH)3[3+]"
     },
     {
@@ -2534,7 +2534,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi9(OH)20[7+]",
+        "formula": "Bi9(OH)20[+7]",
         "identifier": "Bi9(OH)20[7+]"
     },
     {
@@ -2561,7 +2561,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi9(OH)22[5+]",
+        "formula": "Bi9(OH)22[+5]",
         "identifier": "Bi9(OH)22[5+]"
     },
     {
@@ -2588,7 +2588,7 @@
                 "value": -3370.0
             }
         },
-        "formula": "UO2[2+]",
+        "formula": "UO2[+2]",
         "identifier": "UO2[2+]"
     },
     {
@@ -2615,7 +2615,7 @@
                 "value": -741.5
             }
         },
-        "formula": "FeO4[2-]",
+        "formula": "FeO4[-2]",
         "identifier": "FeO4[2-]"
     },
     {
@@ -2642,7 +2642,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "C2H4(aq)",
+        "formula": "H2C(aq)",
         "identifier": "C2H4(aq)"
     },
     {
@@ -2696,7 +2696,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "CO3[2-]",
+        "formula": "CO3[-2]",
         "identifier": "CO3[2-]"
     },
     {
@@ -2723,7 +2723,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "CH3COO[-]",
+        "formula": "CH3COO[-1]",
         "identifier": "CH3COO[-]"
     },
     {
@@ -2750,7 +2750,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "HCO3[-]",
+        "formula": "HCO3[-1]",
         "identifier": "HCO3[-]"
     },
     {
@@ -2777,7 +2777,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S[2-]",
+        "formula": "S[-2]",
         "identifier": "S[2-]"
     },
     {
@@ -2804,7 +2804,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S3[2-]",
+        "formula": "S[-0.66666667]",
         "identifier": "S3[2-]"
     },
     {
@@ -2831,7 +2831,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S4[2-]",
+        "formula": "S[-0.5]",
         "identifier": "S4[2-]"
     },
     {
@@ -2858,7 +2858,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2O4[2-]",
+        "formula": "SO2[-1]",
         "identifier": "S2O4[2-]"
     },
     {
@@ -2885,7 +2885,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2O8[2-]",
+        "formula": "S2O8[-2]",
         "identifier": "S2O8[2-]"
     },
     {
@@ -2912,7 +2912,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S5O6[2-]",
+        "formula": "S5O6[-2]",
         "identifier": "S5O6[2-]"
     },
     {
@@ -2939,7 +2939,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HS2O4[-]",
+        "formula": "H(SO2)2[-1]",
         "identifier": "HS2O4[-]"
     },
     {
@@ -2993,7 +2993,7 @@
                 "value": -134.2
             }
         },
-        "formula": "Cu[+]",
+        "formula": "Cu[+1]",
         "identifier": "Cu[+]"
     },
     {
@@ -3047,7 +3047,7 @@
                 "value": -1088.0
             }
         },
-        "formula": "Hf[4+]",
+        "formula": "Hf[+4]",
         "identifier": "Hf[4+]"
     },
     {
@@ -3074,7 +3074,7 @@
                 "value": -1088.0
             }
         },
-        "formula": "HfO[2+]",
+        "formula": "HfO[+2]",
         "identifier": "HfO[2+]"
     },
     {
@@ -3101,7 +3101,7 @@
                 "value": -1088.0
             }
         },
-        "formula": "HHfO2[+]",
+        "formula": "HfHO2[+1]",
         "identifier": "HHfO2[+]"
     },
     {
@@ -3182,7 +3182,7 @@
                 "value": 0.0
             }
         },
-        "formula": "Se[2-]",
+        "formula": "Se[-2]",
         "identifier": "Se[2-]"
     },
     {
@@ -3209,7 +3209,7 @@
                 "value": 0.0
             }
         },
-        "formula": "SeO3[2-]",
+        "formula": "SeO3[-2]",
         "identifier": "SeO3[2-]"
     },
     {
@@ -3263,7 +3263,7 @@
                 "value": 0.0
             }
         },
-        "formula": "HSeO4[-]",
+        "formula": "HSeO4[-1]",
         "identifier": "HSeO4[-]"
     },
     {
@@ -3317,7 +3317,7 @@
                 "value": -270.3
             }
         },
-        "formula": "H2Te (aq)",
+        "formula": "TeH2(aq)",
         "identifier": "H2Te (aq)"
     },
     {
@@ -3344,7 +3344,7 @@
                 "value": -270.3
             }
         },
-        "formula": "HTe[-] ",
+        "formula": "TeH[-1]",
         "identifier": "HTe[-] "
     },
     {
@@ -3371,7 +3371,7 @@
                 "value": -270.3
             }
         },
-        "formula": "H2TeO4 (aq)",
+        "formula": "Te(HO2)2(aq)",
         "identifier": "H2TeO4 (aq)"
     },
     {
@@ -3398,7 +3398,7 @@
                 "value": -270.3
             }
         },
-        "formula": "Te[4+]",
+        "formula": "Te[+4]",
         "identifier": "Te[4+]"
     },
     {
@@ -3425,7 +3425,7 @@
                 "value": -270.3
             }
         },
-        "formula": "Te(OH)3[+]",
+        "formula": "Te(OH)3[+1]",
         "identifier": "Te(OH)3[+]"
     },
     {
@@ -3452,7 +3452,7 @@
                 "value": -211.6
             }
         },
-        "formula": "NiO2[2-]",
+        "formula": "NiO2[-2]",
         "identifier": "NiO2[2-]"
     },
     {
@@ -3479,7 +3479,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "BH4[-]",
+        "formula": "BH4[-1]",
         "identifier": "BH4[-]"
     },
     {
@@ -3506,7 +3506,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "BO2[-]",
+        "formula": "BO2[-1]",
         "identifier": "BO2[-]"
     },
     {
@@ -3533,7 +3533,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "H2BO3[-]",
+        "formula": "BH2O3[-1]",
         "identifier": "H2BO3[-]"
     },
     {
@@ -3560,7 +3560,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "H3BO3(aq)",
+        "formula": "B(OH)3(aq)",
         "identifier": "H3BO3(aq)"
     },
     {
@@ -3614,7 +3614,7 @@
                 "value": 113.7
             }
         },
-        "formula": "N3[-]",
+        "formula": "N3[-1]",
         "identifier": "N3[-]"
     },
     {
@@ -3695,7 +3695,7 @@
                 "value": 113.7
             }
         },
-        "formula": "ONO[-]",
+        "formula": "NO2[-1]",
         "identifier": "ONO[-]"
     },
     {
@@ -3722,7 +3722,7 @@
                 "value": 113.7
             }
         },
-        "formula": "N2O2[2-]",
+        "formula": "NO[-1]",
         "identifier": "N2O2[2-]"
     },
     {
@@ -3776,7 +3776,7 @@
                 "value": -376.3
             }
         },
-        "formula": "Na[+]",
+        "formula": "Na[+1]",
         "identifier": "Na[+]"
     },
     {
@@ -3803,7 +3803,7 @@
                 "value": -1582.0
             }
         },
-        "formula": "Al[3+]",
+        "formula": "Al[+3]",
         "identifier": "Al[3+]"
     },
     {
@@ -3830,7 +3830,7 @@
                 "value": -856.5
             }
         },
-        "formula": "H4SiO4(aq)",
+        "formula": "Si(OH)4(aq)",
         "identifier": "H4SiO4(aq)"
     },
     {
@@ -3857,7 +3857,7 @@
                 "value": -856.5
             }
         },
-        "formula": "HSi(OH)6[-]",
+        "formula": "SiH7O6[-1]",
         "identifier": "HSi(OH)6[-]"
     },
     {
@@ -3884,7 +3884,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "H2PO4[-]",
+        "formula": "H2PO4[-1]",
         "identifier": "H2PO4[-]"
     },
     {
@@ -3938,7 +3938,7 @@
                 "value": -391.3
             }
         },
-        "formula": "ClO3[-]",
+        "formula": "ClO3[-1]",
         "identifier": "ClO3[-]"
     },
     {
@@ -3965,7 +3965,7 @@
                 "value": -391.3
             }
         },
-        "formula": "HOCl(aq)",
+        "formula": "HClO(aq)",
         "identifier": "HOCl(aq)"
     },
     {
@@ -3992,7 +3992,7 @@
                 "value": -603.3
             }
         },
-        "formula": "Ca[2+]",
+        "formula": "Ca[+2]",
         "identifier": "Ca[2+]"
     },
     {
@@ -4019,7 +4019,7 @@
                 "value": -603.3
             }
         },
-        "formula": "CaOH[+]",
+        "formula": "CaOH[+1]",
         "identifier": "CaOH[+]"
     },
     {
@@ -4046,7 +4046,7 @@
                 "value": -1819.0
             }
         },
-        "formula": "Sc[3+]",
+        "formula": "Sc[+3]",
         "identifier": "Sc[3+]"
     },
     {
@@ -4073,7 +4073,7 @@
                 "value": -888.8
             }
         },
-        "formula": "Ti[2+]",
+        "formula": "Ti[+2]",
         "identifier": "Ti[2+]"
     },
     {
@@ -4100,7 +4100,7 @@
                 "value": -888.8
             }
         },
-        "formula": "Ti[3+]",
+        "formula": "Ti[+3]",
         "identifier": "Ti[3+]"
     },
     {
@@ -4127,7 +4127,7 @@
                 "value": -888.8
             }
         },
-        "formula": "HTiO3[-]",
+        "formula": "TiHO3[-1]",
         "identifier": "HTiO3[-]"
     },
     {
@@ -4154,7 +4154,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VO2[+]",
+        "formula": "VO2[+1]",
         "identifier": "VO2[+]"
     },
     {
@@ -4181,7 +4181,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VO3[-]",
+        "formula": "VO3[-1]",
         "identifier": "VO3[-]"
     },
     {
@@ -4208,7 +4208,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VO4[3-]",
+        "formula": "VO4[-3]",
         "identifier": "VO4[3-]"
     },
     {
@@ -4235,7 +4235,7 @@
                 "value": -657.5
             }
         },
-        "formula": "HVO4[2-]",
+        "formula": "VHO4[-2]",
         "identifier": "HVO4[2-]"
     },
     {
@@ -4262,7 +4262,7 @@
                 "value": -657.5
             }
         },
-        "formula": "HV2O7[3-]",
+        "formula": "V2HO7[-3]",
         "identifier": "HV2O7[3-]"
     },
     {
@@ -4289,7 +4289,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "Cr[2+]",
+        "formula": "Cr[+2]",
         "identifier": "Cr[2+]"
     },
     {
@@ -4316,7 +4316,7 @@
                 "value": -466.1
             }
         },
-        "formula": "Mn[3+]",
+        "formula": "Mn[+3]",
         "identifier": "Mn[3+]"
     },
     {
@@ -4343,7 +4343,7 @@
                 "value": -741.5
             }
         },
-        "formula": "Fe[2+]",
+        "formula": "Fe[+2]",
         "identifier": "Fe[2+]"
     },
     {
@@ -4370,7 +4370,7 @@
                 "value": -741.5
             }
         },
-        "formula": "Fe[3+]",
+        "formula": "Fe[+3]",
         "identifier": "Fe[3+]"
     },
     {
@@ -4397,7 +4397,7 @@
                 "value": -741.5
             }
         },
-        "formula": "FeO2[2-]",
+        "formula": "FeO2[-2]",
         "identifier": "FeO2[2-]"
     },
     {
@@ -4424,35 +4424,8 @@
                 "value": -741.5
             }
         },
-        "formula": "FeOH[+]",
+        "formula": "FeOH[+1]",
         "identifier": "FeOH[+]"
-    },
-    {
-        "data": {
-            "MajElements": "Fe",
-            "RefSolid": "Fe2O3",
-            "charge": {
-                "display": "2.0",
-                "error": null,
-                "unit": "",
-                "value": 2.0
-            },
-            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
-            "\u0394G\u1da0": {
-                "display": "-229.59 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -229.59
-            },
-            "\u0394G\u1da0RefSolid": {
-                "display": "-741.5 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -741.5
-            }
-        },
-        "formula": "FeOH[2+]",
-        "identifier": "FeOH[2+]"
     },
     {
         "data": {
@@ -4478,7 +4451,7 @@
                 "value": -741.5
             }
         },
-        "formula": "Fe(OH)2[+]",
+        "formula": "Fe(OH)2[+1]",
         "identifier": "Fe(OH)2[+]"
     },
     {
@@ -4505,7 +4478,7 @@
                 "value": -320.5
             }
         },
-        "formula": "Zn[2+]",
+        "formula": "Zn[+2]",
         "identifier": "Zn[2+]"
     },
     {
@@ -4532,7 +4505,7 @@
                 "value": -320.5
             }
         },
-        "formula": "ZnO2[2-]",
+        "formula": "ZnO2[-2]",
         "identifier": "ZnO2[2-]"
     },
     {
@@ -4559,7 +4532,7 @@
                 "value": -320.5
             }
         },
-        "formula": "ZnOH[+]",
+        "formula": "ZnOH[+1]",
         "identifier": "ZnOH[+]"
     },
     {
@@ -4586,7 +4559,7 @@
                 "value": -320.5
             }
         },
-        "formula": "HZnO2[-]",
+        "formula": "ZnHO2[-1]",
         "identifier": "HZnO2[-]"
     },
     {
@@ -4613,7 +4586,7 @@
                 "value": -998.4
             }
         },
-        "formula": "GaO3[3-]",
+        "formula": "GaO3[-3]",
         "identifier": "GaO3[3-]"
     },
     {
@@ -4640,7 +4613,7 @@
                 "value": -998.4
             }
         },
-        "formula": "Ga(OH)[2+]",
+        "formula": "GaOH[+2]",
         "identifier": "Ga(OH)[2+]"
     },
     {
@@ -4667,7 +4640,7 @@
                 "value": -998.4
             }
         },
-        "formula": "Ga(OH)2[+]",
+        "formula": "Ga(OH)2[+1]",
         "identifier": "Ga(OH)2[+]"
     },
     {
@@ -4694,7 +4667,7 @@
                 "value": -521.4
             }
         },
-        "formula": "HGeO2[-]",
+        "formula": "GeHO2[-1]",
         "identifier": "HGeO2[-]"
     },
     {
@@ -4721,7 +4694,7 @@
                 "value": -777.4
             }
         },
-        "formula": "AsO2[-]",
+        "formula": "AsO2[-1]",
         "identifier": "AsO2[-]"
     },
     {
@@ -4748,7 +4721,7 @@
                 "value": -356.2
             }
         },
-        "formula": "Br2(aq)",
+        "formula": "Br(aq)",
         "identifier": "Br2(aq)"
     },
     {
@@ -4775,7 +4748,7 @@
                 "value": -356.2
             }
         },
-        "formula": "Br5[-]",
+        "formula": "Br[-0.2]",
         "identifier": "Br5[-]"
     },
     {
@@ -4829,7 +4802,7 @@
                 "value": -562.4
             }
         },
-        "formula": "Sr[2+]",
+        "formula": "Sr[+2]",
         "identifier": "Sr[2+]"
     },
     {
@@ -4856,35 +4829,8 @@
                 "value": -562.4
             }
         },
-        "formula": "SrOH[+]",
+        "formula": "SrOH[+1]",
         "identifier": "SrOH[+]"
-    },
-    {
-        "data": {
-            "MajElements": "Y",
-            "RefSolid": "Y2O3",
-            "charge": {
-                "display": "2.0",
-                "error": null,
-                "unit": "",
-                "value": 2.0
-            },
-            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
-            "\u0394G\u1da0": {
-                "display": "-879.05 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -879.05
-            },
-            "\u0394G\u1da0RefSolid": {
-                "display": "-1,816.0 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -1816.0
-            }
-        },
-        "formula": "Y(OH)[2+]",
-        "identifier": "Y(OH)[2+]"
     },
     {
         "data": {
@@ -4910,7 +4856,7 @@
                 "value": -1043.0
             }
         },
-        "formula": "ZrO[2+]",
+        "formula": "ZrO[+2]",
         "identifier": "ZrO[2+]"
     },
     {
@@ -4937,7 +4883,7 @@
                 "value": -1766.0
             }
         },
-        "formula": "NbO3[-]",
+        "formula": "NbO3[-1]",
         "identifier": "NbO3[-]"
     },
     {
@@ -4991,7 +4937,7 @@
                 "value": -11.18
             }
         },
-        "formula": "Ag[2+]",
+        "formula": "Ag[+2]",
         "identifier": "Ag[2+]"
     },
     {
@@ -5018,7 +4964,7 @@
                 "value": -228.7
             }
         },
-        "formula": "Cd[2+]",
+        "formula": "Cd[+2]",
         "identifier": "Cd[2+]"
     },
     {
@@ -5045,7 +4991,7 @@
                 "value": -228.7
             }
         },
-        "formula": "CdO2[2-]",
+        "formula": "CdO2[-2]",
         "identifier": "CdO2[2-]"
     },
     {
@@ -5072,7 +5018,7 @@
                 "value": -831.9
             }
         },
-        "formula": "In(OH)[2+]",
+        "formula": "InOH[+2]",
         "identifier": "In(OH)[2+]"
     },
     {
@@ -5099,7 +5045,7 @@
                 "value": -831.9
             }
         },
-        "formula": "In(OH)2[+]",
+        "formula": "In(OH)2[+1]",
         "identifier": "In(OH)2[+]"
     },
     {
@@ -5126,7 +5072,7 @@
                 "value": -251.9
             }
         },
-        "formula": "SnO(OH)[+]",
+        "formula": "SnHO2[+1]",
         "identifier": "SnO(OH)[+]"
     },
     {
@@ -5153,7 +5099,7 @@
                 "value": -251.9
             }
         },
-        "formula": "Sn[4+]",
+        "formula": "Sn[+4]",
         "identifier": "Sn[4+]"
     },
     {
@@ -5180,7 +5126,7 @@
                 "value": -864.9
             }
         },
-        "formula": "SbO[+]",
+        "formula": "SbO[+1]",
         "identifier": "SbO[+]"
     },
     {
@@ -5207,7 +5153,7 @@
                 "value": -864.9
             }
         },
-        "formula": "HSbO2(aq)",
+        "formula": "SbHO2(aq)",
         "identifier": "HSbO2(aq)"
     },
     {
@@ -5234,7 +5180,7 @@
                 "value": -177.1
             }
         },
-        "formula": "I[-]",
+        "formula": "I[-1]",
         "identifier": "I[-]"
     },
     {
@@ -5288,7 +5234,7 @@
                 "value": -177.1
             }
         },
-        "formula": "H2OI[+]",
+        "formula": "H2IO[+1]",
         "identifier": "H2OI[+]"
     },
     {
@@ -5315,7 +5261,7 @@
                 "value": -177.1
             }
         },
-        "formula": "I2OH[-]",
+        "formula": "HI2O[-1]",
         "identifier": "I2OH[-]"
     },
     {
@@ -5342,7 +5288,7 @@
                 "value": -308.4
             }
         },
-        "formula": "Cs[+]",
+        "formula": "Cs[+1]",
         "identifier": "Cs[+]"
     },
     {
@@ -5369,7 +5315,7 @@
                 "value": -520.4
             }
         },
-        "formula": "Ba[2+]",
+        "formula": "Ba[+2]",
         "identifier": "Ba[2+]"
     },
     {
@@ -5396,7 +5342,7 @@
                 "value": -1707.0
             }
         },
-        "formula": "La[3+]",
+        "formula": "La[+3]",
         "identifier": "La[3+]"
     },
     {
@@ -5423,7 +5369,7 @@
                 "value": -1031.0
             }
         },
-        "formula": "Ce(OH)2[2+]",
+        "formula": "Ce(OH)2[+2]",
         "identifier": "Ce(OH)2[2+]"
     },
     {
@@ -5450,7 +5396,7 @@
                 "value": -1720.0
             }
         },
-        "formula": "Pr[3+]",
+        "formula": "Pr[+3]",
         "identifier": "Pr[3+]"
     },
     {
@@ -5477,7 +5423,7 @@
                 "value": -1734.0
             }
         },
-        "formula": "Sm[2+]",
+        "formula": "Sm[+2]",
         "identifier": "Sm[2+]"
     },
     {
@@ -5504,7 +5450,7 @@
                 "value": -1777.0
             }
         },
-        "formula": "Tb[3+]",
+        "formula": "Tb[+3]",
         "identifier": "Tb[3+]"
     },
     {
@@ -5531,7 +5477,7 @@
                 "value": -1809.0
             }
         },
-        "formula": "Er[3+]",
+        "formula": "Er[+3]",
         "identifier": "Er[3+]"
     },
     {
@@ -5558,7 +5504,7 @@
                 "value": -1727.0
             }
         },
-        "formula": "Yb[2+]",
+        "formula": "Yb[+2]",
         "identifier": "Yb[2+]"
     },
     {
@@ -5585,7 +5531,7 @@
                 "value": -1727.0
             }
         },
-        "formula": "Yb[3+]",
+        "formula": "Yb[+3]",
         "identifier": "Yb[3+]"
     },
     {
@@ -5612,7 +5558,7 @@
                 "value": -1789.0
             }
         },
-        "formula": "Lu[3+]",
+        "formula": "Lu[+3]",
         "identifier": "Lu[3+]"
     },
     {
@@ -5639,7 +5585,7 @@
                 "value": -763.9
             }
         },
-        "formula": "WO4[2-]",
+        "formula": "WO4[-2]",
         "identifier": "WO4[2-]"
     },
     {
@@ -5666,7 +5612,7 @@
                 "value": -239.2
             }
         },
-        "formula": "HOsO5[-]",
+        "formula": "HOsO5[-1]",
         "identifier": "HOsO5[-]"
     },
     {
@@ -5693,7 +5639,7 @@
                 "value": -138.6
             }
         },
-        "formula": "TlOH[2+]",
+        "formula": "TlOH[+2]",
         "identifier": "TlOH[2+]"
     },
     {
@@ -5720,7 +5666,7 @@
                 "value": -215.5
             }
         },
-        "formula": "Pb[2+]",
+        "formula": "Pb[+2]",
         "identifier": "Pb[2+]"
     },
     {
@@ -5747,62 +5693,8 @@
                 "value": -215.5
             }
         },
-        "formula": "Pb3(OH)4[2+]",
+        "formula": "H4Pb3O4[+2]",
         "identifier": "Pb3(OH)4[2+]"
-    },
-    {
-        "data": {
-            "MajElements": "Pb",
-            "RefSolid": "PbO2",
-            "charge": {
-                "display": "4.0",
-                "error": null,
-                "unit": "",
-                "value": 4.0
-            },
-            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
-            "\u0394G\u1da0": {
-                "display": "-1,800.5 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -1800.5
-            },
-            "\u0394G\u1da0RefSolid": {
-                "display": "-215.5 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -215.5
-            }
-        },
-        "formula": "Pb6(OH)8[4+]",
-        "identifier": "Pb6(OH)8[4+]"
-    },
-    {
-        "data": {
-            "MajElements": "Bi",
-            "RefSolid": "Bi2O3",
-            "charge": {
-                "display": "1.0",
-                "error": null,
-                "unit": "",
-                "value": 1.0
-            },
-            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
-            "\u0394G\u1da0": {
-                "display": "-146.44 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -146.44
-            },
-            "\u0394G\u1da0RefSolid": {
-                "display": "-490.4 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -490.4
-            }
-        },
-        "formula": "BiO[+]",
-        "identifier": "BiO[+]"
     },
     {
         "data": {
@@ -5828,7 +5720,7 @@
                 "value": -490.4
             }
         },
-        "formula": "BiOH[2+]",
+        "formula": "BiOH[+2]",
         "identifier": "BiOH[2+]"
     },
     {
@@ -5855,7 +5747,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi9(OH)21[6+]",
+        "formula": "Bi3(OH)7[+2]",
         "identifier": "Bi9(OH)21[6+]"
     },
     {
@@ -5882,7 +5774,7 @@
                 "value": -1169.0
             }
         },
-        "formula": "Th[4+]",
+        "formula": "Th[+4]",
         "identifier": "Th[4+]"
     },
     {
@@ -5909,7 +5801,7 @@
                 "value": -741.5
             }
         },
-        "formula": "FeO2[-]",
+        "formula": "FeO2[-1]",
         "identifier": "FeO2[-]"
     },
     {
@@ -5936,7 +5828,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "C2H2(aq)",
+        "formula": "HC(aq)",
         "identifier": "C2H2(aq)"
     },
     {
@@ -5963,7 +5855,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "C2H6(aq)",
+        "formula": "H3C(aq)",
         "identifier": "C2H6(aq)"
     },
     {
@@ -6017,7 +5909,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "C2O4[2-]",
+        "formula": "C2O4[-2]",
         "identifier": "C2O4[2-]"
     },
     {
@@ -6071,7 +5963,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "C2H5O[-]",
+        "formula": "H5C2O[-1]",
         "identifier": "C2H5O[-]"
     },
     {
@@ -6098,7 +5990,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "CH3CH2OH(aq)",
+        "formula": "C2H5OH(aq)",
         "identifier": "CH3CH2OH(aq)"
     },
     {
@@ -6125,7 +6017,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "HCOOH(aq)",
+        "formula": "H2CO2(aq)",
         "identifier": "HCOOH(aq)"
     },
     {
@@ -6152,7 +6044,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HS[-]",
+        "formula": "HS[-1]",
         "identifier": "HS[-]"
     },
     {
@@ -6206,7 +6098,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "SO4[2-]",
+        "formula": "SO4[-2]",
         "identifier": "SO4[2-]"
     },
     {
@@ -6233,7 +6125,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2O3[2-]",
+        "formula": "S2O3[-2]",
         "identifier": "S2O3[2-]"
     },
     {
@@ -6260,7 +6152,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2O5[2-]",
+        "formula": "S2O5[-2]",
         "identifier": "S2O5[2-]"
     },
     {
@@ -6287,7 +6179,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S3O6[2-]",
+        "formula": "SO2[-0.66666667]",
         "identifier": "S3O6[2-]"
     },
     {
@@ -6314,7 +6206,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HSO3[-]",
+        "formula": "HSO3[-1]",
         "identifier": "HSO3[-]"
     },
     {
@@ -6341,7 +6233,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HSO4[-]",
+        "formula": "HSO4[-1]",
         "identifier": "HSO4[-]"
     },
     {
@@ -6368,7 +6260,7 @@
                 "value": -134.2
             }
         },
-        "formula": "Cu[2+]",
+        "formula": "Cu[+2]",
         "identifier": "Cu[2+]"
     },
     {
@@ -6395,7 +6287,7 @@
                 "value": -134.2
             }
         },
-        "formula": "CuO2[2-]",
+        "formula": "CuO2[-2]",
         "identifier": "CuO2[2-]"
     },
     {
@@ -6422,7 +6314,7 @@
                 "value": -134.2
             }
         },
-        "formula": "HCuO2[-]",
+        "formula": "CuHO2[-1]",
         "identifier": "HCuO2[-]"
     },
     {
@@ -6449,7 +6341,7 @@
                 "value": -1088.0
             }
         },
-        "formula": "HfOH[3+]",
+        "formula": "HfOH[+3]",
         "identifier": "HfOH[3+]"
     },
     {
@@ -6476,7 +6368,7 @@
                 "value": -209.2
             }
         },
-        "formula": "Rh[3+] ",
+        "formula": "Rh[+3]",
         "identifier": "Rh[3+] "
     },
     {
@@ -6503,7 +6395,7 @@
                 "value": -209.2
             }
         },
-        "formula": "RhOH[+]",
+        "formula": "HRhO[+1]",
         "identifier": "RhOH[+]"
     },
     {
@@ -6530,7 +6422,7 @@
                 "value": -209.2
             }
         },
-        "formula": "RhOH[2+]",
+        "formula": "HRhO[+2]",
         "identifier": "RhOH[2+]"
     },
     {
@@ -6557,7 +6449,7 @@
                 "value": -209.2
             }
         },
-        "formula": "RhO[+]",
+        "formula": "RhO[+1]",
         "identifier": "RhO[+]"
     },
     {
@@ -6584,7 +6476,7 @@
                 "value": -532.4
             }
         },
-        "formula": "Re[-]",
+        "formula": "Re[-1]",
         "identifier": "Re[-]"
     },
     {
@@ -6611,7 +6503,7 @@
                 "value": 0.0
             }
         },
-        "formula": "HSe[-]",
+        "formula": "HSe[-1]",
         "identifier": "HSe[-]"
     },
     {
@@ -6665,7 +6557,7 @@
                 "value": 0.0
             }
         },
-        "formula": "SeO4[2-]",
+        "formula": "SeO4[-2]",
         "identifier": "SeO4[2-]"
     },
     {
@@ -6692,7 +6584,7 @@
                 "value": 0.0
             }
         },
-        "formula": "HSeO3[-]",
+        "formula": "HSeO3[-1]",
         "identifier": "HSeO3[-]"
     },
     {
@@ -6746,7 +6638,7 @@
                 "value": -369.4
             }
         },
-        "formula": "TcO4[-]",
+        "formula": "TcO4[-1]",
         "identifier": "TcO4[-]"
     },
     {
@@ -6773,7 +6665,7 @@
                 "value": -270.3
             }
         },
-        "formula": "H2TeO3 (aq)",
+        "formula": "TeH2O3(aq)",
         "identifier": "H2TeO3 (aq)"
     },
     {
@@ -6800,7 +6692,7 @@
                 "value": -270.3
             }
         },
-        "formula": "HTeO4[-]",
+        "formula": "TeHO4[-1]",
         "identifier": "HTeO4[-]"
     },
     {
@@ -6827,7 +6719,7 @@
                 "value": -270.3
             }
         },
-        "formula": "TeO4[2-]",
+        "formula": "TeO4[-2]",
         "identifier": "TeO4[2-]"
     },
     {
@@ -6854,7 +6746,7 @@
                 "value": -211.6
             }
         },
-        "formula": "NiOH[+]",
+        "formula": "NiOH[+1]",
         "identifier": "NiOH[+]"
     },
     {
@@ -6881,7 +6773,7 @@
                 "value": -211.6
             }
         },
-        "formula": "Ni(OH)4[2-]",
+        "formula": "Ni(OH)4[-2]",
         "identifier": "Ni(OH)4[2-]"
     },
     {
@@ -6908,7 +6800,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HSO5[-]",
+        "formula": "HSO5[-1]",
         "identifier": "HSO5[-]"
     },
     {
@@ -6935,7 +6827,7 @@
                 "value": -561.2
             }
         },
-        "formula": "Li[+]",
+        "formula": "Li[+1]",
         "identifier": "Li[+]"
     },
     {
@@ -6989,7 +6881,7 @@
                 "value": -580.1
             }
         },
-        "formula": "Be3(OH)3[3+]",
+        "formula": "BeOH[+1]",
         "identifier": "Be3(OH)3[3+]"
     },
     {
@@ -7016,7 +6908,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "H2BO3(H2O2)[-]",
+        "formula": "BH4O5[-1]",
         "identifier": "H2BO3(H2O2)[-]"
     },
     {
@@ -7043,7 +6935,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "HB4O7[-]",
+        "formula": "B4HO7[-1]",
         "identifier": "HB4O7[-]"
     },
     {
@@ -7070,7 +6962,7 @@
                 "value": -1193.0
             }
         },
-        "formula": "B(OH)4[-]",
+        "formula": "B(OH)4[-1]",
         "identifier": "B(OH)4[-]"
     },
     {
@@ -7097,7 +6989,7 @@
                 "value": 113.7
             }
         },
-        "formula": "N2H4(aq)",
+        "formula": "H2N(aq)",
         "identifier": "N2H4(aq)"
     },
     {
@@ -7124,7 +7016,7 @@
                 "value": 113.7
             }
         },
-        "formula": "NO3[-]",
+        "formula": "NO3[-1]",
         "identifier": "NO3[-]"
     },
     {
@@ -7178,7 +7070,7 @@
                 "value": -569.3
             }
         },
-        "formula": "Mg[2+]",
+        "formula": "Mg[+2]",
         "identifier": "Mg[2+]"
     },
     {
@@ -7205,7 +7097,7 @@
                 "value": -1582.0
             }
         },
-        "formula": "AlOH[2+]",
+        "formula": "AlOH[+2]",
         "identifier": "AlOH[2+]"
     },
     {
@@ -7232,7 +7124,7 @@
                 "value": -1582.0
             }
         },
-        "formula": "Al(OH)4[-]",
+        "formula": "Al(OH)4[-1]",
         "identifier": "Al(OH)4[-]"
     },
     {
@@ -7259,7 +7151,7 @@
                 "value": -856.5
             }
         },
-        "formula": "H2SiO3(aq)",
+        "formula": "SiH2O3(aq)",
         "identifier": "H2SiO3(aq)"
     },
     {
@@ -7286,7 +7178,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "PH4[+]",
+        "formula": "PH4[+1]",
         "identifier": "PH4[+]"
     },
     {
@@ -7313,7 +7205,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "HPO3[2-]",
+        "formula": "PHO3[-2]",
         "identifier": "HPO3[2-]"
     },
     {
@@ -7340,7 +7232,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "H2PO3[-]",
+        "formula": "PH2O3[-1]",
         "identifier": "H2PO3[-]"
     },
     {
@@ -7367,7 +7259,7 @@
                 "value": -1362.0
             }
         },
-        "formula": "H2P2O7[2-]",
+        "formula": "P2H2O7[-2]",
         "identifier": "H2P2O7[2-]"
     },
     {
@@ -7394,7 +7286,7 @@
                 "value": -391.3
             }
         },
-        "formula": "Cl[-]",
+        "formula": "Cl[-1]",
         "identifier": "Cl[-]"
     },
     {
@@ -7448,7 +7340,7 @@
                 "value": -391.3
             }
         },
-        "formula": "ClO[-]",
+        "formula": "ClO[-1]",
         "identifier": "ClO[-]"
     },
     {
@@ -7502,7 +7394,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VO[2+]",
+        "formula": "VO[+2]",
         "identifier": "VO[2+]"
     },
     {
@@ -7529,7 +7421,7 @@
                 "value": -657.5
             }
         },
-        "formula": "VO4[-]",
+        "formula": "VO4[-1]",
         "identifier": "VO4[-]"
     },
     {
@@ -7556,7 +7448,7 @@
                 "value": -657.5
             }
         },
-        "formula": "H2VO4[+]",
+        "formula": "V(HO2)2[+1]",
         "identifier": "H2VO4[+]"
     },
     {
@@ -7583,7 +7475,7 @@
                 "value": -657.5
             }
         },
-        "formula": "H3V2O7[-]",
+        "formula": "V2H3O7[-1]",
         "identifier": "H3V2O7[-]"
     },
     {
@@ -7610,7 +7502,7 @@
                 "value": -657.5
             }
         },
-        "formula": "HV10O28[5-]",
+        "formula": "V10HO28[-5]",
         "identifier": "HV10O28[5-]"
     },
     {
@@ -7637,7 +7529,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "Cr[3+]",
+        "formula": "Cr[+3]",
         "identifier": "Cr[3+]"
     },
     {
@@ -7664,7 +7556,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "Cr(OH)[2+]",
+        "formula": "CrOH[+2]",
         "identifier": "Cr(OH)[2+]"
     },
     {
@@ -7691,7 +7583,7 @@
                 "value": -466.1
             }
         },
-        "formula": "MnO4[2-]",
+        "formula": "MnO4[-2]",
         "identifier": "MnO4[2-]"
     },
     {
@@ -7718,7 +7610,7 @@
                 "value": -741.5
             }
         },
-        "formula": "HFeO2[-]",
+        "formula": "FeHO2[-1]",
         "identifier": "HFeO2[-]"
     },
     {
@@ -7745,7 +7637,7 @@
                 "value": -795.0
             }
         },
-        "formula": "Co[3+]",
+        "formula": "Co[+3]",
         "identifier": "Co[3+]"
     },
     {
@@ -7772,7 +7664,7 @@
                 "value": -795.0
             }
         },
-        "formula": "HCoO2[-]",
+        "formula": "CoHO2[-1]",
         "identifier": "HCoO2[-]"
     },
     {
@@ -7826,7 +7718,7 @@
                 "value": -998.4
             }
         },
-        "formula": "HGaO3[2-]",
+        "formula": "GaHO3[-2]",
         "identifier": "HGaO3[2-]"
     },
     {
@@ -7853,7 +7745,7 @@
                 "value": -998.4
             }
         },
-        "formula": "H2GaO3[-]",
+        "formula": "GaH2O3[-1]",
         "identifier": "H2GaO3[-]"
     },
     {
@@ -7880,7 +7772,7 @@
                 "value": -521.4
             }
         },
-        "formula": "HGeO3[-]",
+        "formula": "GeHO3[-1]",
         "identifier": "HGeO3[-]"
     },
     {
@@ -7907,7 +7799,7 @@
                 "value": -777.4
             }
         },
-        "formula": "AsO[+]",
+        "formula": "AsO[+1]",
         "identifier": "AsO[+]"
     },
     {
@@ -7934,7 +7826,7 @@
                 "value": -777.4
             }
         },
-        "formula": "AsO4[3-]",
+        "formula": "AsO4[-3]",
         "identifier": "AsO4[3-]"
     },
     {
@@ -7961,7 +7853,7 @@
                 "value": -777.4
             }
         },
-        "formula": "HAsO2(aq)",
+        "formula": "AsHO2(aq)",
         "identifier": "HAsO2(aq)"
     },
     {
@@ -7988,7 +7880,7 @@
                 "value": -777.4
             }
         },
-        "formula": "H2AsO4[-]",
+        "formula": "As(HO2)2[-1]",
         "identifier": "H2AsO4[-]"
     },
     {
@@ -8015,7 +7907,7 @@
                 "value": -356.2
             }
         },
-        "formula": "Br[-]",
+        "formula": "Br[-1]",
         "identifier": "Br[-]"
     },
     {
@@ -8042,7 +7934,7 @@
                 "value": -356.2
             }
         },
-        "formula": "BrO3[-]",
+        "formula": "BrO3[-1]",
         "identifier": "BrO3[-]"
     },
     {
@@ -8069,7 +7961,7 @@
                 "value": -1766.0
             }
         },
-        "formula": "Nb(OH)4[+]",
+        "formula": "Nb(OH)4[+1]",
         "identifier": "Nb(OH)4[+]"
     },
     {
@@ -8096,7 +7988,7 @@
                 "value": -668.2
             }
         },
-        "formula": "Mo[3+]",
+        "formula": "Mo[+3]",
         "identifier": "Mo[3+]"
     },
     {
@@ -8150,7 +8042,7 @@
                 "value": -252.8
             }
         },
-        "formula": "H2RuO5",
+        "formula": "H2RuO5(aq)",
         "identifier": "H2RuO5"
     },
     {
@@ -8177,7 +8069,7 @@
                 "value": -252.8
             }
         },
-        "formula": "HRuO5[-]",
+        "formula": "HRuO5[-1]",
         "identifier": "HRuO5[-]"
     },
     {
@@ -8204,7 +8096,7 @@
                 "value": -85.24
             }
         },
-        "formula": "Pd[2+]",
+        "formula": "Pd[+2]",
         "identifier": "Pd[2+]"
     },
     {
@@ -8231,7 +8123,7 @@
                 "value": -11.18
             }
         },
-        "formula": "Ag(OH)2[-]",
+        "formula": "Ag(OH)2[-1]",
         "identifier": "Ag(OH)2[-]"
     },
     {
@@ -8258,7 +8150,7 @@
                 "value": -228.7
             }
         },
-        "formula": "HCdO2[-]",
+        "formula": "CdHO2[-1]",
         "identifier": "HCdO2[-]"
     },
     {
@@ -8312,7 +8204,7 @@
                 "value": -831.9
             }
         },
-        "formula": "In[+]",
+        "formula": "In[+1]",
         "identifier": "In[+]"
     },
     {
@@ -8339,7 +8231,7 @@
                 "value": -831.9
             }
         },
-        "formula": "InO2[-]",
+        "formula": "InO2[-1]",
         "identifier": "InO2[-]"
     },
     {
@@ -8366,7 +8258,7 @@
                 "value": -251.9
             }
         },
-        "formula": "HSnO2[-]",
+        "formula": "SnHO2[-1]",
         "identifier": "HSnO2[-]"
     },
     {
@@ -8393,7 +8285,7 @@
                 "value": -177.1
             }
         },
-        "formula": "I3[-]",
+        "formula": "I3[-1]",
         "identifier": "I3[-]"
     },
     {
@@ -8420,7 +8312,7 @@
                 "value": -177.1
             }
         },
-        "formula": "IO3[-]",
+        "formula": "IO3[-1]",
         "identifier": "IO3[-]"
     },
     {
@@ -8447,7 +8339,7 @@
                 "value": -520.4
             }
         },
-        "formula": "BaOH[+]",
+        "formula": "BaOH[+1]",
         "identifier": "BaOH[+]"
     },
     {
@@ -8474,7 +8366,7 @@
                 "value": -1720.0
             }
         },
-        "formula": "Pr(OH)2[+]",
+        "formula": "Pr(OH)2[+1]",
         "identifier": "Pr(OH)2[+]"
     },
     {
@@ -8501,7 +8393,7 @@
                 "value": -1568.0
             }
         },
-        "formula": "Eu[2+]",
+        "formula": "Eu[+2]",
         "identifier": "Eu[2+]"
     },
     {
@@ -8528,7 +8420,7 @@
                 "value": -1568.0
             }
         },
-        "formula": "Eu[3+]",
+        "formula": "Eu[+3]",
         "identifier": "Eu[3+]"
     },
     {
@@ -8555,7 +8447,7 @@
                 "value": -1795.0
             }
         },
-        "formula": "Tm[3+]",
+        "formula": "Tm[+3]",
         "identifier": "Tm[3+]"
     },
     {
@@ -8609,7 +8501,7 @@
                 "value": 77.76
             }
         },
-        "formula": "Au[3+]",
+        "formula": "Au[+3]",
         "identifier": "Au[3+]"
     },
     {
@@ -8636,7 +8528,7 @@
                 "value": 77.76
             }
         },
-        "formula": "AuO3[3-]",
+        "formula": "AuO3[-3]",
         "identifier": "AuO3[3-]"
     },
     {
@@ -8663,7 +8555,7 @@
                 "value": 77.76
             }
         },
-        "formula": "HAuO3[2-]",
+        "formula": "HAuO3[-2]",
         "identifier": "HAuO3[2-]"
     },
     {
@@ -8690,7 +8582,7 @@
                 "value": 77.76
             }
         },
-        "formula": "H2AuO3[-]",
+        "formula": "H2AuO3[-1]",
         "identifier": "H2AuO3[-]"
     },
     {
@@ -8717,7 +8609,7 @@
                 "value": -58.54
             }
         },
-        "formula": "Hg[2+]",
+        "formula": "Hg[+2]",
         "identifier": "Hg[2+]"
     },
     {
@@ -8744,7 +8636,7 @@
                 "value": -215.5
             }
         },
-        "formula": "PbOH[+]",
+        "formula": "HPbO[+1]",
         "identifier": "PbOH[+]"
     },
     {
@@ -8771,35 +8663,8 @@
                 "value": -215.5
             }
         },
-        "formula": "HPbO2[-]",
+        "formula": "HPbO2[-1]",
         "identifier": "HPbO2[-]"
-    },
-    {
-        "data": {
-            "MajElements": "Pb",
-            "RefSolid": "PbO2",
-            "charge": {
-                "display": "4.0",
-                "error": null,
-                "unit": "",
-                "value": 4.0
-            },
-            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
-            "\u0394G\u1da0": {
-                "display": "-936.41 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -936.41
-            },
-            "\u0394G\u1da0RefSolid": {
-                "display": "-215.5 kJ/mol",
-                "error": null,
-                "unit": "kJ/mol",
-                "value": -215.5
-            }
-        },
-        "formula": "Pb4(OH)4[4+]",
-        "identifier": "Pb4(OH)4[4+]"
     },
     {
         "data": {
@@ -8825,7 +8690,7 @@
                 "value": -490.4
             }
         },
-        "formula": "Bi[3+]",
+        "formula": "Bi[+3]",
         "identifier": "Bi[3+]"
     },
     {
@@ -8852,7 +8717,7 @@
                 "value": -3370.0
             }
         },
-        "formula": "U[3+]",
+        "formula": "U[+3]",
         "identifier": "U[3+]"
     },
     {
@@ -8879,7 +8744,7 @@
                 "value": -3370.0
             }
         },
-        "formula": "U[4+]",
+        "formula": "U[+4]",
         "identifier": "U[4+]"
     },
     {
@@ -8906,7 +8771,7 @@
                 "value": -3370.0
             }
         },
-        "formula": "UO2[+]",
+        "formula": "UO2[+1]",
         "identifier": "UO2[+]"
     },
     {
@@ -8933,7 +8798,7 @@
                 "value": -3370.0
             }
         },
-        "formula": "UOH[3+]",
+        "formula": "UOH[+3]",
         "identifier": "UOH[3+]"
     },
     {
@@ -8960,7 +8825,7 @@
                 "value": -999.2
             }
         },
-        "formula": "Pu[3+]",
+        "formula": "Pu[+3]",
         "identifier": "Pu[3+]"
     },
     {
@@ -9014,7 +8879,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "HCOO[-]",
+        "formula": "HCO2[-1]",
         "identifier": "HCOO[-]"
     },
     {
@@ -9068,7 +8933,7 @@
                 "value": -1053.0
             }
         },
-        "formula": "HC2O4[-]",
+        "formula": "H(CO2)2[-1]",
         "identifier": "HC2O4[-]"
     },
     {
@@ -9095,7 +8960,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2[2-]",
+        "formula": "S[-1]",
         "identifier": "S2[2-]"
     },
     {
@@ -9122,7 +8987,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S5[2-]",
+        "formula": "S[-0.4]",
         "identifier": "S5[2-]"
     },
     {
@@ -9176,7 +9041,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "SO3[2-]",
+        "formula": "SO3[-2]",
         "identifier": "SO3[2-]"
     },
     {
@@ -9203,7 +9068,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S2O6[2-]",
+        "formula": "S2O6[-2]",
         "identifier": "S2O6[2-]"
     },
     {
@@ -9230,7 +9095,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "S4O6[2-]",
+        "formula": "S2O3[-1]",
         "identifier": "S4O6[2-]"
     },
     {
@@ -9257,7 +9122,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "H2S2O4(aq)",
+        "formula": "HSO2(aq)",
         "identifier": "H2S2O4(aq)"
     },
     {
@@ -9284,7 +9149,7 @@
                 "value": -134.2
             }
         },
-        "formula": "CuOH[+]",
+        "formula": "CuOH[+1]",
         "identifier": "CuOH[+]"
     },
     {
@@ -9311,7 +9176,7 @@
                 "value": -1088.0
             }
         },
-        "formula": "HHfO3[-]",
+        "formula": "HfHO3[-1]",
         "identifier": "HHfO3[-]"
     },
     {
@@ -9338,7 +9203,7 @@
                 "value": -209.2
             }
         },
-        "formula": "Rh[2+]",
+        "formula": "Rh[+2]",
         "identifier": "Rh[2+]"
     },
     {
@@ -9365,7 +9230,7 @@
                 "value": -532.4
             }
         },
-        "formula": "Re[+]",
+        "formula": "Re[+1]",
         "identifier": "Re[+]"
     },
     {
@@ -9392,7 +9257,7 @@
                 "value": -532.4
             }
         },
-        "formula": "ReO4[-]",
+        "formula": "ReO4[-1]",
         "identifier": "ReO4[-]"
     },
     {
@@ -9419,7 +9284,7 @@
                 "value": -532.4
             }
         },
-        "formula": "Re[3+]",
+        "formula": "Re[+3]",
         "identifier": "Re[3+]"
     },
     {
@@ -9446,7 +9311,7 @@
                 "value": -1911.0
             }
         },
-        "formula": "TaO2[+]",
+        "formula": "TaO2[+1]",
         "identifier": "TaO2[+]"
     },
     {
@@ -9473,7 +9338,7 @@
                 "value": -369.4
             }
         },
-        "formula": "Tc[2+]",
+        "formula": "Tc[+2]",
         "identifier": "Tc[2+]"
     },
     {
@@ -9500,7 +9365,7 @@
                 "value": -369.4
             }
         },
-        "formula": "HTcO4(aq)",
+        "formula": "TcHO4(aq)",
         "identifier": "HTcO4(aq)"
     },
     {
@@ -9527,7 +9392,7 @@
                 "value": -270.3
             }
         },
-        "formula": "HTeO3[-] ",
+        "formula": "TeHO3[-1]",
         "identifier": "HTeO3[-] "
     },
     {
@@ -9554,7 +9419,7 @@
                 "value": -270.3
             }
         },
-        "formula": "TeO3[2-] ",
+        "formula": "TeO3[-2]",
         "identifier": "TeO3[2-] "
     },
     {
@@ -9581,7 +9446,7 @@
                 "value": -270.3
             }
         },
-        "formula": "TeO(OH)[+]",
+        "formula": "TeHO2[+1]",
         "identifier": "TeO(OH)[+]"
     },
     {
@@ -9608,7 +9473,7 @@
                 "value": -211.6
             }
         },
-        "formula": "Ni[2+]",
+        "formula": "Ni[+2]",
         "identifier": "Ni[2+]"
     },
     {
@@ -9662,7 +9527,7 @@
                 "value": -211.6
             }
         },
-        "formula": "Ni(OH)3[-]",
+        "formula": "Ni(OH)3[-1]",
         "identifier": "Ni(OH)3[-]"
     },
     {
@@ -9689,7 +9554,7 @@
                 "value": -211.6
             }
         },
-        "formula": "HNiO2[-]",
+        "formula": "NiHO2[-1]",
         "identifier": "HNiO2[-]"
     },
     {
@@ -9770,7 +9635,7 @@
                 "value": -1279.0
             }
         },
-        "formula": "HS2O3[-]",
+        "formula": "HS2O3[-1]",
         "identifier": "HS2O3[-]"
     }
 ]
