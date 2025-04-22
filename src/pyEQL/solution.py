@@ -2366,6 +2366,10 @@ class Solution(MSONable):
         orig_volume = ureg.Quantity(d["volume"]["data"])
         # then instantiate a new one
         decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
+        
+        for k in ["volume", "pressure", "temperature"]:
+            decoded[k] = str(decoded[k])
+        
         new_sol = cls(**decoded)
         # now determine how different the new solution volume is from the original
         scale_factor = (orig_volume / new_sol.volume).magnitude
