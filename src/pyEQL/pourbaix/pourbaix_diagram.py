@@ -436,7 +436,7 @@ class PourbaixDiagram(MSONable):
     def __init__(
         self,
         entries: list[PourbaixEntry] | list[MultiEntry],
-        comp_dict: dict[str, float] | None = None,
+        comp_dict: list[dict[str, float]] | dict[str, float] | None = None,
         conc_dict: dict[str, float] | None = None,
         filter_solids: bool = True,
         nproc: int | None = None,
@@ -518,12 +518,18 @@ class PourbaixDiagram(MSONable):
                 solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
 
             self._filtered_entries = solid_entries + ion_entries
-            if len(comp_dict) > 1:
-                self._multi_element = True
-                self._processed_entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
-            else:
-                self._processed_entries = self._filtered_entries
-                self._multi_element = False
+            if not isinstance(comp_dict, list):
+                comp_dict = [comp_dict]
+
+            self._processed_entries = []
+            for sub_comp_dict in comp_dict:
+                if len(sub_comp_dict) > 1:
+                    self._multi_element = True
+                    entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
+                else:
+                    self._multi_element = False
+                    entries = self._filtered_entries
+                self._processed_entries.extend(entries)
 
         self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
 
@@ -622,8 +628,6 @@ class PourbaixDiagram(MSONable):
         Returns:
             list[MultiEntry]: stable MultiEntry candidates
         """
-        # Get composition
-        tot_comp = Composition(self._elt_comp)
 
         min_entries, valid_facets = self._get_hull_in_nph_nphi_space(entries)
 
@@ -643,19 +647,23 @@ class PourbaixDiagram(MSONable):
             list_combos.append(list(combo))
         all_combos = list_combos
 
+        elt_comps = self._elt_comp if isinstance(self._elt_comp, list) else [self._elt_comp]
+
         multi_entries: list = []
 
         # Parallel processing of multi-entry generation
-        if nproc is not None:
-            func = partial(self.process_multientry, prod_comp=tot_comp)
-            with Pool(nproc) as proc_pool:
-                multi_entries = list(proc_pool.imap(func, all_combos))
-            multi_entries = list(filter(bool, multi_entries))
-        else:
-            # Serial processing of multi-entry generation
-            for combo in all_combos:
-                if multi_entry := self.process_multientry(combo, prod_comp=tot_comp):
-                    multi_entries.append(multi_entry)
+        for sub_comp in elt_comps:
+            tot_comp = Composition(sub_comp)
+            if nproc is not None:
+                func = partial(self.process_multientry, prod_comp=tot_comp)
+                with Pool(nproc) as proc_pool:
+                    multi_entries = list(proc_pool.imap(func, all_combos))
+                multi_entries = list(filter(bool, multi_entries))
+            else:
+                # Serial processing of multi-entry generation
+                for combo in all_combos:
+                    if multi_entry := self.process_multientry(combo, prod_comp=tot_comp):
+                        multi_entries.append(multi_entry)
 
         return multi_entries
 
