@@ -518,9 +518,8 @@ class PourbaixDiagram(MSONable):
                 solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
 
             self._filtered_entries = solid_entries + ion_entries
-            # if not isinstance(comp_dict, list):
-            #     comp_dict = [comp_dict]
-            # all_processed_entries = []
+            if not isinstance(comp_dict, list):
+                comp_dict = [comp_dict]
 
             self._processed_entries = []
             for sub_comp_dict in comp_dict:
