@@ -30,12 +30,7 @@ def interpret_units(unit: str) -> str:
     """
     if unit == "m":  # molal
         return "mol/kg"
-    if unit == "ppm":
-        return "mg/L"
-    if unit == "ppb":
-        return "ug/L"
-    if unit == "ppt":
-        return "ng/L"
+
     # if all else fails, return the unit we were provided
     return unit
 
