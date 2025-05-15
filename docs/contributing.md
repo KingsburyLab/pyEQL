@@ -112,7 +112,7 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
 
 Please abide by the following guidelines when contributing code to `pyEQL`:
 
-- All changes you make to quacc should be accompanied by unit tests and should not break existing tests. To run the full test suite, run `pytest tests/` from the repository directory.
+- All changes you make to `pyEQL` should be accompanied by unit tests and should not break existing tests. To run the full test suite, run `pytest tests/` from the repository directory.
 
 - Code coverage should be maintained or increase. Each PR will report code coverage after the tests pass, but you can check locally using [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/), by running `pytest --cov tests/`
 
@@ -132,4 +132,4 @@ Improvements to the documentation are most welcome! Our documentation system use
 
 ## Changelog
 
-We keep a `CHANGELOG.md` file in the base directory of the repository. Before submitting your PR, be sure to update the `CHANGELOG.md` file under the "Unreleased" section with a brief description of your changes. Our `CHANGELOG.md` file lossely follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, beginning with `v0.6.0`.
+We keep a `CHANGELOG.md` file in the base directory of the repository. Before submitting your PR, be sure to update the `CHANGELOG.md` file under the "Unreleased" section with a brief description of your changes. Our `CHANGELOG.md` file loosely follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, beginning with `v0.6.0`.
