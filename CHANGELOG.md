@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
 
+### Removed
+
+- Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
+
 ## [1.2.0] - 2024-09-24
 
 ### Fixed
