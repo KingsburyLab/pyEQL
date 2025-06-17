@@ -9,26 +9,19 @@ Usage:
 
 import json
 from collections.abc import Callable
-from itertools import product
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 import numpy as np
 
-from pyEQL import ureg
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
 
 # TODO: Select and validate data sources
 # If all solution reference data are generated from the same solutions, then solutions can be used as an input into
 # source creation
-SOURCES: list[str] = []
-# TODO: revisit tolerance
-# relative tolerance between experimental and computed properties for this test file
-RTOL = 0.05
-
-s1 = Solution(volume="2 L")
-s2 = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
+SOURCES: list[str] = ["CRC", "IDST", "May2011JCED"]
 
 
 class _BenchmarkEntry(NamedTuple):
@@ -38,263 +31,41 @@ class _BenchmarkEntry(NamedTuple):
     solution_data: list[tuple[str, float]] = []
 
 
-# TODO: check tests for missing property checks
-def _create_crc_data(s) -> list[_BenchmarkEntry]:
-    datasets = []
-    # list of concentrations to test, mol/kg
-    conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
-    # TODO: replace with parametrization scheme which preserves charge neutrality
-    cations = [("H+", 1), ("Cs+", 1), ("Li+", 1), ("Rb+", 1), ("K+", 1), ("Na", 1), ("Mg", 2), ("Ba", 2)]
-    anions = [("Cl-", 1), ("I-", 1), ("Br", 1), ("SO4-2", 2)]
+# TODO: check tests for missing property checks and values
+# TODO: write sub-loaders for different CRC archive types
+# TODO: consolidate data files
+# TODO: identify/understand theoretical, reference, and package equivalences
+# TODO: check tests for other reference databases
+# TODO: find other reference databases
+# TODO: write loading function for other reference databases
+def _load_crc_data(s) -> list[_BenchmarkEntry]:
+    # datasets = []
 
-    for (cation, nu_cation), (anion, nu_anion) in product(cations, anions):
-        # list of published experimental activity coefficients
-        # TODO: archive as CSV
-        pub_activity_coeff = [
-            0.965,
-            0.952,
-            0.929,
-            0.905,
-            0.876,
-            0.832,
-            0.797,
-            0.768,
-            0.759,
-            0.811,
-            1.009,
-            2.380,
-        ]
+    # solute data
+    # load activity coefficient data
 
-        for i, conc in enumerate(conc_list):
-            conc_c = str(conc * nu_cation) + "mol/kg"
-            conc_a = str(conc * nu_anion) + "mol/kg"
-            sol = Solution()
-            sol.add_solute(cation, conc_c)
-            sol.add_solute(anion, conc_a)
-            expected = pub_activity_coeff[i]
-            activities = FormulaDict(**{cation: expected, anion: expected})
-            # TODO: read/calculate appropriately
-            osmo_coeff = None
-            volume = None
-            dataset = _BenchmarkEntry(
-                solution=sol, activities=activities, osmotic_coefficient=osmo_coeff, solute_volume=volume
-            )
-            datasets.append(dataset)
+    # load molal electrical conductivity
 
-    return datasets
+    # load diffusion coefficient data
 
+    # merge solution.solute_data
 
-# TODO: edit to save Solution objects and add conductivity data to reference data dictionary
-def _create_conductivity_data() -> None:
-    """This method edits data in place."""
-    data: list[tuple[Solution, _BenchmarkEntry]] = []
-    DEST = Path(__file__).parent.joinpath("database")
+    # solution data
+    # load density data
 
-    # per CRC handbook - "electrical conductiVity of Water" , conductivity of pure water
-    # at 25 and 100 C is 0.0550 and 0.765 uS/cm
-    assert np.isclose(s1.conductivity.to("uS/cm").magnitude, 0.055, atol=1e-3)
+    # load electrical conductivity
 
-    # TODO - seems to be a possible bug related to setting temperature here
-    # s1.temperature = "100 degC"
-    # s2 = Solution(temperature='100 degC')
-    # assert np.isclose(s1.conductivity.to('uS/cm').magnitude, 0.765, atol=1e-3)
+    # ? load osmotic coefficient data
 
-    # CRC handbook table - "equivalent conductivity of electrolytes in aqueous solution"
-    # nacl
-    for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
-        s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
-        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+    # merge solution.solution_data
 
-    # higher concentration data points from Appelo, 2017 Figure 4.
-    s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
-    assert np.isclose(s1.conductivity.to("mS/cm").magnitude, 145, atol=10)
+    # previous parametrization of ion pairs
+    # cations = [("H+", 1), ("Cs+", 1), ("Li+", 1), ("Rb+", 1), ("K+", 1), ("Na", 1), ("Mg", 2), ("Ba", 2)]
+    # anions = [("Cl-", 1), ("I-", 1), ("Br", 1), ("SO4-2", 2)]
+    # previous list of concentrations to test, mol/kg
+    # conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
 
-    # MgCl2
-    for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
-        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
-
-    # per CRC handbook "standard KCl solutions for calibrating conductivity cells", 0.1m KCl has a conductivity of
-    # 12.824 mS/cm at 25 C
-    s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.2824, atol=0.25)  # conductivity is in S/m
-
-    # TODO - expected failures due to limited temp adjustment of diffusion coeff
-    s_kcl.temperature = "5 degC"
-    assert np.isclose(s_kcl.conductivity.magnitude, 0.81837, atol=0.2)
-
-    s_kcl.temperature = "50 degC"
-    assert np.isclose(s_kcl.conductivity.magnitude, 1.91809, atol=0.2)
-
-    # TODO - conductivity model not very accurate at high conc.
-    s_kcl = Solution({"K+": "1 mol/kg", "Cl-": "1 mol/kg"})
-    assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
-
-    solutions = [s1, s2, s_kcl]
-
-    for solution in solutions:
-        reference_data = {"conductivity": solution.conductivity}
-        data.append((solution, reference_data))
-
-    filename = DEST.joinpath("CRC_data.json")
-    with filename.open(mode="r", encoding="utf-8") as file:
-        json.dump(data, file, indent=4)
-
-
-# TODO: find equivalent reference sources and write replicate _create_crc_data logic
-def _create_diffusion_data() -> None:
-    # test ionic strength adjustment
-    assert s1.get_diffusion_coefficient("H+") > s2.get_diffusion_coefficient("H+")
-
-    # for Na+, d=122, a1=1.52, a2=3.7, A=1.173802/2.303 at 25 DegC, B = 3.2843078+10
-    factor = np.exp(
-        -1.52
-        * 1.173802
-        / 2.303
-        * 1
-        * np.sqrt(s2.ionic_strength.magnitude)
-        / (1 + 3.2843078e10 * np.sqrt(s2.ionic_strength.magnitude) * 3.7 / (1 + s2.ionic_strength.magnitude**0.75))
-    )
-    assert np.isclose(
-        factor * s2.get_diffusion_coefficient("Na+").magnitude,
-        s2.get_diffusion_coefficient("Na+").magnitude,
-        atol=5e-11,
-    )
-    s_dilute = Solution({"Na+": "1 mmol/L", "Cl-": "1 mmol/L"})
-    assert np.isclose(
-        s_dilute.get_diffusion_coefficient("Na+", activity_correction=False).magnitude, 1.334e-9, atol=1e-12
-    )
-    assert np.isclose(s_dilute.get_transport_number("Na+"), 0.396, atol=1e-3)
-    assert np.isclose(s_dilute.get_transport_number("Cl-"), 0.604, atol=1e-3)
-
-    # test setting a default value
-    s2.default_diffusion_coeff = 0
-    assert s2.get_diffusion_coefficient("Cs+").magnitude == 0
-    s2.default_diffusion_coeff = 1e-9
-    assert s2.get_diffusion_coefficient("Cs+", activity_correction=False).magnitude == 1e-9
-    s2.default_diffusion_coeff = 0
-    assert s2.get_diffusion_coefficient("Cs+", activity_correction=True).magnitude < 1e-9
-    d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
-    nu25 = s2.water_substance.nu
-    s2.temperature = "40 degC"
-    d40 = s2.get_diffusion_coefficient("Na+", activity_correction=False).magnitude
-    nu40 = s2.water_substance.nu
-    assert np.isclose(
-        d40,
-        d25 * np.exp(122 / (273.15 + 40) - 122 / 298.15) * (nu25 / nu40),
-        atol=5e-11,
-    )
-
-    # test correction factors for concentration, as per Appelo 2017 Fig 5
-    D1 = Solution({"Na+": "1 umol/L", "Cl-": "1 umol/L"}).get_diffusion_coefficient("Na+").magnitude
-    D2 = Solution({"Na+": "1.7 mol/kg", "Cl-": "1.7 mol/kg"}).get_diffusion_coefficient("Na+").magnitude
-    assert np.isclose(D2 / D1, 0.54, atol=1e-2)
-
-    D1 = Solution({"K+": "1 umol/L", "Cl-": "1 umol/L"}).get_diffusion_coefficient("K+").magnitude
-    D2 = Solution({"K+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}).get_diffusion_coefficient("K+").magnitude
-    assert np.isclose(D2 / D1, 0.80, atol=1e-2)
-
-
-def _create_density_data() -> None:
-    # see test_density.py
-    pass
-
-
-def _create_osmotic_coefficient_data() -> None:
-    # see test_osmotic_coeff.py
-    pass
-
-
-# TODO: edit to save Solution objects and add molar conductivity data to reference data dictionary
-def _create_molar_conductivity_data() -> None:
-    def test_molar_conductivity_potassium(self):
-        # K+ - 73.48 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["K+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("K+").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("73.48e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    def test_molar_conductivity_sodium(self):
-        # Na+ - 50.08 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("Na+").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("50.08e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    def test_molar_conductivity_magnesium(self):
-        # Mg+2 - 106 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["Mg+2", "0.001 mol/L"], ["Cl-", "0.002 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("Mg+2").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("106e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, atol=0.005)
-
-    def test_molar_conductivity_chloride(self):
-        # Cl- - 76.31 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["Na+", "0.001 mol/L"], ["Cl-", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("Cl-").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("76.31e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    def test_molar_conductivity_fluoride(self):
-        # F- - 55.4 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["Na+", "0.001 mol/L"], ["F-", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("F-").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("55.4e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    def test_molar_conductivity_sulfate(self):
-        # SO4-2 - 160 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution([["Na+", "0.002 mol/L"], ["SO4-2", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("SO4-2").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("160.0e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, atol=0.002)
-
-    def test_molar_conductivity_hydroxide(self):
-        # OH- - 198 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution(temperature="25 degC")
-        result = s1.get_molar_conductivity("OH-").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("198e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    def test_molar_conductivity_hydrogen(self):
-        # H+ - 349.65 x 10 ** -4 m ** 2 S / mol
-        s1 = Solution(temperature="25 degC")
-        result = s1.get_molar_conductivity("H+").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity("349.65e-4 m**2 * S / mol").magnitude
-
-        assert np.isclose(result, expected, rtol=RTOL)
-
-    # molar conductivity of a neutral solute should be zero
-    def test_molar_conductivity_neutral(self):
-        s1 = Solution([["FeCl3", "0.001 mol/L"]], temperature="25 degC")
-        result = s1.get_molar_conductivity("FeCl3").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity(0, "m**2 * S / mol").magnitude
-
-        assert round(abs(result - expected), 5) == 0
-
-    # molar conductivity of water should be zero
-    def test_molar_conductivity_water(self):
-        s1 = Solution(temperature="25 degC")
-        result = s1.get_molar_conductivity("H2O").to("m**2*S/mol").magnitude
-        expected = ureg.Quantity(0, "m**2 * S / mol").magnitude
-
-        assert round(abs(result - expected), 5) == 0
-
-
-# TODO: write database files and write loading function
-def _load_database(source: str) -> list[tuple[Solution, dict[str, float]]]:
-    pass
+    return []
 
 
 def _get_dataset(source: str) -> list[_BenchmarkEntry]:
@@ -308,18 +79,31 @@ def _get_dataset(source: str) -> list[_BenchmarkEntry]:
         A list of _BenchmarkEntry objects one for each data point in the data set.
     """
     match source:
-        case "CRC" | "IDST" | "May2011JCED":
-            reference = _load_database(source)
+        case "CRC":
+            reference = _load_crc_data(source)
+        case "IDST":
+            pass
+        case "May2011JCED":
+            pass
         case _:
             with Path(source).open(mode="r", encoding="utf-8") as file:
                 data = json.load(file)
 
-            reference: list[tuple[Solution, dict[str, float]]] = []
+            reference: list[_BenchmarkEntry] = []
 
-            for sol, values in data:
-                reference.append((Solution(**sol), values))
+            for solution, solute_data, solution_data in data:
+                reference.append(
+                    _BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
+                )
 
     return reference
+
+
+def _patch_dataset(
+    dataset: list[_BenchmarkEntry], *, engine: EOS | Literal["native", "ideal", "phreeqc"] = "native"
+) -> None:
+    for data in dataset:
+        data.solution.engine = engine
 
 
 def _rmse(data: list[tuple[float, float]]) -> float:
@@ -392,13 +176,14 @@ def main() -> None:
     of an identifying Solution object and a dictionary mapping properties to their reference values. The reference
     values are checked against pyEQL-calculated values for a variety of engines.
     """
-    # TODO: create engines (e.g., Pitzer, PHREEQC)
-    # see test_phreeqc.py
+    engines: list[EOS] = [IdealEOS, NativeEOS, PhreeqcEOS]
     datasets = [_get_dataset(s) for s in SOURCES]
-    results: dict[str, list[_BenchmarkEntry]] = {}
+    results: dict[tuple[str, str], list[_BenchmarkEntry]] = {}
 
-    for i, dataset in enumerate(datasets):
-        results[SOURCES[i]] = report_results(dataset)
+    for engine in engines:
+        _patch_dataset(datasets, engine=engine)
+        for i, dataset in enumerate(datasets):
+            results[(engine.__name__, SOURCES[i])] = report_results(dataset)
 
 
 if __name__ == "__main__":
