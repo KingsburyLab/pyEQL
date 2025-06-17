@@ -9,12 +9,14 @@ Usage:
 
 import json
 from collections.abc import Callable
+from functools import reduce
 from pathlib import Path
 from typing import Any, Literal, NamedTuple
 
 import numpy as np
 
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
+from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
 
@@ -114,7 +116,23 @@ def _get_solute_property(solution: Solution, solute: str, name: str) -> Any | No
     return solution.get_property(solute, name)
 
 
+def _get_mean_activity(solution: Solution) -> float:
+    activity_nu_pairs: list[tuple[float, int]] = []
+
+    for salt_dict in solution.get_salt_dict().values():
+        salt = Salt.from_dict(salt_dict)
+        act_cat = solution.get_activity_coefficient(salt.cation)
+        act_an = solution.get_activity_coefficient(salt.anion)
+        activity_nu_pairs.extend([(act_an, salt.nu_anion), (act_cat, salt.nu_cation)])
+
+    factor = reduce(lambda x, y: x * y[0] ** y[1], activity_nu_pairs, initial=1.0)
+    exponent = 1 / sum(x[1] for x in activity_nu_pairs)
+    return factor**exponent
+
+
 def _get_solution_property(solution: Solution, name: str) -> Any | None:
+    if name == "mean_activity":
+        return _get_mean_activity(solution)
     if hasattr(solution, name):
         return getattr(solution, name)
 
