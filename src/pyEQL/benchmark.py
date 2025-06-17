@@ -8,19 +8,21 @@ Usage:
 """
 
 import json
-import math
 from collections.abc import Callable
+from itertools import product
 from pathlib import Path
+from typing import Any, NamedTuple
 
 import numpy as np
 
 from pyEQL import ureg
 from pyEQL.solution import Solution
+from pyEQL.utils import FormulaDict
 
-# Maps solutes to property values dictionary
-ReferenceData = dict[str, dict[str, float]]
 # TODO: Select and validate data sources
-SOURCES = []
+# If all solution reference data are generated from the same solutions, then solutions can be used as an input into
+# source creation
+SOURCES: list[str] = []
 # TODO: revisit tolerance
 # relative tolerance between experimental and computed properties for this test file
 RTOL = 0.05
@@ -29,10 +31,63 @@ s1 = Solution(volume="2 L")
 s2 = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L")
 
 
+class _BenchmarkEntry(NamedTuple):
+    solution: Solution
+    # dict[str, list[tuple[str, float]]]: solute, [(property, value)]
+    solute_data: FormulaDict = FormulaDict()
+    solution_data: list[tuple[str, float]] = []
+
+
+# TODO: check tests for missing property checks
+def _create_crc_data(s) -> list[_BenchmarkEntry]:
+    datasets = []
+    # list of concentrations to test, mol/kg
+    conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
+    # TODO: replace with parametrization scheme which preserves charge neutrality
+    cations = [("H+", 1), ("Cs+", 1), ("Li+", 1), ("Rb+", 1), ("K+", 1), ("Na", 1), ("Mg", 2), ("Ba", 2)]
+    anions = [("Cl-", 1), ("I-", 1), ("Br", 1), ("SO4-2", 2)]
+
+    for (cation, nu_cation), (anion, nu_anion) in product(cations, anions):
+        # list of published experimental activity coefficients
+        # TODO: archive as CSV
+        pub_activity_coeff = [
+            0.965,
+            0.952,
+            0.929,
+            0.905,
+            0.876,
+            0.832,
+            0.797,
+            0.768,
+            0.759,
+            0.811,
+            1.009,
+            2.380,
+        ]
+
+        for i, conc in enumerate(conc_list):
+            conc_c = str(conc * nu_cation) + "mol/kg"
+            conc_a = str(conc * nu_anion) + "mol/kg"
+            sol = Solution()
+            sol.add_solute(cation, conc_c)
+            sol.add_solute(anion, conc_a)
+            expected = pub_activity_coeff[i]
+            activities = FormulaDict(**{cation: expected, anion: expected})
+            # TODO: read/calculate appropriately
+            osmo_coeff = None
+            volume = None
+            dataset = _BenchmarkEntry(
+                solution=sol, activities=activities, osmotic_coefficient=osmo_coeff, solute_volume=volume
+            )
+            datasets.append(dataset)
+
+    return datasets
+
+
 # TODO: edit to save Solution objects and add conductivity data to reference data dictionary
 def _create_conductivity_data() -> None:
     """This method edits data in place."""
-    data: list[tuple[Solution, ReferenceData]] = []
+    data: list[tuple[Solution, _BenchmarkEntry]] = []
     DEST = Path(__file__).parent.joinpath("database")
 
     # per CRC handbook - "electrical conductiVity of Water" , conductivity of pure water
@@ -90,7 +145,7 @@ def _create_conductivity_data() -> None:
         json.dump(data, file, indent=4)
 
 
-# TODO: edit to save Solution objects and add diffusion data to reference data dictionary
+# TODO: find equivalent reference sources and write replicate _create_crc_data logic
 def _create_diffusion_data() -> None:
     # test ionic strength adjustment
     assert s1.get_diffusion_coefficient("H+") > s2.get_diffusion_coefficient("H+")
@@ -142,11 +197,6 @@ def _create_diffusion_data() -> None:
     D1 = Solution({"K+": "1 umol/L", "Cl-": "1 umol/L"}).get_diffusion_coefficient("K+").magnitude
     D2 = Solution({"K+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}).get_diffusion_coefficient("K+").magnitude
     assert np.isclose(D2 / D1, 0.80, atol=1e-2)
-
-
-def _create_activity_data() -> None:
-    # see test_activity.py & test_mixed_electrolyte_activity.py
-    pass
 
 
 def _create_density_data() -> None:
@@ -247,21 +297,18 @@ def _load_database(source: str) -> list[tuple[Solution, dict[str, float]]]:
     pass
 
 
-def _get_reference(source: str) -> list[tuple[Solution, ReferenceData]]:
-    """Load reference data.
+def _get_dataset(source: str) -> list[_BenchmarkEntry]:
+    """Load reference dataset.
 
     Args:
-        source: One of "IDST" or "PHREEQC" or the path to a file containing reference data. If the latter, then the
-            path must point to a JSON which can be read into a list of Solution, Result pairs. Each Solution can only
-            contain the following keys: solutes, volume, temperature, pressure, pH, pE, balance_charge, and solvent.
-            The Result item must contain a dictionary mapping property names to their reference values for the
-            corresponding Solution.
+        source: One of "CRC", "IDST", or "May2011JCED" or the path to a file containing reference data. If the latter,
+            then the [path must point to a JSON which can be read into a _BenchmarkEntry object.
 
     Returns:
-        A list of Solution, Result 2-tuples.
+        A list of _BenchmarkEntry objects one for each data point in the data set.
     """
     match source:
-        case "IDST" | "PHREEQC":
+        case "CRC" | "IDST" | "May2011JCED":
             reference = _load_database(source)
         case _:
             with Path(source).open(mode="r", encoding="utf-8") as file:
@@ -275,54 +322,71 @@ def _get_reference(source: str) -> list[tuple[Solution, ReferenceData]]:
     return reference
 
 
-def benchmark_engine(
-    references: list[tuple[Solution, ReferenceData]], *, getter: Callable[[Solution, str, str], float] | None = None
-) -> dict[str, float]:
-    """Calculate the RMSE for a set of solutions with respect to reference data.
+def _rmse(data: list[tuple[float, float]]) -> float:
+    return np.std([ref - calc for ref, calc in data])
 
 
-    Args:
-        references: A dictionary mapping solution properties to their reference values.
-        getter: A Callable that should accept three positional arguments: A Solution object, a solute string, and a
-            string indicating the name of a solvent property. The Callable should return the property value from the
-            Solution. Defaults to the Solution._get_property method.
-
-    Returns:
-        A dictionary mapping each key in the reference to the cumulative root-mean-squared error across all solutions.
-    """
-
-    def _get_property(s: Solution, solute: str, name: str) -> float:
-        return s._get_property(solute, name)
-
-    getter = getter or _get_property
-
-    errors = {}
-
-    for solution, data in references:
-        for solute, solute_data in data.items():
-            for property, reference_value in solute_data.items():
-                calculated = _get_property(solution, solute, property)
-
-                if property not in errors:
-                    errors[property] = []
-
-                errors[property].append(math.abs(calculated - reference_value))
-
-    return {k: np.std(values) for k, values in errors.items()}
+def _get_solute_property(solution: Solution, solute: str, name: str) -> Any | None:
+    return solution.get_property(solute, name)
 
 
-# TODO: Decide on reporting method and metrics
-def report_results(results: dict[tuple[str, str], float]) -> None:
+def _get_solution_property(solution: Solution, name: str) -> Any | None:
+    if hasattr(solution, name):
+        return getattr(solution, name)
+
+    if hasattr(solution, f"get_{name}"):
+        return getattr(solution, f"get_{name}")
+
+    msg = f"Property {name} is not supported"
+    raise NotImplementedError(msg)
+
+
+def report_results(
+    dataset: list[_BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
+) -> None:
     """Report the results of the benchmarking.
 
     Args:
-        results: A dictionary mapping 2-tuples (engine, source) to the associated root-means-squared error across
+        dataset: A dictionary mapping 2-tuples (engine, source) to the associated root-means-squared error across
             all data points in the source for the given engine.
+        metric: A function that acts on the list of 2-tuples (reference, calculated), which contains reference and
+            calculated values. This function should calculate a statistical metric for the list. Defaults to the root-
+            mean-squared error.
     """
+    metric = metric or _rmse
+
+    # Populate data structure for tracking activity/osmotic coefficient and solvent volume statistics
+    # property, (reference, calculated)
+    solute_data_pairs: dict[str, list[tuple[float, float]]] = {}
+    # property, (reference, calculated)
+    solution_data_pairs: dict[str, list[tuple[float, float]]] = {}
+
+    for d in dataset:
+        for solute, solute_data in d.solute_data.items():
+            for property, reference in solute_data:
+                if property not in solute_data_pairs:
+                    solute_data_pairs[property] = []
+
+                solute_data_pairs[property].append((reference, _get_solute_property(d.solution, solute, property)))
+
+        for property, reference in d.solution_data:
+            if property not in solution_data_pairs:
+                solution_data_pairs[property] = []
+
+            solution_data_pairs[property].append((reference, _get_solution_property(d.solution, solute, property)))
+
+    solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
+    solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
+
+    for property, stat in solute_stats.items():
+        print(f"{property} statistics: {stat}")
+
+    for property, stat in solution_stats.items():
+        print(f"{property} statistics: {stat}")
 
 
-def run_benchmark() -> None:
-    """Solution benchmarking function.
+def main() -> None:
+    """Run solution benchmarking logic.
 
     This function works by reading in reference property values from a list of sources. The reference data is composed
     of an identifying Solution object and a dictionary mapping properties to their reference values. The reference
@@ -330,16 +394,12 @@ def run_benchmark() -> None:
     """
     # TODO: create engines (e.g., Pitzer, PHREEQC)
     # see test_phreeqc.py
-    engines = []
-    references = [(s, _get_reference(s)) for s in SOURCES]
-    results: dict[tuple[str, str], float] = {}
+    datasets = [_get_dataset(s) for s in SOURCES]
+    results: dict[str, list[_BenchmarkEntry]] = {}
 
-    for eng in engines:
-        for source, ref in references:
-            results[(eng, source)] = benchmark_engine(ref)
-
-    report_results(results)
+    for i, dataset in enumerate(datasets):
+        results[SOURCES[i]] = report_results(dataset)
 
 
 if __name__ == "__main__":
-    run_benchmark()
+    main()
