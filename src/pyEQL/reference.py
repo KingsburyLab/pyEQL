@@ -3,7 +3,6 @@
 from pyEQL.benchmark import BenchmarkEntry
 
 
-# TODO: search for each property in each reference database & sketch sub-loader block
 # TODO: identify/understand theoretical, reference, and package equivalences (i.e., how do literature values translate
 # TODO:     to Python attributes)
 # TODO: verify that _get_solute/ion_property framework will work for reference properties
@@ -20,51 +19,96 @@ def _load_crc_data() -> list[BenchmarkEntry]:
     # property: molar electrical conductivity
     # Salts: KCl, NaCl, MgCl2, NaF, Na2SO4, OH-, FeCl3, H2O
     # Concentrations: 0.001, 0.002
+    # TODO: compile data
     # sources: molar_electrical_conductivity/
 
     # SOLUTION DATA
-    # property: mean activity coefficient data
+    # property: mean activity coefficient
     # Salts: HCl, CsI, BaCl2, LiCl, RbCl, MgCl2, KBr, K2SO4
     # Concentrations: 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5
     # TODO: compile data
     # sources: activity_coefficients/
 
-    # load density data
+    # property: density
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources: density/
 
-    # load electrical conductivity
-
-    # ? load osmotic coefficient data
-
-    # merge solution.solution_data
-
-    # previous parametrization of ion pairs
-    # cations = [("H+", 1), ("Cs+", 1), ("Li+", 1), ("Rb+", 1), ("K+", 1), ("Na", 1), ("Mg", 2), ("Ba", 2)]
-    # anions = [("Cl-", 1), ("I-", 1), ("Br", 1), ("SO4-2", 2)]
-    # previous list of concentrations to test, mol/kg
-    # conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
+    # property: conductivity
+    # Salts: NaCl, KCl, MgCl2
+    # Concentrations: 0.001, 0.05, 0.1
+    # TODO: compile data
+    # sources: "Electrical Conductivity of Aqueous Solutions at 20C as a Function of Concentration"
 
     return []
 
 
 def _load_idst_data() -> list[BenchmarkEntry]:
+    # SOLUTION DATA
+    # property: mean activity coefficient
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - https://idst.inl.gov
+
+    # property: osmotic coefficients
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - https://idst.inl.gov
     pass
 
 
 def _load_jpcrd_data() -> list[BenchmarkEntry]:
     # SOLUTION DATA
     # property: mean activity coefficient
-    # Salts: NaCl
-    # Concentrations: 0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 6
+    # Salts: ?
+    # Concentrations: ?
     # TODO: compile data
     # sources:
     #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
     #   - Theoretical Mean Activity Coefficients of Strong Electrolytes in Aqueous Solutions from 0 to 100C -
     #     Walter J. Hamer. NSRDS-NBS 24, 271p. (1968).
+    #   - Thermodynamic Properties of Aqueous Sodium Chloride Solutions — Kenneth S. Pitzer, J. Christopher Peiper, and
+    #     R. H. Busey. J Phys Chem Ref Data 13, 1(1984).
 
-    # Additional properties from Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R..
-    # "Properties Index" (p. 94):
-    # density, diffusion coefficient, electrical resistivity/conductivity, osmotic coefficients, dielectric constants
-    # Debye length
+    # property: density
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
+
+    # property: dielectric constant
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
+
+    # property: electrical resistivity/conductivity
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
+
+    # property: osmotic coefficients
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
+
+    # property: dielectric constant
+    # Salts: ?
+    # Concentrations: ?
+    # TODO: compile data
+    # sources:
+    #   - Standard Reference Data Publications 1964-1984, NBS, Sauerwein J. C., Dalton, G. R. "Properties Index" (p. 94)
     pass
 
 
