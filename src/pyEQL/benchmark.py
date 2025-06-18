@@ -36,6 +36,9 @@ class BenchmarkEntry(NamedTuple):
         solution: The Solution to which the reference data applies.
         solute_data: A dictionary mapping solutes to a list of solute property-value 2-tuples.
         solution_data: A list of solution property-value 2-tuples.
+
+    The property strings in the 2-tuples in `solute_data` and `solution_data` should correspond to properties that can
+    be retrieved using the formalisms outlined in `_get_solute_property` and `_get_solution_property`.
     """
 
     solution: Solution
@@ -93,10 +96,10 @@ def get_dataset(source: str) -> list[BenchmarkEntry]:
 
     Args:
         source: One of "CRC", "IDST", or "May2011JCED" or the path to a file containing reference data. If the latter,
-            then the [path must point to a JSON which can be read into a _BenchmarkEntry object.
+            then the [path must point to a JSON which can be read into a BenchmarkEntry object.
 
     Returns:
-        A list of _BenchmarkEntry objects one for each data point in the data set.
+        A list of BenchmarkEntry objects one for each data point in the data set.
     """
     match source:
         case "CRC":
@@ -132,8 +135,14 @@ def _rmse(data: list[tuple[float, float]]) -> float:
     return np.std([ref - calc for ref, calc in data])
 
 
-def _get_solute_property(solution: Solution, solute: str, name: str) -> Any | None:
-    return solution.get_property(solute, name)
+def _get_solute_property(solution: Solution, solute: str, name: str) -> Any:
+    value = solution.get_property(solute, name)
+
+    if value is None:
+        msg = f"Solute property: {name} not supported"
+        raise ValueError(msg)
+
+    return value
 
 
 def _get_mean_activity(solution: Solution) -> float:
@@ -150,7 +159,7 @@ def _get_mean_activity(solution: Solution) -> float:
     return factor**exponent
 
 
-def _get_solution_property(solution: Solution, name: str) -> Any | None:
+def _get_solution_property(solution: Solution, name: str) -> Any:
     if name == "mean_activity":
         return _get_mean_activity(solution)
     if hasattr(solution, name):
@@ -160,7 +169,7 @@ def _get_solution_property(solution: Solution, name: str) -> Any | None:
         return getattr(solution, f"get_{name}")
 
     msg = f"Property {name} is not supported"
-    raise NotImplementedError(msg)
+    raise ValueError(msg)
 
 
 def report_results(
@@ -169,7 +178,7 @@ def report_results(
     """Report the results of the benchmarking.
 
     Args:
-        dataset: A list of _BenchmarkEntry objects
+        dataset: A list of BenchmarkEntry objects
         metric: A function that acts on the list of 2-tuples (reference, calculated), which contains reference and
             calculated values. This function should calculate a statistical metric for the list. Defaults to the root-
             mean-squared error.
@@ -209,7 +218,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
 
     Args:
         engine: The modeling engine to benchmark.
-        sources: One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of _BenchmarkEntry
+        sources: One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
             objects.
 
     Returns:
