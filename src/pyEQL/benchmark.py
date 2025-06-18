@@ -1,10 +1,13 @@
 """Solution model benchmarking utilities.
 
-
 Usage:
 
-    python pyeql.benchmark
+>>> from pyEQL.benchmark import benchmark_engine
+>>> from pyEQL.engines import IdealEOS
 
+>>> results = benchmark_engine(IdealEOS(), sources=["CRC"])
+>>> results["CRC"].solution_data["mean_activity"]
+...
 """
 
 import json
@@ -15,7 +18,7 @@ from typing import Any, Literal, NamedTuple
 
 import numpy as np
 
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
+from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
@@ -23,14 +26,28 @@ from pyEQL.utils import FormulaDict
 # TODO: Select and validate data sources
 # If all solution reference data are generated from the same solutions, then solutions can be used as an input into
 # source creation
-SOURCES: list[str] = ["CRC", "IDST", "May2011JCED"]
+INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "May2011JCED"]
 
 
-class _BenchmarkEntry(NamedTuple):
+class BenchmarkEntry(NamedTuple):
+    """Solution reference data entry.
+
+    Attributes:
+        solution: The Solution to which the reference data applies.
+        solute_data: A dictionary mapping solutes to a list of solute property-value 2-tuples.
+        solution_data: A list of solution property-value 2-tuples.
+    """
+
     solution: Solution
-    # dict[str, list[tuple[str, float]]]: solute, [(property, value)]
     solute_data: FormulaDict = FormulaDict()
     solution_data: list[tuple[str, float]] = []
+
+
+class BenchmarkResults(NamedTuple):
+    """Solute and solution stats from :func:`pyEQL.benchmark.benchmark_engine`."""
+
+    solute_stats: dict[str, float]
+    solution_stats: dict[str, float]
 
 
 # TODO: check tests for missing property checks and values
@@ -40,7 +57,8 @@ class _BenchmarkEntry(NamedTuple):
 # TODO: check tests for other reference databases
 # TODO: find other reference databases
 # TODO: write loading function for other reference databases
-def _load_crc_data(s) -> list[_BenchmarkEntry]:
+def _load_crc_data(s) -> list[BenchmarkEntry]:
+    # Use JSONStore?
     # datasets = []
 
     # solute data
@@ -70,7 +88,7 @@ def _load_crc_data(s) -> list[_BenchmarkEntry]:
     return []
 
 
-def _get_dataset(source: str) -> list[_BenchmarkEntry]:
+def get_dataset(source: str) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
@@ -91,18 +109,20 @@ def _get_dataset(source: str) -> list[_BenchmarkEntry]:
             with Path(source).open(mode="r", encoding="utf-8") as file:
                 data = json.load(file)
 
-            reference: list[_BenchmarkEntry] = []
+            reference: list[BenchmarkEntry] = []
 
             for solution, solute_data, solution_data in data:
                 reference.append(
-                    _BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
+                    BenchmarkEntry(
+                        solution=Solution.from_dict(solution), solute_data=solute_data, solution_data=solution_data
+                    )
                 )
 
     return reference
 
 
 def _patch_dataset(
-    dataset: list[_BenchmarkEntry], *, engine: EOS | Literal["native", "ideal", "phreeqc"] = "native"
+    dataset: list[BenchmarkEntry], *, engine: EOS | Literal["native", "ideal", "phreeqc"] = "native"
 ) -> None:
     for data in dataset:
         data.solution.engine = engine
@@ -144,23 +164,24 @@ def _get_solution_property(solution: Solution, name: str) -> Any | None:
 
 
 def report_results(
-    dataset: list[_BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
-) -> None:
+    dataset: list[BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
+) -> BenchmarkResults:
     """Report the results of the benchmarking.
 
     Args:
-        dataset: A dictionary mapping 2-tuples (engine, source) to the associated root-means-squared error across
-            all data points in the source for the given engine.
+        dataset: A list of _BenchmarkEntry objects
         metric: A function that acts on the list of 2-tuples (reference, calculated), which contains reference and
             calculated values. This function should calculate a statistical metric for the list. Defaults to the root-
             mean-squared error.
+
+    Returns:
+        A 2-tuple (`solute_stats`, `solution_stats`) where `solute_stats` and `solution_stats` are dictionaries mapping
+        solute and solution properties, respectively, to their benchmark statistics.
     """
     metric = metric or _rmse
 
-    # Populate data structure for tracking activity/osmotic coefficient and solvent volume statistics
-    # property, (reference, calculated)
+    # property: [(reference, calculated)]
     solute_data_pairs: dict[str, list[tuple[float, float]]] = {}
-    # property, (reference, calculated)
     solution_data_pairs: dict[str, list[tuple[float, float]]] = {}
 
     for d in dataset:
@@ -175,34 +196,31 @@ def report_results(
             if property not in solution_data_pairs:
                 solution_data_pairs[property] = []
 
-            solution_data_pairs[property].append((reference, _get_solution_property(d.solution, solute, property)))
+            solution_data_pairs[property].append((reference, _get_solution_property(d.solution, property)))
 
     solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
     solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
 
-    for property, stat in solute_stats.items():
-        print(f"{property} statistics: {stat}")
-
-    for property, stat in solution_stats.items():
-        print(f"{property} statistics: {stat}")
+    return BenchmarkResults(solute_stats=solute_stats, solution_stats=solution_stats)
 
 
-def main() -> None:
-    """Run solution benchmarking logic.
+def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> BenchmarkResults:
+    """Benchmark a modeling engine against reference data.
 
-    This function works by reading in reference property values from a list of sources. The reference data is composed
-    of an identifying Solution object and a dictionary mapping properties to their reference values. The reference
-    values are checked against pyEQL-calculated values for a variety of engines.
+    Args:
+        engine: The modeling engine to benchmark.
+        sources: One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of _BenchmarkEntry
+            objects.
+
+    Returns:
+        A dictionary mapping source names to the corresponding solute and solution statistical metrics.
     """
-    engines: list[EOS] = [IdealEOS, NativeEOS, PhreeqcEOS]
-    datasets = [_get_dataset(s) for s in SOURCES]
-    results: dict[tuple[str, str], list[_BenchmarkEntry]] = {}
+    sources = sources or INTERNAL_SOURCES
+    datasets = [get_dataset(s) for s in sources]
+    results: BenchmarkResults = {}
 
-    for engine in engines:
-        _patch_dataset(datasets, engine=engine)
-        for i, dataset in enumerate(datasets):
-            results[(engine.__name__, SOURCES[i])] = report_results(dataset)
+    for i, dataset in enumerate(datasets):
+        _patch_dataset(dataset, engine=engine)
+        results[sources[i]] = report_results(dataset)
 
-
-if __name__ == "__main__":
-    main()
+    return results
