@@ -19,7 +19,6 @@ from typing import Any, Literal, NamedTuple
 import numpy as np
 
 from pyEQL.engines import EOS
-from pyEQL.reference import _load_crc_data
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
@@ -27,7 +26,7 @@ from pyEQL.utils import FormulaDict
 # TODO: Select and validate data sources
 # If all solution reference data are generated from the same solutions, then solutions can be used as an input into
 # source creation
-INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "May2011JCED"]
+INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "JPCRD", "May2011JCED"]
 
 
 class BenchmarkEntry(NamedTuple):
@@ -54,36 +53,31 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-# TODO: optimize strategy-switching algorithm for source names
-def get_dataset(source: str) -> list[BenchmarkEntry]:
+def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
-        source: One of "CRC", "IDST", or "May2011JCED" or the path to a file containing reference data. If the latter,
+        source: One of "CRC", "IDST", "JPCRD", or "May2011JCED" or the path to a file containing reference data. If the latter,
             then the [path must point to a JSON which can be read into a BenchmarkEntry object.
 
     Returns:
         A list of BenchmarkEntry objects one for each data point in the data set.
     """
     match source:
-        case "CRC":
-            reference = _load_crc_data()
-        case "IDST":
-            pass
-        case "May2011JCED":
-            pass
+        case "CRC" | "IDST" | "JPCRD":
+            source = Path(__file__).parent.joinpath("database", f"{source}.json")
         case _:
-            with Path(source).open(mode="r", encoding="utf-8") as file:
-                data = json.load(file)
+            source = Path(source)
 
-            reference: list[BenchmarkEntry] = []
+    with source.open(mode="r", encoding="utf-8") as file:
+        data = json.load(file)
 
-            for solution, solute_data, solution_data in data:
-                reference.append(
-                    BenchmarkEntry(
-                        solution=Solution.from_dict(solution), solute_data=solute_data, solution_data=solution_data
-                    )
-                )
+    reference: list[BenchmarkEntry] = []
+
+    for solution, solute_data, solution_data in data:
+        reference.append(
+            BenchmarkEntry(solution=Solution.from_dict(solution), solute_data=solute_data, solution_data=solution_data)
+        )
 
     return reference
 
@@ -183,7 +177,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
     Args:
         engine: The modeling engine to benchmark.
         sources: One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
-            objects.
+            objects. Defaults to INTERNAL_SOURCES.
 
     Returns:
         A dictionary mapping source names to the corresponding solute and solution statistical metrics.
