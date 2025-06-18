@@ -3,9 +3,6 @@
 from pyEQL.benchmark import BenchmarkEntry
 
 
-# TODO: identify/understand theoretical, reference, and package equivalences (i.e., how do literature values translate
-# TODO:     to Python attributes)
-# TODO: verify that _get_solute/ion_property framework will work for reference properties
 # TODO: consolidate existing data files
 # TODO: remove redundant sources
 # TODO: write sub-loaders for different CRC archive types
