@@ -19,6 +19,7 @@ from typing import Any, Literal, NamedTuple
 import numpy as np
 
 from pyEQL.engines import EOS
+from pyEQL.reference import _load_crc_data
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
@@ -53,44 +54,7 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-# TODO: check tests for missing property checks and values
-# TODO: write sub-loaders for different CRC archive types
-# TODO: consolidate data files
-# TODO: identify/understand theoretical, reference, and package equivalences
-# TODO: check tests for other reference databases
-# TODO: find other reference databases
-# TODO: write loading function for other reference databases
-def _load_crc_data(s) -> list[BenchmarkEntry]:
-    # Use JSONStore?
-    # datasets = []
-
-    # solute data
-    # load activity coefficient data
-
-    # load molal electrical conductivity
-
-    # load diffusion coefficient data
-
-    # merge solution.solute_data
-
-    # solution data
-    # load density data
-
-    # load electrical conductivity
-
-    # ? load osmotic coefficient data
-
-    # merge solution.solution_data
-
-    # previous parametrization of ion pairs
-    # cations = [("H+", 1), ("Cs+", 1), ("Li+", 1), ("Rb+", 1), ("K+", 1), ("Na", 1), ("Mg", 2), ("Ba", 2)]
-    # anions = [("Cl-", 1), ("I-", 1), ("Br", 1), ("SO4-2", 2)]
-    # previous list of concentrations to test, mol/kg
-    # conc_list = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
-
-    return []
-
-
+# TODO: optimize strategy-switching algorithm for source names
 def get_dataset(source: str) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
@@ -103,7 +67,7 @@ def get_dataset(source: str) -> list[BenchmarkEntry]:
     """
     match source:
         case "CRC":
-            reference = _load_crc_data(source)
+            reference = _load_crc_data()
         case "IDST":
             pass
         case "May2011JCED":
