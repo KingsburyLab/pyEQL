@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from pyEQL.benchmark import _BenchmarkEntry
+from pyEQL.benchmark import BenchmarkEntry
 
 
-def parse_crc(d: dict[str, Any]) -> _BenchmarkEntry:
+def parse_crc(d: dict[str, Any]) -> list[BenchmarkEntry]:
     """Parse data from CRC."""
     # read solution from "Mol. form" key
 
@@ -16,6 +16,6 @@ def parse_crc(d: dict[str, Any]) -> _BenchmarkEntry:
     # molar electrical conductivity from <i>Λ</i>/S cm<sup>2</sup> mol<sup>-1</sup><br/>0.0001 M-like keys
 
 
-def parse_idst(d: dict[str, Any]) -> _BenchmarkEntry:
+def parse_idst(d: dict[str, Any]) -> list[BenchmarkEntry]:
+    """Parse data from IDST."""
     # molal concentration, molal activity/osmotic coefficient
-    pass
