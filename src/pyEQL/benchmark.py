@@ -97,7 +97,7 @@ def load_dataset(source: str | Path) -> list[BenchmarkEntry]:
     """
     match str(source).lower():
         case "crc" | "idst" | "jpcrd":
-            source = Path(__file__).parent.joinpath("database", f"{source.lower()}.json")
+            source = Path(__file__).parent.joinpath("database", f"{str(source).lower()}.json")
         case _:
             source = Path(source)
 
@@ -296,7 +296,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
     """
     sources = sources or INTERNAL_SOURCES
     datasets = [load_dataset(s) for s in sources]
-    results: BenchmarkResults = {}
+    results: dict[str, BenchmarkResults] = {}
 
     for i, dataset in enumerate(datasets):
         _patch_dataset(dataset, engine=engine)
