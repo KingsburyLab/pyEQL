@@ -115,7 +115,7 @@ def _get_solute_property(solution: Solution, solute: str, name: str) -> Any:
     return value
 
 
-def _get_mean_activity(solution: Solution) -> float:
+def _get_mean_activity_coefficient(solution: Solution) -> float:
     activity_nu_pairs: list[tuple[float, int]] = []
 
     for salt_dict in solution.get_salt_dict().values():
@@ -130,8 +130,8 @@ def _get_mean_activity(solution: Solution) -> float:
 
 
 def _get_solution_property(solution: Solution, name: str) -> Any:
-    if name == "mean_activity":
-        return _get_mean_activity(solution)
+    if name == "mean_activity_coefficient":
+        return _get_mean_activity_coefficient(solution)
     if hasattr(solution, name):
         return getattr(solution, name)
 
