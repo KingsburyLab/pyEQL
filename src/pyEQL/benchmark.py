@@ -88,8 +88,8 @@ def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
-        source: One of "CRC", "IDST", "JPCRD", or "May2011JCED" or the path to a file containing reference data. If the latter,
-            then the [path must point to a JSON which can be read into a BenchmarkEntry object.
+        source: One of "CRC", "IDST", "JPCRD", or "May2011JCED" or the path to a file containing reference data. If the
+            latter, then the [path must point to a JSON which can be read into a BenchmarkEntry object.
 
     Returns:
         A list of BenchmarkEntry objects one for each data point in the data set.
@@ -162,12 +162,13 @@ def _get_mean_activity_coefficient(solution: Solution) -> float:
     activity_nu_pairs: list[tuple[float, int]] = []
 
     for salt_dict in solution.get_salt_dict().values():
+        _ = salt_dict.pop("mol")
         salt = Salt.from_dict(salt_dict)
         act_cat = solution.get_activity_coefficient(salt.cation)
         act_an = solution.get_activity_coefficient(salt.anion)
         activity_nu_pairs.extend([(act_an, salt.nu_anion), (act_cat, salt.nu_cation)])
 
-    factor = reduce(lambda x, y: x * y[0] ** y[1], activity_nu_pairs, initial=1.0)
+    factor = reduce(lambda x, y: x * y[0] ** y[1], activity_nu_pairs, 1.0)
     exponent = 1 / sum(x[1] for x in activity_nu_pairs)
     return factor**exponent
 
