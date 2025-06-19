@@ -11,6 +11,7 @@ Usage:
 """
 
 import json
+import math
 from collections.abc import Callable
 from functools import reduce
 from pathlib import Path
@@ -105,13 +106,13 @@ def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
     reduced = []
 
     for ref, calc in data:
-        val = ref - calc
+        val = (ref - calc) ** 2
 
         if hasattr(val, "m"):
             val = val.m
 
         reduced.append(val)
-    return np.std(reduced)
+    return math.sqrt(np.mean(reduced))
 
 
 def _get_solute_property(solution: Solution, solute: str, name: str) -> Any:
