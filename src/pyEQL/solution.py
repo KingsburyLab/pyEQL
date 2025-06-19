@@ -59,7 +59,7 @@ class Solution(MSONable):
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
     ) -> None:
-        """
+        r"""
         Instantiate a Solution from a composition.
 
         Args:
@@ -88,9 +88,39 @@ class Solution(MSONable):
                 Negative log of H+ activity. If omitted, the solution will be
                 initialized to pH 7 (neutral) with appropriate quantities of
                 H+ and OH- ions
-            pE: the pE value (redox potential) of the solution.     Lower values = more reducing,
-                higher values = more oxidizing. At pH 7, water is stable between approximately
-                -7 to +14. The default value corresponds to a pE value typical of natural
+            pE: the :math:`pe` value of the solution. :math:`pe` measures the relative abundance of electrons
+                analogous to how pH measures the relative abundance of protons. Specifically, :math:`pe` is defined in
+                terms of the activity of electrons :math:`[e^{-}]`:
+
+                .. math:: pe = - \log [e^{-}]
+
+                The relationship between the redox potential :math:`Eh` and :math:`pe` can be illustrated by considering
+                the general redox reaction,
+
+                .. math::
+
+                    \begin{gather*}
+                        \text{A}^x \pm ne^{-} \longrightarrow \text{A}^{x \mp n} \quad\quad
+                        K = \frac{[\text{A}^{x \mp n}]}{[\text{A}^x][e^{-}]^{\pm n}}
+                    \end{gather*}
+
+                Writing :math:`pe` in terms of the equilibrium constant :math:`K` and the activities,
+                :math:`[\text{A}^{x}]` and :math:`[\text{A}^{x \mp n}]`, we have:
+
+                .. math::
+
+                    \begin{gather*}
+                        pe = -\log[e^{-}] = \mp \frac{1}{n} \log\left(\frac{1}{K} \frac{[\text{A}^{x \mp n}]}{[\text{A}^x]}\right)
+                           = \mp \frac{\Delta G}{nRT \ln 10} = \frac{FEh}{RT \ln 10}
+                    \end{gather*}
+
+                Thus, the redox potential :math:`Eh` is then related to :math:`pe` via:
+
+                .. math:: Eh = 2.303 \frac{RT}{F}pe
+
+                where :math:`F` is the Faraday constant. Note that lower values of ``pE`` (and thus :math:`Eh`)
+                correspond to more reducing environments, while higher values = more oxidizing. At pH 7, water is stable
+                between approximately -7 to +14. The default value corresponds to a :math:`pe` value typical of natural
                 waters in equilibrium with the atmosphere.
             balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options
                 are
