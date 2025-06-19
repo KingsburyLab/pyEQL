@@ -78,13 +78,17 @@ def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
 
     for solution, solute_data, solution_data in data:
         for k, values in solute_data.items():
-            solute_data[k] = [ureg.Quantity(float(x), y) for x, y in values]
+            solute_data[k] = [(prop, ureg.Quantity(q)) for prop, q in values]
 
-        for i, (x, y) in solution_data:
-            solution_data[i] = ureg.Quantity(float(x), y)
+        for i, (prop, q) in solution_data:
+            solution_data[i] = prop, ureg.Quantity(q)
 
         reference.append(
-            BenchmarkEntry(solution=Solution.from_dict(solution), solute_data=solute_data, solution_data=solution_data)
+            BenchmarkEntry(
+                solution=Solution.from_dict(solution),
+                solute_data=FormulaDict(**solute_data),
+                solution_data=solution_data,
+            )
         )
 
     return reference
