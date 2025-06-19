@@ -5,8 +5,8 @@ Example: Benchmark a solution model against reference data
 >>> from pyEQL.benchmark import benchmark_engine
 >>> from pyEQL.engines import IdealEOS
 
->>> results = benchmark_engine(IdealEOS(), sources=["CRC"])
->>> results["CRC"].solution_data["mean_activity"]
+>>> results = benchmark_engine(IdealEOS(), sources=["crc"])
+>>> results["crc"].solution_stats["mean_activity_coefficient"]
 ...
 
 Example: Generate a reference dataset from a solution model
@@ -95,9 +95,9 @@ def load_dataset(source: str | Path) -> list[BenchmarkEntry]:
     Returns:
         A list of BenchmarkEntry objects, one for each data point in the dataset.
     """
-    match source:
-        case "CRC" | "IDST" | "JPCRD":
-            source = Path(__file__).parent.joinpath("database", f"{source}.json")
+    match str(source).lower():
+        case "crc" | "idst" | "jpcrd":
+            source = Path(__file__).parent.joinpath("database", f"{source.lower()}.json")
         case _:
             source = Path(source)
 
@@ -300,7 +300,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
 
     for i, dataset in enumerate(datasets):
         _patch_dataset(dataset, engine=engine)
-        key = Path(sources[i]).name
+        key = Path(sources[i]).stem
         results[key] = calculate_stats(dataset)
 
     return results
