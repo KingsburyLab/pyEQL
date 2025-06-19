@@ -2,17 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from pyEQL.benchmark import (
-    BenchmarkEntry,
-    _get_solute_property,
-    _get_solution_property,
-    benchmark_engine,
-    calculate_stats,
-    get_dataset,
-)
+from pyEQL.benchmark import BenchmarkEntry, benchmark_engine, calculate_stats, create_entry, get_dataset
 from pyEQL.engines import EOS, IdealEOS, NativeEOS
 from pyEQL.solution import Solution
-from pyEQL.utils import FormulaDict
 
 datadir = Path(__file__).parent.joinpath(Path(__file__).stem)
 
@@ -82,17 +74,7 @@ def fixture_solution_property(request: pytest.FixtureRequest) -> str:
     name="dataset",
 )
 def fixture_dataset(solution: Solution, solute_property: str, solution_property: str) -> list[BenchmarkEntry]:
-    solute_data = FormulaDict()
-
-    for solute in solution.components:
-        data = _get_solute_property(solution, solute, solute_property)
-        solute_data[solute] = [(solute_property, data)]
-
-    data = _get_solution_property(solution, solution_property)
-    solution_data = [(solution_property, data)]
-
-    dataset = BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
-    return [dataset]
+    return [create_entry(solution, [solute_property], [solution_property])]
 
 
 class TestCalculateStats:
