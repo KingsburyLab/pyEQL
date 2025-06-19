@@ -17,7 +17,9 @@ from pathlib import Path
 from typing import Any, Literal, NamedTuple
 
 import numpy as np
+from pint import Quantity
 
+from pyEQL import ureg
 from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
@@ -35,7 +37,7 @@ class BenchmarkEntry(NamedTuple):
     Attributes:
         solution: The Solution to which the reference data applies.
         solute_data: A dictionary mapping solutes to a list of solute property-value 2-tuples.
-        solution_data: A list of solution property-value 2-tuples.
+        solution_data: A list of solution property-quantity 2-tuples.
 
     The property strings in the 2-tuples in `solute_data` and `solution_data` should correspond to properties that can
     be retrieved using the formalisms outlined in `_get_solute_property` and `_get_solution_property`.
@@ -43,7 +45,7 @@ class BenchmarkEntry(NamedTuple):
 
     solution: Solution
     solute_data: FormulaDict = FormulaDict()
-    solution_data: list[tuple[str, float]] = []
+    solution_data: list[tuple[str, Quantity]] = []
 
 
 class BenchmarkResults(NamedTuple):
@@ -70,11 +72,17 @@ def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
             source = Path(source)
 
     with source.open(mode="r", encoding="utf-8") as file:
-        data = json.load(file)
+        data: list[tuple[dict, dict[str, list], list[tuple]]] = json.load(file)
 
     reference: list[BenchmarkEntry] = []
 
     for solution, solute_data, solution_data in data:
+        for k, values in solute_data.items():
+            solute_data[k] = [ureg.Quantity(float(x), y) for x, y in values]
+
+        for i, (x, y) in solution_data:
+            solution_data[i] = ureg.Quantity(float(x), y)
+
         reference.append(
             BenchmarkEntry(solution=Solution.from_dict(solution), solute_data=solute_data, solution_data=solution_data)
         )
