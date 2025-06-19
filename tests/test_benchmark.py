@@ -33,6 +33,12 @@ class TestGetDataset:
         dataset = get_dataset(datadir.joinpath(source))
         assert dataset
 
+    @staticmethod
+    @pytest.mark.parametrize("source", ["CRC"])
+    def test_should_load_dataset_from_internal_source(source: str) -> None:
+        dataset = get_dataset(source)
+        assert dataset
+
 
 @pytest.fixture(name="cation", params=["Na[+1]"])
 def fixture_cation(request: pytest.FixtureRequest) -> str:
