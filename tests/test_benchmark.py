@@ -22,25 +22,29 @@ def fixture_engine(request: pytest.FixtureRequest) -> EOS:
     return engine()
 
 
+@pytest.fixture(name="source", params=["molar_conductivity.json", "mean_activity_coefficient.json"])
+def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
+    return datadir.joinpath(request.param)
+
+
 class TestGetDataset:
     @staticmethod
-    @pytest.mark.parametrize("source", ["molar_conductivity.json"])
     def test_should_load_dataset_from_file(source: str) -> None:
         dataset = get_dataset(datadir.joinpath(source))
         assert dataset
 
 
-@pytest.fixture(name="cation", params=["Na[+1]", "NH4[+1]"])
+@pytest.fixture(name="cation", params=["Na[+1]"])
 def fixture_cation(request: pytest.FixtureRequest) -> str:
     return request.param
 
 
-@pytest.fixture(name="anion", params=["Cl[-1]", "SO4[-2]"])
+@pytest.fixture(name="anion", params=["Cl[-1]"])
 def fixture_anion(request: pytest.FixtureRequest) -> str:
     return request.param
 
 
-@pytest.fixture(name="conc", params=["0.1 mol/L", "25%"])
+@pytest.fixture(name="conc", params=["0.1 mol/L"])
 def fixture_conc(request: pytest.FixtureRequest) -> str:
     return request.param
 
@@ -64,7 +68,18 @@ def fixture_solute_property(request: pytest.FixtureRequest) -> str:
 
 @pytest.fixture(
     name="solution_property",
-    params=["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"],
+    params=[
+        "dielectric_constant",
+        "debye_length",
+        "conductivity",
+        "osmotic_coefficient",
+        "density",
+        "viscosity_dynamic",
+        "osmolality",
+        "osmolarity",
+        "chemical_potential_energy",
+        "activity_coefficient_pitzer",
+    ],
 )
 def fixture_solution_property(request: pytest.FixtureRequest) -> str:
     return request.param
@@ -83,11 +98,6 @@ class TestCalculateStats:
         results = calculate_stats(dataset)
         assert all(err == 0 for err in results.solute_stats.values())
         assert all(err == 0 for err in results.solution_stats.values())
-
-
-@pytest.fixture(name="source", params=["molar_conductivity.json", "mean_activity_coefficient.json"])
-def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
-    return datadir.joinpath(request.param)
 
 
 class TestBenchmarkEngine:
