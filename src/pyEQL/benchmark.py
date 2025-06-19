@@ -77,15 +77,15 @@ def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
     reference: list[BenchmarkEntry] = []
 
     for solution, solute_data, solution_data in data:
-        for k, values in solute_data.items():
-            solute_data[k] = [(prop, ureg.Quantity(q)) for prop, q in values]
+        for solute, values in solute_data.items():
+            solute_data[solute] = [(prop, ureg.Quantity(q)) for prop, q in values]
 
-        for i, (prop, q) in solution_data:
+        for i, (prop, q) in enumerate(solution_data):
             solution_data[i] = prop, ureg.Quantity(q)
 
         reference.append(
             BenchmarkEntry(
-                solution=Solution.from_dict(solution),
+                solution=Solution(**solution),
                 solute_data=FormulaDict(**solute_data),
                 solution_data=solution_data,
             )
@@ -101,16 +101,30 @@ def _patch_dataset(
         data.solution.engine = engine
 
 
-def _rmse(data: list[tuple[float, float]]) -> float:
-    return np.std([ref - calc for ref, calc in data])
+def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
+    reduced = []
+
+    for ref, calc in data:
+        val = ref - calc
+
+        if hasattr(val, "m"):
+            val = val.m
+
+        reduced.append(val)
+    return np.std(reduced)
 
 
 def _get_solute_property(solution: Solution, solute: str, name: str) -> Any:
     value = solution.get_property(solute, name)
 
     if value is None:
-        msg = f"Solute property: {name} not supported"
-        raise ValueError(msg)
+        if hasattr(solution, name):
+            value = getattr(solution, name)
+        elif hasattr(solution, f"get_{name}"):
+            value = getattr(solution, f"get_{name}")(solute)
+        else:
+            msg = f"Solute property: {name} not supported"
+            raise ValueError(msg)
 
     return value
 
@@ -136,7 +150,7 @@ def _get_solution_property(solution: Solution, name: str) -> Any:
         return getattr(solution, name)
 
     if hasattr(solution, f"get_{name}"):
-        return getattr(solution, f"get_{name}")
+        return getattr(solution, f"get_{name}")()
 
     msg = f"Property {name} is not supported"
     raise ValueError(msg)
@@ -165,17 +179,17 @@ def report_results(
 
     for d in dataset:
         for solute, solute_data in d.solute_data.items():
-            for property, reference in solute_data:
-                if property not in solute_data_pairs:
-                    solute_data_pairs[property] = []
+            for prop, reference in solute_data:
+                if prop not in solute_data_pairs:
+                    solute_data_pairs[prop] = []
 
-                solute_data_pairs[property].append((reference, _get_solute_property(d.solution, solute, property)))
+                solute_data_pairs[prop].append((reference, _get_solute_property(d.solution, solute, prop)))
 
-        for property, reference in d.solution_data:
-            if property not in solution_data_pairs:
-                solution_data_pairs[property] = []
+        for prop, reference in d.solution_data:
+            if prop not in solution_data_pairs:
+                solution_data_pairs[prop] = []
 
-            solution_data_pairs[property].append((reference, _get_solution_property(d.solution, property)))
+            solution_data_pairs[prop].append((reference, _get_solution_property(d.solution, prop)))
 
     solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
     solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
@@ -200,6 +214,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
 
     for i, dataset in enumerate(datasets):
         _patch_dataset(dataset, engine=engine)
-        results[sources[i]] = report_results(dataset)
+        key = Path(sources[i]).name
+        results[key] = report_results(dataset)
 
     return results
