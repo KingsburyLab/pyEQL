@@ -51,6 +51,7 @@ from typing import Any, Literal, NamedTuple
 import numpy as np
 from pint import Quantity
 
+import pyEQL
 from pyEQL import ureg
 from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
@@ -61,11 +62,11 @@ INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "JPCRD", "May2011JCED"]
 
 
 class BenchmarkEntry(NamedTuple):
-    """Solution reference data entry.
+    """A set of data for a solution.
 
     Attributes:
         solution: The Solution to which the reference data applies.
-        solute_data: A dictionary mapping solutes to a list of solute property-value 2-tuples.
+        solute_data: A dictionary mapping solutes to a list of solute property-quantity 2-tuples.
         solution_data: A list of solution property-quantity 2-tuples.
 
     The property strings in the 2-tuples in `solute_data` and `solution_data` should correspond to properties that can
@@ -78,7 +79,7 @@ class BenchmarkEntry(NamedTuple):
 
 
 class BenchmarkResults(NamedTuple):
-    """Solute and solution stats from :func:`pyEQL.benchmark.benchmark_engine`."""
+    """Solute and solution stats from :func:`pyEQL.benchmark.calculate_stats`."""
 
     solute_stats: dict[str, float]
     solution_stats: dict[str, float]
@@ -173,9 +174,38 @@ def _get_mean_activity_coefficient(solution: Solution) -> float:
     return factor**exponent
 
 
+def _get_activity_coefficient_pitzer(solution: Solution) -> float:
+    salt = solution.get_salt()
+    param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
+    alpha1 = 2
+    alpha2 = 0
+    molality = salt.get_effective_molality(solution.ionic_strength)
+    temperature = str(solution.temperature)
+
+    return pyEQL.activity_correction.get_activity_coefficient_pitzer(
+        solution.ionic_strength,
+        molality,
+        alpha1,
+        alpha2,
+        ureg.Quantity(param["Beta0"]["value"]).magnitude,
+        ureg.Quantity(param["Beta1"]["value"]).magnitude,
+        ureg.Quantity(param["Beta2"]["value"]).magnitude,
+        ureg.Quantity(param["Cphi"]["value"]).magnitude,
+        salt.z_cation,
+        salt.z_anion,
+        salt.nu_cation,
+        salt.nu_anion,
+        temperature,
+    )
+
+
 def _get_solution_property(solution: Solution, name: str) -> Any:
     if name == "mean_activity_coefficient":
         return _get_mean_activity_coefficient(solution)
+
+    if name == "activity_coefficient_pitzer":
+        return _get_activity_coefficient_pitzer(solution)
+
     if hasattr(solution, name):
         return getattr(solution, name)
 
