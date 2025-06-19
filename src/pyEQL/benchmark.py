@@ -1,6 +1,6 @@
 """Solution model benchmarking utilities.
 
-Usage:
+Example: Benchmark a solution model against reference data
 
 >>> from pyEQL.benchmark import benchmark_engine
 >>> from pyEQL.engines import IdealEOS
@@ -8,6 +8,37 @@ Usage:
 >>> results = benchmark_engine(IdealEOS(), sources=["CRC"])
 >>> results["CRC"].solution_data["mean_activity"]
 ...
+
+Example: Generate a reference dataset from a solution model
+
+>>> from pyEQL import Solution
+>>> from pyEQL.benchmark import calculate_stats
+>>> from pyEQL.benchmark import create_entry
+>>> from pyEQL.engines import IdealEOS
+>>> from pyEQL.engines import NativeEOS
+
+>>> cations = ["H[+1]", "Na[+1]", "Ca[+2]"]
+>>> anions = ["OH[-1]", "Cl[-1]", "SO4[-2]"]
+>>> concs = ["0.1 mol/L", "25%"]
+>>> solutions = []
+
+>>> for ions for product(cations, anions):
+...     for conc in concs:
+...         solutes = {ion: conc for ion in ions}
+...          solutions.append(Solution(solutes=solutes, engine=IdealEOS()))
+
+>>> solute_properties = ["activity_coefficient", "molar_conductivity"]
+>>> solution_properties = ["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"]
+>>> dataset = []
+
+>>> for solution in solutions:
+...     entry = create_entry(solution, solute_properties, solution_properties)
+...     dataset.append(entry)
+
+>>> for data in dataset:
+...     data.solution.engine = NativeEOS()
+
+>>> stats = calculate_stats(dataset)
 """
 
 import json
@@ -26,9 +57,6 @@ from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import FormulaDict
 
-# TODO: Select and validate data sources
-# If all solution reference data are generated from the same solutions, then solutions can be used as an input into
-# source creation
 INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "JPCRD", "May2011JCED"]
 
 
@@ -155,6 +183,32 @@ def _get_solution_property(solution: Solution, name: str) -> Any:
 
     msg = f"Property {name} is not supported"
     raise ValueError(msg)
+
+
+def create_entry(solution: Solution, solute_properties: list[str], solution_properties: list[str]) -> BenchmarkEntry:
+    """Create a BenchmarkEntry from a Solution and specified properties.
+
+    Args:
+        solution: The Solution from which to create the entry.
+        solute_properties: The solute properties to add to the entry.
+        solution_properties: The solution properties to add to the entry.
+    """
+    solute_data = FormulaDict()
+
+    for solute in solution.components:
+        solute_data[solute] = []
+
+        for solute_property in solute_properties:
+            data = _get_solute_property(solution, solute, solute_property)
+            solute_data[solute].append((solute_property, data))
+
+    solution_data = []
+
+    for solution_property in solution_properties:
+        data = _get_solution_property(solution, solution_property)
+        solution_data.append((solution_property, data))
+
+    return BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
 
 
 def calculate_stats(
