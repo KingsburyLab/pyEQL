@@ -85,7 +85,7 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
+def load_dataset(source: str | Path) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
@@ -93,7 +93,7 @@ def get_dataset(source: str | Path) -> list[BenchmarkEntry]:
             latter, then the [path must point to a JSON which can be read into a BenchmarkEntry object.
 
     Returns:
-        A list of BenchmarkEntry objects one for each data point in the data set.
+        A list of BenchmarkEntry objects, one for each data point in the dataset.
     """
     match source:
         case "CRC" | "IDST" | "JPCRD":
@@ -295,7 +295,7 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
         A dictionary mapping source names to the corresponding solute and solution statistical metrics.
     """
     sources = sources or INTERNAL_SOURCES
-    datasets = [get_dataset(s) for s in sources]
+    datasets = [load_dataset(s) for s in sources]
     results: BenchmarkResults = {}
 
     for i, dataset in enumerate(datasets):

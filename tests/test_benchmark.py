@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pyEQL.benchmark import BenchmarkEntry, benchmark_engine, calculate_stats, create_entry, get_dataset
+from pyEQL.benchmark import BenchmarkEntry, benchmark_engine, calculate_stats, create_entry, load_dataset
 from pyEQL.engines import EOS, IdealEOS, NativeEOS
 from pyEQL.solution import Solution
 
@@ -27,16 +27,16 @@ def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
     return datadir.joinpath(request.param)
 
 
-class TestGetDataset:
+class TestLoadDataset:
     @staticmethod
     def test_should_load_dataset_from_file(source: str) -> None:
-        dataset = get_dataset(datadir.joinpath(source))
+        dataset = load_dataset(datadir.joinpath(source))
         assert dataset
 
     @staticmethod
     @pytest.mark.parametrize("source", ["CRC"])
     def test_should_load_dataset_from_internal_source(source: str) -> None:
-        dataset = get_dataset(source)
+        dataset = load_dataset(source)
         assert dataset
 
 
