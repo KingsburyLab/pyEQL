@@ -7,8 +7,8 @@ from pyEQL.benchmark import (
     _get_solute_property,
     _get_solution_property,
     benchmark_engine,
+    calculate_stats,
     get_dataset,
-    report_results,
 )
 from pyEQL.engines import EOS, IdealEOS, NativeEOS
 from pyEQL.solution import Solution
@@ -95,10 +95,10 @@ def fixture_dataset(solution: Solution, solute_property: str, solution_property:
     return [dataset]
 
 
-class TestReportResults:
+class TestCalculateStats:
     @staticmethod
-    def test_should_report_zero_rmse_with_engine_dataset(dataset: list[BenchmarkEntry]) -> None:
-        results = report_results(dataset)
+    def test_should_calculate_zero_rmse_with_engine_dataset(dataset: list[BenchmarkEntry]) -> None:
+        results = calculate_stats(dataset)
         assert all(err == 0 for err in results.solute_stats.values())
         assert all(err == 0 for err in results.solution_stats.values())
 

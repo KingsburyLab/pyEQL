@@ -157,10 +157,10 @@ def _get_solution_property(solution: Solution, name: str) -> Any:
     raise ValueError(msg)
 
 
-def report_results(
+def calculate_stats(
     dataset: list[BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
 ) -> BenchmarkResults:
-    """Report the results of the benchmarking.
+    """Calculate benchmarking statistics.
 
     Args:
         dataset: A list of BenchmarkEntry objects
@@ -216,6 +216,6 @@ def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> Benchm
     for i, dataset in enumerate(datasets):
         _patch_dataset(dataset, engine=engine)
         key = Path(sources[i]).name
-        results[key] = report_results(dataset)
+        results[key] = calculate_stats(dataset)
 
     return results
