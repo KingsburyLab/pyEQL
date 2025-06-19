@@ -85,8 +85,13 @@ class TestCalculateStats:
         assert all(err == 0 for err in results.solution_stats.values())
 
 
+@pytest.fixture(name="source", params=["molar_conductivity.json", "mean_activity_coefficient.json"])
+def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
+    return datadir.joinpath(request.param)
+
+
 class TestBenchmarkEngine:
     @staticmethod
-    def test_should_benchmark_all_engines(engine: EOS) -> None:
-        benchmark_results = benchmark_engine(engine, sources=[datadir.joinpath("molar_conductivity.json")])
+    def test_should_benchmark_all_engines(engine: EOS, source: Path) -> None:
+        benchmark_results = benchmark_engine(engine, sources=[source])
         assert benchmark_results
