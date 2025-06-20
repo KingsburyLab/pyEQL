@@ -118,7 +118,7 @@ class Solution(MSONable):
 
                 .. math:: Eh = 2.303 \frac{RT}{F}pe
 
-                where :math:`F` is the Faraday constant. Note that lower values of ``pE`` (and thus :math:`Eh`)
+                where :math:`F` is Faraday's constant. Note that lower values of ``pE`` (and thus :math:`Eh`)
                 correspond to more reducing environments, while higher values = more oxidizing. At pH 7, water is stable
                 between approximately -7 to +14. The default value corresponds to a :math:`pe` value typical of natural
                 waters in equilibrium with the atmosphere.
