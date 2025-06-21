@@ -45,6 +45,7 @@ import json
 import math
 from collections.abc import Callable
 from functools import reduce
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal, NamedTuple
 
@@ -85,24 +86,27 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-def _equivalent_solutions(soln1: Solution, soln2: Solution) -> bool:
-    same_components = sorted(soln1.components) == sorted(soln2.components)
+# TODO: Admittedly, this is an ugly solution to enable Solutions to serve as dictionary keys to speed up # the
+# calculation of benchmarking stats. For now, we wrap the decision on the final key format in a function
+# _create_solution_key that produces hashable values from a Solution and abstract the key format with a type alias
+# (SolutionKey).
+# Composition
+SolutionKey = tuple[
+    # Composition: (ion, concentration)
+    tuple[tuple[str, str], ...],
+    # State: temperature, pressure
+    tuple[str, str],
+]
 
-    if not same_components:
-        return False
 
-    vol1 = soln1.volume
-    vol2 = soln2.volume
-    for comp, mol in soln1.components.items():
-        conc1 = mol / vol1
-
-        # TODO: relative tolerance needed?
-        same_compositions = (soln2.components[comp] / vol2) == conc1
-        if not same_compositions:
-            return False
-
+def _create_solution_key(solution: Solution) -> SolutionKey:
+    vol = solution.volume.magnitude
+    components = sorted(solution.components)
+    composition = tuple((component, solution.components[component] / vol) for component in components)
     # TODO: should other state variables be checked (e.g., pH, pE)?
-    return soln1.temperature == soln2.temperature and soln1.pressure == soln2.pressure
+    state = solution.temperature, solution.pressure
+
+    return composition, state
 
 
 def load_dataset(
@@ -111,7 +115,7 @@ def load_dataset(
     solutions: list[Solution] | None = None,
     solute_properties: list[tuple[str, str]] | None = None,
     solution_properties: list[str] | None = None,
-) -> list[BenchmarkEntry]:
+) -> dict[str, BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
@@ -133,24 +137,27 @@ def load_dataset(
             solute properties in ``sources``.
 
     Returns:
-        A list of BenchmarkEntry objects, one for each data point in the dataset.
+        A dictionary mapping SolutionKey to BenchmarkEntry objects. See the comment over SolutionKey for details about
+        its structure.
     """
     match str(source).lower():
         case "crc" | "idst" | "jpcrd":
-            source = Path(__file__).parent.joinpath("database", f"{str(source).lower()}.json")
+            source = files("pyEQL").joinpath("database", f"{str(source).lower()}.json")
         case _:
             source = Path(source)
 
     with source.open(mode="r", encoding="utf-8") as file:
         data: list[tuple[dict, dict[str, list], list[tuple]]] = json.load(file)
 
-    reference: list[BenchmarkEntry] = []
+    reference: dict[SolutionKey, BenchmarkEntry] = {}
+    solution_keys = [] if solutions is None else [_create_solution_key(s) for s in solutions]
 
-    for solution, raw_solute_data, raw_solution_data in data:
+    for raw_solution, raw_solute_data, raw_solution_data in data:
         # TODO: handle weight % concentration data
-        soln = Solution(**solution)
+        solution = Solution(**raw_solution)
+        soln_key = _create_solution_key(solution)
 
-        if not any(_equivalent_solutions(s, soln) for s in solutions):
+        if solutions is not None and soln_key not in solution_keys:
             continue
 
         solute_data = FormulaDict[str, dict[str, Quantity]] = FormulaDict()
@@ -166,12 +173,10 @@ def load_dataset(
             if solution_properties is None or p in solution_properties:
                 solution_data[p] = ureg.Quantity(q)
 
-        reference.append(
-            BenchmarkEntry(
-                solution=soln,
-                solute_data=solute_data,
-                solution_data=solution_data,
-            )
+        reference[soln_key] = BenchmarkEntry(
+            solution=solution,
+            solute_data=solute_data,
+            solution_data=solution_data,
         )
 
     return reference
