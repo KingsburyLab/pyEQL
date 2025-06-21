@@ -182,11 +182,71 @@ def load_dataset(
     return reference
 
 
-def _patch_dataset(
-    dataset: list[BenchmarkEntry], *, engine: EOS | Literal["native", "ideal", "phreeqc"] = "native"
-) -> None:
-    for data in dataset:
-        data.solution.engine = engine
+def create_entry(
+    solution: Solution,
+    solute_properties: list[tuple[str, str]],
+    solution_properties: list[str],
+) -> BenchmarkEntry:
+    """Create a BenchmarkEntry from a Solution and specified properties.
+
+    Args:
+        solution: The Solution from which to create the entry.
+        solute_properties: The solute properties to add to the entry.
+        solution_properties: The solution properties to add to the entry.
+    """
+    solute_data = FormulaDict()
+
+    for solute, solute_property in solute_properties:
+        if solute not in solute_data:
+            solute_data[solute] = []
+        data = _get_solute_property(solution, solute, solute_property)
+        solute_data[solute].append((solute_property, data))
+
+    solution_data = []
+
+    for solution_property in solution_properties:
+        data = _get_solution_property(solution, solution_property)
+        solution_data.append((solution_property, data))
+
+    return BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
+
+
+def _create_engine_dataset(
+    engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
+    datasets: list[dict[SolutionKey, BenchmarkEntry]] | None = None,
+) -> dict[SolutionKey, BenchmarkEntry]:
+    mapper: dict[
+        SolutionKey,
+        tuple[
+            # solute_properties
+            list[tuple[str, str]],
+            # solution_properties
+            list[str],
+        ],
+    ] = []
+
+    for dataset in datasets:
+        for key, entry in dataset.items():
+            if key not in mapper:
+                mapper[key] = [], []
+
+            for solute in entry.solute_data:
+                mapper[key][1].extend((solute, prop) for prop in list(entry.solute_data[solute]))
+            mapper[key][2].extend(entry.solution_data)
+
+    engine_dataset = {}
+
+    for solution_key, (solute_properties, solution_properties) in mapper.items():
+        temperature, pressure = solution_key[1]
+        solution = Solution(solutes=dict(solution_key[0]), temperature=temperature, pressure=pressure, engine=engine)
+        entry = create_entry(
+            solution=solution,
+            solute_properties=sorted(set(solute_properties)),
+            solution_properties=sorted(set(solution_properties)),
+        )
+        engine_dataset[key] = entry
+
+    return engine_dataset
 
 
 def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
@@ -274,32 +334,6 @@ def _get_solution_property(solution: Solution, name: str) -> Any:
     raise ValueError(msg)
 
 
-def create_entry(solution: Solution, solute_properties: list[str], solution_properties: list[str]) -> BenchmarkEntry:
-    """Create a BenchmarkEntry from a Solution and specified properties.
-
-    Args:
-        solution: The Solution from which to create the entry.
-        solute_properties: The solute properties to add to the entry.
-        solution_properties: The solution properties to add to the entry.
-    """
-    solute_data = FormulaDict()
-
-    for solute in solution.components:
-        solute_data[solute] = []
-
-        for solute_property in solute_properties:
-            data = _get_solute_property(solution, solute, solute_property)
-            solute_data[solute].append((solute_property, data))
-
-    solution_data = []
-
-    for solution_property in solution_properties:
-        data = _get_solution_property(solution, solution_property)
-        solution_data.append((solution_property, data))
-
-    return BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
-
-
 def calculate_stats(
     dataset: list[BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
 ) -> BenchmarkResults:
@@ -382,9 +416,8 @@ def benchmark_engine(
         for s in sources
     ]
     results: dict[str, BenchmarkResults] = {}
-
+    _ = _create_engine_dataset(engine, datasets)
     for i, dataset in enumerate(datasets):
-        _patch_dataset(dataset, engine=engine)
         key = Path(sources[i]).stem
         results[key] = calculate_stats(dataset)
 
