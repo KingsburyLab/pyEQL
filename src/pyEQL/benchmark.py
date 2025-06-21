@@ -283,13 +283,33 @@ def calculate_stats(
     return BenchmarkResults(solute_stats=solute_stats, solution_stats=solution_stats)
 
 
-def benchmark_engine(engine: EOS, *, sources: list[str] | None = None) -> BenchmarkResults:
+def benchmark_engine(
+    engine: EOS,
+    *,
+    sources: list[str] | None = None,
+    solutions: list[Solution] | None = None,
+    solute_properties: list[tuple[str, str]] | None = None,
+    solution_properties: list[str] | None = None,
+) -> BenchmarkResults:
     """Benchmark a modeling engine against reference data.
 
     Args:
-        engine: The modeling engine to benchmark.
-        sources: One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
+        engine: EOS
+            The modeling engine to benchmark.
+        sources: list[str], optional
+            One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
             objects. Defaults to INTERNAL_SOURCES.
+        solutions: list[Solution], optional
+            The solutions against which the engine will be benchmarked. If omitted, all compositions and conditions in
+            the reference data contained in ``sources`` will be used for the benchmarking.
+        solute_properties: list[tuple[str, str]], optional
+            The solute properties to include in the benchmarking, specified as ``(solute, property)``. The engine will
+            only be benchmarked against those solute properties listed here. If omitted, the engine will be benchmarked
+            against all solute properties in ``sources``.
+        solution_properties: list[str], optional
+            The solution properties to include in the benchmarking. The engine will only be benchmarked against those
+            solution properties listed here. Defaults to None in which case the engine will be benchmarked against all
+            solute properties in ``sources``.
 
     Returns:
         A dictionary mapping source names to the corresponding solute and solution statistical metrics.
