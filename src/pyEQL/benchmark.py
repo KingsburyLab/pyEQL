@@ -74,8 +74,8 @@ class BenchmarkEntry(NamedTuple):
     """
 
     solution: Solution
-    solute_data: FormulaDict = FormulaDict()
-    solution_data: list[tuple[str, Quantity]] = []
+    solute_data: FormulaDict[str, dict[str, Quantity]] = FormulaDict()
+    solution_data: dict[str, Quantity] = {}
 
 
 class BenchmarkResults(NamedTuple):
@@ -85,12 +85,52 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-def load_dataset(source: str | Path) -> list[BenchmarkEntry]:
+def _equivalent_solutions(soln1: Solution, soln2: Solution) -> bool:
+    same_components = sorted(soln1.components) == sorted(soln2.components)
+
+    if not same_components:
+        return False
+
+    vol1 = soln1.volume
+    vol2 = soln2.volume
+    for comp, mol in soln1.components.items():
+        conc1 = mol / vol1
+
+        # TODO: relative tolerance needed?
+        same_compositions = (soln2.components[comp] / vol2) == conc1
+        if not same_compositions:
+            return False
+
+    # TODO: should other state variables be checked (e.g., pH, pE)?
+    return soln1.temperature == soln2.temperature and soln1.pressure == soln2.pressure
+
+
+def load_dataset(
+    source: str | Path,
+    *,
+    solutions: list[Solution] | None = None,
+    solute_properties: list[tuple[str, str]] | None = None,
+    solution_properties: list[str] | None = None,
+) -> list[BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
-        source: One of "CRC", "IDST", "JPCRD", or "May2011JCED" or the path to a file containing reference data. If the
+        source: str | Path
+            One of "CRC", "IDST", "JPCRD", or "May2011JCED" or the path to a file containing reference data. If the
             latter, then the [path must point to a JSON which can be read into a BenchmarkEntry object.
+        solutions: list[Solution], optional
+            The solutions for which data will be loaded from the dataset. If provided, only data corresponding to
+            solutions with the same composition, temperature, and pressure will be loaded. If omitted, all
+            compositions and conditions in the reference data contained in ``sources`` will be used for the
+            benchmarking.
+        solute_properties: list[tuple[str, str]], optional
+            The solute properties to include in the benchmarking, specified as ``(solute, property)``. The engine will
+            only be benchmarked against those solute properties listed here. If omitted, the engine will be benchmarked
+            against all solute properties in ``sources``.
+        solution_properties: list[str], optional
+            The solution properties to include in the benchmarking. The engine will only be benchmarked against those
+            solution properties listed here. Defaults to None in which case the engine will be benchmarked against all
+            solute properties in ``sources``.
 
     Returns:
         A list of BenchmarkEntry objects, one for each data point in the dataset.
@@ -106,17 +146,30 @@ def load_dataset(source: str | Path) -> list[BenchmarkEntry]:
 
     reference: list[BenchmarkEntry] = []
 
-    for solution, solute_data, solution_data in data:
-        for solute, values in solute_data.items():
-            solute_data[solute] = [(prop, ureg.Quantity(q)) for prop, q in values]
+    for solution, raw_solute_data, raw_solution_data in data:
+        # TODO: handle weight % concentration data
+        soln = Solution(**solution)
 
-        for i, (prop, q) in enumerate(solution_data):
-            solution_data[i] = prop, ureg.Quantity(q)
+        if not any(_equivalent_solutions(s, soln) for s in solutions):
+            continue
+
+        solute_data = FormulaDict[str, dict[str, Quantity]] = FormulaDict()
+        solution_data = {}
+
+        for solute, values in raw_solute_data.items():
+            solute_data[solute] = {}
+            for p, q in values.items():
+                if solute_properties is None or (solute, p) in solute_properties:
+                    solute_data[solute][p] = ureg.Quantity(q)
+
+        for p, q in raw_solution_data.items():
+            if solution_properties is None or p in solution_properties:
+                solution_data[p] = ureg.Quantity(q)
 
         reference.append(
             BenchmarkEntry(
-                solution=Solution(**solution),
-                solute_data=FormulaDict(**solute_data),
+                solution=soln,
+                solute_data=solute_data,
                 solution_data=solution_data,
             )
         )
@@ -300,8 +353,10 @@ def benchmark_engine(
             One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
             objects. Defaults to INTERNAL_SOURCES.
         solutions: list[Solution], optional
-            The solutions against which the engine will be benchmarked. If omitted, all compositions and conditions in
-            the reference data contained in ``sources`` will be used for the benchmarking.
+            The solutions for which data will be loaded from the dataset. If provided, only data corresponding to
+            solutions with the same components, concentrations, and conditions (temperature, pressure) will be loaded.
+            If omitted, reference data for all components, concentrations, and conditions (temperature, pressure)
+            contained in ``sources`` will be used for the benchmarking.
         solute_properties: list[tuple[str, str]], optional
             The solute properties to include in the benchmarking, specified as ``(solute, property)``. The engine will
             only be benchmarked against those solute properties listed here. If omitted, the engine will be benchmarked
@@ -315,7 +370,12 @@ def benchmark_engine(
         A dictionary mapping source names to the corresponding solute and solution statistical metrics.
     """
     sources = sources or INTERNAL_SOURCES
-    datasets = [load_dataset(s) for s in sources]
+    datasets = [
+        load_dataset(
+            s, solutions=solutions, solute_properties=solute_properties, solution_properties=solution_properties
+        )
+        for s in sources
+    ]
     results: dict[str, BenchmarkResults] = {}
 
     for i, dataset in enumerate(datasets):
