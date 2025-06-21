@@ -335,19 +335,23 @@ def _get_solution_property(solution: Solution, name: str) -> Any:
 
 
 def calculate_stats(
-    dataset: list[BenchmarkEntry], *, metric: Callable[[list[tuple[float, float]]], float] | None = None
+    reference: dict[SolutionKey, BenchmarkEntry],
+    calculated: dict[SolutionKey, BenchmarkEntry],
+    *,
+    metric: Callable[[list[tuple[float, float]]], float] | None = None,
 ) -> BenchmarkResults:
     """Calculate benchmarking statistics.
 
     Args:
-        dataset: A list of BenchmarkEntry objects
+        reference: A dictionary mapping SolutionKeys to BenchmarkEntry object.
+        calculated: A dictionary mapping SolutionKeys to BenchmarkEntry object.
         metric: A function that acts on the list of 2-tuples (reference, calculated), which contains reference and
             calculated values. This function should calculate a statistical metric for the list. Defaults to the root-
             mean-squared error.
 
     Returns:
-        A 2-tuple (`solute_stats`, `solution_stats`) where `solute_stats` and `solution_stats` are dictionaries mapping
-        solute and solution properties, respectively, to their benchmark statistics.
+        A 2-tuple (``solute_stats``, ``solution_stats``) where ``solute_stats`` and ``solution_stats`` are dictionaries
+        mapping solute and solution properties, respectively, to their benchmark statistics.
     """
     metric = metric or _rmse
 
@@ -355,19 +359,15 @@ def calculate_stats(
     solute_data_pairs: dict[str, list[tuple[float, float]]] = {}
     solution_data_pairs: dict[str, list[tuple[float, float]]] = {}
 
-    for d in dataset:
-        for solute, solute_data in d.solute_data.items():
-            for prop, reference in solute_data:
-                if prop not in solute_data_pairs:
-                    solute_data_pairs[prop] = []
+    for key, entry in reference.items():
+        for solute in entry.solute_data:
+            for prop, value in entry.solute_data[solute].items():
+                calculated_value = calculated[key].solute_data[solute][prop]
+                solute_data_pairs[prop].append((value, calculated_value))
 
-                solute_data_pairs[prop].append((reference, _get_solute_property(d.solution, solute, prop)))
-
-        for prop, reference in d.solution_data:
-            if prop not in solution_data_pairs:
-                solution_data_pairs[prop] = []
-
-            solution_data_pairs[prop].append((reference, _get_solution_property(d.solution, prop)))
+        for prop, value in entry.solution_data.items():
+            calculated_value = calculated[key].solution_data[prop]
+            solute_data_pairs[prop].append((value, calculated_value))
 
     solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
     solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
@@ -415,10 +415,5 @@ def benchmark_engine(
         )
         for s in sources
     ]
-    results: dict[str, BenchmarkResults] = {}
-    _ = _create_engine_dataset(engine, datasets)
-    for i, dataset in enumerate(datasets):
-        key = Path(sources[i]).stem
-        results[key] = calculate_stats(dataset)
-
-    return results
+    engine_dataset = _create_engine_dataset(engine, datasets)
+    return {sources[i]: calculate_stats(ref, engine_dataset) for i, ref in enumerate(datasets)}
