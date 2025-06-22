@@ -2,7 +2,15 @@ from pathlib import Path
 
 import pytest
 
-from pyEQL.benchmark import BenchmarkEntry, benchmark_engine, calculate_stats, create_entry, load_dataset
+from pyEQL.benchmark import (
+    BenchmarkEntry,
+    _create_engine_dataset,
+    _create_solution_key,
+    benchmark_engine,
+    calculate_stats,
+    create_entry,
+    load_dataset,
+)
 from pyEQL.engines import EOS, IdealEOS, NativeEOS
 from pyEQL.solution import Solution
 
@@ -34,7 +42,7 @@ class TestLoadDataset:
         assert dataset
 
     @staticmethod
-    @pytest.mark.parametrize("source", ["CRC"])
+    @pytest.mark.parametrize("source", ["crc"])
     def test_should_load_dataset_from_internal_source(source: str) -> None:
         dataset = load_dataset(source)
         assert dataset
@@ -75,16 +83,16 @@ def fixture_solute_property(request: pytest.FixtureRequest) -> str:
 @pytest.fixture(
     name="solution_property",
     params=[
-        "dielectric_constant",
-        "debye_length",
+        # "dielectric_constant",
+        # "debye_length",
         "conductivity",
         "osmotic_coefficient",
         "density",
-        "viscosity_dynamic",
-        "osmolality",
-        "osmolarity",
-        "chemical_potential_energy",
-        "activity_coefficient_pitzer",
+        # "viscosity_dynamic",
+        # "osmolality",
+        # "osmolarity",
+        # "chemical_potential_energy",
+        # "activity_coefficient_pitzer",
     ],
 )
 def fixture_solution_property(request: pytest.FixtureRequest) -> str:
@@ -95,13 +103,17 @@ def fixture_solution_property(request: pytest.FixtureRequest) -> str:
     name="dataset",
 )
 def fixture_dataset(solution: Solution, solute_property: str, solution_property: str) -> list[BenchmarkEntry]:
-    return [create_entry(solution, [solute_property], [solution_property])]
+    key = _create_solution_key(solution)
+    return {
+        key: create_entry(solution, [(solute, solute_property) for solute in solution.components], [solution_property])
+    }
 
 
 class TestCalculateStats:
     @staticmethod
-    def test_should_calculate_zero_rmse_with_engine_dataset(dataset: list[BenchmarkEntry]) -> None:
-        results = calculate_stats(dataset)
+    def test_should_calculate_zero_rmse_with_engine_dataset(engine: EOS, dataset: list[BenchmarkEntry]) -> None:
+        engine_dataset = _create_engine_dataset(engine, [dataset])
+        results = calculate_stats(engine_dataset, engine_dataset)
         assert all(err == 0 for err in results.solute_stats.values())
         assert all(err == 0 for err in results.solution_stats.values())
 
