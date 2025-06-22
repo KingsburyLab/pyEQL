@@ -68,6 +68,18 @@ class TestLoadDataset:
         only_load_data_for_specified_solutions = False
         assert only_load_data_for_specified_solutions
 
+    @staticmethod
+    @pytest.mark.xfail
+    def test_should_load_data_values_as_quantities() -> None:
+        load_data_values_as_quantities = False
+        assert load_data_values_as_quantities
+
+    @staticmethod
+    @pytest.mark.xfail
+    def test_should_standardize_the_chemical_formulas_in_solute_data() -> None:
+        standardize_the_chemical_formulas_in_solute_data = False
+        assert standardize_the_chemical_formulas_in_solute_data
+
 
 @pytest.fixture(name="cation", params=["Na[+1]"])
 def fixture_cation(request: pytest.FixtureRequest) -> str:
@@ -153,3 +165,11 @@ class TestBenchmarkEngine:
     def test_should_benchmark_all_engines(engine: EOS, source: Path, solution: Solution) -> None:
         benchmark_results = benchmark_engine(engine, sources=[source], solutions=[solution])
         assert benchmark_results
+
+
+class TestCreateEngineDataset:
+    pass
+
+
+class TestCreateEntry:
+    pass
