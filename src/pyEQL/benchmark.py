@@ -1,15 +1,16 @@
 """Solution model benchmarking utilities.
 
-Example: Benchmark a solution model against reference data
+Example: Benchmark the IdealEOS solution model against CRC reference data
 
 >>> from pyEQL.benchmark import benchmark_engine
 >>> from pyEQL.engines import IdealEOS
 
->>> results = benchmark_engine(IdealEOS(), sources=["crc"])
+>>> engine = IdealEOS()
+>>> results = benchmark_engine(engine, sources=["crc"])
 >>> results["crc"].solution_stats["mean_activity_coefficient"]
 ...
 
-Example: Generate a reference dataset from a solution model engine
+Example: Benchmark one solution model against another
 
 >>> from pyEQL import Solution
 >>> from pyEQL.benchmark import calculate_stats
@@ -101,9 +102,10 @@ class BenchmarkResults(NamedTuple):
 
 
 # TODO: Admittedly, this is an ugly solution to enable Solutions to serve as dictionary keys to speed up the
-# calculation of benchmarking stats. For now, we wrap the decision on the final key format in a function
-# (_create_solution_key) that produces hashable values from a Solution, and we abstract the key format with a type
-# alias (SolutionKey).
+# calculation of benchmarking stats. Ideally, this key is cheap to generate and can be generated from the Solution
+# alone in the functions that need it (e.g., load_dataset, calculate_stats, _create_engine_dataset). For now, we wrap
+# the decision on the final key format in a function (_create_solution_key) that produces hashable values from a
+# Solution, and we abstract the key format with a type alias (SolutionKey).
 SolutionKey = tuple[
     # Composition: (ion, concentration)
     tuple[tuple[str, str], ...],
