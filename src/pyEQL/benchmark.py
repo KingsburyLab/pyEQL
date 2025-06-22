@@ -6,8 +6,8 @@ Example: Benchmark the IdealEOS solution model against CRC reference data
 >>> from pyEQL.engines import IdealEOS
 
 >>> engine = IdealEOS()
->>> results = benchmark_engine(engine, sources=["crc"])
->>> results["crc"].solution_stats["mean_activity_coefficient"]
+>>> stats = benchmark_engine(engine, sources=["crc"])
+>>> stats["crc"].solution_stats["mean_activity_coefficient"]
 ...
 
 Example: Benchmark one solution model against another
@@ -19,11 +19,10 @@ Example: Benchmark one solution model against another
 >>> from pyEQL.engines import IdealEOS
 >>> from pyEQL.engines import NativeEOS
 
+# Create the solutions
 >>> cations = ["H[+1]", "Na[+1]", "Ca[+2]"]
 >>> anions = ["OH[-1]", "Cl[-1]", "SO4[-2]"]
 >>> concs = ["0.1 mol/L", "25%"]
->>> solute_properties = ["activity_coefficient", "molar_conductivity"]
->>> solution_properties = ["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"]
 >>> ideal_solutions = []
 >>> native_solutions = []
 
@@ -33,6 +32,9 @@ Example: Benchmark one solution model against another
 ...         ideal_solutions.append(Solution(solutes=solutes, engine=IdealEOS()))
 ...         native_solutions.append(Solution(solutes=solutes, engine=NativeEOS()))
 
+# Create the datasets
+>>> solute_properties = ["activity_coefficient", "molar_conductivity"]
+>>> solution_properties = ["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"]
 >>> ideal_data = {}
 >>> native_data = {}
 
@@ -41,12 +43,13 @@ Example: Benchmark one solution model against another
 ...     native_entry = create_entry(native_solution, solute_properties, solution_properties)
 ...     key = _create_solution_key(ideal_solution)
 ...     ideal_data[key] = ideal_entry
-...     native_data[key] = ideal_entry
+...     native_data[key] = native_entry
 
 >>> stats = calculate_stats(ideal_data, native_data)
 """
 
 import json
+import logging
 import math
 from collections.abc import Callable
 from functools import reduce
@@ -63,6 +66,8 @@ from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 from pyEQL.utils import standardize_formula
+
+logger = logging.getLogger(__name__)
 
 INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "JPCRD", "May2011JCED"]
 
@@ -305,9 +310,10 @@ def create_entry(
 
 
 def _create_engine_dataset(
-    engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
-    datasets: list[dict[SolutionKey, BenchmarkEntry]] | None = None,
+    engine: EOS | Literal["native", "ideal", "phreeqc"],
+    datasets: list[dict[SolutionKey, BenchmarkEntry]],
 ) -> dict[SolutionKey, BenchmarkEntry]:
+    """Create an engine-based dataset containing the properties contained within other datasets."""
     mapper: dict[
         SolutionKey,
         tuple[
@@ -346,9 +352,11 @@ def calculate_stats(
     reference: dict[SolutionKey, BenchmarkEntry],
     calculated: dict[SolutionKey, BenchmarkEntry],
     *,
-    metric: Callable[[list[tuple[float, float]]], float] | None = None,
+    metric: Callable[[list[tuple[Quantity, Quantity]]], float] | None = None,
 ) -> BenchmarkResults:
-    """Calculate benchmarking statistics.
+    """Calculate benchmarking statistics for one dataset relative to another.
+
+    Statistics will be calculated for each solute and solvent property in ``reference`` that appears in ``calculated``.
 
     Args:
         reference: dict[SolutionKey, BenchmarkEntry]
@@ -356,38 +364,53 @@ def calculate_stats(
         calculated: dict[SolutionKey, BenchmarkEntry]
             The data to be benchmarked against the reference data,  dictionary mapping SolutionKeys to
             BenchmarkEntry object.
-        metric: Callable[[list[tuple[float, float]]], float], optional
+        metric: Callable[[list[tuple[Quantity, Quantity]]], float], optional
             A function that acts on the list of 2-tuples (reference, calculated), which contains reference and
-            calculated values. This function should calculate a statistical metric for the list. Defaults to the root-
-            mean-squared error.
+            calculated values as Quantity objects. This function should calculate a statistical metric for the list.
+            Defaults to the root-mean-squared error.
 
     Returns:
         A 2-tuple (``solute_stats``, ``solution_stats``) where ``solute_stats`` and ``solution_stats`` are dictionaries
-        mapping solute and solution properties, respectively, to their benchmark statistics.
+        mapping solute and solution properties, respectively, to their benchmark statistics. The keys in
+        ``solute_stats`` are 2-tuples of strings (``solute``, ``prop``). The keys in ``solution_stats`` are strings.
     """
 
     def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
-        return math.sqrt(np.mean([Quantity(ref - calc).m ** 2 for ref, calc in data]))
+        return math.sqrt(np.mean([((ref - calc) ** 2).m for ref, calc in data]))
 
     metric = metric or _rmse
 
     # property: [(reference, calculated)]
-    solute_data_pairs: dict[str, list[tuple[float, float]]] = {}
-    solution_data_pairs: dict[str, list[tuple[float, float]]] = {}
+    solute_data_pairs: dict[str, list[tuple[Quantity, Quantity]]] = {}
+    solution_data_pairs: dict[str, list[tuple[Quantity, Quantity]]] = {}
 
     for key, entry in reference.items():
         for solute in entry.solute_data:
             for prop, value in entry.solute_data[solute].items():
                 if prop not in solute_data_pairs:
                     solute_data_pairs[prop] = []
-                calculated_value = calculated[key].solute_data[solute][prop]
-                solute_data_pairs[prop].append((value, calculated_value))
+
+                if (
+                    key in calculated
+                    and solute in calculated[key].solute_data
+                    and calculated[key].solute_data[solute].get(prop) is not None
+                ):
+                    calculated_value = calculated[key].solute_data[solute][prop]
+                    solute_data_pairs[prop].append((value, calculated_value))
+                else:
+                    logger.info(
+                        "Unable to find data for key: %s, solute: %s, and solute property: %s", str(key), solute, prop
+                    )
 
         for prop, value in entry.solution_data.items():
             if prop not in solution_data_pairs:
                 solution_data_pairs[prop] = []
-            calculated_value = calculated[key].solution_data[prop]
-            solution_data_pairs[prop].append((value, calculated_value))
+
+            if key in calculated and calculated[key].solution_data.get(prop) is not None:
+                calculated_value = calculated[key].solution_data[prop]
+                solution_data_pairs[prop].append((value, calculated_value))
+            else:
+                logger.info("Unable to find data for key: %s and solution property: %s", str(key), prop)
 
     solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
     solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
