@@ -66,9 +66,12 @@ class BenchmarkEntry(NamedTuple):
     """A set of data for a solution.
 
     Attributes:
-        solution: The Solution to which the reference data applies.
-        solute_data: A dictionary mapping solutes to a dictionary mapping solute properties to a Quantity.
-        solution_data: A dictionary mapping solution properties to a Quantity.
+        solution: Solution
+            The Solution to which the reference data applies.
+        solute_data: dict[str, dict[str, Quantity]]
+            A dictionary mapping solutes to a dictionary mapping solute properties to a Quantity.
+        solution_data: dict[str, Quantity]
+            A dictionary mapping solution properties to a Quantity.
 
     The property strings that serve as keys in ``solute_data`` and ``solution_data`` should correspond to properties
     that can be retrieved using the formalisms outlined in ``_get_solute_property`` and ``_get_solution_property``.
@@ -80,7 +83,14 @@ class BenchmarkEntry(NamedTuple):
 
 
 class BenchmarkResults(NamedTuple):
-    """Solute and solution stats from :func:`pyEQL.benchmark.calculate_stats`."""
+    """Solute and solution stats from :func:`pyEQL.benchmark.calculate_stats`.
+
+    Attributes:
+        solute_stats: dict[str, float]
+            Benchmarking statistics for solute properties.
+        solution_stats: dict[str, float]
+            Benchmarking statistics for solution properties.
+    """
 
     solute_stats: dict[str, float]
     solution_stats: dict[str, float]
