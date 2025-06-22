@@ -115,10 +115,13 @@ SolutionKey = tuple[
 
 def _create_solution_key(solution: Solution) -> SolutionKey:
     vol = solution.volume.magnitude
-    components = sorted(solution.components)
-    composition = tuple((component, f"{solution.components[component] / vol} mol/L") for component in components)
+    composition = []
+    for component in sorted(solution.components):
+        if component != solution.solvent:
+            amount = f"{solution.components[component] / vol} mol/L"
+            composition.append((component, amount))
     state = solution.temperature, solution.pressure
-    return composition, state
+    return tuple(composition), state
 
 
 def load_dataset(
