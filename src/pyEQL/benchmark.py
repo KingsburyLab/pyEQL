@@ -67,11 +67,11 @@ class BenchmarkEntry(NamedTuple):
 
     Attributes:
         solution: The Solution to which the reference data applies.
-        solute_data: A dictionary mapping solutes to a list of solute property-quantity 2-tuples.
-        solution_data: A list of solution property-quantity 2-tuples.
+        solute_data: A dictionary mapping solutes to a dictionary mapping solute properties to a Quantity.
+        solution_data: A dictionary mapping solution properties to a Quantity.
 
-    The property strings in the 2-tuples in `solute_data` and `solution_data` should correspond to properties that can
-    be retrieved using the formalisms outlined in `_get_solute_property` and `_get_solution_property`.
+    The property strings that serve as keys in ``solute_data`` and ``solution_data`` should correspond to properties
+    that can be retrieved using the formalisms outlined in ``_get_solute_property`` and ``_get_solution_property``.
     """
 
     solution: Solution
@@ -86,15 +86,15 @@ class BenchmarkResults(NamedTuple):
     solution_stats: dict[str, float]
 
 
-# TODO: Admittedly, this is an ugly solution to enable Solutions to serve as dictionary keys to speed up # the
+# TODO: Admittedly, this is an ugly solution to enable Solutions to serve as dictionary keys to speed up the
 # calculation of benchmarking stats. For now, we wrap the decision on the final key format in a function
-# _create_solution_key that produces hashable values from a Solution and abstract the key format with a type alias
-# (SolutionKey).
-# Composition
+# (_create_solution_key) that produces hashable values from a Solution, and we abstract the key format with a type
+# alias (SolutionKey).
 SolutionKey = tuple[
     # Composition: (ion, concentration)
     tuple[tuple[str, str], ...],
     # State: temperature, pressure
+    # ? should other state variables be checked (e.g., pH, pE)?
     tuple[str, str],
 ]
 
@@ -103,9 +103,7 @@ def _create_solution_key(solution: Solution) -> SolutionKey:
     vol = solution.volume.magnitude
     components = sorted(solution.components)
     composition = tuple((component, solution.components[component] / vol) for component in components)
-    # TODO: should other state variables be checked (e.g., pH, pE)?
     state = solution.temperature, solution.pressure
-
     return composition, state
 
 
@@ -266,7 +264,7 @@ def create_entry(
             The Solution from which to create the entry.
         solute_properties: list[tuple[str, str]]
             The solute properties to add to the entry.
-        solution_properties: list[tuple[str, str]]
+        solution_properties: list[str]
             The solution properties to add to the entry.
     """
     solute_data = FormulaDict()
@@ -324,19 +322,6 @@ def _create_engine_dataset(
     return engine_dataset
 
 
-def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
-    reduced = []
-
-    for ref, calc in data:
-        val = (ref - calc) ** 2
-
-        if hasattr(val, "m"):
-            val = val.m
-
-        reduced.append(val)
-    return math.sqrt(np.mean(reduced))
-
-
 def calculate_stats(
     reference: dict[SolutionKey, BenchmarkEntry],
     calculated: dict[SolutionKey, BenchmarkEntry],
@@ -360,6 +345,10 @@ def calculate_stats(
         A 2-tuple (``solute_stats``, ``solution_stats``) where ``solute_stats`` and ``solution_stats`` are dictionaries
         mapping solute and solution properties, respectively, to their benchmark statistics.
     """
+
+    def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
+        return math.sqrt(np.mean([(ref - calc) ** 2 for ref, calc in data]))
+
     metric = metric or _rmse
 
     # property: [(reference, calculated)]
