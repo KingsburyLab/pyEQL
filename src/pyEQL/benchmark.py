@@ -140,16 +140,15 @@ def load_dataset(
         solutions: list[Solution], optional
             The solutions for which data will be loaded from the dataset. If provided, only data corresponding to
             solutions with the same composition, temperature, and pressure will be loaded. If omitted, all
-            compositions and conditions in the reference data contained in ``sources`` will be used for the
-            benchmarking.
+            compositions and conditions in the reference data contained in ``source`` will be loaded.
         solute_properties: list[tuple[str, str]], optional
-            The solute properties to include in the benchmarking, specified as ``(solute, property)``. The engine will
-            only be benchmarked against those solute properties listed here. If omitted, the engine will be benchmarked
-            against all solute properties in ``sources``.
+            The solute properties to loaded from the dataset, specified as ``(solute, property)``. If provided, only
+            data for the specified solute properties will be loaded. If omitted, all solute properties in the reference
+            data contained in ``source`` will be loaded.
         solution_properties: list[str], optional
-            The solution properties to include in the benchmarking. The engine will only be benchmarked against those
-            solution properties listed here. Defaults to None in which case the engine will be benchmarked against all
-            solute properties in ``sources``.
+            The solution properties to loaded from the dataset. If provided, only data for the specified solution
+            properties will be loaded. If omitted, all solution properties in the reference data contained in ``source``
+            will be loaded.
 
     Returns:
         A dictionary mapping SolutionKey to BenchmarkEntry objects. See the comment over SolutionKey for details about
@@ -411,8 +410,8 @@ def benchmark_engine(
             One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
             objects. Defaults to INTERNAL_SOURCES.
         solutions: list[Solution], optional
-            The solutions for which data will be loaded from the dataset. If provided, only data corresponding to
-            solutions with the same components, concentrations, and conditions (temperature, pressure) will be loaded.
+            The solutions to include n the benchmarking. If provided, only data corresponding to
+            solutions with the same components, concentrations, and conditions (temperature, pressure) will be used.
             If omitted, reference data for all components, concentrations, and conditions (temperature, pressure)
             contained in ``sources`` will be used for the benchmarking.
         solute_properties: list[tuple[str, str]], optional
