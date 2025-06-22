@@ -1,5 +1,17 @@
 """Solution model benchmarking utilities.
 
+Example: Load CRC reference data
+
+>>> from pyEQL import Solution
+>>> from pyEQL.benchmark import _create_solution_key
+>>> from pyEQL.benchmark import load_dataset
+
+>>> soln = Solution(solutes={"Na[+1]": "0.1 mol/L", "Cl[-1]": "0.1 mol/L"}, temperature="298.15 K", pressure="1 atm")
+>>> data = load_dataset("crc", solutions=[soln])
+>>> key = _create_solution_key(soln)
+>>> data[key]
+...
+
 Example: Benchmark the IdealEOS solution model against CRC reference data
 
 >>> from pyEQL.benchmark import benchmark_engine
