@@ -57,7 +57,7 @@ from pyEQL import ureg
 from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
-from pyEQL.utils import FormulaDict
+from pyEQL.utils import standardize_formula
 
 INTERNAL_SOURCES: list[str] = ["CRC", "IDST", "JPCRD", "May2011JCED"]
 
@@ -75,7 +75,7 @@ class BenchmarkEntry(NamedTuple):
     """
 
     solution: Solution
-    solute_data: FormulaDict[str, dict[str, Quantity]] = FormulaDict()
+    solute_data: dict[str, dict[str, Quantity]] = {}
     solution_data: dict[str, Quantity] = {}
 
 
@@ -113,7 +113,7 @@ def load_dataset(
     solutions: list[Solution] | None = None,
     solute_properties: list[tuple[str, str]] | None = None,
     solution_properties: list[str] | None = None,
-) -> dict[str, BenchmarkEntry]:
+) -> dict[SolutionKey, BenchmarkEntry]:
     """Load reference dataset.
 
     Args:
@@ -158,14 +158,15 @@ def load_dataset(
         if solutions is not None and soln_key not in solution_keys:
             continue
 
-        solute_data = FormulaDict[str, dict[str, Quantity]] = FormulaDict()
+        solute_data: dict[str, dict[str, Quantity]] = {}
         solution_data = {}
 
         for solute, values in raw_solute_data.items():
-            solute_data[solute] = {}
+            standardized_solute = standardize_formula(solute)
+            solute_data[standardized_solute] = {}
             for p, q in values.items():
-                if solute_properties is None or (solute, p) in solute_properties:
-                    solute_data[solute][p] = ureg.Quantity(q)
+                if solute_properties is None or (standardized_solute, p) in solute_properties:
+                    solute_data[standardized_solute][p] = ureg.Quantity(q)
 
         for p, q in raw_solution_data.items():
             if solution_properties is None or p in solution_properties:
@@ -267,19 +268,20 @@ def create_entry(
         solution_properties: list[str]
             The solution properties to add to the entry.
     """
-    solute_data = FormulaDict()
+    solute_data = {}
 
     for solute, solute_property in solute_properties:
-        if solute not in solute_data:
-            solute_data[solute] = []
-        data = _get_solute_property(solution, solute, solute_property)
-        solute_data[solute].append((solute_property, data))
+        standardized_solute = standardize_formula(solute)
+        if standardized_solute not in solute_data:
+            solute_data[standardized_solute] = {}
+        data = _get_solute_property(solution, standardized_solute, solute_property)
+        solute_data[standardized_solute][solute_property] = data
 
-    solution_data = []
+    solution_data = {}
 
     for solution_property in solution_properties:
         data = _get_solution_property(solution, solution_property)
-        solution_data.append((solution_property, data))
+        solution_data[solution_property] = data
 
     return BenchmarkEntry(solution=solution, solute_data=solute_data, solution_data=solution_data)
 
@@ -296,7 +298,7 @@ def _create_engine_dataset(
             # solution_properties
             list[str],
         ],
-    ] = []
+    ] = {}
 
     for dataset in datasets:
         for key, entry in dataset.items():
@@ -304,8 +306,8 @@ def _create_engine_dataset(
                 mapper[key] = [], []
 
             for solute in entry.solute_data:
-                mapper[key][1].extend((solute, prop) for prop in list(entry.solute_data[solute]))
-            mapper[key][2].extend(entry.solution_data)
+                mapper[key][0].extend((solute, prop) for prop in list(entry.solute_data[solute]))
+            mapper[key][1].extend(entry.solution_data)
 
     engine_dataset = {}
 
@@ -347,7 +349,7 @@ def calculate_stats(
     """
 
     def _rmse(data: list[tuple[Quantity, Quantity]]) -> float:
-        return math.sqrt(np.mean([(ref - calc) ** 2 for ref, calc in data]))
+        return math.sqrt(np.mean([Quantity(ref - calc).m ** 2 for ref, calc in data]))
 
     metric = metric or _rmse
 
@@ -358,12 +360,16 @@ def calculate_stats(
     for key, entry in reference.items():
         for solute in entry.solute_data:
             for prop, value in entry.solute_data[solute].items():
+                if prop not in solute_data_pairs:
+                    solute_data_pairs[prop] = []
                 calculated_value = calculated[key].solute_data[solute][prop]
                 solute_data_pairs[prop].append((value, calculated_value))
 
         for prop, value in entry.solution_data.items():
+            if prop not in solution_data_pairs:
+                solution_data_pairs[prop] = []
             calculated_value = calculated[key].solution_data[prop]
-            solute_data_pairs[prop].append((value, calculated_value))
+            solution_data_pairs[prop].append((value, calculated_value))
 
     solute_stats = {k: metric(v) for k, v in solute_data_pairs.items()}
     solution_stats = {k: metric(v) for k, v in solution_data_pairs.items()}
