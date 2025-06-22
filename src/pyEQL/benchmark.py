@@ -9,36 +9,40 @@ Example: Benchmark a solution model against reference data
 >>> results["crc"].solution_stats["mean_activity_coefficient"]
 ...
 
-Example: Generate a reference dataset from a solution model
+Example: Generate a reference dataset from a solution model engine
 
 >>> from pyEQL import Solution
 >>> from pyEQL.benchmark import calculate_stats
 >>> from pyEQL.benchmark import create_entry
+>>> from pyEQL.benchmark import _create_solution_key
 >>> from pyEQL.engines import IdealEOS
 >>> from pyEQL.engines import NativeEOS
 
 >>> cations = ["H[+1]", "Na[+1]", "Ca[+2]"]
 >>> anions = ["OH[-1]", "Cl[-1]", "SO4[-2]"]
 >>> concs = ["0.1 mol/L", "25%"]
->>> solutions = []
+>>> solute_properties = ["activity_coefficient", "molar_conductivity"]
+>>> solution_properties = ["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"]
+>>> ideal_solutions = []
+>>> native_solutions = []
 
 >>> for ions for product(cations, anions):
 ...     for conc in concs:
 ...         solutes = {ion: conc for ion in ions}
-...          solutions.append(Solution(solutes=solutes, engine=IdealEOS()))
+...         ideal_solutions.append(Solution(solutes=solutes, engine=IdealEOS()))
+...         native_solutions.append(Solution(solutes=solutes, engine=NativeEOS()))
 
->>> solute_properties = ["activity_coefficient", "molar_conductivity"]
->>> solution_properties = ["dielectric_constant", "debye_length", "conductivity", "osmotic_coefficient", "density"]
->>> dataset = []
+>>> ideal_data = {}
+>>> native_data = {}
 
->>> for solution in solutions:
-...     entry = create_entry(solution, solute_properties, solution_properties)
-...     dataset.append(entry)
+>>> for ideal_solution, native_solution in zip(ideal_solutions, native_solutions, strict=True):
+...     ideal_entry = create_entry(ideal_solution, solute_properties, solution_properties)
+...     native_entry = create_entry(native_solution, solute_properties, solution_properties)
+...     key = _create_solution_key(ideal_solution)
+...     ideal_data[key] = ideal_entry
+...     native_data[key] = ideal_entry
 
->>> for data in dataset:
-...     data.solution.engine = NativeEOS()
-
->>> stats = calculate_stats(dataset)
+>>> stats = calculate_stats(ideal_data, native_data)
 """
 
 import json
