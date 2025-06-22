@@ -1,3 +1,4 @@
+from itertools import product
 from pathlib import Path
 
 import pytest
@@ -30,7 +31,9 @@ def fixture_engine(request: pytest.FixtureRequest) -> EOS:
     return engine()
 
 
-@pytest.fixture(name="source", params=["molar_conductivity.json", "mean_activity_coefficient.json"])
+@pytest.fixture(
+    name="source", params=["conductivity.json", "molar_conductivity.json", "mean_activity_coefficient.json"]
+)
 def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
     return datadir.joinpath(request.param)
 
@@ -46,6 +49,24 @@ class TestLoadDataset:
     def test_should_load_dataset_from_internal_source(source: str) -> None:
         dataset = load_dataset(source)
         assert dataset
+
+    @staticmethod
+    @pytest.mark.xfail
+    def test_should_only_load_data_for_specified_solutions() -> None:
+        only_load_data_for_specified_solutions = False
+        assert only_load_data_for_specified_solutions
+
+    @staticmethod
+    @pytest.mark.xfail
+    def test_should_only_load_data_for_specified_solute_properties() -> None:
+        only_load_data_for_specified_solutions = False
+        assert only_load_data_for_specified_solutions
+
+    @staticmethod
+    @pytest.mark.xfail
+    def test_should_only_load_data_for_specified_solution_properties() -> None:
+        only_load_data_for_specified_solutions = False
+        assert only_load_data_for_specified_solutions
 
 
 @pytest.fixture(name="cation", params=["Na[+1]"])
@@ -120,6 +141,15 @@ class TestCalculateStats:
 
 class TestBenchmarkEngine:
     @staticmethod
-    def test_should_benchmark_all_engines(engine: EOS, source: Path) -> None:
-        benchmark_results = benchmark_engine(engine, sources=[source])
+    @pytest.fixture(name="source", params=["molar_conductivity.json"])
+    def fixture_source(request: pytest.FixtureRequest) -> list[Path]:
+        return datadir.joinpath(request.param)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        ("conc", "cation"),
+        list(product(["0.0005 mol/L", "0.001 mol/L", "0.01 mol/L", "0.05 mol/L", "0.1 mol/L"], ["Na[+1]", "K[+1]"])),
+    )
+    def test_should_benchmark_all_engines(engine: EOS, source: Path, solution: Solution) -> None:
+        benchmark_results = benchmark_engine(engine, sources=[source], solutions=[solution])
         assert benchmark_results
