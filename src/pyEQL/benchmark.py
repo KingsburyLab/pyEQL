@@ -112,7 +112,7 @@ SolutionKey = tuple[
 def _create_solution_key(solution: Solution) -> SolutionKey:
     vol = solution.volume.magnitude
     components = sorted(solution.components)
-    composition = tuple((component, solution.components[component] / vol) for component in components)
+    composition = tuple((component, f"{solution.components[component] / vol} mol/L") for component in components)
     state = solution.temperature, solution.pressure
     return composition, state
 
