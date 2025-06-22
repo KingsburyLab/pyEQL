@@ -435,7 +435,7 @@ def benchmark_engine(
             One of INTERNAL_SOURCES or the path to a JSON file that can be read into a list of BenchmarkEntry
             objects. Defaults to INTERNAL_SOURCES.
         solutions: list[Solution], optional
-            The solutions to include n the benchmarking. If provided, only data corresponding to
+            The solutions to include in the benchmarking. If provided, only data corresponding to
             solutions with the same components, concentrations, and conditions (temperature, pressure) will be used.
             If omitted, reference data for all components, concentrations, and conditions (temperature, pressure)
             contained in ``sources`` will be used for the benchmarking.
