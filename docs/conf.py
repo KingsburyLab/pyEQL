@@ -167,6 +167,13 @@ pygments_style = "sphinx"
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
 
+# A list of modules from which warnings will be suppressed
+suppress_warnings = [
+    # This ignores a warning resulting from some extensions storing function, class, or module objects in html_context
+    # see https://github.com/sphinx-doc/sphinx/issues/12300 for details
+    "config.cache"
+]
+
 # If this is True, todo emits a warning for each TODO entries. The default is False.
 todo_emit_warnings = True
 
