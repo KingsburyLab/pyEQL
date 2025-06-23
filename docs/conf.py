@@ -77,6 +77,8 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+# Required to cross-reference header anchors in markdown files
+myst_heading_anchors = 3
 
 # always execute notebooks when compiling docs
 # nbsphinx_execute = 'always'
