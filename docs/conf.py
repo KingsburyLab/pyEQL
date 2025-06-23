@@ -8,8 +8,8 @@
 # serve to show the default.
 
 import os
-import sys
 import shutil
+import sys
 
 # -- Path setup --------------------------------------------------------------
 
@@ -52,7 +52,7 @@ try:
 
     apidoc.main(args)
 except Exception as e:
-    print("Running `sphinx-apidoc` failed!\n{}".format(e))
+    print(f"Running `sphinx-apidoc` failed!\n{e}")
 
 # -- General configuration ---------------------------------------------------
 
@@ -76,6 +76,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "nbsphinx",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 # Enable markdown
@@ -182,21 +183,19 @@ html_theme = "sphinx_material"
 html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
-    'base_url': 'https://pyeql.readthedocs.io/en/latest/',
-    'repo_url': 'https://github.com/KingsburyLab/pyEQL/',
-    'repo_name': 'pyEQL',
+    "base_url": "https://pyeql.readthedocs.io/en/latest/",
+    "repo_url": "https://github.com/KingsburyLab/pyEQL/",
+    "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
-    'html_minify': True,
-    'css_minify': True,
-    'nav_title': 'pyEQL: a python interface for water chemistry',
-    'color_primary': "blue",
-    'color_accent': "light-blue",
-    'globaltoc_depth': 2,
-    'globaltoc_collapse': True,
+    "html_minify": True,
+    "css_minify": True,
+    "nav_title": "pyEQL: a python interface for water chemistry",
+    "color_primary": "blue",
+    "color_accent": "light-blue",
+    "globaltoc_depth": 2,
+    "globaltoc_collapse": True,
 }
-html_sidebars = {
-    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
-}
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -280,9 +279,7 @@ latex_elements = {
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ("index", "user_guide.tex", "pyEQL Documentation", "Ryan Kingsbury", "manual")
-]
+latex_documents = [("index", "user_guide.tex", "pyEQL Documentation", "Ryan Kingsbury", "manual")]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

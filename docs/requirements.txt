@@ -12,5 +12,6 @@ phreeqpython
 sphinx>=3.2.1
 nbsphinx
 sphinx-rtd-theme
+ipython>=9.3.0
 myst-parser[linkify]
 git+https://github.com/bashtage/sphinx-material.git # Material theme
