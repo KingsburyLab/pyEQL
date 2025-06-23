@@ -1510,9 +1510,7 @@ class Solution(MSONable):
     # TODO - modify? deprecate? make a salts property?
     def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | str]]:
         """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles present in the solution, e.g., {"NaCl(aq)": 1}. If the
-        Solution is pure water, the returned dict contains only 'HOH'.
+        Returns a dict that represents the salts of the Solution by pairing anions and cations.
 
         Args:
             cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
@@ -1520,47 +1518,48 @@ class Solution(MSONable):
             use_totals: Whether to base the analysis on total element concentrations or individual species
                 concentrations.
 
-        Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
-
-        Many empirical equations for solution properties such as activity coefficient,
-        partial molar volume, or viscosity are based on the concentration of
-        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
-        containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
-        these quantities.
-
-        The get_salt_dict() method examines the ionic composition of a solution and
-        simplifies it into a list of salts. The method returns a dictionary of
-        Salt objects where the keys are the salt formulas (e.g., 'NaCl'). The
-        Salt object contains information about the stoichiometry of the salt to
-        enable its effective concentration to be calculated
-        (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
-
         Returns:
             dict
-                A dictionary of Salt objects, keyed to the salt formula
-
-        See Also:
-            :py:attr:`osmotic_pressure`
-            :py:attr:`viscosity_kinematic`
-            :py:meth:`get_activity`
-            :py:meth:`get_activity_coefficient`
-            :py:meth:`get_water_activity`
-            :py:meth:`get_osmotic_coefficient`
-        """
-        """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles of salt present in the solution, e.g., {"NaCl(aq)": 1}
+                A dictionary of representing salts in the solution, keyed by the salt formula.
 
         Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
+            The dict maps salt formulas to dictionaries containing their amounts and composition. The amount is stored
+            in moles under the key "mol", and information regarding the salt's cation and anion are stored under the
+            keys "cation" and "anion", respectively. Salts are identified by pairing the predominant cations and anions
+            in the solution, in descending order of their respective equivalent amounts.
+
+            Many empirical equations for solution properties such as activity coefficient, partial molar volume, or
+            viscosity are based on the concentration of single salts (e.g., NaCl). When multiple ions are present
+            (e.g., a solution containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
+            these quantities.
+
+        Examples:
+            >>> from pyEQL import Solution
+            >>> from pyEQL.salt_ion_match import Salt
+            >>> s1 = Solution([['Na+','1 mol/l'],['Cl-','1 mol/l']])
+            >>> salt_dict = s1.get_salt_dict()  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            {'NaCl': {'@module': 'pyEQL.salt_ion_match',
+                    '@class': 'Salt',
+                    '@version': ...,
+                    'cation': 'Na[+1]',
+                    'anion': 'Cl[-1]',
+                    'mol': 1.0},
+            'HOH': {'@module': 'pyEQL.salt_ion_match',
+                    '@class': 'Salt',
+                    '@version': ...,
+                    'cation': 'H[+1]',
+                    'anion': 'OH[-1]',
+                    'mol': 1e-07}}
+
+            >>> salts = {salt: Salt(d['cation'], d['anion']}) for salt, d in salt_dict.items()}
+            >>> salts['NaCl']
+            <pyEQL.salt_ion_match.Salt object at ...>
 
         See Also:
             :attr:`components`
             :attr:`cations`
             :attr:`anions`
+            :class:`pyEQL.salt_ion_match.Salt`
         """
         salt_dict: dict[str, dict[str, float | str]] = {}
 
