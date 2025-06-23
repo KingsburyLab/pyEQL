@@ -1508,7 +1508,7 @@ class Solution(MSONable):
         return Salt(d[first_key]["cation"], d[first_key]["anion"])
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict]:
+    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | str]]:
         """
         Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
         keyed by formula and the values are the total moles present in the solution, e.g., {"NaCl(aq)": 1}. If the
@@ -1562,7 +1562,7 @@ class Solution(MSONable):
             :attr:`cations`
             :attr:`anions`
         """
-        salt_dict: dict[str, float] = {}
+        salt_dict: dict[str, dict[str, float | str]] = {}
 
         if use_totals:
             # # use only the predominant species for each element
@@ -2343,12 +2343,12 @@ class Solution(MSONable):
                     ]
                 )
                 self.set_amount("H+", f"{new_hplus} mol/L")
-                self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
+                self.set_amount("OH-", f"{K_W / new_hplus} mol/L")
                 return
 
             z = self.get_property(self._cb_species, "charge")
             try:
-                self.add_amount(self._cb_species, f"{-1*cb/z} mol")
+                self.add_amount(self._cb_species, f"{-1 * cb / z} mol")
                 return
             except ValueError:
                 # if the concentration is negative, it must mean there is not enough present.
@@ -2585,7 +2585,7 @@ class Solution(MSONable):
         for sol2, amt2 in other.components.items():
             if mix_species.get(sol2):
                 orig_amt = float(mix_species[sol2].split(" ")[0])
-                mix_species[sol2] = f"{orig_amt+amt2} mol"
+                mix_species[sol2] = f"{orig_amt + amt2} mol"
             else:
                 mix_species.update({sol2: f"{amt2} mol"})
 
