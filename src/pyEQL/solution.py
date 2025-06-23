@@ -1588,7 +1588,7 @@ class Solution(MSONable):
         # calculate the charge-weighted (equivalent) concentration of each ion
         cation_equiv = {k: self.get_property(k, "charge") * components[k] for k in cations}
         anion_equiv = {
-            k: -1 * self.get_property(k, "charge") * components[k] for k in anions
+            k: self.get_property(k, "charge") * components[k] * -1 for k in anions
         }  # make sure amounts are positive
 
         # sort in descending order of equivalent concentration
@@ -1602,7 +1602,7 @@ class Solution(MSONable):
         if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
             x = Salt("H[+1]", "OH[-1]")
             salt_dict.update({x.formula: x.as_dict()})
-            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol")
+            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol").magnitude
             return salt_dict
 
         # start with the first cation and anion
