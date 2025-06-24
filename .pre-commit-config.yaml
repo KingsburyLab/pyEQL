@@ -12,7 +12,7 @@ ci:
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.7
+    rev: v0.12.0
     hooks:
       # Run the linter. filters are to exclude .ipynb files
       - id: ruff
@@ -22,12 +22,12 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.8.0
+    rev: 25.1.0
     hooks:
       - id: black
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         stages: [pre-commit, commit-msg]
@@ -35,7 +35,7 @@ repos:
         additional_dependencies: [tomli] # needed to read pyproject.toml below py3.11
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-case-conflict
       - id: check-symlinks
