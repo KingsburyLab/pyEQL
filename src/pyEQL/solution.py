@@ -1505,7 +1505,7 @@ class Solution(MSONable):
         """
         d = self.get_salt_dict()
         first_key = next(iter(d.keys()))
-        return Salt(d[first_key]["cation"], d[first_key]["anion"])
+        return d[first_key]["salt"]
 
     # TODO - modify? deprecate? make a salts property?
     def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:

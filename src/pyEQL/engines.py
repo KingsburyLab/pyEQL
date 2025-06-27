@@ -17,7 +17,6 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.salt_ion_match import Salt
 from pyEQL.utils import standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
@@ -321,12 +320,12 @@ class NativeEOS(EOS):
         # identify the predominant salt that this ion is a member of
         salt = None
         rform = standardize_formula(solute)
-        for v in solution.get_salt_dict().values():
-            if v == "HOH":
+        salts = [d["salt"] for d in solution.get_salt_dict().values()]
+        for s in salts:
+            if s.formula == "HOH":
                 continue
-            if rform == v["cation"] or rform == v["anion"]:
-                del v["mol"]
-                salt = Salt.from_dict(v)
+            if rform == s.cation or rform == s.anion:
+                salt = s
                 break
 
         # show an error if no salt can be found that contains the solute
@@ -510,7 +509,7 @@ class NativeEOS(EOS):
         # coefficint for each, and average them into an effective osmotic
         # coefficient
         for d in solution.get_salt_dict().values():
-            item = Salt(d["cation"], d["anion"])
+            item = d["salt"]
             # ignore HOH in the salt list
             if item.formula == "HOH":
                 continue
