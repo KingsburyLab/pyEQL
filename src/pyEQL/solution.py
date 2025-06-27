@@ -1524,9 +1524,9 @@ class Solution(MSONable):
 
         Notes:
             The dict maps salt formulas to dictionaries containing their amounts and composition. The amount is stored
-            in moles under the key "mol", and a :class:`pyEQL.salt_ion_match.Salt` object stores the composition under
-            the key "salt". Salts are identified by pairing the predominant cations and anions in the solution, in
-            descending order of their respective equivalent amounts.
+            in moles under the key "mol", and a :class:`pyEQL.salt_ion_match.Salt` object stored under the "salt" key
+            represents the composition. Salts are identified by pairing the predominant cations and anions in the
+            solution, in descending order of their respective equivalent amounts.
 
             Many empirical equations for solution properties such as activity coefficient, partial molar volume, or
             viscosity are based on the concentration of single salts (e.g., NaCl). When multiple ions are present
