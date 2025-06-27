@@ -7,13 +7,13 @@ used by pyEQL's Solution class
 """
 
 import copy
-import os
 import platform
+from importlib.resources import files
+from itertools import product
 
 import numpy as np
 import pytest
 import yaml
-from importlib.resources import files
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -570,7 +570,7 @@ def test_conductivity(s1, s2):
 
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
         ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
@@ -745,8 +745,8 @@ def test_from_preset(tmp_path):
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"
-    
-    with open(str(preset_path), "r") as file:
+
+    with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
     assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
@@ -781,3 +781,69 @@ def test_to_from_file(tmp_path, s1):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
         Solution.from_file(filename)
+
+
+class TestComponentTypes:
+    @staticmethod
+    @pytest.fixture(name="ions", params=[(), ("Na[+1]", "Cl[-1]"), ("Na[+1]", "SO4[-2]")])
+    def fixture_ions(request: pytest.FixtureRequest) -> tuple[str, ...]:
+        ions: tuple[str, str] = request.param
+        return ions
+
+    @staticmethod
+    @pytest.fixture(name="conc", params=["1 mol/L"])
+    def fixture_conc(request: pytest.FixtureRequest) -> str:
+        conc: str = request.param
+        return conc
+
+    @staticmethod
+    @pytest.fixture(name="balance_charge", params=[None])
+    def fixture_balance_charge(request: pytest.FixtureRequest) -> str | None:
+        return request.param
+
+    @staticmethod
+    @pytest.fixture(
+        name="solution",
+    )
+    def fixture_solution(ions: tuple[str, ...], conc: str, balance_charge: str | None) -> Solution:
+        solution: Solution = Solution(solutes=dict.fromkeys(ions, conc), balance_charge=balance_charge)
+        return solution
+
+    @staticmethod
+    @pytest.mark.parametrize(("balance_charge"), ["pH", "auto", None])
+    def test_should_store_component_values_as_floats(solution: Solution) -> None:
+        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        assert all(component_values_are_floats)
+
+    @staticmethod
+    @pytest.mark.parametrize(("solute", "amount"), product(["Cl[-1]", "H2O(aq)"], ["1 mol/L", "1 mol/kg"]))
+    def test_should_store_component_values_as_floats_after_adding_solute(
+        solution: Solution, amount: str, solute: str
+    ) -> None:
+        solution.add_solute(formula=solute, amount=amount)
+        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        assert all(component_values_are_floats)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        ("ions", "solute", "amount"), product([()], ["H[+]", "H2O(aq)"], ["0.5 mol/L", "0.5 mol/kg"])
+    )
+    def test_should_store_component_values_as_floats_after_setting_amount(
+        solution: Solution, amount: str, solute: str
+    ) -> None:
+        solution.set_amount(solute=solute, amount=amount)
+        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        assert all(component_values_are_floats)
+
+    @staticmethod
+    def test_should_store_component_values_as_floats_after_loading_from_dict(solution: Solution) -> None:
+        solution_from_dict = Solution.from_dict(solution.as_dict())
+        component_values_are_floats = [isinstance(mol, float) for mol in solution_from_dict.components.values()]
+        assert all(component_values_are_floats)
+
+    @staticmethod
+    @pytest.mark.parametrize(("ions", "volume"), [((), "2 L")])
+    def test_should_store_component_values_as_floats_after_setting_volume(solution: Solution, volume: str) -> None:
+        solution.volume = volume
+        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        assert all(component_values_are_floats)

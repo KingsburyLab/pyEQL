@@ -2352,7 +2352,7 @@ class Solution(MSONable):
             except ValueError:
                 # if the concentration is negative, it must mean there is not enough present.
                 # remove everything that's present and log an error.
-                self.components[self._cb_species] = 0
+                self.components[self._cb_species] = 0.0
                 self.logger.error(
                     f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
                 )
