@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
+- **BREAKING** - the return value of `Solution.get_salt_dict` now includes `Salt` objects instead of keys corresponding
+  to `cation` and `anion`. See the example in the docstring for how to adapt existing code to accommodate this
+  change. (#258, @ugognw)
 
 ### Removed
 
