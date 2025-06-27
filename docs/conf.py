@@ -8,8 +8,8 @@
 # serve to show the default.
 
 import os
-import sys
 import shutil
+import sys
 
 # -- Path setup --------------------------------------------------------------
 
@@ -28,31 +28,13 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
-try:  # for Sphinx >= 1.7
-    from sphinx.ext import apidoc
-except ImportError:
-    from sphinx import apidoc
-
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../src/pyEQL")
+
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
     pass
-
-try:
-    import sphinx
-
-    cmd_line = f"sphinx-apidoc --implicit-namespaces -f -o {output_dir} {module_dir}"
-
-    args = cmd_line.split(" ")
-    if tuple(sphinx.__version__.split(".")) >= ("1", "7"):
-        # This is a rudimentary parse_version to avoid external dependencies
-        args = args[1:]
-
-    apidoc.main(args)
-except Exception as e:
-    print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
 # -- General configuration ---------------------------------------------------
 
@@ -76,6 +58,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "nbsphinx",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 # Enable markdown
@@ -94,6 +77,8 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+# Required to cross-reference header anchors in markdown files
+myst_heading_anchors = 3
 
 # always execute notebooks when compiling docs
 # nbsphinx_execute = 'always'
@@ -166,6 +151,13 @@ pygments_style = "sphinx"
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
 
+# A list of modules from which warnings will be suppressed
+suppress_warnings = [
+    # This ignores a warning resulting from some extensions storing function, class, or module objects in html_context
+    # see https://github.com/sphinx-doc/sphinx/issues/12300 for details
+    "config.cache"
+]
+
 # If this is True, todo emits a warning for each TODO entries. The default is False.
 todo_emit_warnings = True
 
@@ -182,21 +174,19 @@ html_theme = "sphinx_material"
 html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
-    'base_url': 'https://pyeql.readthedocs.io/en/latest/',
-    'repo_url': 'https://github.com/KingsburyLab/pyEQL/',
-    'repo_name': 'pyEQL',
+    "base_url": "https://pyeql.readthedocs.io/en/latest/",
+    "repo_url": "https://github.com/KingsburyLab/pyEQL/",
+    "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
-    'html_minify': True,
-    'css_minify': True,
-    'nav_title': 'pyEQL: a python interface for water chemistry',
-    'color_primary': "blue",
-    'color_accent': "light-blue",
-    'globaltoc_depth': 2,
-    'globaltoc_collapse': True,
+    "html_minify": True,
+    "css_minify": True,
+    "nav_title": "pyEQL: a python interface for water chemistry",
+    "color_primary": "blue",
+    "color_accent": "light-blue",
+    "globaltoc_depth": 2,
+    "globaltoc_collapse": True,
 }
-html_sidebars = {
-    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
-}
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -280,9 +270,7 @@ latex_elements = {
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ("index", "user_guide.tex", "pyEQL Documentation", "Ryan Kingsbury", "manual")
-]
+latex_documents = [("index", "user_guide.tex", "pyEQL Documentation", "Ryan Kingsbury", "manual")]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
