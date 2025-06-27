@@ -1508,7 +1508,7 @@ class Solution(MSONable):
         return Salt(d[first_key]["cation"], d[first_key]["anion"])
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | str]]:
+    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
         """
         Returns a dict that represents the salts of the Solution by pairing anions and cations.
 
@@ -1524,9 +1524,9 @@ class Solution(MSONable):
 
         Notes:
             The dict maps salt formulas to dictionaries containing their amounts and composition. The amount is stored
-            in moles under the key "mol", and information regarding the salt's cation and anion are stored under the
-            keys "cation" and "anion", respectively. Salts are identified by pairing the predominant cations and anions
-            in the solution, in descending order of their respective equivalent amounts.
+            in moles under the key "mol", and a :class:`pyEQL.salt_ion_match.Salt` object stores the composition under
+            the key "salt". Salts are identified by pairing the predominant cations and anions in the solution, in
+            descending order of their respective equivalent amounts.
 
             Many empirical equations for solution properties such as activity coefficient, partial molar volume, or
             viscosity are based on the concentration of single salts (e.g., NaCl). When multiple ions are present
@@ -1536,24 +1536,12 @@ class Solution(MSONable):
         Examples:
             >>> from pyEQL import Solution
             >>> from pyEQL.salt_ion_match import Salt
-            >>> s1 = Solution([['Na+','1 mol/l'],['Cl-','1 mol/l']])
-            >>> salt_dict = s1.get_salt_dict()  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-            {'NaCl': {'@module': 'pyEQL.salt_ion_match',
-                    '@class': 'Salt',
-                    '@version': ...,
-                    'cation': 'Na[+1]',
-                    'anion': 'Cl[-1]',
-                    'mol': 1.0},
-            'HOH': {'@module': 'pyEQL.salt_ion_match',
-                    '@class': 'Salt',
-                    '@version': ...,
-                    'cation': 'H[+1]',
-                    'anion': 'OH[-1]',
-                    'mol': 1e-07}}
-
-            >>> salts = {salt: Salt(d['cation'], d['anion']}) for salt, d in salt_dict.items()}
-            >>> salts['NaCl']
+            >>> s1 = Solution(solutes={'Na[+1]': '1 mol/l', 'Cl[-1]': '1 mol/l'})
+            >>> salt_dict = s1.get_salt_dict()
+            >>> salt_dict['NaCl']['salt']
             <pyEQL.salt_ion_match.Salt object at ...>
+            >>> salt_dict['NaCl']['mol']
+            1.0
 
         See Also:
             :attr:`components`
@@ -1561,7 +1549,7 @@ class Solution(MSONable):
             :attr:`anions`
             :class:`pyEQL.salt_ion_match.Salt`
         """
-        salt_dict: dict[str, dict[str, float | str]] = {}
+        salt_dict: dict[str, dict[str, float | Salt]] = {}
 
         if use_totals:
             # # use only the predominant species for each element
@@ -1600,7 +1588,7 @@ class Solution(MSONable):
         # Only ions are H+ and OH-; return a Salt represnting water (with no amount)
         if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
             x = Salt("H[+1]", "OH[-1]")
-            salt_dict.update({x.formula: x.as_dict()})
+            salt_dict.update({x.formula: {"salt": x}})
             salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol").magnitude
             return salt_dict
 
@@ -1622,7 +1610,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover cation, so use the anion amount
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion * x.nu_anion)
                 # adjust the amounts of the respective ions
                 c1 = c1 - a1
@@ -1639,7 +1627,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover anion, so use the cation amount
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # calculate the leftover cation amount
                 a1 = a1 - c1
@@ -1655,7 +1643,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be nothing leftover, so it doesn't matter which ion you use
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # move to the next cation and anion
                 index_an += 1
