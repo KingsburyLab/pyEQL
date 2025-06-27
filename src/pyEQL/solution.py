@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import warnings
+import re
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
@@ -2522,6 +2523,66 @@ class Solution(MSONable):
                 solution_dict.pop(key)
             return Solution(**solution_dict)
         return loadfn(filename)
+
+        
+
+    @classmethod
+    def from_phreeqc(cls, path_to_pqi: str) -> "Solution":
+        """
+        Parse a PHREEQC .pqi input file and pull out only the SOLUTION block,
+        extracting solute amounts (assumed mol/L), plus pH, pE, and temperature if present.
+        """
+        import re
+
+        sol_lines: list[str] = []
+        in_solution = False
+
+        with open(path_to_pqi, "r") as f:
+            for raw in f:
+                line = raw.strip()
+                if not in_solution and line.upper().startswith("SOLUTION"):
+                    in_solution = True
+                    continue
+                # stop on blank or a new ALL-CAPS keyword
+                if in_solution and (line == "" or re.match(r"^[A-Z]+\b", line)):
+                    break
+                if in_solution:
+                    sol_lines.append(line)
+
+        if not sol_lines:
+            raise ValueError(f"No SOLUTION block found in '{path_to_pqi}'")
+
+        composition: dict[str, str] = {}
+        pH = pE = None
+        temperature = None  # degrees C
+
+        for l in sol_lines:
+            parts = re.split(r"\s+", l)
+            key = parts[0].upper()
+            vals = parts[1:]
+            if key == "PH":
+                pH = float(vals[0])
+            elif key == "PE":
+                pE = float(vals[0])
+            elif key in ("TEMP", "TEMPERATURE"):
+                temperature = float(vals[0])
+            else:
+                # solute line: e.g. "Ca+2 0.01"
+                try:
+                    amt = float(vals[0])
+                except ValueError:
+                    continue
+                # **here** we tag the unit so pyEQL knows mol/L
+                composition[parts[0]] = f"{amt} mol/L"
+
+        return cls(
+            solutes=composition,
+            pH=pH,
+            pE=pE,
+            temperature=f"{temperature} degC" if temperature is not None else None,
+            engine="ideal",
+        )
+
 
     # arithmetic operations
     def __add__(self, other: Solution) -> Solution:
