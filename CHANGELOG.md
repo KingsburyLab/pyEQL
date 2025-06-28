@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- `Solution.from_phreeqc()` class method to parse PHREEQC `.pqi` SOLUTION blocks—automatically extracting pH, pE, temperature, and solute concentrations (raises `ValueError` if no block is found).
+- New unit tests in `tests/test_parser_from_phreeqc.py` covering both a minimal valid SOLUTION block and the missing-block error case.
+
 ### Changed
 
 - Support `numpy>2.0`
