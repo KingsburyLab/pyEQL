@@ -322,8 +322,6 @@ class NativeEOS(EOS):
         rform = standardize_formula(solute)
         salts = [d["salt"] for d in solution.get_salt_dict().values()]
         for s in salts:
-            if s.formula == "HOH":
-                continue
             if rform == s.cation or rform == s.anion:
                 salt = s
                 break
