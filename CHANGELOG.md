@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
+- `Solution.list_salts` (use `Solution.get_salt_dict()` instead)
 
 ## [1.2.0] - 2024-09-24
 
