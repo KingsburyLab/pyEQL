@@ -17,6 +17,7 @@ import yaml
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
 
@@ -783,7 +784,7 @@ def test_to_from_file(tmp_path, s1):
         Solution.from_file(filename)
 
 
-class TestComponentTypes:
+class TypeTestSuperclass:
     @staticmethod
     @pytest.fixture(name="ions", params=[(), ("Na[+1]", "Cl[-1]"), ("Na[+1]", "SO4[-2]")])
     def fixture_ions(request: pytest.FixtureRequest) -> tuple[str, ...]:
@@ -809,10 +810,12 @@ class TestComponentTypes:
         solution: Solution = Solution(solutes=dict.fromkeys(ions, conc), balance_charge=balance_charge)
         return solution
 
+
+class TestComponentTypes(TypeTestSuperclass):
     @staticmethod
     @pytest.mark.parametrize(("balance_charge"), ["pH", "auto", None])
     def test_should_store_component_values_as_floats(solution: Solution) -> None:
-        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        component_values_are_floats = [type(mol) is float for mol in solution.components.values()]
         assert all(component_values_are_floats)
 
     @staticmethod
@@ -821,7 +824,7 @@ class TestComponentTypes:
         solution: Solution, amount: str, solute: str
     ) -> None:
         solution.add_solute(formula=solute, amount=amount)
-        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        component_values_are_floats = [type(mol) is float for mol in solution.components.values()]
         assert all(component_values_are_floats)
 
     @staticmethod
@@ -832,18 +835,32 @@ class TestComponentTypes:
         solution: Solution, amount: str, solute: str
     ) -> None:
         solution.set_amount(solute=solute, amount=amount)
-        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        component_values_are_floats = [type(mol) is float for mol in solution.components.values()]
         assert all(component_values_are_floats)
 
     @staticmethod
     def test_should_store_component_values_as_floats_after_loading_from_dict(solution: Solution) -> None:
         solution_from_dict = Solution.from_dict(solution.as_dict())
-        component_values_are_floats = [isinstance(mol, float) for mol in solution_from_dict.components.values()]
+        component_values_are_floats = [type(mol) is float for mol in solution_from_dict.components.values()]
         assert all(component_values_are_floats)
 
     @staticmethod
     @pytest.mark.parametrize(("ions", "volume"), [((), "2 L")])
     def test_should_store_component_values_as_floats_after_setting_volume(solution: Solution, volume: str) -> None:
         solution.volume = volume
-        component_values_are_floats = [isinstance(mol, float) for mol in solution.components.values()]
+        component_values_are_floats = [type(mol) is float for mol in solution.components.values()]
         assert all(component_values_are_floats)
+
+
+class TestSaltDictTypes(TypeTestSuperclass):
+    @staticmethod
+    def test_should_store_mol_as_floats(solution: Solution) -> None:
+        mol_values = [d["mol"] for d in solution.get_salt_dict().values()]
+        mol_values_are_floats = [type(mol) is float for mol in mol_values]
+        assert all(mol_values_are_floats)
+
+    @staticmethod
+    def test_should_store_salts_as_salts(solution: Solution) -> None:
+        salts = [d["salt"] for d in solution.get_salt_dict().values()]
+        salt_values_are_salts = [type(mol) is Salt for mol in salts]
+        assert all(salt_values_are_salts)
