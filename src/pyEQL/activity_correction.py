@@ -137,11 +137,11 @@ def _debye_parameter_osmotic(temperature="25 degC"):
         .. math:: A^{\phi} = {1 \over 3} A^{\gamma}
 
     References:
-        .. [kim] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of Aqueous Electrolytes at 25 C. 1. Single Salt Parameters,"
-        *J. Chemical Engineering Data* 33, pp.177-184.
+        .. [kim] Kim, Hee-Talk and Frederick, William Jr, 1988. "Evaluation of Pitzer Ion Interaction Parameters of
+           Aqueous Electrolytes at 25 C. 1. Single Salt Parameters," *J. Chemical Engineering Data* 33, pp.177-184.
 
         .. [arch] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water \
-        and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
+           and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
 
     Examples:
         >>> _debye_parameter_osmotic() #doctest: +ELLIPSIS
@@ -166,7 +166,7 @@ def _debye_parameter_volume(temperature="25 degC"):
 
     Notes:
         Takes the value 1.8305 cm ** 3 * kg ** 0.5 /  mol ** 1.5 at 25 C.
-        This constant is calculated according to: [1]_
+        This constant is calculated according to: [adw90]_
 
         .. math:: A_V = -2 A_{\phi} R T \big[ \frac{3}{\epsilon} \frac{\partial \epsilon}{\partial p} \
          - \frac{1}{\rho}\frac{\partial \rho}{\partial p} \big]
@@ -180,13 +180,13 @@ def _debye_parameter_volume(temperature="25 degC"):
         of real data, but is required to give the correct result.
 
         The second term is equivalent to the inverse of the bulk modulus of water, which
-        is taken to be 2.2 GPa. [2]_
+        is taken to be 2.2 GPa. [permot]_
 
     References:
-        .. [1] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water and Debye-Huckel Limiting
-               Law Slopes." J. Phys. Chem. Ref. Data/ 19(2), 1990.
+        .. [adw90] Archer, Donald G. and Wang, Peiming. "The Dielectric Constant of Water and Debye-Huckel Limiting
+            Law Slopes." J. Phys. Chem. Ref. Data/ 19(2), 1990.
 
-        .. [2] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
+        .. [permot] http://hyperphysics.phy-astr.gsu.edu/hbase/permot3.html
 
     See Also:
         :func:`_debye_parameter_osmotic`
