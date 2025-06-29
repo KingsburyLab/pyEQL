@@ -1505,14 +1505,12 @@ class Solution(MSONable):
         """
         d = self.get_salt_dict()
         first_key = next(iter(d.keys()))
-        return Salt(d[first_key]["cation"], d[first_key]["anion"])
+        return d[first_key]["salt"]
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict]:
+    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
         """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles present in the solution, e.g., {"NaCl(aq)": 1}. If the
-        Solution is pure water, the returned dict contains only 'HOH'.
+        Returns a dict that represents the salts of the Solution by pairing anions and cations.
 
         Args:
             cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
@@ -1520,49 +1518,38 @@ class Solution(MSONable):
             use_totals: Whether to base the analysis on total element concentrations or individual species
                 concentrations.
 
-        Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
-
-        Many empirical equations for solution properties such as activity coefficient,
-        partial molar volume, or viscosity are based on the concentration of
-        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
-        containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
-        these quantities.
-
-        The get_salt_dict() method examines the ionic composition of a solution and
-        simplifies it into a list of salts. The method returns a dictionary of
-        Salt objects where the keys are the salt formulas (e.g., 'NaCl'). The
-        Salt object contains information about the stoichiometry of the salt to
-        enable its effective concentration to be calculated
-        (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
-
         Returns:
             dict
-                A dictionary of Salt objects, keyed to the salt formula
-
-        See Also:
-            :py:attr:`osmotic_pressure`
-            :py:attr:`viscosity_kinematic`
-            :py:meth:`get_activity`
-            :py:meth:`get_activity_coefficient`
-            :py:meth:`get_water_activity`
-            :py:meth:`get_osmotic_coefficient`
-        """
-        """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles of salt present in the solution, e.g., {"NaCl(aq)": 1}
+                A dictionary of representing salts in the solution, keyed by the salt formula.
 
         Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
+            The dict maps salt formulas to dictionaries containing their amounts and composition. The amount is stored
+            in moles under the key "mol", and a :class:`pyEQL.salt_ion_match.Salt` object stored under the "salt" key
+            represents the composition. Salts are identified by pairing the predominant cations and anions in the
+            solution, in descending order of their respective equivalent amounts.
+
+            Many empirical equations for solution properties such as activity coefficient, partial molar volume, or
+            viscosity are based on the concentration of single salts (e.g., NaCl). When multiple ions are present
+            (e.g., a solution containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
+            these quantities.
+
+        Examples:
+            >>> from pyEQL import Solution
+            >>> from pyEQL.salt_ion_match import Salt
+            >>> s1 = Solution(solutes={'Na[+1]': '1 mol/l', 'Cl[-1]': '1 mol/l'})
+            >>> salt_dict = s1.get_salt_dict()
+            >>> salt_dict['NaCl']['salt']
+            <pyEQL.salt_ion_match.Salt object at ...>
+            >>> salt_dict['NaCl']['mol']
+            1.0
 
         See Also:
             :attr:`components`
             :attr:`cations`
             :attr:`anions`
+            :class:`pyEQL.salt_ion_match.Salt`
         """
-        salt_dict: dict[str, float] = {}
+        salt_dict: dict[str, dict[str, float | Salt]] = {}
 
         if use_totals:
             # # use only the predominant species for each element
@@ -1588,7 +1575,7 @@ class Solution(MSONable):
         # calculate the charge-weighted (equivalent) concentration of each ion
         cation_equiv = {k: self.get_property(k, "charge") * components[k] for k in cations}
         anion_equiv = {
-            k: -1 * self.get_property(k, "charge") * components[k] for k in anions
+            k: self.get_property(k, "charge") * components[k] * -1 for k in anions
         }  # make sure amounts are positive
 
         # sort in descending order of equivalent concentration
@@ -1601,8 +1588,8 @@ class Solution(MSONable):
         # Only ions are H+ and OH-; return a Salt represnting water (with no amount)
         if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
             x = Salt("H[+1]", "OH[-1]")
-            salt_dict.update({x.formula: x.as_dict()})
-            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol")
+            salt_dict.update({x.formula: {"salt": x}})
+            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol").magnitude
             return salt_dict
 
         # start with the first cation and anion
@@ -1623,7 +1610,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover cation, so use the anion amount
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion * x.nu_anion)
                 # adjust the amounts of the respective ions
                 c1 = c1 - a1
@@ -1640,7 +1627,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover anion, so use the cation amount
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # calculate the leftover cation amount
                 a1 = a1 - c1
@@ -1656,7 +1643,7 @@ class Solution(MSONable):
                 # create the salt
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be nothing leftover, so it doesn't matter which ion you use
-                salt_dict.update({x.formula: x.as_dict()})
+                salt_dict.update({x.formula: {"salt": x}})
                 salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
                 # move to the next cation and anion
                 index_an += 1
@@ -2343,17 +2330,17 @@ class Solution(MSONable):
                     ]
                 )
                 self.set_amount("H+", f"{new_hplus} mol/L")
-                self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
+                self.set_amount("OH-", f"{K_W / new_hplus} mol/L")
                 return
 
             z = self.get_property(self._cb_species, "charge")
             try:
-                self.add_amount(self._cb_species, f"{-1*cb/z} mol")
+                self.add_amount(self._cb_species, f"{-1 * cb / z} mol")
                 return
             except ValueError:
                 # if the concentration is negative, it must mean there is not enough present.
                 # remove everything that's present and log an error.
-                self.components[self._cb_species] = 0
+                self.components[self._cb_species] = 0.0
                 self.logger.error(
                     f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
                 )
@@ -2585,7 +2572,7 @@ class Solution(MSONable):
         for sol2, amt2 in other.components.items():
             if mix_species.get(sol2):
                 orig_amt = float(mix_species[sol2].split(" ")[0])
-                mix_species[sol2] = f"{orig_amt+amt2} mol"
+                mix_species[sol2] = f"{orig_amt + amt2} mol"
             else:
                 mix_species.update({sol2: f"{amt2} mol"})
 
@@ -2683,13 +2670,6 @@ class Solution(MSONable):
     """
     Legacy methods to be deprecated in a future release.
     """
-
-    @deprecated(
-        message="list_salts() is deprecated and will be removed in the next release! Use Solution.get_salt_dict() instead.)"
-    )
-    def list_salts(self, unit="mol/kg", decimals=4):  # pragma: no cover
-        for k, v in self.get_salt_dict().items():
-            print(k + "\t {:0.{decimals}f}".format(v, decimals=decimals))
 
     @deprecated(
         message="list_solutes() is deprecated and will be removed in the next release! Use Solution.components.keys() instead.)"

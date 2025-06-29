@@ -7,13 +7,12 @@ used by pyEQL's Solution class
 """
 
 import copy
-import os
 import platform
+from importlib.resources import files
 
 import numpy as np
 import pytest
 import yaml
-from importlib.resources import files
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -570,7 +569,7 @@ def test_conductivity(s1, s2):
 
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
         ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
@@ -745,8 +744,8 @@ def test_from_preset(tmp_path):
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"
-    
-    with open(str(preset_path), "r") as file:
+
+    with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
     assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
@@ -781,3 +780,31 @@ def test_to_from_file(tmp_path, s1):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
         Solution.from_file(filename)
+
+
+class TestSaltDictTypes:
+    @staticmethod
+    @pytest.fixture(name="ions", params=[(), ("Na[+1]", "Cl[-1]"), ("Na[+1]", "SO4[-2]"), ("Ca[+2]", "Cl[-1]")])
+    def fixture_ions(request: pytest.FixtureRequest) -> tuple[str, ...]:
+        ions: tuple[str, str] = request.param
+        return ions
+
+    @staticmethod
+    @pytest.fixture(name="conc", params=["1 mol/L"])
+    def fixture_conc(request: pytest.FixtureRequest) -> str:
+        conc: str = request.param
+        return conc
+
+    @staticmethod
+    @pytest.fixture(
+        name="solution",
+    )
+    def fixture_solution(ions: tuple[str, ...], conc: str) -> Solution:
+        solution: Solution = Solution(solutes=dict.fromkeys(ions, conc))
+        return solution
+
+    @staticmethod
+    def test_should_store_mol_as_floats(solution: Solution) -> None:
+        mol_values = [d["mol"] for d in solution.get_salt_dict().values()]
+        mol_values_are_floats = [isinstance(mol, float) for mol in mol_values]
+        assert all(mol_values_are_floats)
