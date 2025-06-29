@@ -320,10 +320,9 @@ class NativeEOS(EOS):
         # identify the predominant salt that this ion is a member of
         salt = None
         rform = standardize_formula(solute)
-        salts = [d["salt"] for d in solution.get_salt_dict().values()]
-        for s in salts:
-            if rform == s.cation or rform == s.anion:
-                salt = s
+        for d in solution.get_salt_dict().values():
+            if rform == d["salt"].cation or rform == d["salt"].anion:
+                salt = d["salt"]
                 break
 
         # show an error if no salt can be found that contains the solute
