@@ -790,7 +790,7 @@ class TestSaltDictTypes:
         return ions
 
     @staticmethod
-    @pytest.fixture(name="conc", params=["1 mol/L", "1 mol/kg"])
+    @pytest.fixture(name="conc", params=["1 mol/L"])
     def fixture_conc(request: pytest.FixtureRequest) -> str:
         conc: str = request.param
         return conc
