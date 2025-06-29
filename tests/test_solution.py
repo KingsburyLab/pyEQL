@@ -784,7 +784,7 @@ def test_to_from_file(tmp_path, s1):
 
 class TestSaltDictTypes:
     @staticmethod
-    @pytest.fixture(name="ions", params=[(), ("Na[+1]", "Cl[-1]"), ("Na[+1]", "SO4[-2]")])
+    @pytest.fixture(name="ions", params=[(), ("Na[+1]", "Cl[-1]"), ("Na[+1]", "SO4[-2]"), ("Ca[+2]", "Cl[-1]")])
     def fixture_ions(request: pytest.FixtureRequest) -> tuple[str, ...]:
         ions: tuple[str, str] = request.param
         return ions
