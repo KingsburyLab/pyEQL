@@ -1512,6 +1512,11 @@ class Solution(MSONable):
         """
         Returns a dict that represents the salts of the Solution by pairing anions and cations.
 
+        The ``get_salt_dict()`` method examines the ionic composition of a solution and approximates it as a set of
+        salts instead of individual ions. The method returns a dictionary of Salt objects where the keys are the salt
+        formulas (e.g., 'NaCl'). The Salt object contains information about the stoichiometry of the salt to
+        enable its effective concentration to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
+
         Args:
             cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
                 analyzed goes below this value. Useful for excluding analysis of trace anions.
@@ -1548,6 +1553,9 @@ class Solution(MSONable):
             :attr:`cations`
             :attr:`anions`
             :class:`pyEQL.salt_ion_match.Salt`
+            :py:meth:`get_activity_coefficient`
+            :py:meth:`get_water_activity`
+            :py:meth:`get_osmotic_coefficient`
         """
         salt_dict: dict[str, dict[str, float | Salt]] = {}
 
