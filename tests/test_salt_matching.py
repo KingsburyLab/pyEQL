@@ -275,7 +275,7 @@ def fixture_stream() -> StringIO:
 
 
 @pytest.fixture(name="add_stream_handler")
-def fixture_add_stream_handler(stream: StringIO, solution: pyEQL.Solution) -> logging.StreamHandler:
+def fixture_add_stream_handler(stream: StringIO, solution: pyEQL.Solution) -> logging.StreamHandler[StringIO]:
     sh = logging.StreamHandler(stream)
     solution.logger.addHandler(sh)
     solution.logger.setLevel("WARNING")
@@ -284,7 +284,7 @@ def fixture_add_stream_handler(stream: StringIO, solution: pyEQL.Solution) -> lo
 
 @pytest.fixture(name="salt_dict")
 def fixture_salt_dict(
-    solution: pyEQL.Solution, cutoff: float, use_totals: bool, add_stream_handler: logging.StreamHandler
+    solution: pyEQL.Solution, cutoff: float, use_totals: bool, add_stream_handler: logging.StreamHandler[StringIO]
 ) -> dict[str, dict[str, float | Salt]]:
     salt_dict: dict[str, dict[str, float | Salt]] = solution.get_salt_dict(cutoff=cutoff, use_totals=use_totals)
     return salt_dict
