@@ -15,16 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING** - the return value of `Solution.get_salt_dict` now includes `Salt` objects instead of keys corresponding
   to `cation` and `anion`. See the example in the docstring for how to adapt existing code to accommodate this
   change. (#258, @ugognw)
+- **BREAKING** - `Solution.get_salt_dict` no longer returns an entry for water (#258)
+- **BREAKING** - `Solution.get_salt` will not return water and may return `None` if no salt is present.
+  Previously, `Solution.get_salt` would have returned a `Salt` representing water. (#258)
 
 ### Fixed
 
-- calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258,
-  @ugognw)
+- calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258)
+- `Solution.get_salt_dict` now respects the `cutoff` parameter (#258)
+- `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258)
 
 ### Removed
 
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
-- `Solution.list_salts` (use `Solution.get_salt_dict()` instead)
+- `Solution.list_salts` (use `Solution.get_salt_dict()` instead) (#258)
 
 ## [1.2.0] - 2024-09-24
 
