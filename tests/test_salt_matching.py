@@ -366,11 +366,6 @@ class TestGetSaltDict:
         assert "H2O(aq) is not the most prominent component in this Solution!" in msg
 
     @staticmethod
-    def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
-        salt_amounts = [d["mol"] for d in salt_dict.values()]
-        assert salt_amounts == sorted(salt_amounts)
-
-    @staticmethod
     def test_should_calculate_correct_concentration_for_salts(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt], salt_conc: float, salt_ratio: float
     ) -> None:
@@ -446,3 +441,8 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     ) -> None:
         assert major_salt.formula in salt_dict
         assert minor_salt.formula not in salt_dict
+
+    @staticmethod
+    def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
+        salt_amounts = [d["mol"] for d in salt_dict.values()]
+        assert salt_amounts == sorted(salt_amounts)
