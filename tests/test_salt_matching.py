@@ -374,11 +374,13 @@ class TestGetSaltDict:
     # Parametrization over volume is required to ensure that concentrations and not absolute molar quantities are
     # used as a cutoff
     @pytest.mark.parametrize(("cutoff", "volume"), product([0.75, 1.5], ["0.5 L", "1 L", "2 L"]))
-    def test_should_not_return_salts_with_concentration_below_cutoff(
-        salt_dict: dict[str, dict[str, float | Salt]], cutoff: float
+    def test_should_not_return_salts_with_concentration_above_cutoff(
+        salt_dict: dict[str, dict[str, float | Salt]], cutoff: float, volume: str
     ) -> None:
-        salt_concentrations_below_cutoff = [d["mol"] > cutoff for d in salt_dict.values()]
-        assert all(salt_concentrations_below_cutoff)
+        vol, _ = volume.split()
+        vol_mag = float(vol)
+        salt_concentrations_above_cutoff = [d["mol"] * vol_mag > cutoff for d in salt_dict.values()]
+        assert all(salt_concentrations_above_cutoff)
 
     @staticmethod
     # Note that salt_conc = 1.0, and salt_ratio = 0.25, so the expected concentrations of the first and second salts
@@ -390,11 +392,14 @@ class TestGetSaltDict:
         salt_conc: float,
         salt_ratio: float,
         cutoff: float,
+        volume: str,
     ) -> None:
+        vol, _ = volume.split()
+        vol_mag = float(vol)
         expected_salts_based_on_concentrations = []
         for i, salt in enumerate(salts):
             conc = salt_conc * (salt_ratio**i)
-            if conc >= cutoff:
+            if conc * vol_mag >= cutoff:
                 expected_salts_based_on_concentrations.append(salt)
 
         assert all(salt.formula in salt_dict for salt in expected_salts_based_on_concentrations)

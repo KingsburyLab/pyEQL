@@ -1520,8 +1520,8 @@ class Solution(MSONable):
         enable its effective concentration to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
 
         Args:
-            cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
-                analyzed goes below this value. Useful for excluding analysis of trace anions.
+            cutoff: Lowest quantity (in moles) of salt to consider. Analysis will stop once the concentrations of Salts
+                being analyzed goes below this value. Useful for excluding analysis of trace anions.
             use_totals: Whether to base the analysis on total element concentrations or individual species
                 concentrations.
 
@@ -1620,11 +1620,10 @@ class Solution(MSONable):
                 index_cat += 1
                 anion_list[index_an][-1] -= c1
 
-            conc = mol / self.volume.m
             # filter out water and zero, effectively zero, and sub-cutoff salt amounts
-            if salt.formula != "HOH" and not np.isclose(conc, 0.0, atol=1e-16) and conc > cutoff:
+            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and mol > cutoff:
                 salt_dict.update({salt.formula: {"salt": salt}})
-                salt_dict[salt.formula]["mol"] = conc
+                salt_dict[salt.formula]["mol"] = mol
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 

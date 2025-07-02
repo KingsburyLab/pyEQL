@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258)
 - `Solution.get_salt_dict` now respects the `cutoff` parameter (#258)
+  - Note that `cutoff` is implemented as a total molar amount (moles of salt)
 - `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258)
 
 ### Removed
