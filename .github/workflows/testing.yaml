@@ -81,3 +81,5 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
       - name: Build docs
         run: tox -e docs
+      - name: Check links
+        run: tox -e links
