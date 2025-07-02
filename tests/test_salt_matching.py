@@ -402,8 +402,9 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     @pytest.mark.parametrize("cation_scale", [2.0])
     def test_should_match_salts_with_excess_cation_if_cation_enough_for_both_anions(
-        major_salt: Salt, minor_salt: Salt, salt_dict: dict[str, dict[str, float | Salt]]
+        salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
+        major_salt, minor_salt = salts
         mixed_salt = Salt(major_salt.cation, minor_salt.anion)
         assert major_salt.formula in salt_dict
         assert mixed_salt.formula in salt_dict
@@ -411,8 +412,9 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     @pytest.mark.parametrize("anion_scale", [2.0])
     def test_should_match_salts_with_excess_anion_if_anion_enough_for_both_cations(
-        major_salt: Salt, minor_salt: Salt, salt_dict: dict[str, dict[str, float | Salt]]
+        salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
+        major_salt, minor_salt = salts
         mixed_salt = Salt(minor_salt.cation, major_salt.anion)
         assert major_salt.formula in salt_dict
         assert mixed_salt.formula in salt_dict
@@ -421,7 +423,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @pytest.mark.parametrize("use_totals", [False])
     @pytest.mark.parametrize(
         ("solute_pairs"),
-        product(_CATIONS, _CONJUGATE_BASES),
+        [((cation, conjugate[0]), (cation, conjugate[1])) for cation, conjugate in product(_CATIONS, _CONJUGATE_BASES)],
     )
     def test_should_include_salt_for_low_concentration_conjugate_base_when_use_totals_false(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt]
@@ -436,9 +438,9 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     )
     def test_should_not_include_salt_for_low_concentration_conjugate_base_when_use_totals_true(
         salt_dict: dict[str, dict[str, float | Salt]],
-        major_salt: Salt,
-        minor_salt: Salt,
+        salts: list[Salt],
     ) -> None:
+        major_salt, minor_salt = salts
         assert major_salt.formula in salt_dict
         assert minor_salt.formula not in salt_dict
 
