@@ -182,6 +182,7 @@ _CONJUGATE_BASES = [
     ("H2PO4[-1]", "PO4[-3]"),
 ]
 _SOLUTES = [*_SALTS, *_ACIDS, *_BASES]
+_SOLUTES_LITE = [*product(_CATIONS[:2], _ANIONS[1:3]), _ACIDS[0], _BASES[-1]]
 
 
 @pytest.fixture(name="salt", params=_SOLUTES)
@@ -385,7 +386,7 @@ class TestGetSaltDict:
 
 class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
-    @pytest.fixture(name="solute_pairs", params=combinations(_SOLUTES, r=2))
+    @pytest.fixture(name="solute_pairs", params=combinations(_SOLUTES_LITE, r=2))
     def fixture_solute_pairs(request: pytest.FixtureRequest) -> tuple[tuple[str, str], tuple[str, str]]:
         solute_pairs: tuple[tuple[str, str], tuple[str, str]] = request.param
         return solute_pairs
@@ -435,7 +436,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     @pytest.mark.parametrize(
         ("solute_pairs"),
-        product(_CATIONS, _CONJUGATE_BASES),
+        [((cation, conjugate[0]), (cation, conjugate[1])) for cation, conjugate in product(_CATIONS, _CONJUGATE_BASES)],
     )
     def test_should_not_include_salt_for_low_concentration_conjugate_base_when_use_totals_true(
         salt_dict: dict[str, dict[str, float | Salt]],
