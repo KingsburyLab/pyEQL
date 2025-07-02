@@ -54,7 +54,7 @@ python3 -m http.server --directory 'docs/_build/html'
 
 ## Contributing Code
 
-To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow) workflow model.
+To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow) workflow model.
 
 The [Scientific Python Guide](https://learn.scientific-python.org/development/guides/) is also an excellent technical reference for new and longtime developers.
 
@@ -65,7 +65,7 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
 
 ### Hacking pyEQL, step by step
 
-1. [Fork the pyEQL repository](https://help.github.com/articles/fork-a-repo/) on Github
+1. [Fork the pyEQL repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) on Github
 
 2. Clone your repository to a directory of your choice:
 
@@ -128,7 +128,7 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 ## Documentation
 
-Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to http://localhost:8000/ so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
+Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to `http://localhost:8000/` so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
 
 ## Changelog
 

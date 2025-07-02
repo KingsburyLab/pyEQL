@@ -719,7 +719,7 @@ class Solution(MSONable):
 
         References:
             .. [aq] https://www.aqion.de/site/electrical-conductivity
-            .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
+            .. [hc] https://www.hydrochemistry.eu/exmpls/sc.html
 
         See Also:
             :py:attr:`ionic_strength`
@@ -918,7 +918,7 @@ class Solution(MSONable):
         Returns The Debye length, in nanometers.
 
         References:
-            .. [wk3] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
+            .. [wk3] https://en.wikipedia.org/wiki/Debye_length#In_an_electrolyte_solution
 
         See Also:
             :attr:`ionic_strength`
@@ -1001,7 +1001,7 @@ class Solution(MSONable):
             .. [sata] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification.
                 Royal Society of Chemistry, 2004, p. 10.
 
-            .. [wk] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
+            .. [wk] https://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_the_van_'t_Hoff_formula
 
         Examples:
             >>> s1=pyEQL.Solution()
@@ -2420,7 +2420,7 @@ class Solution(MSONable):
     def from_preset(
         cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
     ) -> Solution:
-        """Instantiate a solution from a preset composition.
+        r"""Instantiate a solution from a preset composition.
 
         Args:
             preset (str): String representing the desired solution.
@@ -2450,7 +2450,7 @@ class Solution(MSONable):
             .. [me13] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
                McGraw-Hill, 2013.
 
-            .. [saline] https://en.wikipedia.org/wiki/Saline_(medicine)
+            .. [saline] https://en.wikipedia.org/w/index.php?title=Saline_(medicine)&oldid=1298292693
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
         """
