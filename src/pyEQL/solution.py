@@ -1593,78 +1593,38 @@ class Solution(MSONable):
         len_cat = len(cation_equiv)
         len_an = len(anion_equiv)
 
-        # Only ions are H+ and OH-; return a Salt represnting water (with no amount)
-        if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
-            x = Salt("H[+1]", "OH[-1]")
-            salt_dict.update({x.formula: {"salt": x}})
-            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol").magnitude
-            return salt_dict
-
         # start with the first cation and anion
         index_cat = 0
         index_an = 0
 
-        # list(dict) returns a list of [(key, value), ]
-        cation_list = list(cation_equiv.items())
-        anion_list = list(anion_equiv.items())
-
-        # calculate the equivalent concentrations of each ion
-        c1 = cation_list[index_cat][-1]
-        a1 = anion_list[index_an][-1]
+        # list(dict) returns a list of [[key, value],]
+        cation_list = [[k, v] for k, v in cation_equiv.items()]
+        anion_list = [[k, v] for k, v in anion_equiv.items()]
 
         while index_cat < len_cat and index_an < len_an:
-            # if the cation concentration is greater, there will be leftover cations
-            if c1 > a1:
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be leftover cation, so use the anion amount
-                salt_dict.update({x.formula: {"salt": x}})
-                salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion * x.nu_anion)
-                # adjust the amounts of the respective ions
-                c1 = c1 - a1
-                # move to the next anion
-                index_an += 1
-                try:
-                    a1 = anion_list[index_an][-1]
-                    if a1 < cutoff:
-                        continue
-                except IndexError:
-                    continue
-            # if the anion concentration is greater, there will be leftover anions
-            if c1 < a1:
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be leftover anion, so use the cation amount
-                salt_dict.update({x.formula: {"salt": x}})
-                salt_dict[x.formula]["mol"] = c1 / (x.z_cation * x.nu_cation)
-                # calculate the leftover cation amount
-                a1 = a1 - c1
-                # move to the next cation
-                index_cat += 1
-                try:
-                    a1 = cation_list[index_cat][-1]
-                    if a1 < cutoff:
-                        continue
-                except IndexError:
-                    continue
-            if np.isclose(c1, a1):
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be nothing leftover, so it doesn't matter which ion you use
-                salt_dict.update({x.formula: {"salt": x}})
-                salt_dict[x.formula]["mol"] = c1 / (x.z_cation * x.nu_cation)
-                # move to the next cation and anion
-                index_an += 1
-                index_cat += 1
-                try:
-                    c1 = cation_list[index_cat][-1]
-                    a1 = anion_list[index_an][-1]
-                    if (c1 < cutoff) or (a1 < cutoff):
-                        continue
-                except IndexError:
-                    continue
+            c1 = cation_list[index_cat][-1]
+            a1 = anion_list[index_an][-1]
+            salt = Salt(cation_list[index_cat][0], anion_list[index_an][0])
 
-        return salt_dict
+            # Use the smaller of the two amounts
+            if c1 > a1:
+                # there will be leftover cation, so use the anion amount to calculate
+                mol = a1 / abs(salt.z_anion * salt.nu_anion)
+                index_an += 1
+                cation_list[index_cat][-1] -= a1
+            else:
+                # all cation will be used, so use the cation amount
+                mol = c1 / (salt.z_cation * salt.nu_cation)
+                index_cat += 1
+                anion_list[index_an][-1] -= c1
+
+            conc = mol / self.volume.m
+            # filter out water and zero, effectively zero, and sub-cutoff salt amounts
+            if salt.formula != "HOH" and not np.isclose(conc, 0.0, atol=1e-16) and conc > cutoff:
+                salt_dict.update({salt.formula: {"salt": salt}})
+                salt_dict[salt.formula]["mol"] = conc
+
+        return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
     def equilibrate(self, **kwargs) -> None:
         """
