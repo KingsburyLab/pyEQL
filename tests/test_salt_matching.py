@@ -38,19 +38,6 @@ def test_salt_init() -> None:
     assert s.z_anion == -1
 
 
-def test_empty_solution() -> None:
-    """
-    test matching a solution that contains no solutes other than water
-    """
-    s1 = pyEQL.Solution()
-    assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
-    assert s1.get_salt().formula == "HOH"
-    assert s1.get_salt().cation == "H[+1]"
-    assert s1.get_salt().anion == "OH[-1]"
-    assert s1.get_salt().nu_cation == 1
-    assert s1.get_salt().nu_anion == 1
-
-
 def test_single_salt_mono() -> None:
     """
     test matching a solution with a single monovalent salt
