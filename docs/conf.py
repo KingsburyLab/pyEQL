@@ -306,4 +306,15 @@ intersphinx_mapping = {
     "pyscaffold": ("https://pyscaffold.org/en/stable", None),
 }
 
+# -- Linkcheck options -------------------------------------------------------
+linkcheck_allowed_redirects = {
+    r"http://dx\.doi\.org/10\.1016/S0927-5193\(04\)80033-0": r"https://linkinghub\.elsevier\.com/retrieve/pii/S0927519304800330",
+    r"https://doi\.org/10\.1016/j\.desal\.2013\.03\.015": r"https://linkinghub\.elsevier\.com/retrieve/pii/S0011916413001409",
+    r"https://dx\.doi\.org/10\.1016/j\.cemconres\.2017\.08\.030": r"https://linkinghub\.elsevier\.com/retrieve/pii/S0008884617301965",
+    r"https://doi\.org/10\.1016/j\.earscirev\.2021\.103888": r"https://linkinghub.elsevier\.com/retrieve/pii/S0012825221003895",
+    r"http://pint\.readthedocs\.io": r"https://pint\.readthedocs\.io/en/stable",
+}
+linkcheck_ignore = [r"https://localhost:\d+/"]
+linkcheck_rate_limit_timeout = 500
+
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)
