@@ -134,10 +134,10 @@ Generally, unit tests request and inspect the `salt_dict` and `salts` fixtures. 
 fixture returns the result of Solution.get_salt_dict called with values, `cutoff` and `use_totals`. The Solution object
 on which Solution.get_salt_dict is called along with the values of `cutoff` and `use_totals` are all set by the
 `solution`, `cutoff` and `use_totals` fixtures, respectively. In particular, the `solution` fixture is configured
-from fixtures corresponding to keyword arguments to the Solution constructor. (Currently, only "solutes" and "volume"
-are needed.) The composition of `solution` is ultimately determined by the `salts` fixture (a list of Salt objects).
-Each Salt in `salts` is added to `solution` in amounts determined by the floats corresponding to the `salt_conc`,
-`cation_scale`, `anion_scale`, and `salt_ratio` fixtures.
+from fixtures corresponding to keyword arguments to the Solution constructor. (Currently, only "solutes", "volume",
+and pH are needed.) The composition of `solution` is ultimately determined by the `salts` fixture (a list of Salt
+objects). Each Salt in `salts` is added to `solution` in amounts determined by the floats corresponding to the
+`salt_conc`, `cation_scale`, `anion_scale`, and `salt_ratio` fixtures.
 
 - `salt_conc`: determines the *base* concentration of salts; if `cation_scale = anion_scale = salt_ratio = 1.0`, then
   the concentration of each ion will be that resulting from dissolving a concentration of the salt equal to `salt_conc`.
@@ -147,8 +147,7 @@ Each Salt in `salts` is added to `solution` in amounts determined by the floats 
 - `salt_ratio`: This is the ratio of the concentration of any given Salt in `salts` relative to the previous Salt in
   the list. Note that if this value is 0.0, then no more than one Salt is added to `solution`.
 
-The Salt objects in `salts` are constructed from salt-ion pairs in `_SOLUTES` or the Cartesian product of `_CATIONS` and
-`_CONJUGATE_BASES`.
+The Salt objects in `salts` are constructed from salt-ion pairs in `_SOLUTES` or _SOLUTES_LITE.
 
 Under different parametrizations of the compositions fixtures, several Solution test cases are covered including:
 - an empty solution
@@ -201,12 +200,10 @@ def fixture_anion_scale(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
 
-# Ratio of the concentration of each Salt in salts to that of the previous Salt in the list
-# This must be low enough such that when ordered according to concentration, anionic and cationic solutes of the same
-# index correspond to a Salt in `salts` (e.g., consider a solution of 1 M NaCl and 0.75 M K2SO4, corresponding to
-# salt_conc = cation_scale = anion_scale = 1.0 and salt_ratio = 0.75. Calling .get_salt_dict on such a solution should
-# return entries for 1 M KCl, 0.25 M K2SO4, and 0.5 M Na2SO4, which would cause
-# test_should_calculate_correct_concentration_for_salts to fail. To fix this, salt_ratio must be less than 0.5.)
+# Ratio of the concentration of each Salt in the `salts` fixture to that of the previous Salt in the list
+# This must be low enough such that the ordering of cation/anion equivalents coincides with the ordering
+# of the corresponding Salt objects in the `salt` fixture. Too high a ratio can make it difficult to
+# predict which ions will comprise the major and minor salts.
 @pytest.fixture(name="salt_ratio", params=[0.25])
 def fixture_salt_ratio(request: pytest.FixtureRequest) -> float:
     return float(request.param)
