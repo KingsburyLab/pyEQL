@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to `cation` and `anion`. See the example in the docstring for how to adapt existing code to accommodate this
   change. (#258, @ugognw)
 
+### Fixed
+
+- calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258,
+  @ugognw)
+
 ### Removed
 
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
