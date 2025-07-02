@@ -1636,7 +1636,7 @@ class Solution(MSONable):
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be leftover anion, so use the cation amount
                 salt_dict.update({x.formula: {"salt": x}})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
+                salt_dict[x.formula]["mol"] = c1 / (x.z_cation * x.nu_cation)
                 # calculate the leftover cation amount
                 a1 = a1 - c1
                 # move to the next cation
@@ -1652,7 +1652,7 @@ class Solution(MSONable):
                 x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
                 # there will be nothing leftover, so it doesn't matter which ion you use
                 salt_dict.update({x.formula: {"salt": x}})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
+                salt_dict[x.formula]["mol"] = c1 / (x.z_cation * x.nu_cation)
                 # move to the next cation and anion
                 index_an += 1
                 index_cat += 1
