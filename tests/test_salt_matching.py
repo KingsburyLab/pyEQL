@@ -117,10 +117,10 @@ def test_salt_with_equilibration() -> None:
     assert s1.get_salt().anion == "Cl[-1]"
     assert s1.get_salt().nu_cation == 1
     assert s1.get_salt().nu_anion == 2
-    assert np.isclose(s1.get_salt_dict()["MgCl2"]["mol"], 1)
+    assert np.isclose(s1.get_salt_dict(cutoff=0.0)["MgCl2"]["mol"], 1)
     s1.equilibrate()
     assert s1.get_salt().formula == "MgCl2"
-    assert np.isclose(s1.get_salt_dict()["MgCl2"]["mol"], 1)
+    assert np.isclose(s1.get_salt_dict(cutoff=0.0)["MgCl2"]["mol"], 1)
 
 
 def test_salt_asymmetric() -> None:

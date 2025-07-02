@@ -320,9 +320,7 @@ class NativeEOS(EOS):
         # identify the predominant salt that this ion is a member of
         salt = None
         rform = standardize_formula(solute)
-        for d in solution.get_salt_dict().values():
-            if d["salt"].formula == "HOH":
-                continue
+        for d in solution.get_salt_dict(cutoff=0.0).values():
             if rform == d["salt"].cation or rform == d["salt"].anion:
                 salt = d["salt"]
                 break
@@ -507,12 +505,8 @@ class NativeEOS(EOS):
         # loop through all the salts in the solution, calculate the osmotic
         # coefficint for each, and average them into an effective osmotic
         # coefficient
-        for d in solution.get_salt_dict().values():
+        for d in solution.get_salt_dict(cutoff=0.0).values():
             item = d["salt"]
-            # ignore HOH in the salt list
-            if item.formula == "HOH":
-                continue
-
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
@@ -582,8 +576,8 @@ class NativeEOS(EOS):
 
         # use the pitzer approach if parameters are available
         pitzer_calc = False
+        param = None if salt is None else solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
 
-        param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
         if param is not None:
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange

@@ -1504,7 +1504,7 @@ class Solution(MSONable):
             2
         """
         try:
-            salt: Salt = next(d["salt"] for d in self.get_salt_dict().values())
+            salt: Salt = next(d["salt"] for d in self.get_salt_dict(cutoff=0.0).values())
             return salt
         except StopIteration:
             return None
