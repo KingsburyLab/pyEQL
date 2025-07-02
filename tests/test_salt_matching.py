@@ -297,14 +297,17 @@ def test_should_return_empty_dict_for_empty_solution(salt_dict: dict[str, dict[s
 
 class TestSaltDictTypes:
     @staticmethod
-    @pytest.mark.parametrize("cation_scale", [0.5, 1.0, 1.5])
+    @pytest.fixture(name="cation_scale", params=[0.5, 1.0, 1.5])
+    def fixture_cation_scale(request: pytest.FixtureRequest) -> float:
+        return float(request.param)
+
+    @staticmethod
     def test_should_store_mol_as_floats(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         mol_values = [d["mol"] for d in salt_dict.values()]
         mol_values_are_floats = [isinstance(mol, float) for mol in mol_values]
         assert all(mol_values_are_floats)
 
     @staticmethod
-    @pytest.mark.parametrize("cation_scale", [0.5, 1.0, 1.5])
     def test_should_store_salt_as_salts(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         salt_values = [d["salt"] for d in salt_dict.values()]
         salt_values_are_salts = [isinstance(salt, Salt) for salt in salt_values]
