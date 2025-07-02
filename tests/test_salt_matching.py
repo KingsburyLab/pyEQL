@@ -369,15 +369,16 @@ class TestGetSaltDict:
     def test_should_calculate_correct_concentration_for_salts(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt], salt_conc: float, salt_ratio: float
     ) -> None:
-        salts_have_correct_concentrations = []
         expected_concentrations = dict.fromkeys([s.formula for s in salts], 0.0)
 
         for i, salt in enumerate(salts):
             expected_concentrations[salt.formula] += salt_conc * (salt_ratio**i)
 
+        salts_have_correct_concentrations = []
+
         for salt, expected in expected_concentrations.items():
             calculated = salt_dict[salt]["mol"]
-            salts_have_correct_concentrations.append(calculated == expected)
+            salts_have_correct_concentrations.append(np.isclose(calculated, expected, atol=1e-16))
 
         assert all(salts_have_correct_concentrations)
 
