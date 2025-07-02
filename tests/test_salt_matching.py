@@ -9,7 +9,7 @@ salt_ion_match.py
 import logging
 import platform
 from io import StringIO
-from itertools import product
+from itertools import combinations, product
 
 import numpy as np
 import pytest
@@ -158,11 +158,10 @@ Each Salt in `salts` is added to `solution` in amounts determined by the floats 
   to `salt_conc`. This is applied to each pair of ions in `salts`. If `cation_scale = 0.0`/`anion_scale = 0.0`, then
   only the anions/cations are added to `solution`.
 - `salt_ratio`: This is the ratio of the concentration of any given Salt in `salts` relative to the previous Salt in
-  the list. If this value is 0.0, then no more than one Salt is added to `solution`.
+  the list. Note that if this value is 0.0, then no more than one Salt is added to `solution`.
 
-Generally, the Salt objects returned by the `salts` fixture are explicitly parametrized as a Cartesian product of a
-subset of `_CATIONS` and `_ANIONS` (e.g., via the module-level `salt` fixture or the class-level `major_salt` and
-`minor_salt` fixtures in TestGetSaltDictMultipleSalts).
+The Salt objects in `salts` are constructed from salt-ion pairs in `_SOLUTES` or the Cartesian product of `_CATIONS` and
+`_CONJUGATE_BASES`.
 
 Under different parametrizations of the compositions fixtures, several Solution test cases are covered including:
 - an empty solution
@@ -173,22 +172,25 @@ Under different parametrizations of the compositions fixtures, several Solution 
 """
 
 
-_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "H[+1]"]
-_ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]", "OH[-1]"]
+_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]"]
+_ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]"]
+_SALTS = list(product(_CATIONS, _ANIONS))
+_ACIDS = [("H[+1]", anion) for anion in _ANIONS]
+_BASES = [(cation, "OH[-1]") for cation in _CATIONS]
+_CONJUGATE_BASES = [
+    ("HCO3[-1]", "CO3[-2]"),
+    ("H2PO4[-1]", "PO4[-3]"),
+]
+_SOLUTES = [*_SALTS, *_ACIDS, *_BASES]
 
 
-@pytest.fixture(
-    name="salt",
-    params=product(_CATIONS, _ANIONS),
-)
+@pytest.fixture(name="salt", params=_SOLUTES)
 def fixture_salt(request: pytest.FixtureRequest) -> Salt:
     cation, anion = request.param
     return Salt(cation=cation, anion=anion)
 
 
-@pytest.fixture(
-    name="salts",
-)
+@pytest.fixture(name="salts")
 def fixture_salts(salt: Salt) -> list[Salt]:
     return [salt]
 
@@ -225,11 +227,14 @@ def fixture_solutes(
     solute_values.update({salt.cation: 0 for salt in salts})
 
     for i, salt in enumerate(salts):
+        # Scale salt component concentrations
         cation_conc = salt_conc * salt.nu_cation * cation_scale * (salt_ratio**i)
         anion_conc = salt_conc * salt.nu_anion * anion_scale * (salt_ratio**i)
+        # Increase solute concentrations
         solute_values[salt.cation] += cation_conc
         solute_values[salt.anion] += anion_conc
 
+    # Only include solutes with non-zero concentrations
     return {k: f"{v} mol/L" for k, v in solute_values.items() if v}
 
 
@@ -370,7 +375,7 @@ class TestGetSaltDict:
             expected_concentrations[salt.formula] += salt_conc * (salt_ratio**i)
 
         for salt, expected in expected_concentrations.items():
-            calculated = salt_dict[salt.formula]["mol"]
+            calculated = salt_dict[salt]["mol"]
             salts_have_correct_concentrations.append(calculated == expected)
 
         assert all(salts_have_correct_concentrations)
@@ -378,31 +383,19 @@ class TestGetSaltDict:
 
 class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
-    @pytest.fixture(
-        name="major_salt",
-        params=product(_CATIONS[:2], _ANIONS[:2]),
-    )
-    def fixture_major_salt(request: pytest.FixtureRequest) -> Salt:
-        cation, anion = request.param
-        return Salt(cation=cation, anion=anion)
+    @pytest.fixture(name="solute_pairs", params=combinations(_SOLUTES, r=2))
+    def fixture_solute_pairs(request: pytest.FixtureRequest) -> tuple[tuple[str, str], tuple[str, str]]:
+        solute_pairs: tuple[tuple[str, str], tuple[str, str]] = request.param
+        return solute_pairs
 
     @staticmethod
-    @pytest.fixture(
-        name="minor_salt",
-        # This parametrization ensures that the same salt isn't added twice (This isn't a problem, per se, it's just
-        # that the resulting state is reached, in practice, by simply setting solute concentrations-as is done using
-        # the salt_conc, cation_scale/anion_scale, and salt_ratio fixtures.
-        params=[*product(_CATIONS[:1], _ANIONS[3:4]), *product(_CATIONS[3:4], _ANIONS[:1])],
-    )
-    def fixture_minor_salt(request: pytest.FixtureRequest) -> Salt:
-        cation, anion = request.param
-        return Salt(cation=cation, anion=anion)
+    @pytest.fixture(name="salts")
+    def fixture_salts(solute_pairs: tuple[tuple[str, str], tuple[str, str]]) -> list[Salt]:
+        major_salt_cation, major_salt_anion = solute_pairs[0]
+        minor_salt_cation, minor_salt_anion = solute_pairs[1]
+        major_salt = Salt(major_salt_cation, major_salt_anion)
+        minor_salt = Salt(minor_salt_cation, minor_salt_anion)
 
-    @staticmethod
-    @pytest.fixture(
-        name="salts",
-    )
-    def fixture_salts(major_salt: Salt, minor_salt: Salt) -> list[Salt]:
         return [major_salt, minor_salt]
 
     @staticmethod
@@ -426,12 +419,8 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     @pytest.mark.parametrize("use_totals", [False])
     @pytest.mark.parametrize(
-        ("major_salt", "minor_salt"),
-        [
-            (Salt("Na+", "HCO3[-1]"), Salt("Na+", "CO3[-2]")),
-            (Salt("Na+", "HSO4[-1]"), Salt("Na+", "SO4[-2]")),
-            (Salt("Na+", "H2PO4[-1]"), Salt("Na+", "PO4[-3]")),
-        ],
+        ("solute_pairs"),
+        product(_CATIONS, _CONJUGATE_BASES),
     )
     def test_should_include_salt_for_low_concentration_conjugate_base_when_use_totals_false(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt]
@@ -441,12 +430,8 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
 
     @staticmethod
     @pytest.mark.parametrize(
-        ("major_salt", "minor_salt"),
-        [
-            (Salt("Na+", "HCO3[-1]"), Salt("Na+", "CO3[-2]")),
-            (Salt("Na+", "HSO4[-1]"), Salt("Na+", "SO4[-2]")),
-            (Salt("Na+", "H2PO4[-1]"), Salt("Na+", "PO4[-3]")),
-        ],
+        ("solute_pairs"),
+        product(_CATIONS, _CONJUGATE_BASES),
     )
     def test_should_not_include_salt_for_low_concentration_conjugate_base_when_use_totals_true(
         salt_dict: dict[str, dict[str, float | Salt]],
