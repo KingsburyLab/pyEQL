@@ -214,7 +214,12 @@ def fixture_anion_scale(request: pytest.FixtureRequest) -> float:
 
 
 # Ratio of the concentration of each Salt in salts to that of the previous Salt in the list
-@pytest.fixture(name="salt_ratio", params=[0.5])
+# This must be low enough such that when ordered according to concentration, anionic and cationic solutes of the same
+# index correspond to a Salt in `salts` (e.g., consider a solution of 1 M NaCl and 0.75 M K2SO4, corresponding to
+# salt_conc = cation_scale = anion_scale = 1.0 and salt_ratio = 0.75. Calling .get_salt_dict on such a solution should
+# return entries for 1 M KCl, 0.25 M K2SO4, and 0.5 M Na2SO4, which would cause
+# test_should_calculate_correct_concentration_for_salts to fail. To fix this, salt_ratio must be less than 0.5.)
+@pytest.fixture(name="salt_ratio", params=[0.1])
 def fixture_salt_ratio(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
