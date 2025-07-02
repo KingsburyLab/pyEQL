@@ -470,6 +470,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
         assert minor_salt.formula not in salt_dict
 
     @staticmethod
+    @pytest.mark.parametrize("cation_scale", [0.0, 0.5, 2.0])
     def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         salt_amounts = [d["mol"] for d in salt_dict.values()]
         assert salt_amounts == sorted(salt_amounts, reverse=True)
