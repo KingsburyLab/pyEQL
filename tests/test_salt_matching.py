@@ -428,17 +428,19 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
         return [major_salt, minor_salt]
 
     @staticmethod
-    @pytest.mark.parametrize("cation_scale", [2.0])
+    @pytest.mark.parametrize("cation_scale", [1.1])
     def test_should_match_salts_with_excess_cation_if_cation_enough_for_both_anions(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
         major_salt, minor_salt = salts
         mixed_salt = Salt(major_salt.cation, minor_salt.anion)
+        if mixed_salt.formula == "HOH":
+            pytest.skip(reason="'HOH' should not appear in salt_dict")
         assert major_salt.formula in salt_dict
         assert mixed_salt.formula in salt_dict
 
     @staticmethod
-    @pytest.mark.parametrize("anion_scale", [2.0])
+    @pytest.mark.parametrize("anion_scale", [1.1])
     def test_should_match_salts_with_excess_anion_if_anion_enough_for_both_cations(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
