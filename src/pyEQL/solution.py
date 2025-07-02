@@ -1621,7 +1621,7 @@ class Solution(MSONable):
                 anion_list[index_an][-1] -= c1
 
             # filter out water and zero, effectively zero, and sub-cutoff salt amounts
-            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and mol > cutoff:
+            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and mol >= cutoff:
                 salt_dict.update({salt.formula: {"salt": salt}})
                 salt_dict[salt.formula]["mol"] = mol
 
