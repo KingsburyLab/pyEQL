@@ -339,10 +339,11 @@ class TestGetSaltDict:
         assert "HOH" not in salt_dict
 
     @staticmethod
-    # This cutoff must be higher than all salt concentrations
+    # This cutoff should be higher than the concentration of at least one salt (see salt_conc, anion/cation_scale,
+    # salt_ratio fixtures)
     # Parametrization over volume is required to ensure that concentrations and not absolute molar quantities are
     # used as a cutoff
-    @pytest.mark.parametrize(("cutoff", "volume"), product([0.5], ["1 L", "2 L"]))
+    @pytest.mark.parametrize(("cutoff", "volume"), product([0.75, 1.5], ["1 L", "2 L"]))
     def test_should_not_return_salts_with_concentration_below_cutoff(
         salt_dict: dict[str, dict[str, float | Salt]], cutoff: float
     ) -> None:
