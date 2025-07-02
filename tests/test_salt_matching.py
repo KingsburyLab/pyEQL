@@ -264,8 +264,23 @@ def fixture_use_totals(request: pytest.FixtureRequest) -> bool:
     return bool(request.param)
 
 
+@pytest.fixture(name="stream")
+def fixture_stream() -> StringIO:
+    return StringIO()
+
+
+@pytest.fixture(name="add_stream_handler")
+def fixture_add_stream_handler(stream: StringIO, solution: pyEQL.Solution) -> logging.StreamHandler:
+    sh = logging.StreamHandler(stream)
+    solution.logger.addHandler(sh)
+    solution.logger.setLevel("WARNING")
+    return sh
+
+
 @pytest.fixture(name="salt_dict")
-def fixture_salt_dict(solution: pyEQL.Solution, cutoff: float, use_totals: bool) -> dict[str, dict[str, float | Salt]]:
+def fixture_salt_dict(
+    solution: pyEQL.Solution, cutoff: float, use_totals: bool, add_stream_handler: logging.StreamHandler
+) -> dict[str, dict[str, float | Salt]]:
     salt_dict: dict[str, dict[str, float | Salt]] = solution.get_salt_dict(cutoff=cutoff, use_totals=use_totals)
     return salt_dict
 
@@ -356,12 +371,9 @@ class TestGetSaltDict:
     @pytest.mark.parametrize(
         ("anion_scale", "salt_ratio", "salt_conc", "salts"), [(0.0, 0.0, 100.0, [Salt("Na", "Cl")])]
     )
-    def test_should_log_warning_for_high_concentrations(solution: pyEQL.Solution) -> None:
-        stream = StringIO()
-        sh = logging.StreamHandler(stream)
-        solution.logger.addHandler(sh)
-        solution.logger.setLevel("WARNING")
-        _ = solution.get_salt_dict()
+    def test_should_log_warning_for_high_concentrations(
+        stream: StringIO, salt_dict: dict[str, dict[str, float | Salt]]
+    ) -> None:
         stream.seek(0)
         msg = stream.read()
         assert "H2O(aq) is not the most prominent component in this Solution!" in msg
