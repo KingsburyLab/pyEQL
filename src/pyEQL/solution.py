@@ -1503,9 +1503,11 @@ class Solution(MSONable):
             >>> s2.get_salt().z_cation
             2
         """
-        d = self.get_salt_dict()
-        first_key = next(iter(d.keys()))
-        return d[first_key]["salt"]
+        try:
+            salt: Salt = next(d["salt"] for d in self.get_salt_dict().values())
+            return salt
+        except StopIteration:
+            return None
 
     # TODO - modify? deprecate? make a salts property?
     def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
