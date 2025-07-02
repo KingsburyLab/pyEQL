@@ -220,7 +220,7 @@ def fixture_anion_scale(request: pytest.FixtureRequest) -> float:
 # salt_conc = cation_scale = anion_scale = 1.0 and salt_ratio = 0.75. Calling .get_salt_dict on such a solution should
 # return entries for 1 M KCl, 0.25 M K2SO4, and 0.5 M Na2SO4, which would cause
 # test_should_calculate_correct_concentration_for_salts to fail. To fix this, salt_ratio must be less than 0.5.)
-@pytest.fixture(name="salt_ratio", params=[0.1])
+@pytest.fixture(name="salt_ratio", params=[0.25])
 def fixture_salt_ratio(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
@@ -249,12 +249,17 @@ def fixture_volume(request: pytest.FixtureRequest) -> str:
     return str(request.param)
 
 
+@pytest.fixture(name="pH", params=[7.0])
+def fixture_pH(request: pytest.FixtureRequest) -> float:
+    return float(request.param)
+
+
 @pytest.fixture(name="solution")
-def fixture_solution(solutes: dict[str, str], volume: str) -> pyEQL.Solution:
-    return pyEQL.Solution(solutes=solutes, volume=volume)
+def fixture_solution(solutes: dict[str, str], volume: str, pH: float) -> pyEQL.Solution:
+    return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH)
 
 
-@pytest.fixture(name="cutoff", params=[0.01])
+@pytest.fixture(name="cutoff", params=[1e-8])
 def fixture_cutoff(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
@@ -285,7 +290,6 @@ def fixture_salt_dict(
     return salt_dict
 
 
-@pytest.mark.xfail(reason="Undecided on ignoring 'HOH' in Solution.get_salt_dict", strict=False)
 @pytest.mark.parametrize("salts", [[]])
 def test_should_return_empty_dict_for_empty_solution(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
     assert not salt_dict
@@ -316,7 +320,7 @@ class TestGetSaltDict:
         assert all(salts_in_dict)
 
     @staticmethod
-    @pytest.mark.parametrize("cation_scale", [1.1])
+    @pytest.mark.parametrize("cation_scale", [1.01])
     def test_should_match_salts_with_excess_cation(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
@@ -324,7 +328,7 @@ class TestGetSaltDict:
         assert all(salts_in_dict)
 
     @staticmethod
-    @pytest.mark.parametrize("anion_scale", [1.1])
+    @pytest.mark.parametrize("anion_scale", [1.01])
     def test_should_match_salts_with_excess_anion(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
@@ -332,25 +336,32 @@ class TestGetSaltDict:
         assert all(salts_in_dict)
 
     @staticmethod
-    # This parametrization ensures that the solution contains only a single anion other than H+
-    @pytest.mark.parametrize(("cation_scale", "salt_ratio"), [(0.0, 0.0)])
+    # This parametrization ensures that protons are most abundant cations and can pair with excess anions
+    @pytest.mark.parametrize(
+        ("salt_conc", "cation_scale", "salt_ratio", "pH"), [(0.01, 0.0, 0.0, 1.0), (0.01, 0.1, 0.0, 1.0)]
+    )
     def test_should_match_excess_anions_with_protons(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
         acid = Salt("H[+1]", salts[0].anion)
+        if acid.formula == "HOH":
+            pytest.skip(reason="'HOH' should not appear in salt_dict")
         assert acid.formula in salt_dict
 
     @staticmethod
-    # This parametrization ensures that the solution contains only a single cation other than OH-
-    @pytest.mark.parametrize(("anion_scale", "salt_ratio"), [(0.0, 0.0)])
+    # This parametrization ensures that hydroxide is most abundant anions and can pair with excess cations
+    @pytest.mark.parametrize(
+        ("salt_conc", "anion_scale", "salt_ratio", "pH"), [(0.01, 0.0, 0.0, 13.0), (0.01, 0.1, 0.0, 13.0)]
+    )
     def test_should_match_excess_cations_with_hydroxide(
         salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
     ) -> None:
         base = Salt(salts[0].cation, "OH[-1]")
+        if base.formula == "HOH":
+            pytest.skip(reason="'HOH' should not appear in salt_dict")
         assert base.formula in salt_dict
 
     @staticmethod
-    @pytest.mark.xfail(reason="Undecided on ignoring 'HOH' in Solution.get_salt_dict", strict=False)
     def test_should_not_include_water(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         assert "HOH" not in salt_dict
 
@@ -363,7 +374,7 @@ class TestGetSaltDict:
     def test_should_not_return_salts_with_concentration_below_cutoff(
         salt_dict: dict[str, dict[str, float | Salt]], cutoff: float
     ) -> None:
-        salt_concentrations_below_cutoff = [d["mol"] < cutoff for d in salt_dict.values()]
+        salt_concentrations_below_cutoff = [d["mol"] > cutoff for d in salt_dict.values()]
         assert all(salt_concentrations_below_cutoff)
 
     @staticmethod
@@ -461,4 +472,4 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         salt_amounts = [d["mol"] for d in salt_dict.values()]
-        assert salt_amounts == sorted(salt_amounts)
+        assert salt_amounts == sorted(salt_amounts, reverse=True)
