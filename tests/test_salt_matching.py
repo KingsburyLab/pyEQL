@@ -8,7 +8,6 @@ salt_ion_match.py
 
 import logging
 import platform
-from io import StringIO
 from itertools import combinations, product
 
 import numpy as np
@@ -169,6 +168,9 @@ _CONJUGATE_BASES = [
 ]
 _SOLUTES = [*_SALTS, *_ACIDS, *_BASES]
 _SOLUTES_LITE = [*product(_CATIONS[:2], _ANIONS[1:3]), _ACIDS[0], _BASES[-1]]
+_CONJUGATE_BASE_PAIRS = [
+    ((cation, conjugates[0]), (cation, conjugates[1])) for cation, conjugates in product(_CATIONS, _CONJUGATE_BASES)
+]
 
 
 @pytest.fixture(name="salt", params=_SOLUTES)
@@ -253,23 +255,8 @@ def fixture_use_totals(request: pytest.FixtureRequest) -> bool:
     return bool(request.param)
 
 
-@pytest.fixture(name="stream")
-def fixture_stream() -> StringIO:
-    return StringIO()
-
-
-@pytest.fixture(name="add_stream_handler")
-def fixture_add_stream_handler(stream: StringIO, solution: pyEQL.Solution) -> "logging.StreamHandler[StringIO]":
-    sh = logging.StreamHandler(stream)
-    solution.logger.addHandler(sh)
-    solution.logger.setLevel("WARNING")
-    return sh
-
-
 @pytest.fixture(name="salt_dict")
-def fixture_salt_dict(
-    solution: pyEQL.Solution, cutoff: float, use_totals: bool, add_stream_handler: "logging.StreamHandler[StringIO]"
-) -> dict[str, dict[str, float | Salt]]:
+def fixture_salt_dict(solution: pyEQL.Solution, cutoff: float, use_totals: bool) -> dict[str, dict[str, float | Salt]]:
     salt_dict: dict[str, dict[str, float | Salt]] = solution.get_salt_dict(cutoff=cutoff, use_totals=use_totals)
     return salt_dict
 
@@ -277,6 +264,43 @@ def fixture_salt_dict(
 @pytest.mark.parametrize("salts", [[]])
 def test_should_return_empty_dict_for_empty_solution(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
     assert not salt_dict
+
+
+# This parametrization ensures that hydroxide is most abundant anions and can pair with excess cations
+@pytest.mark.parametrize(("salt_conc", "anion_scale", "pH"), [(0.01, 0.0, 13.0), (0.01, 0.1, 13.0)])
+def test_should_match_excess_cations_with_hydroxide(
+    salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
+) -> None:
+    base = Salt(salts[0].cation, "OH[-1]")
+    if base.formula == "HOH":
+        pytest.skip(reason="'HOH' should not appear in salt_dict")
+    assert base.formula in salt_dict
+
+
+# This parametrization ensures that protons are most abundant cations and can pair with excess anions
+@pytest.mark.parametrize(("salt_conc", "cation_scale", "pH"), [(0.01, 0.0, 1.0), (0.01, 0.1, 1.0)])
+def test_should_match_excess_anions_with_protons(
+    salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
+) -> None:
+    acid = Salt("H[+1]", salts[0].anion)
+    if acid.formula == "HOH":
+        pytest.skip(reason="'HOH' should not appear in salt_dict")
+    assert acid.formula in salt_dict
+
+
+# This parametrization ensures that the concentration of the salt is higher than that of water (~55 M)
+@pytest.mark.parametrize(("anion_scale", "salt_conc", "salts"), [(0.0, 100.0, [Salt("Na", "Cl")])])
+def test_should_log_warning_for_high_concentrations(
+    solution: pyEQL.Solution, use_totals: bool, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level(logging.DEBUG, logger=solution.logger.name)
+    _ = solution.get_salt_dict(use_totals=use_totals)
+    expected_record = (
+        solution.logger.name,
+        logging.WARNING,
+        "H2O(aq) is not the most prominent component in this Solution!",
+    )
+    assert expected_record in caplog.record_tuples
 
 
 class TestSaltDictTypes:
@@ -298,6 +322,7 @@ class TestSaltDictTypes:
         assert all(salt_values_are_salts)
 
 
+@pytest.mark.usefixtures("salt_dict")
 class TestGetSaltDict:
     @staticmethod
     def test_should_match_equimolar_ion_equivalents(
@@ -321,32 +346,6 @@ class TestGetSaltDict:
     ) -> None:
         salts_in_dict = [salt.formula in salt_dict for salt in salts]
         assert all(salts_in_dict)
-
-    @staticmethod
-    # This parametrization ensures that protons are most abundant cations and can pair with excess anions
-    @pytest.mark.parametrize(
-        ("salt_conc", "cation_scale", "salt_ratio", "pH"), [(0.01, 0.0, 0.0, 1.0), (0.01, 0.1, 0.0, 1.0)]
-    )
-    def test_should_match_excess_anions_with_protons(
-        salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
-    ) -> None:
-        acid = Salt("H[+1]", salts[0].anion)
-        if acid.formula == "HOH":
-            pytest.skip(reason="'HOH' should not appear in salt_dict")
-        assert acid.formula in salt_dict
-
-    @staticmethod
-    # This parametrization ensures that hydroxide is most abundant anions and can pair with excess cations
-    @pytest.mark.parametrize(
-        ("salt_conc", "anion_scale", "salt_ratio", "pH"), [(0.01, 0.0, 0.0, 13.0), (0.01, 0.1, 0.0, 13.0)]
-    )
-    def test_should_match_excess_cations_with_hydroxide(
-        salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
-    ) -> None:
-        base = Salt(salts[0].cation, "OH[-1]")
-        if base.formula == "HOH":
-            pytest.skip(reason="'HOH' should not appear in salt_dict")
-        assert base.formula in salt_dict
 
     @staticmethod
     def test_should_not_include_water(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
@@ -387,18 +386,6 @@ class TestGetSaltDict:
                 expected_salts_based_on_concentrations.append(salt)
 
         assert all(salt.formula in salt_dict for salt in expected_salts_based_on_concentrations)
-
-    @staticmethod
-    # This parametrization ensures that the concentration of the salt is higher than that of water (~55 M)
-    @pytest.mark.parametrize(
-        ("anion_scale", "salt_ratio", "salt_conc", "salts"), [(0.0, 0.0, 100.0, [Salt("Na", "Cl")])]
-    )
-    def test_should_log_warning_for_high_concentrations(
-        stream: StringIO, salt_dict: dict[str, dict[str, float | Salt]]
-    ) -> None:
-        stream.seek(0)
-        msg = stream.read()
-        assert "H2O(aq) is not the most prominent component in this Solution!" in msg
 
     @staticmethod
     def test_should_calculate_correct_concentration_for_salts(
@@ -461,7 +448,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @pytest.mark.parametrize("use_totals", [False])
     @pytest.mark.parametrize(
         ("solute_pairs"),
-        [((cation, conjugate[0]), (cation, conjugate[1])) for cation, conjugate in product(_CATIONS, _CONJUGATE_BASES)],
+        _CONJUGATE_BASE_PAIRS,
     )
     def test_should_include_salt_for_low_concentration_conjugate_base_when_use_totals_false(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt]
@@ -472,7 +459,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     @staticmethod
     @pytest.mark.parametrize(
         ("solute_pairs"),
-        [((cation, conjugate[0]), (cation, conjugate[1])) for cation, conjugate in product(_CATIONS, _CONJUGATE_BASES)],
+        _CONJUGATE_BASE_PAIRS,
     )
     def test_should_not_include_salt_for_low_concentration_conjugate_base_when_use_totals_true(
         salt_dict: dict[str, dict[str, float | Salt]],
