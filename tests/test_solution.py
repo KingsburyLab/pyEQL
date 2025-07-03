@@ -7,13 +7,12 @@ used by pyEQL's Solution class
 """
 
 import copy
-import os
 import platform
+from importlib.resources import files
 
 import numpy as np
 import pytest
 import yaml
-from importlib.resources import files
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -570,7 +569,7 @@ def test_conductivity(s1, s2):
 
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
         ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
@@ -745,8 +744,8 @@ def test_from_preset(tmp_path):
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"
-    
-    with open(str(preset_path), "r") as file:
+
+    with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
     assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
