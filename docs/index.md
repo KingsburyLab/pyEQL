@@ -108,6 +108,7 @@ internal
 :caption: For Developers
 :maxdepth: 1
 contributing
+Changelog <changelog>
 authors
 license
 ```

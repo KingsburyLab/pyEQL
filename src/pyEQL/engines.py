@@ -27,7 +27,7 @@ SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from pyEQL import Solution
+    from pyEQL import solution
 
 
 class EOS(ABC):
@@ -41,7 +41,7 @@ class EOS(ABC):
     """
 
     @abstractmethod
-    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
@@ -58,7 +58,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of a Solution.
 
@@ -73,7 +73,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """
         Return the volume of only the solutes.
 
@@ -88,7 +88,7 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def equilibrate(self, solution: "Solution") -> None:
+    def equilibrate(self, solution: "solution.Solution") -> None:
         """
         Adjust the speciation and pH of a Solution object to achieve chemical equilibrium.
 
@@ -108,25 +108,25 @@ class EOS(ABC):
 class IdealEOS(EOS):
     """Ideal solution equation of state engine."""
 
-    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
         return ureg.Quantity(1, "dimensionless")
 
-    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
         """
         return ureg.Quantity(1, "dimensionless")
 
-    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         return ureg.Quantity(0, "L")
 
-    def equilibrate(self, solution: "Solution") -> None:
+    def equilibrate(self, solution: "solution.Solution") -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         warnings.warn("equilibrate() has no effect in IdealEOS!")
         return
@@ -177,7 +177,7 @@ class NativeEOS(EOS):
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
-    def _setup_ppsol(self, solution: "Solution") -> None:
+    def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -252,11 +252,11 @@ class NativeEOS(EOS):
             self.ppsol.forget()
             self.ppsol = None
 
-    def get_activity_coefficient(self, solution: "Solution", solute: str):
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str):
         r"""
-        Whenever the appropriate parameters are available, the Pitzer model [may]_ is used.
+        Whenever the appropriate parameters are available, the Pitzer model [may11]_ is used.
         If no Pitzer parameters are available, then the appropriate equations are selected
-        according to the following logic: [stumm]_.
+        according to the following logic: [stumm96]_.
 
         I <= 0.0005: Debye-Huckel equation
         0.005 < I <= 0.1:  Guntelberg approximation
@@ -266,7 +266,7 @@ class NativeEOS(EOS):
         The ionic strength, activity coefficients, and activities are all
         calculated based on the molal (mol/kg) concentration scale. If a different
         scale is given as input, then the molal-scale activity coefficient :math:`\gamma_\pm` is
-        converted according to [rbs]_
+        converted according to [rbs68]_
 
         .. math:: f_\pm = \gamma_\pm * (1 + M_w \sum_i \nu_i m_i)
 
@@ -287,10 +287,9 @@ class NativeEOS(EOS):
         Returns:
             The mean ion activity coefficient of the solute in question on  the selected scale.
 
-
         Notes:
             For multicomponent mixtures, pyEQL implements the "effective Pitzer model"
-            presented by Mistry et al. [mistry]_. In this model, the activity coefficient
+            presented by Mistry et al. [mistry13]_. In this model, the activity coefficient
             of a salt in a multicomponent mixture is calculated using an "effective
             molality," which is the molality that would result in a single-salt
             mixture with the same total ionic strength as the multicomponent solution.
@@ -298,18 +297,15 @@ class NativeEOS(EOS):
             .. math:: m_{effective} = \frac{2 I}{(\nu_{+} z_{+}^2 + \nu_{-}- z_{-}^2)}
 
         References:
-            .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
-                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and 25 °C.
-               *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
+            .. [may11] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+                     A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar
+                     and 25 °C. *Journal of Chemical & Engineering Data*, 56(12), 5066-5077. doi:10.1021/je2009329
 
-        .. [stumm] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed,
-               pp 165. Wiley Interscience, 1996.
+            .. [stumm96] Stumm, Werner and Morgan, James J. *Aquatic Chemistry*, 3rd ed,
+                       pp 165. Wiley Interscience, 1996.
 
-        .. [rbs] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
-               Edition; Butterworths: London, 1968, p.32.
-
-        .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior on
-               desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
+            .. [rbs68] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
+                     Edition; Butterworths: London, 1968, p.32.
 
         See Also:
             :attr:`pyEQL.solution.Solution.ionic_strength`
@@ -429,17 +425,17 @@ class NativeEOS(EOS):
 
         return molal
 
-    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         r"""
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
 
-        Osmotic coefficient is calculated using the Pitzer model. [may]_ If appropriate parameters for
+        Osmotic coefficient is calculated using the Pitzer model. [may11]_ If appropriate parameters for
         the model are not available, then pyEQL raises a WARNING and returns an osmotic
         coefficient of 1.
 
         If the 'rational' scale is given as input, then the molal-scale osmotic
-        coefficient :math:`\phi` is converted according to [rbs]_
+        coefficient :math:`\phi` is converted according to [rbs68]_
 
         .. math:: g = - \phi M_{w} \frac{\sum_{i} \nu_{i} m_{i}}{\ln x_{w}}
 
@@ -463,7 +459,7 @@ class NativeEOS(EOS):
 
         Notes:
             For multicomponent mixtures, pyEQL adopts the "effective Pitzer model"
-            presented by Mistry et al. [mstry]_. In this approach, the osmotic coefficient of
+            presented by Mistry et al. [mistry13]_. In this approach, the osmotic coefficient of
             each individual salt is calculated using the normal Pitzer model based
             on its respective concentration. Then, an effective osmotic coefficient
             is calculated as the concentration-weighted average of the individual
@@ -480,17 +476,6 @@ class NativeEOS(EOS):
             the author confirmed that the weight factor should be the true molality, and that is what is implemented
             in pyEQL.)
 
-        References:
-            .. [may] May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
-                A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar and
-                25 °C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
-
-            .. [rbs] Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised
-                Edition; Butterworths: London, 1968, p.32.
-
-            .. [mstry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution
-               behavior on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination 2013, 318, 34-47.
-
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '0.2 mol/kg', 'Cl-': '0.2 mol/kg'})
             >>> s1.get_osmotic_coefficient()
@@ -499,6 +484,24 @@ class NativeEOS(EOS):
             >>> s1 = pyEQL.Solution({'Mg+2': '0.3 mol/kg', 'Cl-': '0.6 mol/kg'},temperature='30 degC')
             >>> s1.get_osmotic_coefficient()
             <Quantity(0.891409618, 'dimensionless')>
+
+        References:
+            [may11]
+
+            May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
+            A Generic and Updatable Pitzer Characterization of Aqueous Binary Electrolyte Solutions at 1 bar
+            and 25 °C. Journal of Chemical & Engineering Data, 56(12), 5066-5077. doi:10.1021/je2009329
+
+            [rbs68]
+
+            Robinson, R. A.; Stokes, R. H. Electrolyte Solutions: Second Revised Edition; Butterworths: London, 1968,
+            p.32.
+
+            [mistry13]
+
+            Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution
+            behavior on desalination calculations for mixed electrolyte solutions with comparison to
+            seawater. Desalination 2013, 318, 34-47.
 
         """
         ionic_strength = solution.ionic_strength
@@ -576,7 +579,7 @@ class NativeEOS(EOS):
             # this means the solution is empty
             return 1
 
-    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         # identify the predominant salt in the solution
         salt = solution.get_salt()
@@ -660,7 +663,7 @@ class NativeEOS(EOS):
 
         return solute_vol.to("L")
 
-    def equilibrate(self, solution: "Solution") -> None:
+    def equilibrate(self, solution: "solution.Solution") -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         if self.ppsol is not None:
             self.ppsol.forget()
@@ -735,7 +738,7 @@ class PhreeqcEOS(NativeEOS):
         """
         super().__init__(phreeqc_db=phreeqc_db)
 
-    def get_activity_coefficient(self, solution: "Solution", solute: str) -> ureg.Quantity:
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
@@ -759,7 +762,7 @@ class PhreeqcEOS(NativeEOS):
 
         return ureg.Quantity(act, "dimensionless")
 
-    def get_osmotic_coefficient(self, solution: "Solution") -> ureg.Quantity:
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         """
         Return the *molal scale* osmotic coefficient of solute, given a Solution
         object.
@@ -771,7 +774,7 @@ class PhreeqcEOS(NativeEOS):
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
 
-    def get_solute_volume(self, solution: "Solution") -> ureg.Quantity:
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
         return ureg.Quantity(0, "L")
