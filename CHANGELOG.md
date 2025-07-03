@@ -7,11 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- DOCS/CI: sphinx linkcheck job and tox environment/command (`tox -e links`) (#255)
+
+### Fixed
+
+- DOCS: Sphinx warnings are cleared (#255)
+
 ### Changed
 
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
+- DOCS: `tox -e docs` command configured to fail on warning (#255)
+- DOCS: ReadTheDocs built with Python 3.11 (#255)
 
 ### Removed
 
