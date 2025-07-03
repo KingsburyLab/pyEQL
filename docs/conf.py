@@ -312,7 +312,8 @@ linkcheck_allowed_redirects = {
     r"https://doi\.org/10\.1016/j\.desal\.2013\.03\.015": r"https://linkinghub\.elsevier\.com/retrieve/pii/S0011916413001409",
     r"https://dx\.doi\.org/10\.1016/j\.cemconres\.2017\.08\.030": r"https://linkinghub\.elsevier\.com/retrieve/pii/S0008884617301965",
     r"https://doi\.org/10\.1016/j\.earscirev\.2021\.103888": r"https://linkinghub.elsevier\.com/retrieve/pii/S0012825221003895",
-    r"http://pint\.readthedocs\.io": r"https://pint\.readthedocs\.io/en/stable",
+    r"http://pint\.readthedocs\.io": r"https://pint\.readthedocs\.io/.*/stable",
+    r"https://tox\.wiki": r"https://tox\.wiki/.*",
 }
 linkcheck_ignore = [r"https://localhost:\d+/"]
 linkcheck_rate_limit_timeout = 500

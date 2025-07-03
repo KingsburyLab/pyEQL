@@ -39,16 +39,16 @@ submit your proposal.
 ```
 
 When working on documentation changes in your local machine, you can
-compile them using [tox] :
+compile them using [tox](https://tox.wiki):
 
-```
+```shell
 tox -e docs
 ```
 
-and use Python's built-in web server for a preview in your web browser
+then use Python's built-in web server for a preview in your web browser
 (`http://localhost:8000`):
 
-```
+```shell
 python3 -m http.server --directory 'docs/_build/html'
 ```
 
@@ -114,11 +114,11 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 - All changes you make to `pyEQL` should be accompanied by unit tests and should not break existing tests. To run the full test suite, run `pytest tests/` from the repository directory.
 
-- Code coverage should be maintained or increase. Each PR will report code coverage after the tests pass, but you can check locally using [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/), by running `pytest --cov tests/`
+- Code coverage should be maintained or increase. Each PR will report code coverage after the tests pass, but you can check locally using [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/), by running `pytest --cov tests/`. To produce a detailed HTML report with line and branch coverage statistics, run `pytest --cov-branch --cov=src/pyEQL --cov-report=html -n auto tests`.
 
 - All code should include type hints and have internally consistent documentation for the inputs and outputs.
 
-- Use Google style docstrings
+- Use [Google style docstrings](https://google.github.io/styleguide/pyguide.html)
 
 - Lint your code with [`ruff`](https://github.com/astral-sh/ruff) by running `ruff check --fix src/` from the repo directory. Alternatively, you can install the `pre-commit` hooks by running `pre-commit install` from the repository directory. This will prevent committing new changes until all linting errors are fixed.
 
