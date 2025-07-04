@@ -52,10 +52,20 @@ def fixture_salt_ratio(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
 
+@pytest.fixture(name="salt_conc_units", params=["mol/L"])
+def fixture_salt_conc_units(request: pytest.FixtureRequest) -> str:
+    return str(request.param)
+
+
 # This is the default fixture for parametrizing the solution fixture
 @pytest.fixture(name="solutes")
 def fixture_solutes(
-    salts: list[Salt], salt_conc: float, cation_scale: float, anion_scale: float, salt_ratio: float
+    salts: list[Salt],
+    salt_conc: float,
+    cation_scale: float,
+    anion_scale: float,
+    salt_ratio: float,
+    salt_conc_units: str,
 ) -> dict[str, str]:
     solute_values = {salt.anion: 0 for salt in salts}
     solute_values.update({salt.cation: 0 for salt in salts})
@@ -69,7 +79,7 @@ def fixture_solutes(
         solute_values[salt.anion] += anion_conc
 
     # Only include solutes with non-zero concentrations
-    return {k: f"{v} mol/L" for k, v in solute_values.items() if v}
+    return {k: f"{v} {salt_conc_units}" for k, v in solute_values.items() if v}
 
 
 # This is an alternative way to parametrize the solution fixture
