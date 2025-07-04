@@ -1520,8 +1520,8 @@ class Solution(MSONable):
         enable its effective concentration to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
 
         Args:
-            cutoff: Lowest quantity (in moles) of salt to consider. Analysis will stop once the concentrations of Salts
-                being analyzed goes below this value. Useful for excluding analysis of trace anions.
+            cutoff: Lowest concentration (in mol/kg) of salt to consider. Analysis will stop once the concentrations of
+                Salts being analyzed goes below this value. Useful for excluding analysis of trace anions.
             use_totals: Whether to base the analysis on total element concentrations or individual species
                 concentrations.
 
@@ -1602,6 +1602,7 @@ class Solution(MSONable):
         # list(dict) returns a list of [[key, value],]
         cation_list = [[k, v] for k, v in cation_equiv.items()]
         anion_list = [[k, v] for k, v in anion_equiv.items()]
+        mass = self.mass.m
 
         while index_cat < len_cat and index_an < len_an:
             c1 = cation_list[index_cat][-1]
@@ -1609,19 +1610,15 @@ class Solution(MSONable):
             salt = Salt(cation_list[index_cat][0], anion_list[index_an][0])
 
             # Use the smaller of the two amounts
-            if c1 > a1:
-                # there will be leftover cation, so use the anion amount to calculate
-                mol = a1 / abs(salt.z_anion * salt.nu_anion)
-                index_an += 1
-                cation_list[index_cat][-1] -= a1
-            else:
-                # all cation will be used, so use the cation amount
-                mol = c1 / (salt.z_cation * salt.nu_cation)
-                index_cat += 1
-                anion_list[index_an][-1] -= c1
+            equivs_consumed = min(c1, a1)
+            cation_list[index_cat][-1] -= equivs_consumed
+            anion_list[index_an][-1] -= equivs_consumed
+            index_an += 0 if anion_list[index_an][-1] else 1
+            index_cat += 0 if cation_list[index_cat][-1] else 1
+            mol = equivs_consumed / abs(salt.z_anion * salt.nu_anion)
 
             # filter out water and zero, effectively zero, and sub-cutoff salt amounts
-            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and mol >= cutoff:
+            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and (mol / mass) >= cutoff:
                 salt_dict[salt.formula] = {"salt": salt, "mol": mol}
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
