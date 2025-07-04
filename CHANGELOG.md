@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - DOCS: Sphinx warnings are cleared (#255)
+- `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects
 
 ### Changed
 

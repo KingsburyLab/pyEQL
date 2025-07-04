@@ -1,8 +1,10 @@
 from itertools import combinations, product
+from typing import Literal
 
 import pytest
 
 import pyEQL
+from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 
 _CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "K[+1]", "Li[+1]", "Cu[+2]", "Ba[+2]"]
@@ -100,6 +102,28 @@ def fixture_pH(request: pytest.FixtureRequest) -> float:
     return float(request.param)
 
 
+@pytest.fixture(name="solvent", params=["H2O"])
+def fixture_solvent(request: pytest.FixtureRequest) -> str:
+    return str(request.param)
+
+
+@pytest.fixture(name="engine", params=["native"])
+def fixture_engine(request: pytest.FixtureRequest) -> str:
+    return str(request.param)
+
+
+@pytest.fixture(name="database", params=[None])
+def fixture_database(request: pytest.FixtureRequest) -> str | None:
+    return request.param if request.param is None else str(request.param)
+
+
 @pytest.fixture(name="solution")
-def fixture_solution(solutes: dict[str, str], volume: str, pH: float) -> pyEQL.Solution:
-    return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH)
+def fixture_solution(
+    solutes: dict[str, str],
+    volume: str,
+    pH: float,
+    solvent: str | list,
+    engine: EOS | Literal["native", "ideal", "phreeqc"],
+    database: str | None,
+) -> pyEQL.Solution:
+    return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH, solvent=solvent, engine=engine, database=database)

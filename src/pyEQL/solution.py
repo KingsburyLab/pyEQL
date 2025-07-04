@@ -2549,15 +2549,9 @@ class Solution(MSONable):
 
         # retrieve the amount of each component in the parent solution and
         # store in a list.
-        mix_species = FormulaDict({})
-        for sol, amt in self.components.items():
-            mix_species.update({sol: f"{amt} mol"})
-        for sol2, amt2 in other.components.items():
-            if mix_species.get(sol2):
-                orig_amt = float(mix_species[sol2].split(" ")[0])
-                mix_species[sol2] = f"{orig_amt + amt2} mol"
-            else:
-                mix_species.update({sol2: f"{amt2} mol"})
+        mix_amounts = FormulaDict({})
+        for sol, amt in [*self.components.items(), *other.components.items()]:
+            mix_amounts[sol] = amt + mix_amounts.get(sol, 0.0)
 
         # TODO - call equilibrate() here once the method is functional to get new pH and pE, instead of the below
         warnings.warn(
@@ -2565,21 +2559,25 @@ class Solution(MSONable):
             "this property is planned for a future release."
         )
         # calculate the new pH and pE (before reactions) by mixing
-        mix_pH = -np.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
+        mix_pH = -np.log10(mix_amounts["H+"] / mix_vol.to("L").magnitude)
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
         mol_e_other = 10 ** (-1 * other.pE) * other.volume.to("L").magnitude
         mix_pE = -np.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
+        solutes = {sol: f"{amount} mol" for sol, amount in mix_amounts.items()}
 
         # create a new solution
         return Solution(
-            mix_species.data,  # pass a regular dict instead of the FormulaDict
+            solutes=solutes,
             volume=str(mix_vol),
             pressure=str(mix_pressure),
             temperature=str(mix_temperature.to("K")),
             pH=mix_pH,
             pE=mix_pE,
+            engine=self._engine,
+            solvent=self.solvent,
+            database=self.database,
         )
 
     def __sub__(self, other: Solution) -> None:

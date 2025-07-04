@@ -13,6 +13,7 @@ from importlib.resources import files
 import numpy as np
 import pytest
 import yaml
+from monty.serialization import dumpfn, loadfn
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -559,9 +560,8 @@ def test_conductivity(s1, s2):
     # nacl
     for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
-        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        fail_msg = f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5), fail_msg
 
     # higher concentration data points from Appelo, 2017 Figure 4.
     s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
@@ -570,9 +570,8 @@ def test_conductivity(s1, s2):
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
-        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        fail_msg = f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1), fail_msg
 
     # per CRC handbook "standard KCl solutions for calibrating conductivity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
@@ -693,8 +692,6 @@ def test_as_from_dict(s1, s2):
 
 
 def test_serialization(s1, s2, tmp_path):
-    from monty.serialization import dumpfn, loadfn
-
     dumpfn(s1, str(tmp_path / "s1.json"))
     s1_new = loadfn(str(tmp_path / "s1.json"))
     assert s1_new.volume.magnitude == 2
@@ -739,8 +736,6 @@ def test_serialization(s1, s2, tmp_path):
 
 
 def test_from_preset(tmp_path):
-    from monty.serialization import dumpfn
-
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"
@@ -780,3 +775,50 @@ def test_to_from_file(tmp_path, s1):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
         Solution.from_file(filename)
+
+
+class TestSolutionAdd:
+    @staticmethod
+    @pytest.fixture(name="salt_conc", params=[0.0, 1.0, 2.0])
+    def fixture_salt_conc(request: pytest.FixtureRequest) -> float:
+        return float(request.param)
+
+    @staticmethod
+    @pytest.fixture(name="engine", params=["ideal", "native", "phreeqc"])
+    def fixture_engine(request: pytest.FixtureRequest) -> str:
+        return str(request.param)
+
+    @staticmethod
+    @pytest.fixture(name="solution_sum")
+    def fixture_solution_sum(solution: Solution) -> Solution:
+        return solution + solution
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["ideal"])
+    def test_should_conserve_volume_with_ideal_engine(solution: Solution, solution_sum: Solution) -> None:
+        assert np.isclose(solution_sum.volume.m, 2 * solution.volume.m)
+
+    @staticmethod
+    def test_should_preserve_engine_when_adding_solutions(solution: Solution, solution_sum: Solution) -> None:
+        assert solution._engine == solution_sum._engine
+
+    @staticmethod
+    def test_should_preserve_the_number_of_moles_when_adding_solutions(
+        solution: Solution, solution_sum: Solution
+    ) -> None:
+        moles_conserved = []
+        for component, moles in solution.components.items():
+            moles_conserved.append(solution_sum.components[component] == 2 * moles)
+        assert all(moles_conserved)
+
+    @staticmethod
+    def test_should_add_all_components_to_new_solution(solution: Solution, solution_sum: Solution) -> None:
+        assert sorted(solution.components) == sorted(solution_sum.components)
+
+    @staticmethod
+    def test_should_preserve_solution_solvent(solution: Solution, solution_sum: Solution) -> None:
+        assert solution.solvent == solution_sum.solvent
+
+    @staticmethod
+    def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
+        assert solution.database == solution_sum.database
