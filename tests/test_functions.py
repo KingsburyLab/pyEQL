@@ -47,7 +47,7 @@ def test_mixing_functions(s1, s2, s1_p, s2_p, s1_i, s2_i):
     # mixing energy and entropy of any solution with itself should be zero
     assert np.isclose(gibbs_mix(s1, s1).magnitude, 0)
     assert np.isclose(entropy_mix(s2, s2).magnitude, 0)
-    assert np.isclose(gibbs_mix(s1_p, s1_p).magnitude, 0, atol=1e-6)
+    assert np.isclose(gibbs_mix(s1_p, s1_p).magnitude, 0)
     assert np.isclose(entropy_mix(s2_p, s2_p).magnitude, 0)
     assert np.isclose(gibbs_mix(s1_i, s1_i).magnitude, 0, atol=1e-6)
     assert np.isclose(entropy_mix(s2_i, s2_i).magnitude, 0)
