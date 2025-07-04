@@ -27,6 +27,22 @@ _CONJUGATE_BASE_PAIRS = [
 ]
 
 
+@pytest.fixture(name="cutoff", params=[1e-8])
+def fixture_cutoff(request: pytest.FixtureRequest) -> float:
+    return float(request.param)
+
+
+@pytest.fixture(name="use_totals", params=[True])
+def fixture_use_totals(request: pytest.FixtureRequest) -> bool:
+    return bool(request.param)
+
+
+@pytest.fixture(name="salt_dict")
+def fixture_salt_dict(solution: pyEQL.Solution, cutoff: float, use_totals: bool) -> dict[str, dict[str, float | Salt]]:
+    salt_dict: dict[str, dict[str, float | Salt]] = solution.get_salt_dict(cutoff=cutoff, use_totals=use_totals)
+    return salt_dict
+
+
 def test_salt_init() -> None:
     s = Salt("Na[+1]", "Cl[-1]")
     assert s.formula == "NaCl"
@@ -90,7 +106,8 @@ def test_single_ion() -> None:
     """
     test matching a solution containing only a single ion
     """
-    s1 = pyEQL.Solution([["Fe+3", "1 mol/L"]])
+    # Must set pH to meet default cutoff concentration in Solution.get_salt
+    s1 = pyEQL.Solution(solutes={"Fe+3": "1 mol/L"}, pH=14)
     assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
     assert s1.get_salt().formula == "Fe(OH)3"
     assert s1.get_salt().cation == "Fe[+3]"
@@ -268,8 +285,9 @@ class TestGetSaltDict:
         cutoff: float,
         solution: pyEQL.Solution,
     ) -> None:
-        mass = solution.mass.m
-        salt_concentrations_above_cutoff = [d["mol"] / mass >= cutoff for d in salt_dict.values()]
+        mw = solution.get_property(solution.solvent, "molecular_weight").to("kg/mol")
+        solvent_mass = solution.components[solution.solvent] * mw.m
+        salt_concentrations_above_cutoff = [d["mol"] / solvent_mass >= cutoff for d in salt_dict.values()]
         assert all(salt_concentrations_above_cutoff)
 
     @staticmethod

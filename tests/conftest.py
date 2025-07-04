@@ -103,19 +103,3 @@ def fixture_pH(request: pytest.FixtureRequest) -> float:
 @pytest.fixture(name="solution")
 def fixture_solution(solutes: dict[str, str], volume: str, pH: float) -> pyEQL.Solution:
     return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH)
-
-
-@pytest.fixture(name="cutoff", params=[1e-8])
-def fixture_cutoff(request: pytest.FixtureRequest) -> float:
-    return float(request.param)
-
-
-@pytest.fixture(name="use_totals", params=[True])
-def fixture_use_totals(request: pytest.FixtureRequest) -> bool:
-    return bool(request.param)
-
-
-@pytest.fixture(name="salt_dict")
-def fixture_salt_dict(solution: pyEQL.Solution, cutoff: float, use_totals: bool) -> dict[str, dict[str, float | Salt]]:
-    salt_dict: dict[str, dict[str, float | Salt]] = solution.get_salt_dict(cutoff=cutoff, use_totals=use_totals)
-    return salt_dict
