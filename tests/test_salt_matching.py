@@ -263,17 +263,17 @@ class TestGetSaltDict:
     # Parametrization over volume is required to ensure that concentrations and not absolute molar quantities are
     # used as a cutoff
     @pytest.mark.parametrize(("cutoff", "volume"), product([0.0, 0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
-    def test_should_not_return_salts_with_concentration_above_cutoff(
-        salt_dict: dict[str, dict[str, float | Salt]], cutoff: float, volume: str
+    def test_should_not_return_salts_with_concentration_below_cutoff(
+        salt_dict: dict[str, dict[str, float | Salt]],
+        cutoff: float,
+        solution: pyEQL.Solution,
     ) -> None:
-        vol, _ = volume.split()
-        vol_mag = float(vol)
-        salt_concentrations_above_cutoff = [d["mol"] * vol_mag >= cutoff for d in salt_dict.values()]
+        mass = solution.mass.m
+        salt_concentrations_above_cutoff = [d["mol"] / mass >= cutoff for d in salt_dict.values()]
         assert all(salt_concentrations_above_cutoff)
 
     @staticmethod
-    # Note that salt_conc = 1.0, and salt_ratio = 0.25, so the expected concentrations of the first and second salts
-    # are 1.0 mol/L and 0.25 mol/L, respectively.
+    @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
     @pytest.mark.parametrize(("cutoff", "volume"), product([0.0, 0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
     def test_should_return_all_salts_with_concentrations_above_cutoff(
         salt_dict: dict[str, dict[str, float | Salt]],
@@ -281,30 +281,29 @@ class TestGetSaltDict:
         salt_conc: float,
         salt_ratio: float,
         cutoff: float,
+    ) -> None:
+        expected_salts = [salt for i, salt in enumerate(salts) if salt_conc * (salt_ratio**i) >= cutoff]
+        expected_salts_in_salt_dict = [salt.formula in salt_dict for salt in expected_salts]
+        assert all(expected_salts_in_salt_dict)
+
+    @staticmethod
+    def test_should_calculate_correct_concentration_for_salts(
+        salt_dict: dict[str, dict[str, float | Salt]],
+        salts: list[Salt],
+        salt_conc: float,
+        salt_ratio: float,
         volume: str,
     ) -> None:
         vol, _ = volume.split()
         vol_mag = float(vol)
-        expected_salts_based_on_concentrations = []
-        for i, salt in enumerate(salts):
-            conc = salt_conc * (salt_ratio**i)
-            if conc * vol_mag >= cutoff:
-                expected_salts_based_on_concentrations.append(salt)
-
-        assert all(salt.formula in salt_dict for salt in expected_salts_based_on_concentrations)
-
-    @staticmethod
-    def test_should_calculate_correct_concentration_for_salts(
-        salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt], salt_conc: float, salt_ratio: float
-    ) -> None:
-        expected_concentrations = dict.fromkeys([s.formula for s in salts], 0.0)
+        expected_moles = dict.fromkeys([s.formula for s in salts], 0.0)
 
         for i, salt in enumerate(salts):
-            expected_concentrations[salt.formula] += salt_conc * (salt_ratio**i)
+            expected_moles[salt.formula] += salt_conc * (salt_ratio**i) * vol_mag
 
         salts_have_correct_concentrations = []
 
-        for salt, expected in expected_concentrations.items():
+        for salt, expected in expected_moles.items():
             calculated = salt_dict[salt]["mol"]
             salts_have_correct_concentrations.append(np.isclose(calculated, expected, atol=1e-16))
 
