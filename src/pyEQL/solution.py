@@ -170,7 +170,7 @@ class Solution(MSONable):
             self.logger.handlers.clear()
             # use rich for pretty log formatting, if installed
             try:
-                from rich.logging import RichHandler
+                from rich.logging import RichHandler  # noqa: PLC0415
 
                 sh = RichHandler(rich_tracebacks=True)
             except ImportError:
@@ -470,7 +470,7 @@ class Solution(MSONable):
         try:
             # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
             # Using np.exp raises ZeroDivisionError
-            import math
+            import math  # noqa: PLC0415
 
             if activity is True:
                 return -1 * math.log10(self.get_activity(solute))
@@ -1622,8 +1622,7 @@ class Solution(MSONable):
 
             # filter out water and zero, effectively zero, and sub-cutoff salt amounts
             if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and mol >= cutoff:
-                salt_dict.update({salt.formula: {"salt": salt}})
-                salt_dict[salt.formula]["mol"] = mol
+                salt_dict[salt.formula] = {"salt": salt, "mol": mol}
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
