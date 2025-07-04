@@ -1507,13 +1507,13 @@ class Solution(MSONable):
             2
         """
         try:
-            salt: Salt = next(d["salt"] for d in self.get_salt_dict(cutoff=0.0).values())
+            salt: Salt = next(d["salt"] for d in self.get_salt_dict().values())
             return salt
         except StopIteration:
             return None
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
+    def get_salt_dict(self, cutoff: float = 1e-3, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
         """
         Returns a dict that represents the salts of the Solution by pairing anions and cations.
 

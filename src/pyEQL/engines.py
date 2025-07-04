@@ -317,7 +317,7 @@ class NativeEOS(EOS):
         # identify the predominant salt that this ion is a member of
         salt = None
         rform = standardize_formula(solute)
-        for d in solution.get_salt_dict(cutoff=0.0).values():
+        for d in solution.get_salt_dict().values():
             if rform == d["salt"].cation or rform == d["salt"].anion:
                 salt = d["salt"]
                 break
@@ -509,7 +509,7 @@ class NativeEOS(EOS):
         # loop through all the salts in the solution, calculate the osmotic
         # coefficint for each, and average them into an effective osmotic
         # coefficient
-        for d in solution.get_salt_dict(cutoff=0.0).values():
+        for d in solution.get_salt_dict().values():
             item = d["salt"]
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
