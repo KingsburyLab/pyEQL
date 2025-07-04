@@ -1546,12 +1546,28 @@ class Solution(MSONable):
         Examples:
             >>> from pyEQL import Solution
             >>> from pyEQL.salt_ion_match import Salt
-            >>> s1 = Solution(solutes={'Na[+1]': '1 mol/l', 'Cl[-1]': '1 mol/l'})
+            >>> s1 = Solution(
+            ...     solutes={
+            ...         'Na[+1]': '1 mol/L',
+            ...         'Cl[-1]': '1 mol/L',
+            ...         'Ca[+2]': '0.01 mol/kg',
+            ...         'HCO3[-1]': '0.008 mol/kg',
+            ...         'CO3[-2]': '0.001 mol/kg',
+            ...     }
+            ... )
             >>> salt_dict = s1.get_salt_dict()
+            >>> list(salt_dict)
+            ['NaCl']
             >>> salt_dict['NaCl']['salt']
             <pyEQL.salt_ion_match.Salt object at ...>
             >>> salt_dict['NaCl']['mol']
             1.0
+            >>> salt_dict = s1.get_salt_dict(cutoff=1e-4)
+            >>> list(salt_dict)
+            ['NaCl', 'Ca(HCO3)2']
+            >>> salt_dict = s1.get_salt_dict(cutoff=1e-4, use_totals=False)
+            >>> list(salt_dict)
+            ['NaCl', 'Ca(HCO3)2', 'CaCO3']
 
         See Also:
             :attr:`components`
