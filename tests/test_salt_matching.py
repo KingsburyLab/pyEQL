@@ -157,11 +157,11 @@ Under different parametrizations of the compositions fixtures, several Solution 
 """
 
 
-_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]"]
-_ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]"]
-_SALTS = list(product(_CATIONS, _ANIONS))
-_ACIDS = [("H[+1]", anion) for anion in _ANIONS]
-_BASES = [(cation, "OH[-1]") for cation in _CATIONS]
+_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "K[+1]", "Li[+1]", "Cu[+2]", "Ba[+2]"]
+_ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]", "ClO[-1]", "NO3[-1]", "CO3[-2]", "MnO4[-2]"]
+_SALTS = list(product(_CATIONS[:3], _ANIONS[:3]))
+_ACIDS = [("H[+1]", anion) for anion in _ANIONS[:3]]
+_BASES = [(cation, "OH[-1]") for cation in _CATIONS[:3]]
 _CONJUGATE_BASES = [
     ("HCO3[-1]", "CO3[-2]"),
     ("H2PO4[-1]", "PO4[-3]"),
@@ -169,7 +169,7 @@ _CONJUGATE_BASES = [
 _SOLUTES = [*_SALTS, *_ACIDS, *_BASES]
 _SOLUTES_LITE = [*product(_CATIONS[:2], _ANIONS[1:3]), _ACIDS[0], _BASES[-1]]
 _CONJUGATE_BASE_PAIRS = [
-    ((cation, conjugates[0]), (cation, conjugates[1])) for cation, conjugates in product(_CATIONS, _CONJUGATE_BASES)
+    ((cation, conjugates[0]), (cation, conjugates[1])) for cation, conjugates in product(_CATIONS[:3], _CONJUGATE_BASES)
 ]
 
 
@@ -356,7 +356,7 @@ class TestGetSaltDict:
     # salt_ratio fixtures)
     # Parametrization over volume is required to ensure that concentrations and not absolute molar quantities are
     # used as a cutoff
-    @pytest.mark.parametrize(("cutoff", "volume"), product([0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
+    @pytest.mark.parametrize(("cutoff", "volume"), product([0.0, 0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
     def test_should_not_return_salts_with_concentration_above_cutoff(
         salt_dict: dict[str, dict[str, float | Salt]], cutoff: float, volume: str
     ) -> None:
@@ -368,8 +368,8 @@ class TestGetSaltDict:
     @staticmethod
     # Note that salt_conc = 1.0, and salt_ratio = 0.25, so the expected concentrations of the first and second salts
     # are 1.0 mol/L and 0.25 mol/L, respectively.
-    @pytest.mark.parametrize(("cutoff", "volume"), product([0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
-    def test_should_return_salts_with_concentrations_above_cutoff(
+    @pytest.mark.parametrize(("cutoff", "volume"), product([0.0, 0.75, 1.0, 1.5], ["0.5 L", "1 L", "2 L"]))
+    def test_should_return_all_salts_with_concentrations_above_cutoff(
         salt_dict: dict[str, dict[str, float | Salt]],
         salts: list[Salt],
         salt_conc: float,
@@ -470,7 +470,9 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
         assert minor_salt.formula not in salt_dict
 
     @staticmethod
-    @pytest.mark.parametrize("cation_scale", [0.0, 0.5, 2.0])
+    # This combination of
+    @pytest.mark.parametrize(("cation_scale", "salt_ratio", "cutoff"), [(0.9, 1.0, 0.0)])
+    @pytest.mark.parametrize("salts", [[Salt(c, a) for c, a in zip(_CATIONS, _ANIONS, strict=True)]])
     def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         salt_amounts = [d["mol"] for d in salt_dict.values()]
         assert salt_amounts == sorted(salt_amounts, reverse=True)
