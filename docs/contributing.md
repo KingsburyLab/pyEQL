@@ -39,22 +39,22 @@ submit your proposal.
 ```
 
 When working on documentation changes in your local machine, you can
-compile them using [tox] :
+compile them using [tox](https://tox.wiki):
 
-```
+```shell
 tox -e docs
 ```
 
-and use Python's built-in web server for a preview in your web browser
+then use Python's built-in web server for a preview in your web browser
 (`http://localhost:8000`):
 
-```
+```shell
 python3 -m http.server --directory 'docs/_build/html'
 ```
 
 ## Contributing Code
 
-To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow) workflow model.
+To contribute bug fixes, documentation enhancements, or new code, please fork pyEQL and send us a pull request. It's not as hard as it sounds! Beginning with version 0.6.0, we follow the [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow) workflow model.
 
 The [Scientific Python Guide](https://learn.scientific-python.org/development/guides/) is also an excellent technical reference for new and longtime developers.
 
@@ -65,7 +65,7 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
 
 ### Hacking pyEQL, step by step
 
-1. [Fork the pyEQL repository](https://help.github.com/articles/fork-a-repo/) on Github
+1. [Fork the pyEQL repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) on Github
 
 2. Clone your repository to a directory of your choice:
 
@@ -114,11 +114,11 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 - All changes you make to `pyEQL` should be accompanied by unit tests and should not break existing tests. To run the full test suite, run `pytest tests/` from the repository directory.
 
-- Code coverage should be maintained or increase. Each PR will report code coverage after the tests pass, but you can check locally using [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/), by running `pytest --cov tests/`
+- Code coverage should be maintained or increase. Each PR will report code coverage after the tests pass, but you can check locally using [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/), by running `pytest --cov tests/`. To produce a detailed HTML report with line and branch coverage statistics, run `pytest --cov-branch --cov=src/pyEQL --cov-report=html -n auto tests`.
 
 - All code should include type hints and have internally consistent documentation for the inputs and outputs.
 
-- Use Google style docstrings
+- Use [Google style docstrings](https://google.github.io/styleguide/pyguide.html)
 
 - Lint your code with [`ruff`](https://github.com/astral-sh/ruff) by running `ruff check --fix src/` from the repo directory. Alternatively, you can install the `pre-commit` hooks by running `pre-commit install` from the repository directory. This will prevent committing new changes until all linting errors are fixed.
 
@@ -128,7 +128,7 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 ## Documentation
 
-Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to http://localhost:8000/ so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
+Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to `http://localhost:8000/` so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
 
 ## Changelog
 
