@@ -1621,7 +1621,7 @@ class Solution(MSONable):
         # list(dict) returns a list of [[key, value],]
         cation_list = [[k, v] for k, v in cation_equiv.items()]
         anion_list = [[k, v] for k, v in anion_equiv.items()]
-        mass = self.mass.m
+        solvent_mass = self.solvent_mass.to("kg").m
 
         while index_cat < len_cat and index_an < len_an:
             c1 = cation_list[index_cat][-1]
@@ -1632,12 +1632,12 @@ class Solution(MSONable):
             equivs_consumed = min(c1, a1)
             cation_list[index_cat][-1] -= equivs_consumed
             anion_list[index_an][-1] -= equivs_consumed
-            index_an += 0 if anion_list[index_an][-1] else 1
-            index_cat += 0 if cation_list[index_cat][-1] else 1
-            mol = equivs_consumed / abs(salt.z_anion * salt.nu_anion)
+            index_an += 1 if a1 == equivs_consumed else 0
+            index_cat += 1 if c1 == equivs_consumed else 0
+            mol = equivs_consumed / (salt.z_cation * salt.nu_cation)
 
             # filter out water and zero, effectively zero, and sub-cutoff salt amounts
-            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and (mol / mass) >= cutoff:
+            if salt.formula != "HOH" and not np.isclose(mol, 0.0, atol=1e-16) and (mol / solvent_mass) >= cutoff:
                 salt_dict[salt.formula] = {"salt": salt, "mol": mol}
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
