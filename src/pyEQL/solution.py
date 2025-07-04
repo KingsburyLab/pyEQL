@@ -1523,8 +1523,8 @@ class Solution(MSONable):
         enable its effective concentration to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
 
         Args:
-            cutoff: Lowest concentration (in mol/kg) of salt to consider. Analysis will stop once the concentrations of
-                Salts being analyzed goes below this value. Useful for excluding analysis of trace anions.
+            cutoff: Lowest molal concentration to consider. No salts below this value will be included in the output.
+                Useful for excluding analysis of trace anions. Defaults to 1e-3.
             use_totals: Whether to base the analysis on total element concentrations or individual species
                 concentrations.
 
