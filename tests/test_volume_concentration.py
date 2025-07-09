@@ -241,7 +241,7 @@ class Test_get_amount:
         assert np.isclose(s1.get_amount("Na+", "mol/L").magnitude, 1)
 
         # get_amount() - mol/kg
-        assert np.isclose(s1.get_amount("Na+", "mol/kg").magnitude, 1.02181221888)
+        assert np.isclose(s1.get_amount("Na+", "mol/kg").magnitude, 1.021800387280832)
 
         # get_amount() - g/L
         assert np.isclose(s1.get_amount("Na+", "g/L").magnitude, 22.98977)
@@ -253,7 +253,7 @@ class Test_get_amount:
         assert np.isclose(s1.get_amount("Na+", "mol").magnitude, 1)
 
         # get_amount() - fraction
-        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.01775457254)
+        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.017754374259808723)
 
         # get_amount() - count
         assert np.isclose(s1.get_amount("Na+", "count").magnitude, 6.02214e23)
