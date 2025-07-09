@@ -7,16 +7,20 @@ used by pyEQL's Solution class
 """
 
 import copy
+import logging
 import platform
 from importlib.resources import files
+from itertools import zip_longest
 
 import numpy as np
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
 
-from pyEQL import Solution, ureg
+import pyEQL
+from pyEQL import Solution, engines, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
 
@@ -777,6 +781,38 @@ def test_to_from_file(tmp_path, s1):
         Solution.from_file(filename)
 
 
+"""
+The section below generates values to be used for test parametrization.
+"""
+
+_CATIONS = []
+_ANIONS = []
+
+for doc in pyEQL.IonDB.query(criteria={"size.molar_volume": {"$ne": None}}):
+    if doc["charge"] > 0:
+        _CATIONS.append(doc["formula"])
+    elif doc["charge"] < 0:
+        _ANIONS.append(doc["formula"])
+
+_fill_value = _CATIONS[0] if len(_CATIONS) < len(_ANIONS) else _ANIONS[0]
+# These cation-anion pairs include all ions for which molar volumes are available
+_SOLUTES = list(zip_longest(_CATIONS, _ANIONS, fillvalue=_fill_value))
+_FORMULAS_TO_SALTS = {f"{Salt(anion, cation).formula}(aq)": Salt(anion, cation) for anion, cation in _SOLUTES}
+_criteria = {
+    "model_parameters.molar_volume_pitzer.Beta0": {"$ne": None},
+    "charge": 0.0,
+    "formula": {"$in": list(_FORMULAS_TO_SALTS)},
+}
+# These salts include all salts for which Pitzer molar volume parameters are available
+_SALTS = [_FORMULAS_TO_SALTS[doc["formula"]] for doc in pyEQL.IonDB.query(criteria=_criteria)]
+
+
+@pytest.fixture(name="salt", params=_SOLUTES)
+def fixture_salt(request: pytest.FixtureRequest) -> Salt:
+    cation, anion = request.param
+    return Salt(cation=cation, anion=anion)
+
+
 class TestSolutionAdd:
     @staticmethod
     @pytest.fixture(name="salt_conc", params=[0.0, 1.0, 2.0])
@@ -822,3 +858,41 @@ class TestSolutionAdd:
     @staticmethod
     def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
         assert solution.database == solution_sum.database
+
+
+class TestZeroSoluteVolume:
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["ideal"])
+    def test_should_return_zero_solute_volume_for_ideal_engine(solution: Solution) -> None:
+        assert solution._get_solute_volume() == 0.0
+
+
+class TestLinearCombinationSoluteVolume:
+    @staticmethod
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-4, "mol/kg")])
+    def test_should_return_solute_volume_equal_to_linear_combination_of_molar_solute_volumes_for_dilute_solutions(
+        solution: Solution,
+    ) -> None:
+        sum_of_molar_volumes = ureg.Quantity(0.0, "L")
+
+        for solute, component in solution.components.items():
+            if solute != solution.solvent:
+                molar_volume = solution.get_property(solute, "size.molar_volume")
+                sum_of_molar_volumes += ureg.Quantity(component, "mol") * molar_volume
+
+        assert solution._get_solute_volume().m == sum_of_molar_volumes.m
+
+    @staticmethod
+    # TODO: Replace with direct comparison of solute volume to that calculated via using apparent volume from Pitzer
+    @pytest.mark.parametrize("salt", _SALTS)
+    def test_should_use_major_salt_molar_volume_to_calculate_solute_volume(
+        solution: Solution, salt: Salt, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level(logging.DEBUG, logger=solution.logger.name)
+        _ = solution._get_solute_volume()
+        expected_record = (
+            engines.logger.name,
+            logging.DEBUG,
+            f"Updated solution volume using Pitzer model for solute {salt.formula}",
+        )
+        assert expected_record in caplog.record_tuples

@@ -16,6 +16,7 @@ _SOLUTES = [*_SALTS, *_ACIDS, *_BASES]
 _SOLUTES_LITE = [*product(_CATIONS[:2], _ANIONS[1:3]), _ACIDS[0], _BASES[-1]]
 
 
+# Solution Parameterization
 @pytest.fixture(name="salt", params=_SOLUTES)
 def fixture_salt(request: pytest.FixtureRequest) -> Salt:
     cation, anion = request.param
@@ -127,3 +128,22 @@ def fixture_solution(
     database: str | None,
 ) -> pyEQL.Solution:
     return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH, solvent=solvent, engine=engine, database=database)
+
+
+# Model Parameters
+
+
+# Pitzer activity/osmotic coefficient parameter
+@pytest.fixture(name="alphas")
+def fixture_alphas(salt: Salt) -> tuple[float, float]:
+    if salt.z_cation >= 2 and salt.z_anion <= -2:
+        if salt.z_cation >= 3 or salt.z_anion <= -3:
+            alpha1 = 2.0
+            alpha2 = 50.0
+        else:
+            alpha1 = 1.4
+            alpha2 = 12.0
+    else:
+        alpha1 = 2.0
+        alpha2 = 0.0
+    return (alpha1, alpha2)
