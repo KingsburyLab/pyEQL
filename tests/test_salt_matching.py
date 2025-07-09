@@ -216,7 +216,7 @@ def test_should_match_excess_anions_with_protons(
 def test_should_log_warning_for_high_concentrations(
     solution: pyEQL.Solution, use_totals: bool, caplog: pytest.LogCaptureFixture
 ) -> None:
-    caplog.set_level(logging.DEBUG, logger=solution.logger.name)
+    caplog.set_level(logging.WARNING, logger=solution.logger.name)
     _ = solution.get_salt_dict(use_totals=use_totals)
     expected_record = (
         solution.logger.name,
