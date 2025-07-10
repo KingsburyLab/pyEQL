@@ -16,8 +16,10 @@ import numpy as np
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
+from pint import Quantity
 
 import pyEQL
+import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
@@ -813,6 +815,32 @@ def fixture_salt(request: pytest.FixtureRequest) -> Salt:
     return Salt(cation=cation, anion=anion)
 
 
+def _get_solute_volume(
+    ionic_strength: float,
+    conc: Quantity,
+    alphas: tuple[float, float],
+    param: dict[str, dict[str, Quantity]],
+    salt: Salt,
+    temp: str,
+) -> float:
+    return ac.get_apparent_volume_pitzer(
+        ionic_strength,
+        conc,
+        alphas[0],
+        alphas[1],
+        ureg.Quantity(param["Beta0"]["value"]).magnitude,
+        ureg.Quantity(param["Beta1"]["value"]).magnitude,
+        ureg.Quantity(param["Beta2"]["value"]).magnitude,
+        ureg.Quantity(param["Cphi"]["value"]).magnitude,
+        ureg.Quantity(param["V_o"]["value"]).magnitude,
+        salt.z_cation,
+        salt.z_anion,
+        salt.nu_cation,
+        salt.nu_anion,
+        temp,
+    )
+
+
 class TestSolutionAdd:
     @staticmethod
     @pytest.fixture(name="salt_conc", params=[0.0, 1.0, 2.0])
@@ -883,9 +911,8 @@ class TestLinearCombinationSoluteVolume:
         assert solution._get_solute_volume().m == sum_of_molar_volumes.m
 
     @staticmethod
-    # TODO: Replace with direct comparison of solute volume to that calculated via using apparent volume from Pitzer
     @pytest.mark.parametrize("salt", _SALTS)
-    def test_should_use_major_salt_molar_volume_to_calculate_solute_volume(
+    def test_should_log_debug_message_when_using_pitzer_model(
         solution: Solution, salt: Salt, caplog: pytest.LogCaptureFixture
     ) -> None:
         caplog.set_level(logging.DEBUG, logger=solution.logger.name)
@@ -896,3 +923,36 @@ class TestLinearCombinationSoluteVolume:
             f"Updated solution volume using Pitzer model for solute {salt.formula}",
         )
         assert expected_record in caplog.record_tuples
+
+    @staticmethod
+    @pytest.mark.parametrize("salt", _SALTS)
+    @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
+    def test_should_use_major_salt_molar_volume_to_calculate_solute_volume_when_parameters_exist(
+        solution: Solution, salt: Salt, salt_conc: float, salt_conc_units: str, alphas: tuple[float, float], volume: str
+    ) -> None:
+        param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
+        conc = ureg.Quantity(salt_conc, salt_conc_units)
+        molality = (1 / 2) * (salt.nu_cation + salt.nu_anion) * conc
+        expected_solute_volume = (
+            _get_solute_volume(
+                solution.ionic_strength,
+                molality,
+                alphas,
+                param,
+                salt,
+                str(solution.temperature),
+            )
+            * conc
+            * solution.solvent_mass
+        ).to("L")
+        solute_volume_without_protons_and_hydroxide = solution._get_solute_volume().to("L")
+
+        if salt.cation != "H[+1]":
+            solute_volume_without_protons_and_hydroxide -= solution.get_amount("H+", "mol") * solution.get_property(
+                "H+", "size.molar_volume"
+            )
+        if salt.anion != "OH[-1]":
+            solute_volume_without_protons_and_hydroxide -= solution.get_amount("OH-", "mol") * solution.get_property(
+                "OH-", "size.molar_volume"
+            )
+        assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
