@@ -592,8 +592,8 @@ class NativeEOS(EOS):
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if salt.nu_cation >= 2 and salt.nu_anion >= 2:
-                if salt.nu_cation >= 3 or salt.nu_anion >= 3:
+            if salt.z_cation >= 2 and salt.z_anion <= -2:
+                if salt.z_cation >= 3 or salt.z_anion <= -3:
                     alpha1 = 2.0
                     alpha2 = 50.0
                 else:
