@@ -18,6 +18,7 @@ from pyEQL.salt_ion_match import Salt
 
 _ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]", "ClO[-1]", "NO3[-1]", "CO3[-2]", "MnO4[-2]"]
 _CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "K[+1]", "Li[+1]", "Cu[+2]", "Ba[+2]"]
+_SALTS = list(product(_CATIONS[:3], _ANIONS[:3]))
 _CONJUGATE_BASES = [
     ("HCO3[-1]", "CO3[-2]"),
     ("H2PO4[-1]", "PO4[-3]"),
@@ -189,25 +190,23 @@ def test_should_return_empty_dict_for_empty_solution(salt_dict: dict[str, dict[s
     assert not salt_dict
 
 
+@pytest.mark.parametrize("salt", [Salt(c, a) for c, a in _SALTS])
 # This parametrization ensures that hydroxide is most abundant anions and can pair with excess cations
 @pytest.mark.parametrize(("salt_conc", "anion_scale", "pH"), [(0.01, 0.0, 13.0), (0.01, 0.1, 13.0)])
 def test_should_match_excess_cations_with_hydroxide(
     salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
 ) -> None:
     base = Salt(salts[0].cation, "OH[-1]")
-    if base.formula == "HOH":
-        pytest.skip(reason="'HOH' should not appear in salt_dict")
     assert base.formula in salt_dict
 
 
+@pytest.mark.parametrize("salt", [Salt(c, a) for c, a in _SALTS])
 # This parametrization ensures that protons are most abundant cations and can pair with excess anions
 @pytest.mark.parametrize(("salt_conc", "cation_scale", "pH"), [(0.01, 0.0, 1.0), (0.01, 0.1, 1.0)])
 def test_should_match_excess_anions_with_protons(
     salts: list[Salt], salt_dict: dict[str, dict[str, float | Salt]]
 ) -> None:
     acid = Salt("H[+1]", salts[0].anion)
-    if acid.formula == "HOH":
-        pytest.skip(reason="'HOH' should not appear in salt_dict")
     assert acid.formula in salt_dict
 
 
@@ -216,7 +215,7 @@ def test_should_match_excess_anions_with_protons(
 def test_should_log_warning_for_high_concentrations(
     solution: pyEQL.Solution, use_totals: bool, caplog: pytest.LogCaptureFixture
 ) -> None:
-    caplog.set_level(logging.WARNING, logger=solution.logger.name)
+    caplog.set_level(logging.DEBUG, logger=solution.logger.name)
     _ = solution.get_salt_dict(use_totals=use_totals)
     expected_record = (
         solution.logger.name,
@@ -346,8 +345,6 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     ) -> None:
         major_salt, minor_salt = salts
         mixed_salt = Salt(major_salt.cation, minor_salt.anion)
-        if mixed_salt.formula == "HOH":
-            pytest.skip(reason="'HOH' should not appear in salt_dict")
         assert major_salt.formula in salt_dict
         assert mixed_salt.formula in salt_dict
 
