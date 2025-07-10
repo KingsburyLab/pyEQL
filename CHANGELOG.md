@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - DOCS: Sphinx warnings are cleared (#255)
 - `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects
+- Bugs where incorrect $\alpha_1$ and $\alpha_2$ parameters were used to calculate activity
+  coefficients and solute molar volumes for salts with divalent (or greater) ions
 
 ### Changed
 
