@@ -134,3 +134,23 @@ def fixture_solution(
     database: str | None,
 ) -> pyEQL.Solution:
     return pyEQL.Solution(solutes=solutes, volume=volume, pH=pH, solvent=solvent, engine=engine, database=database)
+
+
+# Model Parameters
+
+
+# Pitzer activity/osmotic parameters
+@pytest.fixture(name="alphas")
+def fixture_alphas(salt: Salt) -> tuple[float, float]:
+    if salt.z_cation >= 2 and salt.z_anion <= -2:
+        if salt.z_cation >= 3 or salt.z_anion <= -3:
+            alpha1 = 2.0
+            alpha2 = 50.0
+        else:
+            alpha1 = 1.4
+            alpha2 = 12
+    else:
+        alpha1 = 2.0
+        alpha2 = 0.0
+
+    return alpha1, alpha2
