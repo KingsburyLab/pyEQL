@@ -21,7 +21,7 @@ from pint import Quantity
 
 import pyEQL
 import pyEQL.activity_correction as ac
-from pyEQL import Solution, engines, ureg
+from pyEQL import engines, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
@@ -632,7 +632,7 @@ _SALTS = [_FORMULAS_TO_SALTS[doc["formula"]] for doc in pyEQL.IonDB.query(criter
 
 def _get_activity_coefficient(
     ionic_strength: float,
-    conc: float,
+    conc: Quantity,
     alphas: tuple[float, float],
     param: dict[str, dict[str, Quantity]],
     salt: Salt,

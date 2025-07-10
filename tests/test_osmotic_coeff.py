@@ -55,7 +55,7 @@ def test_osmotic_pressure():
 
 def _get_osmotic_coefficient(
     ionic_strength: float,
-    conc: float,
+    conc: Quantity,
     alphas: tuple[float, float],
     param: dict[str, dict[str, Quantity]],
     salt: Salt,
