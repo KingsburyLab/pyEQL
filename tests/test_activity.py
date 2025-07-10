@@ -719,7 +719,7 @@ class TestActivityPitzer:
     @pytest.mark.parametrize("salt", _SALTS)
     @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
     def test_should_return_activity_coefficient_of_major_salt_when_parameters_exist(
-        solution: Solution, salt: Salt, salt_conc: float, salt_conc_units: str, alphas: tuple[float, float]
+        solution: Solution, salt: Salt, alphas: tuple[float, float]
     ) -> None:
         param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
         expected_osmotic_coefficient = _get_activity_coefficient(
