@@ -1525,8 +1525,9 @@ class Solution(MSONable):
         Args:
             cutoff: Lowest molal concentration to consider. No salts below this value will be included in the output.
                 Useful for excluding analysis of trace anions. Defaults to 1e-3.
-            use_totals: Whether to base the analysis on total element concentrations or individual species
-                concentrations.
+            use_totals: Whether or not to base the analysis on the concentration of the predominant species of each
+                element. Note that species in which a given element assumes a different oxidation state are always
+                treated separately.
 
         Returns:
             dict
@@ -1551,23 +1552,24 @@ class Solution(MSONable):
             ...         'Na[+1]': '1 mol/L',
             ...         'Cl[-1]': '1 mol/L',
             ...         'Ca[+2]': '0.01 mol/kg',
-            ...         'HCO3[-1]': '0.008 mol/kg',
+            ...         'HCO3[-1]': '0.007 mol/kg',
             ...         'CO3[-2]': '0.001 mol/kg',
+            ...         'ClO[-1]': '0.001 mol/kg',
             ...     }
             ... )
             >>> salt_dict = s1.get_salt_dict()
-            >>> list(salt_dict)
-            ['NaCl']
+            >>> list(salt_dict)  # Only returns salts with concentrations > 1e-3 m
+            ['NaCl', 'Ca(HCO3)2']
             >>> salt_dict['NaCl']['salt']
             <pyEQL.salt_ion_match.Salt object at ...>
             >>> salt_dict['NaCl']['mol']
             1.0
             >>> salt_dict = s1.get_salt_dict(cutoff=1e-4)
-            >>> list(salt_dict)
-            ['NaCl', 'Ca(HCO3)2']
+            >>> list(salt_dict)  # Returns 'Ca(ClO)2' because of reduced cutoff and Cl has different oxidation state
+            ['NaCl', 'Ca(HCO3)2', 'Ca(ClO)2']
             >>> salt_dict = s1.get_salt_dict(cutoff=1e-4, use_totals=False)
-            >>> list(salt_dict)
-            ['NaCl', 'Ca(HCO3)2', 'CaCO3']
+            >>> list(salt_dict)  # Returns salts with minor (same oxidation state) species since use_totals=False
+            ['NaCl', 'Ca(HCO3)2', 'CaCO3', 'Ca(ClO)2']
 
         See Also:
             :attr:`components`
