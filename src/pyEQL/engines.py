@@ -6,6 +6,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 """
 
+import copy
 import logging
 import os
 import warnings
@@ -17,7 +18,6 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.salt_ion_match import Salt
 from pyEQL.utils import standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
@@ -215,7 +215,7 @@ class NativeEOS(EOS):
             if bare_el in SPECIAL_ELEMENTS:
                 # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
                 # passing, e.g. 'C(4)' and not 'C(4.0)'
-                key = f'{bare_el}({int(float(el.split("(")[-1].split(")")[0]))})'
+                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
             elif bare_el in ["H", "O"]:
                 continue
             else:
@@ -317,12 +317,9 @@ class NativeEOS(EOS):
         # identify the predominant salt that this ion is a member of
         salt = None
         rform = standardize_formula(solute)
-        for v in solution.get_salt_dict().values():
-            if v == "HOH":
-                continue
-            if rform == v["cation"] or rform == v["anion"]:
-                del v["mol"]
-                salt = Salt.from_dict(v)
+        for d in solution.get_salt_dict().values():
+            if rform == d["salt"].cation or rform == d["salt"].anion:
+                salt = d["salt"]
                 break
 
         # show an error if no salt can be found that contains the solute
@@ -340,8 +337,8 @@ class NativeEOS(EOS):
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if salt.nu_cation >= 2 and salt.nu_anion <= -2:
-                if salt.nu_cation >= 3 or salt.nu_anion <= -3:
+            if salt.z_cation >= 2 and salt.z_anion <= -2:
+                if salt.z_cation >= 3 or salt.z_anion <= -3:
                     alpha1 = 2.0
                     alpha2 = 50.0
                 else:
@@ -513,11 +510,7 @@ class NativeEOS(EOS):
         # coefficint for each, and average them into an effective osmotic
         # coefficient
         for d in solution.get_salt_dict().values():
-            item = Salt(d["cation"], d["anion"])
-            # ignore HOH in the salt list
-            if item.formula == "HOH":
-                continue
-
+            item = d["salt"]
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
@@ -577,7 +570,7 @@ class NativeEOS(EOS):
             return effective_osmotic_sum / molality_sum
         except ZeroDivisionError:
             # this means the solution is empty
-            return 1
+            return ureg.Quantity(1.0)
 
     def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
@@ -587,8 +580,8 @@ class NativeEOS(EOS):
 
         # use the pitzer approach if parameters are available
         pitzer_calc = False
+        param = None if salt is None else solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
 
-        param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
         if param is not None:
             # determine the average molality of the salt
             # this is necessary for solutions inside e.g. an ion exchange
@@ -599,8 +592,8 @@ class NativeEOS(EOS):
             # determine alpha1 and alpha2 based on the type of salt
             # see the May reference for the rules used to determine
             # alpha1 and alpha2 based on charge
-            if salt.nu_cation >= 2 and salt.nu_anion >= 2:
-                if salt.nu_cation >= 3 or salt.nu_anion >= 3:
+            if salt.z_cation >= 2 and salt.z_anion <= -2:
+                if salt.z_cation >= 3 or salt.z_anion <= -3:
                     alpha1 = 2.0
                     alpha2 = 50.0
                 else:
@@ -702,7 +695,6 @@ class NativeEOS(EOS):
     def __deepcopy__(self, memo) -> "NativeEOS":
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
         # is not pickle-able.
-        import copy
 
         cls = self.__class__
         result = cls.__new__(cls)
