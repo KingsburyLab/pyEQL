@@ -90,9 +90,9 @@ def test_single_salt_di() -> None:
     assert s1.get_salt().nu_anion == 1
 
 
-def test_single_salt_di2() -> None:
+def test_single_salt_tri() -> None:
     """
-    test matching a solution with a single divalent salt
+    test matching a solution with a single trivalent salt
     """
     s1 = pyEQL.Solution([["Fe+3", "1 mol/L"], ["Cl-", "3 mol/L"]])
     assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
@@ -100,6 +100,32 @@ def test_single_salt_di2() -> None:
     assert s1.get_salt().cation == "Fe[+3]"
     assert s1.get_salt().anion == "Cl[-1]"
     assert s1.get_salt().nu_cation == 1
+    assert s1.get_salt().nu_anion == 3
+
+
+def test_single_salt_di_tri() -> None:
+    """
+    test matching a solution with a divalent cation and trivalent anion
+    """
+    s1 = pyEQL.Solution([["Ca+2", "3 mol/L"], ["PO4-3", "2 mol/L"]])
+    assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
+    assert s1.get_salt().formula == "Ca3(PO4)2"
+    assert s1.get_salt().cation == "Ca[+2]"
+    assert s1.get_salt().anion == "PO4[-3]"
+    assert s1.get_salt().nu_cation == 3
+    assert s1.get_salt().nu_anion == 2
+
+
+def test_single_salt_tri_di() -> None:
+    """
+    test matching a solution with a trivalent cation and divalent anion
+    """
+    s1 = pyEQL.Solution([["Fe+3", "2 mol/L"], ["SO4[-2]", "3 mol/L"]])
+    assert isinstance(s1.get_salt(), pyEQL.salt_ion_match.Salt)
+    assert s1.get_salt().formula == "Fe2(SO4)3"
+    assert s1.get_salt().cation == "Fe[+3]"
+    assert s1.get_salt().anion == "SO4[-2]"
+    assert s1.get_salt().nu_cation == 2
     assert s1.get_salt().nu_anion == 3
 
 
