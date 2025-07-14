@@ -9,19 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- DOCS/CI: sphinx linkcheck job and tox environment/command (`tox -e links`) (#255)
+- Docs/CI: sphinx linkcheck job and tox environment/command (`tox -e links`) (#255, @ugognw)
+- Docs: add carbonate system tutorial (#204, @NikhilDhruv)
 
 ### Fixed
 
-- DOCS: Sphinx warnings are cleared (#255)
+- `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
+  is within 1 degree of the the reference value (#215, @YitongPan1)
+- Docs: Sphinx warnings are cleared (#255, ugognw)
+- Docs: Minor fixes for private / cached methods (#197, @githubalexliu)
+- Docs: Edit documentation of `debye_parameter_B` (#196, @YitongPan1)
 
 ### Changed
 
 - Support `numpy>2.0`
-- Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (@SuixiongTay, @rkingsbury)
+- Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
-- DOCS: `tox -e docs` command configured to fail on warning (#255)
-- DOCS: ReadTheDocs built with Python 3.11 (#255)
+- Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
+- Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
+- Use `importlib` to locate test files (#241, @SuixiongTay)
 
 ### Removed
 
