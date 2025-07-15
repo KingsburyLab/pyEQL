@@ -10,12 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - DOCS: Sphinx warnings are cleared (#255)
-- `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects
+- `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects (#258)
 - Bugs where incorrect $\alpha_1$ and $\alpha_2$ parameters were used to calculate activity
-  coefficients and solute molar volumes for salts with divalent (or greater) ions
+  coefficients and solute molar volumes for salts with divalent (or greater) ions (#258)
 - calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258)
 - `Solution.get_salt_dict` now respects the `cutoff` parameter (#258)
-  - Note that `cutoff` is interpreted in unites of moles per kilogram of solution
+  - Note that `cutoff` is interpreted in units of moles per kilogram of solution (#258)
 - `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258)
 
 ### Added
