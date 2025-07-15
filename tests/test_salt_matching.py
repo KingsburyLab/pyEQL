@@ -8,7 +8,7 @@ salt_ion_match.py
 
 import logging
 import platform
-from itertools import product
+from itertools import combinations, product
 
 import numpy as np
 import pytest
@@ -25,6 +25,10 @@ _CONJUGATE_BASES = [
 ]
 _CONJUGATE_BASE_PAIRS = [
     ((cation, conjugates[0]), (cation, conjugates[1])) for cation, conjugates in product(_CATIONS[:3], _CONJUGATE_BASES)
+]
+_OXIDATION_STATE_IONS = list(combinations(["Cl[-1]", "ClO[-1]", "ClO2[-1]", "ClO3[-1]", "ClO4[-1]"], r=2))
+_OXIDATION_STATE_PAIRS = [
+    ((cation, anion[0]), (cation, anion[1])) for cation, anion in product(_CATIONS[:3], _OXIDATION_STATE_IONS)
 ]
 
 
@@ -386,10 +390,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
 
     @staticmethod
     @pytest.mark.parametrize("use_totals", [False])
-    @pytest.mark.parametrize(
-        ("solute_pairs"),
-        _CONJUGATE_BASE_PAIRS,
-    )
+    @pytest.mark.parametrize(("solute_pairs"), _CONJUGATE_BASE_PAIRS)
     def test_should_include_salt_for_low_concentration_conjugate_base_when_use_totals_false(
         salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt]
     ) -> None:
@@ -397,10 +398,7 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
         assert all(salts_in_dict)
 
     @staticmethod
-    @pytest.mark.parametrize(
-        ("solute_pairs"),
-        _CONJUGATE_BASE_PAIRS,
-    )
+    @pytest.mark.parametrize(("solute_pairs"), _CONJUGATE_BASE_PAIRS)
     def test_should_not_include_salt_for_low_concentration_conjugate_base_when_use_totals_true(
         salt_dict: dict[str, dict[str, float | Salt]],
         salts: list[Salt],
@@ -416,3 +414,11 @@ class TestGetSaltDictMultipleSalts(TestGetSaltDict):
     def test_should_order_salts_by_amount(salt_dict: dict[str, dict[str, float | Salt]]) -> None:
         salt_amounts = [d["mol"] for d in salt_dict.values()]
         assert salt_amounts == sorted(salt_amounts, reverse=True)
+
+    @staticmethod
+    @pytest.mark.parametrize("solute_pairs", _OXIDATION_STATE_PAIRS)
+    def test_should_match_salts_for_different_oxidation_states_when_use_totals_is_true(
+        salt_dict: dict[str, dict[str, float | Salt]], salts: list[Salt]
+    ) -> None:
+        salts_in_dict = [salt.formula in salt_dict for salt in salts]
+        assert all(salts_in_dict)
