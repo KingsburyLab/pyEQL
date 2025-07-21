@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)
+- bump `pymatgen` to `v2025.1.9`
+- bump `maggma` to `v0.71.4`
 
 ### Removed
 
