@@ -72,6 +72,10 @@ def standardize_formula(formula: str):
     for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789", strict=False):
         formula = formula.replace(char, rep)
 
+    # replace different types of dashes with a minus sign
+    for char in [r"‑", r"‐", r"‒", r"–", r"—"]:  # noqa: RUF001
+        formula = formula.replace(char, "-")
+
     sform = Ion.from_formula(formula).reduced_formula
 
     # TODO - manual formula adjustments. May be implemented upstream in pymatgen in the future

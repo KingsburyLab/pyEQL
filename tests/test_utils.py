@@ -14,6 +14,13 @@ def test_standardize_formula():
     """
     Test formula standardization
     """
+    # test weird hyphens, super/subscripts
+    assert standardize_formula("Mg⁺²") == "Mg[+2]"
+    assert standardize_formula("VO²⁺") == "VO[+2]"
+    assert standardize_formula("SO₄²⁻") == "SO4[-2]"
+    for dash in ["‑", "‐", "‒", "–", "—"]:  # noqa: RUF001
+        assert standardize_formula(f"Cl{dash}") == "Cl[-1]"
+
     assert standardize_formula("H2O") == "H2O(aq)"
     assert standardize_formula("Na+") == "Na[+1]"
     assert standardize_formula("Na[+]") == "Na[+1]"
