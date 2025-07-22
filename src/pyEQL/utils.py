@@ -73,7 +73,7 @@ def standardize_formula(formula: str):
         formula = formula.replace(char, rep)
 
     # replace different types of dashes with a minus sign
-    for char in [r"‑", r"‐", r"‒", r"–", r"—"]:  # noqa: RUF001
+    for char in [r"‑", r"‐", r"‒", r"–", r"—", r"−"]:  # noqa: RUF001
         formula = formula.replace(char, "-")
 
     sform = Ion.from_formula(formula).reduced_formula
