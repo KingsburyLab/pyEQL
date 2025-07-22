@@ -18,7 +18,7 @@ def test_standardize_formula():
     assert standardize_formula("Mg⁺²") == "Mg[+2]"
     assert standardize_formula("VO²⁺") == "VO[+2]"
     assert standardize_formula("SO₄²⁻") == "SO4[-2]"
-    for dash in ["‑", "‐", "‒", "–", "—"]:  # noqa: RUF001
+    for dash in ["‑", "‐", "‒", "–", "—", "−"]:  # noqa: RUF001
         assert standardize_formula(f"Cl{dash}") == "Cl[-1]"
 
     assert standardize_formula("H2O") == "H2O(aq)"
