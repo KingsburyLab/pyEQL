@@ -129,10 +129,10 @@ def adjust_temp_arrhenius(
         TODO - add better reference
 
         .. math::
-            ln(\frac{K2}{K1}) = \frac{E_a}{R} ( \frac{1}{T_{1}} - {\frac{1}{T_2}} )
+            \ln\left((\frac{K_2}{K_1}\right) = \frac{E_a}{R} \left( \frac{1}{T_{1}} - {\frac{1}{T_2}} \right)
 
     References:
-        http://chemwiki.ucdavis.edu/Physical_Chemistry/Kinetics/Reaction_Rates/Temperature_Dependence_of_Reaction_Rates/Arrhenius_Equation
+        https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Physical_Chemistry_(LibreTexts)/28%3A_Chemical_Kinetics_I_-_Rate_Laws/28.07%3A_Rate_Constants_Are_Usually_Strongly_Temperature_Dependent
 
     Examples:
         >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC')) #doctest: +ELLIPSIS
