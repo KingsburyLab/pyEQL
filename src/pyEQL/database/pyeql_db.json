@@ -14891,12 +14891,12 @@
                 "Beta0": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "-0.1179 dimensionless"
+                    "value": "-0.001179 dimensionless"
                 },
                 "Beta1": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "0.6263 dimensionless"
+                    "value": "0.006263 dimensionless"
                 },
                 "Beta2": {
                     "data_type": "fitted",
@@ -14906,7 +14906,7 @@
                 "Cphi": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "0.1473 dimensionless"
+                    "value": "0.001473 dimensionless"
                 },
                 "Max_C": {
                     "data_type": "fitted",
@@ -14916,7 +14916,7 @@
                 "V_o": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "0.32 dimensionless"
+                    "value": "32.0 dimensionless"
                 }
             },
             "viscosity_jones_dole": {
