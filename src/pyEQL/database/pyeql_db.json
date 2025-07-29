@@ -12119,12 +12119,36 @@
                 "d": null
             },
             "molar_volume_pitzer": {
-                "Beta0": null,
-                "Beta1": null,
-                "Beta2": null,
-                "Cphi": null,
-                "Max_C": null,
-                "V_o": null
+                "Beta0": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "0.01764 dimensionless"
+                },
+                "Beta1": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "0.2529 dimensionless"
+                },
+                "Beta2": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "0.0 dimensionless"
+                },
+                "Cphi": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "-0.0001225 dimensionless"
+                },
+                "Max_C": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "5.48 mol/kg"
+                },
+                "V_o": {
+                    "data_type": "fitted",
+                    "reference": "10.1021/je2009329",
+                    "value": "0.498 dimensionless"
+                }
             },
             "viscosity_jones_dole": {
                 "B": null
@@ -14847,127 +14871,6 @@
                 }
             },
             "diffusion_temp_smolyakov": {
-                "a1": null,
-                "a2": null,
-                "d": null
-            },
-            "molar_volume_pitzer": {
-                "Beta0": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "-0.001179 dimensionless"
-                },
-                "Beta1": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.006263 dimensionless"
-                },
-                "Beta2": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.0 dimensionless"
-                },
-                "Cphi": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.001473 dimensionless"
-                },
-                "Max_C": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "1.05 mol/kg"
-                },
-                "V_o": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "32.0 dimensionless"
-                }
-            },
-            "viscosity_jones_dole": {
-                "B": null
-            }
-        },
-        "molecular_weight": "174.2592 g/mol",
-        "n_atoms": 7,
-        "n_elements": 3,
-        "oxi_state_guesses": {
-            "K": 1,
-            "O": -2,
-            "S": 6
-        },
-        "pmg_ion": {
-            "@class": "Ion",
-            "@module": "pymatgen.core.ion",
-            "@version": null,
-            "K": 2,
-            "O": 4,
-            "S": 1,
-            "charge": 0
-        },
-        "size": {
-            "molar_volume": null,
-            "radius_hydrated": null,
-            "radius_ionic": {
-                "data_type": "experimental",
-                "reference": "pymatgen",
-                "value": "None"
-            },
-            "radius_vdw": {
-                "data_type": "experimental",
-                "reference": "pymatgen",
-                "value": "2.75 \u212b"
-            }
-        },
-        "thermo": {
-            "\u0394G_formation": null,
-            "\u0394G_hydration": null
-        },
-        "transport": {
-            "diffusion_coefficient": null
-        }
-    },
-    {
-        "charge": 0,
-        "chemsys": "K-O-S",
-        "elements": [
-            "K",
-            "S",
-            "O"
-        ],
-        "formula": "K2SO4(aq)",
-        "formula_hill": "K2 O4 S",
-        "formula_html": "K<sub>2</sub>SO<sub>4</sub>",
-        "formula_latex": "K$_{2}$SO$_{4}$",
-        "formula_pretty": "K2SO4",
-        "model_parameters": {
-            "activity_pitzer": {
-                "Beta0": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.07424 dimensionless"
-                },
-                "Beta1": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.5188 dimensionless"
-                },
-                "Beta2": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "0.0 dimensionless"
-                },
-                "Cphi": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "-0.01057 dimensionless"
-                },
-                "Max_C": {
-                    "data_type": "fitted",
-                    "reference": "10.1021/je2009329",
-                    "value": "2.0 mol/kg"
-                }
-            },
-            "diffusion_temp_smolyakov": {
                 "a1": {
                     "data_type": "fitted",
                     "reference": "https://doi.org/10.1016/j.cemconres.2017.08.030",
@@ -14988,12 +14891,12 @@
                 "Beta0": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "-0.001179 dimensionless"
+                    "value": "-0.1179 dimensionless"
                 },
                 "Beta1": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "0.006263 dimensionless"
+                    "value": "0.6263 dimensionless"
                 },
                 "Beta2": {
                     "data_type": "fitted",
@@ -15003,7 +14906,7 @@
                 "Cphi": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "0.001473 dimensionless"
+                    "value": "0.1473 dimensionless"
                 },
                 "Max_C": {
                     "data_type": "fitted",
@@ -15013,7 +14916,7 @@
                 "V_o": {
                     "data_type": "fitted",
                     "reference": "10.1021/je2009329",
-                    "value": "32.0 dimensionless"
+                    "value": "0.32 dimensionless"
                 }
             },
             "viscosity_jones_dole": {
