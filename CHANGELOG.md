@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.get_salt_dict` now respects the `cutoff` parameter (#258, ugognw)
   - Note that `cutoff` is interpreted in units of moles per kilogram of solution (#258, ugognw)
 - `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258, ugognw)
+- `standardize_formula`: properly interpret ambiguous dash / hyphen characters as "minus" (#264, @rkingsbury)
 - `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
   is within 1 degree of the the reference value (#215, @YitongPan1)
 - Docs: Sphinx warnings are cleared (#255, ugognw)
@@ -41,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
+- bump `pymatgen` to `v2025.1.9`
+- bump `maggma` to `v0.71.4`
 
 ### Removed
 
