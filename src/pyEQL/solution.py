@@ -59,7 +59,7 @@ class Solution(MSONable):
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
     ) -> None:
-        """
+        r"""
         Instantiate a Solution from a composition.
 
         Args:
@@ -88,26 +88,59 @@ class Solution(MSONable):
                 Negative log of H+ activity. If omitted, the solution will be
                 initialized to pH 7 (neutral) with appropriate quantities of
                 H+ and OH- ions
-            pE: the pE value (redox potential) of the solution.     Lower values = more reducing,
-                higher values = more oxidizing. At pH 7, water is stable between approximately
-                -7 to +14. The default value corresponds to a pE value typical of natural
+            pE: the :math:`pe` value of the solution. :math:`pe` measures the relative abundance of electrons
+                analogous to how pH measures the relative abundance of protons. Specifically, :math:`pe` is defined in
+                terms of the activity of electrons :math:`[e^{-}]`:
+
+                .. math:: pe = - \log [e^{-}]
+
+                The relationship between the redox potential :math:`Eh` and :math:`pe` can be illustrated by considering
+                the general redox reaction,
+
+                .. math::
+
+                    \begin{gather*}
+                        \text{A}^x \pm ne^{-} \longrightarrow \text{A}^{x \mp n} \quad\quad
+                        K = \frac{[\text{A}^{x \mp n}]}{[\text{A}^x][e^{-}]^{\pm n}}
+                    \end{gather*}
+
+                Writing :math:`pe` in terms of the equilibrium constant :math:`K` and the activities,
+                :math:`[\text{A}^{x}]` and :math:`[\text{A}^{x \mp n}]`, we have:
+
+                .. math::
+
+                    \begin{gather*}
+                        pe = -\log[e^{-}] = \mp \frac{1}{n} \log\left(\frac{1}{K} \frac{[\text{A}^{x \mp n}]}{[\text{A}^x]}\right)
+                           = \mp \frac{\Delta G}{nRT \ln 10} = \frac{FEh}{RT \ln 10}
+                    \end{gather*}
+
+                Thus, the redox potential :math:`Eh` is then related to :math:`pe` via:
+
+                .. math:: Eh = 2.303 \frac{RT}{F}pe
+
+                where :math:`F` is Faraday's constant. Note that lower values of ``pE`` (and thus :math:`Eh`)
+                correspond to more reducing environments, while higher values = more oxidizing. At pH 7, water is stable
+                between approximately -7 to +14. The default value corresponds to a :math:`pe` value typical of natural
                 waters in equilibrium with the atmosphere.
             balance_charge: The strategy for balancing charge during init and equilibrium calculations. Valid options
                 are
+
                     - 'pH', which will adjust the solution pH to balance charge,
                     - 'auto' which will use the majority cation or anion (i.e., that with the largest concentration)
-                    as needed,
+                      as needed,
                     - 'pE' (not currently implemented) which will adjust the redox equilibrium to balance charge, or
-                    the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be added/subtracted to balance
-                    charge.
+                      the name of a dissolved species e.g. 'Ca+2' or 'Cl-' that will be added/subtracted to balance
+                      charge.
                     - None (default), in which case no charge balancing will be performed either on init or when
-                    equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
+                      equilibrate() is called. Note that in this case, equilibrate() can distort the charge balance!
+
             solvent: Formula of the solvent. Solvents other than water are not supported at this time.
             engine: Electrolyte modeling engine to use. See documentation for details on the available engines.
             database: path to a .json file (str or Path) or maggma Store instance that
                 contains serialized SoluteDocs. `None` (default) will use the built-in pyEQL database.
             log_level: Log messages of this or higher severity will be printed to stdout. Defaults to 'ERROR', meaning
-                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not. If set to None, nothing will be printed.
+                that ERROR and CRITICAL messages will be shown, while WARNING, INFO, and DEBUG messages are not. If set
+                to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
                 important property calculations including conductivity and transport number, which are related to the
@@ -695,7 +728,7 @@ class Solution(MSONable):
 
         References:
             .. [aq] https://www.aqion.de/site/electrical-conductivity
-            .. [hc] http://www.hydrochemistry.eu/exmpls/sc.html
+            .. [hc] https://www.hydrochemistry.eu/exmpls/sc.html
 
         See Also:
             :py:attr:`ionic_strength`
@@ -894,7 +927,7 @@ class Solution(MSONable):
         Returns The Debye length, in nanometers.
 
         References:
-            .. [wk3] https://en.wikipedia.org/wiki/Debye_length#Debye_length_in_an_electrolyte
+            .. [wk3] https://en.wikipedia.org/wiki/Debye_length#In_an_electrolyte_solution
 
         See Also:
             :attr:`ionic_strength`
@@ -977,7 +1010,7 @@ class Solution(MSONable):
             .. [sata] Sata, Toshikatsu. Ion Exchange Membranes: Preparation, Characterization, and Modification.
                 Royal Society of Chemistry, 2004, p. 10.
 
-            .. [wk] http://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_osmotic_pressure
+            .. [wk] https://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_the_van_'t_Hoff_formula
 
         Examples:
             >>> s1=pyEQL.Solution()
@@ -1873,9 +1906,8 @@ class Solution(MSONable):
             anion, and water).
 
         References:
-            .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:
-            A differential approach.* Elsevier, 2007, pp. 23-37.
-
+            .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:*
+               *A differential approach.* Elsevier, 2007, pp. 23-37.
         """
         E = ureg.Quantity(0, "J")
 
@@ -2109,7 +2141,7 @@ class Solution(MSONable):
 
             2. https://www.hydrochemistry.eu/exmpls/sc.html
 
-            3. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free'
+            3. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with 'free'
                water and a double layer. Cement and Concrete Research 101, 2017.
                https://dx.doi.org/10.1016/j.cemconres.2017.08.030
 
@@ -2166,7 +2198,7 @@ class Solution(MSONable):
 
         References:
             1. https://www.hydrochemistry.eu/exmpls/sc.html
-            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with `free'
+            2. Appelo, C.A.J. Solute transport solved with the Nernst-Planck equation for concrete pores with 'free'
                water and a double layer. Cement and Concrete Research 101, 2017.
                https://dx.doi.org/10.1016/j.cemconres.2017.08.030
             3. CRC Handbook of Chemistry and Physics
@@ -2397,7 +2429,7 @@ class Solution(MSONable):
     def from_preset(
         cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
     ) -> Solution:
-        """Instantiate a solution from a preset composition.
+        r"""Instantiate a solution from a preset composition.
 
         Args:
             preset (str): String representing the desired solution.
@@ -2414,22 +2446,22 @@ class Solution(MSONable):
             The following sections explain the different solution options:
 
             - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [1]_
-            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [2]_
-            - 'urine' - typical human urine. See Table 3-15 of [2]_
-            - 'normal saline' or 'NS' - normal saline solution used in medicine [3]_
-            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [4]_
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [mf08]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [me13]_
+            - 'urine' - typical human urine. See Table 3-15 of [me13]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
 
         References:
-            .. [1] Millero, Frank J. "The composition of Standard Seawater and the definition of
-                   the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
+            .. [mf08] Millero, Frank J. "The composition of Standard Seawater and the definition of
+               the Reference-Composition Salinity Scale." *Deep-sea Research. Part I* 55(1), 2008, 50-72.
 
-            .. [2] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
-                   McGraw-Hill, 2013.
+            .. [me13] Metcalf & Eddy, Inc. et al. *Wastewater Engineering: Treatment and Resource Recovery*, 5th Ed.
+               McGraw-Hill, 2013.
 
-            .. [3] https://en.wikipedia.org/wiki/Saline_(medicine)
+            .. [saline] https://en.wikipedia.org/w/index.php?title=Saline_(medicine)&oldid=1298292693
 
-            .. [4] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+            .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset

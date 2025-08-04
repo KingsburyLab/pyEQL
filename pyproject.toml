@@ -8,7 +8,6 @@ authors =[
 ]
 classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -23,10 +22,10 @@ dependencies = [
         "pint>=0.24.4",
         "numpy>1.26",
         "scipy>=1.12",
-        "pymatgen>=2024.9.10",
+        "pymatgen>=2025.1.9",
         "iapws>=1.5.3",
         "monty>=2024.12.10",
-        "maggma>=0.67.0",
+        "maggma>=0.71.4",
         "phreeqpython>=1.5.2",
     ]
 

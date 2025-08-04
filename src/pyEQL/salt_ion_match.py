@@ -91,7 +91,7 @@ class Salt(MSONable):
     # Mg+2 is converted to monovalent complexes like MgOH+. Hence, the activity coefficients deviate a bit from
     # the published values.
     def get_effective_molality(self, ionic_strength):
-        r"""Calculate the effective molality according to [mistry]_.
+        r"""Calculate the effective molality according to [mistry13]_.
 
         .. math:: 2 I \over (\nu_+ z_+^2 + \nu_- z_- ^2)
 
@@ -103,7 +103,7 @@ class Salt(MSONable):
             Quantity: the effective molality of the salt in the parent solution
 
         References:
-            .. [mistry] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior
+            .. [mistry13] Mistry, K. H.; Hunter, H. a.; Lienhard V, J. H. Effect of composition and nonideal solution behavior
                 on desalination calculations for mixed electrolyte solutions with comparison to seawater. Desalination
                 2013, 318, 34-47.
         """

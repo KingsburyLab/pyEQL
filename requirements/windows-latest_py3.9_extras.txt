@@ -269,7 +269,7 @@ referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.32.3
+requests==2.32.4
     # via
     #   pymatgen
     #   sphinx
@@ -368,7 +368,7 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uncertainties==3.2.2
     # via pymatgen
-urllib3==1.26.20
+urllib3==2.5.0
     # via
     #   botocore
     #   requests
