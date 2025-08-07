@@ -7,13 +7,14 @@ used by pyEQL's Solution class
 """
 
 import copy
-import logging
 import platform
+import logging
 from importlib.resources import files
 
 import numpy as np
 import pytest
 import yaml
+from monty.serialization import dumpfn, loadfn
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -383,7 +384,7 @@ def test_get_el_amt_dict(s6):
 def test_p(s2):
     assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
     assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
-    assert np.isclose(s2.p("Mg++"), 0)
+    assert np.isnan(s2.p("Mg++"))
 
 
 def test_get_amount(s3, s5):
@@ -701,8 +702,6 @@ def test_as_from_dict(s1, s2):
 
 
 def test_serialization(s1, s2, tmp_path):
-    from monty.serialization import dumpfn, loadfn
-
     dumpfn(s1, str(tmp_path / "s1.json"))
     s1_new = loadfn(str(tmp_path / "s1.json"))
     assert s1_new.volume.magnitude == 2
@@ -747,8 +746,6 @@ def test_serialization(s1, s2, tmp_path):
 
 
 def test_from_preset(tmp_path):
-    from monty.serialization import dumpfn
-
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"

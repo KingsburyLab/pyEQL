@@ -173,7 +173,7 @@ class Solution(MSONable):
             self.logger.handlers.clear()
             # use rich for pretty log formatting, if installed
             try:
-                from rich.logging import RichHandler
+                from rich.logging import RichHandler  # noqa: PLC0415
 
                 sh = RichHandler(rich_tracebacks=True)
             except ImportError:
@@ -459,11 +459,11 @@ class Solution(MSONable):
         self.volume_update_required = True
 
     @property
-    def pH(self) -> float | None:
+    def pH(self) -> float:
         """Return the pH of the solution."""
         return self.p("H+", activity=False)
 
-    def p(self, solute: str, activity=True) -> float | None:
+    def p(self, solute: str, activity=True) -> float:
         """
         Return the negative log of the activity of solute.
 
@@ -479,19 +479,18 @@ class Solution(MSONable):
         Returns:
             Quantity
                 The negative log10 of the activity (or molar concentration if
-                activity = False) of the solute.
+                activity = False) of the solute. If the solute has zero concentration
+                then np.nan (not a number) is returned.
         """
         try:
-            # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
-            # Using np.exp raises ZeroDivisionError
-            import math
-
             if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
-        # if the solute has zero concentration, the log will generate a ValueError
-        except ValueError:
-            return 0
+                amt = self.get_activity(solute).magnitude
+            else:
+                amt = self.get_amount(solute, "mol/L").magnitude
+            return float(-1 * np.log10(amt))
+        # if the solute has zero or negative concentration, np.log10 raises a RuntimeWarning
+        except RuntimeWarning:
+            return np.nan
 
     @property
     def density(self) -> Quantity:
@@ -2666,7 +2665,7 @@ class Solution(MSONable):
             places: The number of decimal places to round the solute amounts.
         """
         print(self)
-        str1 = "Activities" if units == "activity" else "Amounts"
+        str1 = "Activities" if units == "activity" else "Concentrations"
         str2 = f" ({units})" if units != "activity" else ""
         header = f"\nComponent {str1}{str2}:"
         print(header)
@@ -2684,7 +2683,7 @@ class Solution(MSONable):
 
             amt = self.get_activity(i).magnitude if units == "activity" else self.get_amount(i, units).magnitude
 
-            print(f"{i}:\t {amt:0.{places}f}")
+            print(f"{i:<12} {amt:0.{places}f}")
 
     def __str__(self) -> str:
         # set output of the print() statement for the solution
@@ -2694,7 +2693,7 @@ class Solution(MSONable):
         l4 = f"pH: {self.pH:.1f}"
         l5 = f"pE: {self.pE:.1f}"
         l6 = f"Solvent: {self.solvent}"
-        l7 = f"Components: {self.list_solutes():}"
+        l7 = f"Components: {self.components.keys():}"
         return f"{l1}\n{l2}\n{l3}\n{l4}\n{l5}\n{l6}\n{l7}"
 
     """

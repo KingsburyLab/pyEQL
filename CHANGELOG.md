@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   if the two are inconsistent, unless the `pH` kwarg is kept at the default value. In that case,
   a warning will be logged.
 - `standardize_formula`: properly interpret ambiguous dash / hyphen characters as "minus" (#264, @rkingsbury)
+- Ensure `Solution.p()` always returns a regular `float` and returns `np.nan` if the
+  concentration is zero or negative (#269, @rkingsbury)
 - `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
   is within 1 degree of the the reference value (#215, @YitongPan1)
 - Tests: literature data used in `test_mixed_electrolyte_activity.py` was updated to reflect
@@ -29,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Ensure more consistent column formatting in `Solution.print()` (#269, @rkingsbury)
+- Switch `math.log10` to `np.log10` in `Solution.p()` (#269, @rkingsbury)
+- update pre-commit configuration (#269, @rkingsbury)
+- use [`--dist loadscope`](https://pytest-xdist.readthedocs.io/en/latest/distribution.html) in parallelized CI tests. Closes #170. (#269, @rkingsbury)
+- update license specification in `pyproject.toml` to conform to [latest packaging standards](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license). Closes #233. (#269, @rkingsbury)
+- add `py.typed` to report type checking to other libraries. Closes #179. (#269, @rkingsbury)
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
