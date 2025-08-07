@@ -282,9 +282,20 @@ class Solution(MSONable):
         self._solutes = solutes
         if self._solutes is None:
             self._solutes = {}
+
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
+                # if user has specified H+ in solutes, check consistency with pH kwarg
+                if standardize_formula(k) == "H[+1]":
+                    # if user has not specified pH (default value), override the pH argument
+                    if self._pH == 7:
+                        self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+                    # if user specifies non-default pH that does not match the supplied H+, raise an error
+                    elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                        raise ValueError(
+                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                        )
         elif isinstance(self._solutes, list):
             msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
@@ -2597,6 +2608,10 @@ class Solution(MSONable):
         )
         # calculate the new pH and pE (before reactions) by mixing
         mix_pH = -np.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
+
+        # now remove H+ and OH- from mix_species to avoid double setting pH
+        mix_species.pop("H[+1]", None)
+        mix_species.pop("OH[-1]", None)
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
