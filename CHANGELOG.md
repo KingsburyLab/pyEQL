@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `standardize_formula`: properly interpret ambiguous dash / hyphen characters as "minus" (#264, @rkingsbury)
 - `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
   is within 1 degree of the the reference value (#215, @YitongPan1)
+- Tests: literature data used in `test_mixed_electrolyte_activity.py` was updated to reflect
+  corrected we recently became aware of. (#271, @Ouriel-N, @rkingsbury)
 - Docs: Sphinx warnings are cleared (#255, ugognw)
 - Docs: Minor fixes for private / cached methods (#197, @githubalexliu)
 - Docs: Edit documentation of `debye_parameter_B` (#196, @YitongPan1)
