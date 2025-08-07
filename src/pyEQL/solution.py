@@ -9,6 +9,7 @@ pyEQL Solution Class.
 from __future__ import annotations
 
 import logging
+import math
 import os
 import warnings
 from functools import lru_cache
@@ -173,7 +174,7 @@ class Solution(MSONable):
             self.logger.handlers.clear()
             # use rich for pretty log formatting, if installed
             try:
-                from rich.logging import RichHandler
+                from rich.logging import RichHandler  # noqa: PLC0415
 
                 sh = RichHandler(rich_tracebacks=True)
             except ImportError:
@@ -473,7 +474,6 @@ class Solution(MSONable):
         try:
             # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
             # Using np.exp raises ZeroDivisionError
-            import math
 
             if activity is True:
                 return -1 * math.log10(self.get_activity(solute))
@@ -2345,12 +2345,12 @@ class Solution(MSONable):
                     ]
                 )
                 self.set_amount("H+", f"{new_hplus} mol/L")
-                self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
+                self.set_amount("OH-", f"{K_W / new_hplus} mol/L")
                 return
 
             z = self.get_property(self._cb_species, "charge")
             try:
-                self.add_amount(self._cb_species, f"{-1*cb/z} mol")
+                self.add_amount(self._cb_species, f"{-1 * cb / z} mol")
                 return
             except ValueError:
                 # if the concentration is negative, it must mean there is not enough present.
@@ -2587,7 +2587,7 @@ class Solution(MSONable):
         for sol2, amt2 in other.components.items():
             if mix_species.get(sol2):
                 orig_amt = float(mix_species[sol2].split(" ")[0])
-                mix_species[sol2] = f"{orig_amt+amt2} mol"
+                mix_species[sol2] = f"{orig_amt + amt2} mol"
             else:
                 mix_species.update({sol2: f"{amt2} mol"})
 
@@ -2651,7 +2651,7 @@ class Solution(MSONable):
             places: The number of decimal places to round the solute amounts.
         """
         print(self)
-        str1 = "Activities" if units == "activity" else "Amounts"
+        str1 = "Activities" if units == "activity" else "Concentrations"
         str2 = f" ({units})" if units != "activity" else ""
         header = f"\nComponent {str1}{str2}:"
         print(header)
@@ -2669,7 +2669,7 @@ class Solution(MSONable):
 
             amt = self.get_activity(i).magnitude if units == "activity" else self.get_amount(i, units).magnitude
 
-            print(f"{i}:\t {amt:0.{places}f}")
+            print(f"{i:<12} {amt:0.{places}f}")
 
     def __str__(self) -> str:
         # set output of the print() statement for the solution
@@ -2679,7 +2679,7 @@ class Solution(MSONable):
         l4 = f"pH: {self.pH:.1f}"
         l5 = f"pE: {self.pE:.1f}"
         l6 = f"Solvent: {self.solvent}"
-        l7 = f"Components: {self.list_solutes():}"
+        l7 = f"Components: {self.components.keys():}"
         return f"{l1}\n{l2}\n{l3}\n{l4}\n{l5}\n{l6}\n{l7}"
 
     """
