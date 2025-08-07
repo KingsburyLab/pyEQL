@@ -16,7 +16,7 @@ classifiers=[
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering",
     ]
-license = {file = "LICENSE"}
+license-files = ["LICEN[CS]E*", "AUTHORS.md"]
 requires-python = ">=3.10"
 dependencies = [
         "pint>=0.24.4",
