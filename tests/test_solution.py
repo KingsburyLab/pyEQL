@@ -7,13 +7,13 @@ used by pyEQL's Solution class
 """
 
 import copy
-import os
 import platform
+from importlib.resources import files
 
 import numpy as np
 import pytest
 import yaml
-from importlib.resources import files
+from monty.serialization import dumpfn, loadfn
 
 from pyEQL import Solution, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
@@ -376,7 +376,7 @@ def test_get_el_amt_dict(s6):
 def test_p(s2):
     assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
     assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
-    assert np.isclose(s2.p("Mg++"), 0)
+    assert np.isnan(s2.p("Mg++"))
 
 
 def test_get_amount(s3, s5):
@@ -570,7 +570,7 @@ def test_conductivity(s1, s2):
 
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
         assert np.isclose(
             s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
         ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
@@ -694,8 +694,6 @@ def test_as_from_dict(s1, s2):
 
 
 def test_serialization(s1, s2, tmp_path):
-    from monty.serialization import dumpfn, loadfn
-
     dumpfn(s1, str(tmp_path / "s1.json"))
     s1_new = loadfn(str(tmp_path / "s1.json"))
     assert s1_new.volume.magnitude == 2
@@ -740,13 +738,11 @@ def test_serialization(s1, s2, tmp_path):
 
 
 def test_from_preset(tmp_path):
-    from monty.serialization import dumpfn
-
     preset_name = "seawater"
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / "seawater.yaml"
-    
-    with open(str(preset_path), "r") as file:
+
+    with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
     assert isinstance(solution, Solution)
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])

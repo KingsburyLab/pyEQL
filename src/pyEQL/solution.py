@@ -9,7 +9,6 @@ pyEQL Solution Class.
 from __future__ import annotations
 
 import logging
-import math
 import os
 import warnings
 from functools import lru_cache
@@ -449,11 +448,11 @@ class Solution(MSONable):
         self.volume_update_required = True
 
     @property
-    def pH(self) -> float | None:
+    def pH(self) -> float:
         """Return the pH of the solution."""
         return self.p("H+", activity=False)
 
-    def p(self, solute: str, activity=True) -> float | None:
+    def p(self, solute: str, activity=True) -> float:
         """
         Return the negative log of the activity of solute.
 
@@ -469,18 +468,18 @@ class Solution(MSONable):
         Returns:
             Quantity
                 The negative log10 of the activity (or molar concentration if
-                activity = False) of the solute.
+                activity = False) of the solute. If the solute has zero concentration
+                then np.nan (not a number) is returned.
         """
         try:
-            # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
-            # Using np.exp raises ZeroDivisionError
-
             if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
-        # if the solute has zero concentration, the log will generate a ValueError
-        except ValueError:
-            return 0
+                amt = self.get_activity(solute).magnitude
+            else:
+                amt = self.get_amount(solute, "mol/L").magnitude
+            return float(-1 * np.log10(amt))
+        # if the solute has zero or negative concentration, np.log10 raises a RuntimeWarning
+        except RuntimeWarning:
+            return np.nan
 
     @property
     def density(self) -> Quantity:
