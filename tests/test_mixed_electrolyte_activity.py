@@ -13,7 +13,15 @@ The Effective Pitzer Model is described in Mistry et al.
 DOI: 10.1016/j.desal.2013.03.015
 
 Experimental data for mixed electrolytes is obtained from Rodil et al.
-DOI: 10.1021/je9004432
+https://doi.org/10.1021/je800389q
+
+The data in the study was later corrected. This test file was updated in August 2025
+with the corrected data.
+https://doi.org/10.1021/je9002674
+
+Note that the methodology used to generate these values has been criticized; see
+https://doi.org/10.1021/je9004432
+
 
 """
 
@@ -55,8 +63,8 @@ class Test_nano3_kno3_activity:
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_75(self):
-        # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
-        # mole fraction of Na+ is 0.75
+        # test the activity coefficient of K+ in mixed NaNO3 and KNO3 when the
+        # mole fraction of K+ is 0.75
         # molality refers to the total nitrate ion molality
         molality = [0.3997, 0.992, 1.584, 2.373]
         expected = [0.582, 0.4523, 0.3827, 0.3138]
@@ -93,8 +101,8 @@ class Test_nano3_kno3_activity:
             assert np.isclose(result, expected[item], RTOL)
 
     def test_activity_K_XNa_50(self):
-        # test the activity coefficient of Na+ in mixed NaNO3 and KNO3 when the
-        # mole fraction of Na+ is 0.50
+        # test the activity coefficient of K+ in mixed NaNO3 and KNO3 when the
+        # mole fraction of K+ is 0.50
         # molality refers to the total nitrate ion molality
         molality = [0.4005, 0.9926, 1.787, 2.384]
         expected = [0.582, 0.4529, 0.3635, 0.3133]
