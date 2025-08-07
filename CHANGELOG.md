@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Solution.__init__`: Raise `ValueError` if a user sets inconsistent `H[+1]` in `solutes` and
+  `pH` keyword arguments (#270, @gnuhpdiem, @rkingsbury). Previously, if the user set `H[+1]` in `solutes`, it's value would silently override the `pH` kwarg. Now, you will get a `ValueError`
+  if the two are inconsistent, unless the `pH` kwarg is kept at the default value. In that case,
+  a warning will be logged.
 - `standardize_formula`: properly interpret ambiguous dash / hyphen characters as "minus" (#264, @rkingsbury)
 - `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
   is within 1 degree of the the reference value (#215, @YitongPan1)
