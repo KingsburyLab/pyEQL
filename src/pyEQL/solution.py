@@ -2572,11 +2572,9 @@ class Solution(MSONable):
             "this property is planned for a future release."
         )
         # calculate the new pH and pE (before reactions) by mixing
-        mix_pH = -np.log10(mix_amounts["H+"] / mix_vol.to("L").magnitude)
-
-        # now remove H+ and OH- from mix_amounts to avoid double setting pH
-        mix_amounts.pop("H[+1]", None)
-        mix_amounts.pop("OH[-1]", None)
+        # for pH, we make sure to conserve the mass of H+ and OH-. By not passing
+        # a kwarg for pH (i.e., by using the default value), the H+ concentration
+        # will override and determine the pH value of the mixed solution.
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
@@ -2590,7 +2588,7 @@ class Solution(MSONable):
             volume=str(mix_vol),
             pressure=str(mix_pressure),
             temperature=str(mix_temperature.to("K")),
-            pH=mix_pH,
+            # pH=7, # leave at default value so that H+ concentration determines pH
             pE=mix_pE,
             engine=self._engine,
             solvent=self.solvent,
