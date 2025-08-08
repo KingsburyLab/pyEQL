@@ -7,8 +7,8 @@ used by pyEQL's Solution class
 """
 
 import copy
-import platform
 import logging
+import platform
 from importlib.resources import files
 
 import numpy as np

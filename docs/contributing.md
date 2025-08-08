@@ -128,7 +128,7 @@ Please abide by the following guidelines when contributing code to `pyEQL`:
 
 ## Documentation
 
-Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Materials for Sphinx](https://bashtage.github.io/sphinx-material/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to `http://localhost:8000/` so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
+Improvements to the documentation are most welcome! Our documentation system uses `sphinx` with the [Sphinx-Immaterial](https://jbms.github.io/sphinx-immaterial/) theme. To edit the documentation locally, run `tox -e autodocs` from the repository root directory. This will serve the documents to `http://localhost:8000/` so you can view them in your web browser. When you make changes to the files in the `docs/` directory, the documentation will automatically rebuild and update in your browser (you might have to refresh the page to see changes).
 
 ## Changelog
 
