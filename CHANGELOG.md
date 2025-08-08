@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
+- Docs: `sphinx-material` theme migrated to `sphinx-immaterial` (#2xX, @ugognw, @rkingsbury)
 - Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)

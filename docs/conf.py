@@ -47,6 +47,7 @@ templates_path = ["_templates"]
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "sphinx_immaterial",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
@@ -166,7 +167,7 @@ todo_emit_warnings = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_material"
+html_theme = "sphinx_immaterial"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -174,16 +175,12 @@ html_theme = "sphinx_material"
 html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
-    "base_url": "https://pyeql.readthedocs.io/en/latest/",
+    "site_url": "https://pyeql.readthedocs.io/en/latest/",
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
-    "html_minify": True,
-    "css_minify": True,
-    "nav_title": "pyEQL: a python interface for water chemistry",
-    "color_primary": "blue",
-    "color_accent": "light-blue",
-    "globaltoc_depth": 2,
+    "toc_title": "pyEQL: a python interface for water chemistry",
+    "palette": { "primary": "blue", "accent": "light-blue" },
     "globaltoc_collapse": True,
 }
 html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
