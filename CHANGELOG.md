@@ -9,13 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects (#258, ugognw)
-- Bugs where incorrect $\alpha_1$ and $\alpha_2$ parameters were used to calculate activity
-  coefficients and solute molar volumes for salts with divalent (or greater) ions (#258, ugognw)
-- calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258, ugognw)
-- `Solution.get_salt_dict` now respects the `cutoff` parameter (#258, ugognw)
-  - Note that `cutoff` is interpreted in units of moles per kilogram of solution (#258, ugognw)
-- `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258, ugognw)
+- `Solution.__add__`: engine, solvent, database were not inherited by the sum of `Solution`
+  objects (#258, @ugognw)
+- `Solution.get_activity_coefficient`: Fixed bugs where incorrect Pitzer scaling parameters $\alpha_1$
+  and $\alpha_2$ parameters were used to calculate activity coefficients and solute molar volumes for salts with multivalent ions (#258, @ugognw)
+- `Solution.get_salt_dict`: fixed errors in the calculation of concentrations for salts
+  containing polyvalent cations (#258, @ugognw)
+- `Solution.get_salt_dict` now respects the `cutoff` parameter. Note that `cutoff`
+  is now interpreted in units of moles per kilogram of solution (#258, @ugognw)
+- `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258, @ugognw)
 - `Solution.__init__`: Raise `ValueError` if a user sets inconsistent `H[+1]` in `solutes` and
   `pH` keyword arguments (#270, @gnuhpdiem, @rkingsbury). Previously, if the user set `H[+1]` in `solutes`, it's value would silently override the `pH` kwarg. Now, you will get a `ValueError`
   if the two are inconsistent, unless the `pH` kwarg is kept at the default value. In that case,
@@ -41,9 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING** - the return value of `Solution.get_salt_dict` now includes `Salt` objects instead of keys corresponding
   to `cation` and `anion`. See the example in the docstring for how to adapt existing code to accommodate this
   change. (#258, @ugognw)
-- **BREAKING** - `Solution.get_salt_dict` no longer returns an entry for water (#258)
+- **BREAKING** - `Solution.get_salt_dict` no longer returns an entry for water (#258, @ugognw)
 - **BREAKING** - `Solution.get_salt` will not return water and may return `None` if no salt is present.
-  Previously, `Solution.get_salt` would have returned a `Salt` representing water. (#258)
+  Previously, `Solution.get_salt` would have returned a `Salt` representing water. (#258, @ugognw)
 - Ensure more consistent column formatting in `Solution.print()` (#269, @rkingsbury)
 - Switch `math.log10` to `np.log10` in `Solution.p()` (#269, @rkingsbury)
 - update pre-commit configuration (#269, @rkingsbury)
@@ -53,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
-- Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
+- Docs: `tox -e docs` command configured to fail on warning (#255, @ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)
 - Support `numpy>2.0`

@@ -1523,7 +1523,7 @@ class Solution(MSONable):
             return None
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 1e-3, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
+    def get_salt_dict(self, cutoff: float = 1e-6, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
         """
         Returns a dict that represents the salts of the Solution by pairing anions and cations.
 
@@ -1534,7 +1534,7 @@ class Solution(MSONable):
 
         Args:
             cutoff: Lowest molal concentration to consider. No salts below this value will be included in the output.
-                Useful for excluding analysis of trace anions. Defaults to 1e-3.
+                Useful for excluding analysis of trace anions. Defaults to 1e-6 (1 part per million).
             use_totals: Whether or not to base the analysis on the concentration of the predominant species of each
                 element. Note that species in which a given element assumes a different oxidation state are always
                 treated separately.
@@ -1634,6 +1634,8 @@ class Solution(MSONable):
         cation_list = [[k, v] for k, v in cation_equiv.items()]
         anion_list = [[k, v] for k, v in anion_equiv.items()]
         solvent_mass = self.solvent_mass.to("kg").m
+        # tolerance for detecting edge cases where equilibrate() slightly changes the
+        # total amount of a solute
         _atol = 1e-16
 
         while index_cat < len_cat and index_an < len_an:
@@ -2562,7 +2564,6 @@ class Solution(MSONable):
 
         # retrieve the amount of each component in the parent solution and
         # store in a list.
-
         mix_amounts = FormulaDict({})
         for sol, amt in [*self.components.items(), *other.components.items()]:
             mix_amounts[sol] = amt + mix_amounts.get(sol, 0.0)
@@ -2573,11 +2574,9 @@ class Solution(MSONable):
             "this property is planned for a future release."
         )
         # calculate the new pH and pE (before reactions) by mixing
-        mix_pH = -np.log10(mix_amounts["H+"] / mix_vol.to("L").magnitude)
-
-        # now remove H+ and OH- from mix_amounts to avoid double setting pH
-        mix_amounts.pop("H[+1]", None)
-        mix_amounts.pop("OH[-1]", None)
+        # for pH, we make sure to conserve the mass of H+ and OH-. By not passing
+        # a kwarg for pH (i.e., by using the default value), the H+ concentration
+        # will override and determine the pH value of the mixed solution.
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
@@ -2591,7 +2590,7 @@ class Solution(MSONable):
             volume=str(mix_vol),
             pressure=str(mix_pressure),
             temperature=str(mix_temperature.to("K")),
-            pH=mix_pH,
+            # pH=7, # leave at default value so that H+ concentration determines pH
             pE=mix_pE,
             engine=self._engine,
             solvent=self.solvent,
