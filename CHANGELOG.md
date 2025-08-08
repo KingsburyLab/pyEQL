@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **BREAKING** Methods previously marked for deprecation - `list_solutes`, `list_activities`,
+  `list_concentrations`, `list_salts` have been removed.
 - `Solution.add_solvent` has been marked for deprecation and will be removed in a future
   release. Use `add_solute` instead.
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)

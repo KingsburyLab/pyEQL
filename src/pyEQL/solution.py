@@ -382,13 +382,6 @@ class Solution(MSONable):
             >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
             >>> print(mysol.volume)
             0.5000883925072983 l
-            >>> mysol.list_concentrations()
-            {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
-            >>> mysol.volume = '200 mL')
-            >>> print(mysol.volume)
-            0.2 l
-            >>> mysol.list_concentrations()
-            {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
 
         """
         # figure out the factor to multiply the old concentrations by
@@ -2689,94 +2682,3 @@ class Solution(MSONable):
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
-
-    @deprecated(
-        message="list_salts() is deprecated and will be removed in the next release! Use Solution.get_salt_dict() instead.)"
-    )
-    def list_salts(self, unit="mol/kg", decimals=4):  # pragma: no cover
-        for k, v in self.get_salt_dict().items():
-            print(k + "\t {:0.{decimals}f}".format(v, decimals=decimals))
-
-    @deprecated(
-        message="list_solutes() is deprecated and will be removed in the next release! Use Solution.components.keys() instead.)"
-    )
-    def list_solutes(self):  # pragma: no cover
-        """List all the solutes in the solution."""
-        return list(self.components.keys())
-
-    @deprecated(
-        message="list_concentrations() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
-    )
-    def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):  # pragma: no cover
-        """
-        List the concentration of each species in a solution.
-
-        Parameters
-        ----------
-        unit: str
-            String representing the desired concentration ureg.
-        decimals: int
-            The number of decimal places to display. Defaults to 4.
-        type     : str
-            The type of component to be sorted. Defaults to 'all' for all
-            solutes. Other valid arguments are 'cations' and 'anions' which
-            return lists of cations and anions, respectively.
-
-        Returns:
-        -------
-        dict
-            Dictionary containing a list of the species in solution paired with their amount in the specified units
-        :meta private:
-        """
-        result_list = []
-        # populate a list with component names
-
-        if type == "all":
-            print("Component Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                amount = self.get_amount(item, unit)
-                result_list.append([item, amount])
-                print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-        elif type == "cations":
-            print("Cation Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                if self.components[item].charge > 0:
-                    amount = self.get_amount(item, unit)
-                    result_list.append([item, amount])
-                    print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-        elif type == "anions":
-            print("Anion Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                if self.components[item].charge < 0:
-                    amount = self.get_amount(item, unit)
-                    result_list.append([item, amount])
-                    print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-
-        return result_list
-
-    @deprecated(
-        message="list_activities() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
-    )
-    def list_activities(self, decimals=4):  # pragma: no cover
-        """
-        List the activity of each species in a solution.
-
-        Parameters
-        ----------
-        decimals: int
-            The number of decimal places to display. Defaults to 4.
-
-        Returns:
-        -------
-        dict
-            Dictionary containing a list of the species in solution paired with their activity
-
-        :meta private:
-        """
-        print("Component Activities:\n")
-        print("=====================\n")
-        for i in self.components:
-            print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
