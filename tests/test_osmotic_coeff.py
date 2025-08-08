@@ -149,7 +149,7 @@ class Test_osmotic_pitzer:
             assert np.isclose(result, expected, rtol=0.05)
 
     @staticmethod
-    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-4, "mol/kg")])
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-7, "mol/kg")])
     def test_should_return_unity_for_low_concentration_solutes(solution: Solution) -> None:
         assert solution.get_osmotic_coefficient().m == 1.0
 

@@ -18,5 +18,4 @@ Other contributors, listed alphabetically, are:
 - Andrew Rosen (@arosen93)
 - Sui Xiong Tay (@SuixiongTay)
 
-
 (If you think that your name belongs here, please let the maintainer know)

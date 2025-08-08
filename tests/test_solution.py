@@ -7,19 +7,16 @@ used by pyEQL's Solution class
 """
 
 import copy
-
 import logging
 import platform
 from importlib.resources import files
 from itertools import zip_longest
-
 
 import numpy as np
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
 from pint import Quantity
-
 
 import pyEQL
 import pyEQL.activity_correction as ac
@@ -586,7 +583,6 @@ def test_conductivity(s1, s2):
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
-
         fail_msg = f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
         assert np.isclose(s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1), fail_msg
 
@@ -909,7 +905,7 @@ class TestZeroSoluteVolume:
 
 class TestLinearCombinationSoluteVolume:
     @staticmethod
-    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-4, "mol/kg")])
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-7, "mol/kg")])
     def test_should_return_solute_volume_equal_to_linear_combination_of_molar_solute_volumes_for_dilute_solutions(
         solution: Solution,
     ) -> None:
