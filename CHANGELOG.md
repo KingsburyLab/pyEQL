@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.3.0] - 2025-08-08
 
 ### Fixed
 
@@ -66,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **BREAKING** Methods previously marked for deprecation - `list_solutes`, `list_activities`,
+  `list_concentrations`, `list_salts` have been removed.
+- `Solution.add_solvent` has been marked for deprecation and will be removed in a future
+  release. Use `add_solute` instead.
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
 - `Solution.list_salts` (use `Solution.get_salt_dict()` instead) (#258)
 
