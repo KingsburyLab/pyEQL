@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `Solution.add_solvent` has been marked for deprecation and will be removed in a future
+  release. Use `add_solute` instead.
 - Python 3.9 version classifier in pyproject.toml (#247, @ugognw)
 
 ## [1.2.0] - 2024-09-24

@@ -261,15 +261,6 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # TODO - do I need the ability to specify the solvent mass?
-        # # raise an error if the solvent volume has also been given
-        # if volume_set is True:
-        #     self.logger.error(
-        #         "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
-        #     )
-        # # add the solvent and the mass
-        # self.add_solvent(self.solvent, kwargs["solvent"][1])
-
         # calculate the moles of solvent (water) on the density and the solution volume
         moles = self.volume.magnitude / 55.55  # molarity of pure water
         self.components["H2O"] = moles
@@ -1304,15 +1295,6 @@ class Solution(MSONable):
                 return
             # set the volume recalculation flag
             self.volume_update_required = True
-
-    # TODO - deprecate this method. Solvent should be added to the dict like anything else
-    # and solvent_name will track which component it is.
-    def add_solvent(self, formula: str, amount: str):
-        """Same as add_solute but omits the need to pass solvent mass to pint."""
-        quantity = ureg.Quantity(amount)
-        mw = self.get_property(formula, "molecular_weight")
-        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
-        self.components[formula] = target_mol.to("moles").magnitude
 
     def add_amount(self, solute: str, amount: str):
         """
@@ -2699,6 +2681,14 @@ class Solution(MSONable):
     """
     Legacy methods to be deprecated in a future release.
     """
+
+    @deprecated(message="add_solute() is deprecated. Use add_amount() instead.")
+    def add_solvent(self, formula: str, amount: str):  # pragma: no cover
+        """Same as add_solute but omits the need to pass solvent mass to pint."""
+        quantity = ureg.Quantity(amount)
+        mw = self.get_property(formula, "molecular_weight")
+        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+        self.components[formula] = target_mol.to("moles").magnitude
 
     @deprecated(
         message="list_salts() is deprecated and will be removed in the next release! Use Solution.get_salt_dict() instead.)"
