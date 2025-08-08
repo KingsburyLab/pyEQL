@@ -7,17 +7,25 @@ used by pyEQL's Solution class
 """
 
 import copy
-import platform
+
 import logging
+import platform
 from importlib.resources import files
+from itertools import zip_longest
+
 
 import numpy as np
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
+from pint import Quantity
 
-from pyEQL import Solution, ureg
+
+import pyEQL
+import pyEQL.activity_correction as ac
+from pyEQL import Solution, engines, ureg
 from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
 
@@ -568,9 +576,8 @@ def test_conductivity(s1, s2):
     # nacl
     for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
-        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        fail_msg = f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5), fail_msg
 
     # higher concentration data points from Appelo, 2017 Figure 4.
     s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
@@ -579,9 +586,9 @@ def test_conductivity(s1, s2):
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
-        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+
+        fail_msg = f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1), fail_msg
 
     # per CRC handbook "standard KCl solutions for calibrating conductivity cells", 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
     s_kcl = Solution({"K+": "0.1 mol/kg", "Cl-": "0.1 mol/kg"})
@@ -786,3 +793,178 @@ def test_to_from_file(tmp_path):
         s1.to_file(filename)
     with pytest.raises(FileNotFoundError, match=r"File .* not found!"):
         Solution.from_file(filename)
+
+
+"""
+The section below generates values to be used for test parametrization.
+"""
+
+_CATIONS = []
+_ANIONS = []
+
+for doc in pyEQL.IonDB.query(criteria={"size.molar_volume": {"$ne": None}}):
+    if doc["charge"] > 0:
+        _CATIONS.append(doc["formula"])
+    elif doc["charge"] < 0:
+        _ANIONS.append(doc["formula"])
+
+_fill_value = _CATIONS[0] if len(_CATIONS) < len(_ANIONS) else _ANIONS[0]
+# These cation-anion pairs include all ions for which molar volumes are available
+_SOLUTES = list(zip_longest(_CATIONS, _ANIONS, fillvalue=_fill_value))
+_FORMULAS_TO_SALTS = {f"{Salt(anion, cation).formula}(aq)": Salt(anion, cation) for anion, cation in _SOLUTES}
+_criteria = {
+    "model_parameters.molar_volume_pitzer.Beta0": {"$ne": None},
+    "charge": 0.0,
+    "formula": {"$in": list(_FORMULAS_TO_SALTS)},
+}
+# These salts include all salts for which Pitzer molar volume parameters are available
+_SALTS = [_FORMULAS_TO_SALTS[doc["formula"]] for doc in pyEQL.IonDB.query(criteria=_criteria)]
+
+
+@pytest.fixture(name="salt", params=_SOLUTES)
+def fixture_salt(request: pytest.FixtureRequest) -> Salt:
+    cation, anion = request.param
+    return Salt(cation=cation, anion=anion)
+
+
+def _get_solute_volume(
+    ionic_strength: float,
+    conc: Quantity,
+    alphas: tuple[float, float],
+    param: dict[str, dict[str, Quantity]],
+    salt: Salt,
+    temp: str,
+) -> float:
+    return ac.get_apparent_volume_pitzer(
+        ionic_strength,
+        conc,
+        alphas[0],
+        alphas[1],
+        ureg.Quantity(param["Beta0"]["value"]).magnitude,
+        ureg.Quantity(param["Beta1"]["value"]).magnitude,
+        ureg.Quantity(param["Beta2"]["value"]).magnitude,
+        ureg.Quantity(param["Cphi"]["value"]).magnitude,
+        ureg.Quantity(param["V_o"]["value"]).magnitude,
+        salt.z_cation,
+        salt.z_anion,
+        salt.nu_cation,
+        salt.nu_anion,
+        temp,
+    )
+
+
+class TestSolutionAdd:
+    @staticmethod
+    @pytest.fixture(name="salt_conc", params=[0.0, 1.0, 2.0])
+    def fixture_salt_conc(request: pytest.FixtureRequest) -> float:
+        return float(request.param)
+
+    @staticmethod
+    @pytest.fixture(name="engine", params=["ideal", "native", "phreeqc"])
+    def fixture_engine(request: pytest.FixtureRequest) -> str:
+        return str(request.param)
+
+    @staticmethod
+    @pytest.fixture(name="solution_sum")
+    def fixture_solution_sum(solution: Solution) -> Solution:
+        return solution + solution
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["ideal"])
+    def test_should_conserve_volume_with_ideal_engine(solution: Solution, solution_sum: Solution) -> None:
+        assert np.isclose(solution_sum.volume.m, 2 * solution.volume.m)
+
+    @staticmethod
+    def test_should_preserve_engine_when_adding_solutions(solution: Solution, solution_sum: Solution) -> None:
+        assert solution._engine == solution_sum._engine
+
+    @staticmethod
+    def test_should_preserve_the_number_of_moles_when_adding_solutions(
+        solution: Solution, solution_sum: Solution
+    ) -> None:
+        moles_conserved = []
+        for component, moles in solution.components.items():
+            moles_conserved.append(solution_sum.components[component] == 2 * moles)
+        assert all(moles_conserved)
+
+    @staticmethod
+    def test_should_add_all_components_to_new_solution(solution: Solution, solution_sum: Solution) -> None:
+        assert sorted(solution.components) == sorted(solution_sum.components)
+
+    @staticmethod
+    def test_should_preserve_solution_solvent(solution: Solution, solution_sum: Solution) -> None:
+        assert solution.solvent == solution_sum.solvent
+
+    @staticmethod
+    def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
+        assert solution.database == solution_sum.database
+
+
+class TestZeroSoluteVolume:
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["ideal"])
+    def test_should_return_zero_solute_volume_for_ideal_engine(solution: Solution) -> None:
+        assert solution._get_solute_volume() == 0.0
+
+
+class TestLinearCombinationSoluteVolume:
+    @staticmethod
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-4, "mol/kg")])
+    def test_should_return_solute_volume_equal_to_linear_combination_of_molar_solute_volumes_for_dilute_solutions(
+        solution: Solution,
+    ) -> None:
+        sum_of_molar_volumes = ureg.Quantity(0.0, "L")
+
+        for solute, component in solution.components.items():
+            if solute != solution.solvent:
+                molar_volume = solution.get_property(solute, "size.molar_volume")
+                sum_of_molar_volumes += ureg.Quantity(component, "mol") * molar_volume
+
+        assert solution._get_solute_volume().m == sum_of_molar_volumes.m
+
+    @staticmethod
+    @pytest.mark.parametrize("salt", _SALTS)
+    def test_should_log_debug_message_when_using_pitzer_model(
+        solution: Solution, salt: Salt, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level(logging.DEBUG, logger=solution.logger.name)
+        _ = solution._get_solute_volume()
+        expected_record = (
+            engines.logger.name,
+            logging.DEBUG,
+            f"Updated solution volume using Pitzer model for solute {salt.formula}",
+        )
+        assert expected_record in caplog.record_tuples
+
+    @staticmethod
+    @pytest.mark.parametrize("salt", _SALTS)
+    @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
+    def test_should_use_major_salt_molar_volume_to_calculate_solute_volume_when_parameters_exist(
+        solution: Solution, salt: Salt, salt_conc: float, salt_conc_units: str, alphas: tuple[float, float], volume: str
+    ) -> None:
+        param = solution.get_property(salt.formula, "model_parameters.molar_volume_pitzer")
+        conc = ureg.Quantity(salt_conc, salt_conc_units)
+        molality = (1 / 2) * (salt.nu_cation + salt.nu_anion) * conc
+        expected_solute_volume = (
+            _get_solute_volume(
+                solution.ionic_strength,
+                molality,
+                alphas,
+                param,
+                salt,
+                str(solution.temperature),
+            )
+            * conc
+            * solution.solvent_mass
+        ).to("L")
+        solute_volume_without_protons_and_hydroxide = solution._get_solute_volume().to("L")
+
+        if salt.cation != "H[+1]":
+            solute_volume_without_protons_and_hydroxide -= solution.get_amount("H+", "mol") * solution.get_property(
+                "H+", "size.molar_volume"
+            )
+        if salt.anion != "OH[-1]":
+            solute_volume_without_protons_and_hydroxide -= solution.get_amount("OH-", "mol") * solution.get_property(
+                "OH-", "size.molar_volume"
+            )
+        assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
