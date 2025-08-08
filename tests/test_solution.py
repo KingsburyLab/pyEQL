@@ -905,7 +905,7 @@ class TestZeroSoluteVolume:
 
 class TestLinearCombinationSoluteVolume:
     @staticmethod
-    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-4, "mol/kg")])
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-7, "mol/kg")])
     def test_should_return_solute_volume_equal_to_linear_combination_of_molar_solute_volumes_for_dilute_solutions(
         solution: Solution,
     ) -> None:
