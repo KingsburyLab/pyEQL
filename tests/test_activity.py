@@ -668,7 +668,7 @@ class TestUnitActivity:
         assert all(activity_coefficients_unity)
 
     @staticmethod
-    @pytest.mark.parametrize(("salt_conc_units", "salt_conc", "engine"), [("mol/kg", 1e-4, "native")])
+    @pytest.mark.parametrize(("salt_conc_units", "salt_conc", "engine"), [("mol/kg", 1e-7, "native")])
     def test_should_return_unit_activity_for_all_solutes_when_salt_concentration_below_cutoff(
         solution: Solution, salt_conc_units: str, salt_conc: float, engine: str
     ) -> None:
@@ -682,7 +682,7 @@ class TestUnitActivity:
 
     @staticmethod
     @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
-    @pytest.mark.parametrize("salt_conc", [1e-4])
+    @pytest.mark.parametrize("salt_conc", [1e-7])
     @pytest.mark.parametrize("engine", ["native"])
     def test_should_log_error_when_no_salt_found_for_native_eos(
         solution: Solution, caplog: pytest.LogCaptureFixture
