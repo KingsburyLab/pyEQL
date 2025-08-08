@@ -6,6 +6,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 """
 
+import copy
 import logging
 import os
 import warnings
@@ -215,7 +216,7 @@ class NativeEOS(EOS):
             if bare_el in SPECIAL_ELEMENTS:
                 # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
                 # passing, e.g. 'C(4)' and not 'C(4.0)'
-                key = f'{bare_el}({int(float(el.split("(")[-1].split(")")[0]))})'
+                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
             elif bare_el in ["H", "O"]:
                 continue
             else:
@@ -702,7 +703,6 @@ class NativeEOS(EOS):
     def __deepcopy__(self, memo) -> "NativeEOS":
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
         # is not pickle-able.
-        import copy
 
         cls = self.__class__
         result = cls.__new__(cls)

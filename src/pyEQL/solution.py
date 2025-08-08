@@ -18,7 +18,6 @@ from typing import Any, Literal
 
 import numpy as np
 from maggma.stores import JSONStore, Store
-from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
 from monty.serialization import dumpfn, loadfn
 from pint import DimensionalityError, Quantity
