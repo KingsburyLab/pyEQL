@@ -16,9 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.get_salt_dict` now respects the `cutoff` parameter (#258, ugognw)
   - Note that `cutoff` is interpreted in units of moles per kilogram of solution (#258, ugognw)
 - `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258, ugognw)
+- `Solution.__init__`: Raise `ValueError` if a user sets inconsistent `H[+1]` in `solutes` and
+  `pH` keyword arguments (#270, @gnuhpdiem, @rkingsbury). Previously, if the user set `H[+1]` in `solutes`, it's value would silently override the `pH` kwarg. Now, you will get a `ValueError`
+  if the two are inconsistent, unless the `pH` kwarg is kept at the default value. In that case,
+  a warning will be logged.
 - `standardize_formula`: properly interpret ambiguous dash / hyphen characters as "minus" (#264, @rkingsbury)
+- Ensure `Solution.p()` always returns a regular `float` and returns `np.nan` if the
+  concentration is zero or negative (#269, @rkingsbury)
 - `Solution.get_diffusion_coefficient`: prevent diffusion coefficient adjustment when temperature
   is within 1 degree of the the reference value (#215, @YitongPan1)
+- Tests: literature data used in `test_mixed_electrolyte_activity.py` was updated to reflect
+  corrected we recently became aware of. (#271, @Ouriel-N, @rkingsbury)
 - Docs: Sphinx warnings are cleared (#255, ugognw)
 - Docs: Minor fixes for private / cached methods (#197, @githubalexliu)
 - Docs: Edit documentation of `debye_parameter_B` (#196, @YitongPan1)
@@ -36,6 +44,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING** - `Solution.get_salt_dict` no longer returns an entry for water (#258)
 - **BREAKING** - `Solution.get_salt` will not return water and may return `None` if no salt is present.
   Previously, `Solution.get_salt` would have returned a `Salt` representing water. (#258)
+- Ensure more consistent column formatting in `Solution.print()` (#269, @rkingsbury)
+- Switch `math.log10` to `np.log10` in `Solution.p()` (#269, @rkingsbury)
+- update pre-commit configuration (#269, @rkingsbury)
+- use [`--dist loadscope`](https://pytest-xdist.readthedocs.io/en/latest/distribution.html) in parallelized CI tests. Closes #170. (#269, @rkingsbury)
+- update license specification in `pyproject.toml` to conform to [latest packaging standards](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license). Closes #233. (#269, @rkingsbury)
+- add `py.typed` to report type checking to other libraries. Closes #179. (#269, @rkingsbury)
+- Support `numpy>2.0`
+- Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
+- CI: add `python` `v3.13` to post-merge unit tests
 - Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)

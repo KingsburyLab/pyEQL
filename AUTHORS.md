@@ -10,6 +10,7 @@ Other contributors, listed alphabetically, are:
 - Dhruv Duseja (@DhruvDuseja)
 - @githubalexliu
 - Hernan Grecco (@hgrecco)
+- @Ouriel Ndalamba (@Ouriel-N)
 - Ugo Nwosu (@ugognw)
 - Yitong Pan (@YitongPan1)
 - Jaebeom Park (@Jaebeom-P)

@@ -7,16 +7,19 @@ used by pyEQL's Solution class
 """
 
 import copy
+
 import logging
 import platform
 from importlib.resources import files
 from itertools import zip_longest
+
 
 import numpy as np
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
 from pint import Quantity
+
 
 import pyEQL
 import pyEQL.activity_correction as ac
@@ -182,13 +185,20 @@ def test_diffusion_transport(s1, s2):
     assert np.isclose(D2 / D1, 0.80, atol=1e-2)
 
 
-def test_init_raises():
+def test_init_raises(caplog):
     with pytest.raises(ValueError, match="random is not a valid value"):
         Solution(engine="random")
     with pytest.raises(ValueError, match="Non-aqueous solvent detected"):
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
+    with pytest.raises(ValueError, match="Cannot specify both a non-default pH and H+"):
+        Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, pH=10)
+    module_log = logging.getLogger("pyEQL")
+    with caplog.at_level(logging.WARNING, "pyEQL"):
+        Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, log_level="warning")
+        assert module_log.level == logging.WARNING
+        assert "WARNING" in caplog.text
 
 
 def test_init_engines():
@@ -382,7 +392,7 @@ def test_get_el_amt_dict(s6):
 def test_p(s2):
     assert np.isclose(s2.p("Na+"), -1 * np.log10(s2.get_activity("Na+")))
     assert np.isclose(s2.p("Na+", activity=False), -1 * np.log10(s2.get_amount("Na+", "M").magnitude))
-    assert np.isclose(s2.p("Mg++"), 0)
+    assert np.isnan(s2.p("Mg++"))
 
 
 def test_get_amount(s3, s5):
@@ -576,6 +586,7 @@ def test_conductivity(s1, s2):
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
         s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
+
         fail_msg = f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
         assert np.isclose(s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1), fail_msg
 
@@ -767,13 +778,14 @@ def test_from_preset(tmp_path):
     assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
 
 
-def test_to_from_file(tmp_path, s1):
+def test_to_from_file(tmp_path):
+    s1 = Solution(volume="2 L", pH=5)
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
         s1.to_file(filename)
         assert filename.exists()
         loaded_s1 = Solution.from_file(filename)
-        assert loaded_s1 is not None
+        assert isinstance(loaded_s1, Solution)
         assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
     # test invalid extension raises error
     filename = tmp_path / "test_solution.txt"

@@ -282,9 +282,20 @@ class Solution(MSONable):
         self._solutes = solutes
         if self._solutes is None:
             self._solutes = {}
+
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
+                # if user has specified H+ in solutes, check consistency with pH kwarg
+                if standardize_formula(k) == "H[+1]":
+                    # if user has not specified pH (default value), override the pH argument
+                    if self._pH == 7:
+                        self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+                    # if user specifies non-default pH that does not match the supplied H+, raise an error
+                    elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                        raise ValueError(
+                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                        )
         elif isinstance(self._solutes, list):
             msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
@@ -448,11 +459,11 @@ class Solution(MSONable):
         self.volume_update_required = True
 
     @property
-    def pH(self) -> float | None:
+    def pH(self) -> float:
         """Return the pH of the solution."""
         return self.p("H+", activity=False)
 
-    def p(self, solute: str, activity=True) -> float | None:
+    def p(self, solute: str, activity=True) -> float:
         """
         Return the negative log of the activity of solute.
 
@@ -468,19 +479,18 @@ class Solution(MSONable):
         Returns:
             Quantity
                 The negative log10 of the activity (or molar concentration if
-                activity = False) of the solute.
+                activity = False) of the solute. If the solute has zero concentration
+                then np.nan (not a number) is returned.
         """
         try:
-            # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
-            # Using np.exp raises ZeroDivisionError
-            import math  # noqa: PLC0415
-
             if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
-        # if the solute has zero concentration, the log will generate a ValueError
-        except ValueError:
-            return 0
+                amt = self.get_activity(solute).magnitude
+            else:
+                amt = self.get_amount(solute, "mol/L").magnitude
+            return float(-1 * np.log10(amt))
+        # if the solute has zero or negative concentration, np.log10 raises a RuntimeWarning
+        except RuntimeWarning:
+            return np.nan
 
     @property
     def density(self) -> Quantity:
@@ -2552,6 +2562,7 @@ class Solution(MSONable):
 
         # retrieve the amount of each component in the parent solution and
         # store in a list.
+
         mix_amounts = FormulaDict({})
         for sol, amt in [*self.components.items(), *other.components.items()]:
             mix_amounts[sol] = amt + mix_amounts.get(sol, 0.0)
@@ -2563,6 +2574,10 @@ class Solution(MSONable):
         )
         # calculate the new pH and pE (before reactions) by mixing
         mix_pH = -np.log10(mix_amounts["H+"] / mix_vol.to("L").magnitude)
+
+        # now remove H+ and OH- from mix_amounts to avoid double setting pH
+        mix_amounts.pop("H[+1]", None)
+        mix_amounts.pop("OH[-1]", None)
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
@@ -2620,7 +2635,7 @@ class Solution(MSONable):
             places: The number of decimal places to round the solute amounts.
         """
         print(self)
-        str1 = "Activities" if units == "activity" else "Amounts"
+        str1 = "Activities" if units == "activity" else "Concentrations"
         str2 = f" ({units})" if units != "activity" else ""
         header = f"\nComponent {str1}{str2}:"
         print(header)
@@ -2638,7 +2653,7 @@ class Solution(MSONable):
 
             amt = self.get_activity(i).magnitude if units == "activity" else self.get_amount(i, units).magnitude
 
-            print(f"{i}:\t {amt:0.{places}f}")
+            print(f"{i:<12} {amt:0.{places}f}")
 
     def __str__(self) -> str:
         # set output of the print() statement for the solution
@@ -2648,7 +2663,7 @@ class Solution(MSONable):
         l4 = f"pH: {self.pH:.1f}"
         l5 = f"pE: {self.pE:.1f}"
         l6 = f"Solvent: {self.solvent}"
-        l7 = f"Components: {self.list_solutes():}"
+        l7 = f"Components: {self.components.keys():}"
         return f"{l1}\n{l2}\n{l3}\n{l4}\n{l5}\n{l6}\n{l7}"
 
     """
