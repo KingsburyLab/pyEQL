@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `Solution` engine, solvent, database were not inherited by the sum of `Solution` objects (#258, @ugognw)
-- Bugs where incorrect $\alpha_1$ and $\alpha_2$ parameters were used to calculate activity
-  coefficients and solute molar volumes for salts with divalent (or greater) ions (#258, @ugognw)
-- calculation of salt concentrations in `Solution.get_salt_dict` for salts containing polyvalent cations (#258, @ugognw)
-- `Solution.get_salt_dict` now respects the `cutoff` parameter (#258, @ugognw)
-  - Note that `cutoff` is interpreted in units of moles per kilogram of solution (#258, @ugognw)
+- `Solution.__add__`: engine, solvent, database were not inherited by the sum of `Solution`
+  objects (#258, @ugognw)
+- `Solution.get_activity_coefficient`: Fixed bugs where incorrect Pitzer scaling parameters $\alpha_1$
+  and $\alpha_2$ parameters were used to calculate activity coefficients and solute molar volumes for salts with multivalent ions (#258, @ugognw)
+- `Solution.get_salt_dict`: fixed errors in the calculation of concentrations for salts
+  containing polyvalent cations (#258, @ugognw)
+- `Solution.get_salt_dict` now respects the `cutoff` parameter. Note that `cutoff`
+  is now interpreted in units of moles per kilogram of solution (#258, @ugognw)
 - `Solution.get_salt_dict` always returns a salt dictionary sorted in order of decreasing salt concentration (#258, @ugognw)
 - `Solution.__init__`: Raise `ValueError` if a user sets inconsistent `H[+1]` in `solutes` and
   `pH` keyword arguments (#270, @gnuhpdiem, @rkingsbury). Previously, if the user set `H[+1]` in `solutes`, it's value would silently override the `pH` kwarg. Now, you will get a `ValueError`
