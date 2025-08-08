@@ -10,12 +10,12 @@ Other contributors, listed alphabetically, are:
 - Dhruv Duseja (@DhruvDuseja)
 - @githubalexliu
 - Hernan Grecco (@hgrecco)
+- @Ouriel Ndalamba (@Ouriel-N)
 - Ugo Nwosu (@ugognw)
 - Yitong Pan (@YitongPan1)
 - Jaebeom Park (@Jaebeom-P)
 - Kirill Pushkarev (@kirill-push)
 - Andrew Rosen (@arosen93)
 - Sui Xiong Tay (@SuixiongTay)
-
 
 (If you think that your name belongs here, please let the maintainer know)
