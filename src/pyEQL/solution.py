@@ -1571,7 +1571,11 @@ class Solution(MSONable):
             # # use only the predominant species for each element
             components = {}
             for el, lst in self.get_components_by_element().items():
-                components[lst[0]] = self.get_total_amount(el, "mol").magnitude
+                component = lst[0]
+                ion = Ion.from_formula(component)
+                el_no_oxi_state = el.split("(")[0]
+                nu_el = ion.get_el_amt_dict()[el_no_oxi_state]
+                components[component] = self.get_total_amount(el, "mol").magnitude / nu_el
             # add H+ and OH-, which would otherwise be excluded
             for k in ["H[+1]", "OH[-1]"]:
                 if self.components.get(k):
