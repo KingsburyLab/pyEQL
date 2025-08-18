@@ -7,8 +7,8 @@ import pyEQL
 from pyEQL.engines import EOS
 from pyEQL.salt_ion_match import Salt
 
-_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "K[+1]", "Li[+1]", "Cu[+2]", "Ba[+2]"]
-_ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]", "ClO[-1]", "NO3[-1]", "CO3[-2]", "MnO4[-2]"]
+_CATIONS = ["Na[+1]", "Ca[+2]", "Fe[+3]", "K[+1]", "Li[+1]", "Cu[+2]", "Ba[+2]", "NH4[+1]"]
+_ANIONS = ["Fe(CN)6[-3]", "Cl[-1]", "SO4[-2]", "PO4[-3]", "ClO[-1]", "NO3[-1]", "CO3[-2]", "MnO4[-2]"]
 _SALTS = list(product(_CATIONS[:3], _ANIONS[:3]))
 _ACIDS = [("H[+1]", anion) for anion in _ANIONS[:3]]
 _BASES = [(cation, "OH[-1]") for cation in _CATIONS[:3]]

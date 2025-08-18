@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2025-08-18
+
+### Fixed
+
+- `Solution.get_salt_dict()`: In solutions containing polyatomic ions with a heteroatom (an atom other than `H` or `O`)
+  having a stoichiometric coefficient greater than 1 mol per mol salt , such as Fe(CN)6[-3], the method would
+  return incorrect results, possibly impacting activity coefficient calculations. This has now been fixed.  (#277, @ugognw)
+
 ## [1.3.0] - 2025-08-08
 
 ### Fixed
