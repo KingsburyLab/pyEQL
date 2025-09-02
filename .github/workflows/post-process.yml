@@ -57,7 +57,7 @@ jobs:
           uv pip install '.[${{ matrix.version.extras }}]' --system --resolution=${{ matrix.version.resolution }}
       - name: Run tests
         run: |
-          pytest -n auto --cov=src/pyEQL --cov-report=xml
+          pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

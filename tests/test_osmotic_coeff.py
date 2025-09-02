@@ -9,9 +9,35 @@ NOTE: generally, these tests check the module output against experimental
 data rather than the theoretical result of the respective functions.
 """
 
-import numpy as np
+from itertools import product
 
-from pyEQL import Solution
+import numpy as np
+import pytest
+from pint import Quantity
+
+import pyEQL
+import pyEQL.activity_correction as ac
+from pyEQL import Solution, ureg
+from pyEQL.salt_ion_match import Salt
+
+_CATIONS = []
+_ANIONS = []
+
+for doc in pyEQL.IonDB.query(criteria={"charge": {"$ne": 0}}):
+    if doc["charge"] > 0:
+        _CATIONS.append(doc["formula"])
+    elif doc["charge"] < 0:
+        _ANIONS.append(doc["formula"])
+
+_SOLUTES = list(product(_CATIONS, _ANIONS))
+_FORMULAS_TO_SALTS = {f"{Salt(anion, cation).formula}(aq)": Salt(anion, cation) for anion, cation in _SOLUTES}
+_criteria = {
+    "model_parameters.activity_pitzer.Beta0": {"$ne": None},
+    "charge": 0.0,
+    "formula": {"$in": list(_FORMULAS_TO_SALTS)},
+}
+# These salts include all salts for which Pitzer molar volume parameters are available
+_SALTS = [_FORMULAS_TO_SALTS[doc["formula"]] for doc in pyEQL.IonDB.query(criteria=_criteria)]
 
 
 def test_osmotic_pressure():
@@ -27,6 +53,31 @@ def test_osmotic_pressure():
     assert np.isclose(sea.osmotic_pressure.to("atm").magnitude, 27, rtol=0.15)
 
 
+def _get_osmotic_coefficient(
+    ionic_strength: float,
+    conc: Quantity,
+    alphas: tuple[float, float],
+    param: dict[str, dict[str, Quantity]],
+    salt: Salt,
+    temp: str,
+) -> float:
+    return ac.get_osmotic_coefficient_pitzer(
+        ionic_strength,
+        conc,
+        alphas[0],
+        alphas[1],
+        ureg.Quantity(param["Beta0"]["value"]).magnitude,
+        ureg.Quantity(param["Beta1"]["value"]).magnitude,
+        ureg.Quantity(param["Beta2"]["value"]).magnitude,
+        ureg.Quantity(param["Cphi"]["value"]).magnitude,
+        salt.z_cation,
+        salt.z_anion,
+        salt.nu_cation,
+        salt.nu_anion,
+        temp,
+    )
+
+
 class Test_osmotic_pitzer:
     """
     test osmotic coefficient based on the Pitzer model
@@ -34,10 +85,12 @@ class Test_osmotic_pitzer:
 
     """
 
-    def test_dimensionality(self):
-        s1 = Solution([["Na+", "0.1 mol/L"], ["Cl-", "0.1 mol/L"]])
-        assert s1.get_osmotic_coefficient().dimensionality == ""
-        assert s1.get_osmotic_coefficient() >= 0
+    @pytest.mark.parametrize("salt_conc", [0.0, 1e-4, 0.1, 1.0])
+    def test_dimensionality(self, solution: Solution):
+        osmotic_coefficient = solution.get_osmotic_coefficient()
+        assert isinstance(osmotic_coefficient, Quantity)
+        assert osmotic_coefficient.dimensionality == ""
+        assert osmotic_coefficient >= 0
 
     def test_osmotic_pitzer_ammoniumnitrate(self):
         """
@@ -94,3 +147,34 @@ class Test_osmotic_pitzer:
             expected = pub_osmotic_coeff[i]
 
             assert np.isclose(result, expected, rtol=0.05)
+
+    @staticmethod
+    @pytest.mark.parametrize(("salt_conc", "salt_conc_units"), [(1e-7, "mol/kg")])
+    def test_should_return_unity_for_low_concentration_solutes(solution: Solution) -> None:
+        assert solution.get_osmotic_coefficient().m == 1.0
+
+    @staticmethod
+    @pytest.mark.parametrize("salt", _SALTS)
+    @pytest.mark.parametrize("salt_conc_units", ["mol/kg"])
+    def test_should_return_osmotic_coefficient_of_major_salt_when_parameters_exist(
+        solution: Solution, salt: Salt, salt_conc: float, salt_conc_units: str, alphas: tuple[float, float]
+    ) -> None:
+        concentration = ureg.Quantity(salt_conc, salt_conc_units)
+        param = solution.get_property(salt.formula, "model_parameters.activity_pitzer")
+        expected_osmotic_coefficient = _get_osmotic_coefficient(
+            solution.ionic_strength, concentration, alphas, param, salt, str(solution.temperature)
+        )
+        assert solution.get_osmotic_coefficient().m == expected_osmotic_coefficient.m
+
+
+class TestOsmoticIdeal:
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["ideal"])
+    def test_should_return_unit_activity_for_ideal_engine(solution: Solution) -> None:
+        assert solution.get_osmotic_coefficient().m == 1.0
+
+    @pytest.mark.parametrize("salt_conc", [0.0, 1e-4, 0.1, 1.0])
+    def test_dimensionality(self, solution: Solution):
+        osmotic_coefficient = solution.get_osmotic_coefficient()
+        assert isinstance(osmotic_coefficient, Quantity)
+        assert osmotic_coefficient.dimensionality == ""

@@ -173,7 +173,7 @@ class Solution(MSONable):
             self.logger.handlers.clear()
             # use rich for pretty log formatting, if installed
             try:
-                from rich.logging import RichHandler
+                from rich.logging import RichHandler  # noqa: PLC0415
 
                 sh = RichHandler(rich_tracebacks=True)
             except ImportError:
@@ -261,15 +261,6 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # TODO - do I need the ability to specify the solvent mass?
-        # # raise an error if the solvent volume has also been given
-        # if volume_set is True:
-        #     self.logger.error(
-        #         "Solvent volume and mass cannot both be specified. Calculating volume based on solvent mass."
-        #     )
-        # # add the solvent and the mass
-        # self.add_solvent(self.solvent, kwargs["solvent"][1])
-
         # calculate the moles of solvent (water) on the density and the solution volume
         moles = self.volume.magnitude / 55.55  # molarity of pure water
         self.components["H2O"] = moles
@@ -282,9 +273,20 @@ class Solution(MSONable):
         self._solutes = solutes
         if self._solutes is None:
             self._solutes = {}
+
         if isinstance(self._solutes, dict):
             for k, v in self._solutes.items():
                 self.add_solute(k, v)
+                # if user has specified H+ in solutes, check consistency with pH kwarg
+                if standardize_formula(k) == "H[+1]":
+                    # if user has not specified pH (default value), override the pH argument
+                    if self._pH == 7:
+                        self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+                    # if user specifies non-default pH that does not match the supplied H+, raise an error
+                    elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                        raise ValueError(
+                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                        )
         elif isinstance(self._solutes, list):
             msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
@@ -380,13 +382,6 @@ class Solution(MSONable):
             >>> mysol = Solution([['Na+','2 mol/L'],['Cl-','0.01 mol/L']],volume='500 mL')
             >>> print(mysol.volume)
             0.5000883925072983 l
-            >>> mysol.list_concentrations()
-            {'H2O': '55.508435061791985 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
-            >>> mysol.volume = '200 mL')
-            >>> print(mysol.volume)
-            0.2 l
-            >>> mysol.list_concentrations()
-            {'H2O': '55.50843506179199 mol/kg', 'Cl-': '0.00992937605907076 mol/kg', 'Na+': '2.0059345573880325 mol/kg'}
 
         """
         # figure out the factor to multiply the old concentrations by
@@ -448,11 +443,11 @@ class Solution(MSONable):
         self.volume_update_required = True
 
     @property
-    def pH(self) -> float | None:
+    def pH(self) -> float:
         """Return the pH of the solution."""
         return self.p("H+", activity=False)
 
-    def p(self, solute: str, activity=True) -> float | None:
+    def p(self, solute: str, activity=True) -> float:
         """
         Return the negative log of the activity of solute.
 
@@ -468,19 +463,18 @@ class Solution(MSONable):
         Returns:
             Quantity
                 The negative log10 of the activity (or molar concentration if
-                activity = False) of the solute.
+                activity = False) of the solute. If the solute has zero concentration
+                then np.nan (not a number) is returned.
         """
         try:
-            # TODO - for some reason this specific method requires the use of math.log10 rather than np.log10.
-            # Using np.exp raises ZeroDivisionError
-            import math
-
             if activity is True:
-                return -1 * math.log10(self.get_activity(solute))
-            return -1 * math.log10(self.get_amount(solute, "mol/L").magnitude)
-        # if the solute has zero concentration, the log will generate a ValueError
-        except ValueError:
-            return 0
+                amt = self.get_activity(solute).magnitude
+            else:
+                amt = self.get_amount(solute, "mol/L").magnitude
+            return float(-1 * np.log10(amt))
+        # if the solute has zero or negative concentration, np.log10 raises a RuntimeWarning
+        except RuntimeWarning:
+            return np.nan
 
     @property
     def density(self) -> Quantity:
@@ -1295,15 +1289,6 @@ class Solution(MSONable):
             # set the volume recalculation flag
             self.volume_update_required = True
 
-    # TODO - deprecate this method. Solvent should be added to the dict like anything else
-    # and solvent_name will track which component it is.
-    def add_solvent(self, formula: str, amount: str):
-        """Same as add_solute but omits the need to pass solvent mass to pint."""
-        quantity = ureg.Quantity(amount)
-        mw = self.get_property(formula, "molecular_weight")
-        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
-        self.components[formula] = target_mol.to("moles").magnitude
-
     def add_amount(self, solute: str, amount: str):
         """
         Add the amount of 'solute' to the parent solution.
@@ -1506,72 +1491,91 @@ class Solution(MSONable):
             >>> s2.get_salt().z_cation
             2
         """
-        d = self.get_salt_dict()
-        first_key = next(iter(d.keys()))
-        return Salt(d[first_key]["cation"], d[first_key]["anion"])
+        try:
+            salt: Salt = next(d["salt"] for d in self.get_salt_dict().values())
+            return salt
+        except StopIteration:
+            return None
 
     # TODO - modify? deprecate? make a salts property?
-    def get_salt_dict(self, cutoff: float = 0.01, use_totals: bool = True) -> dict[str, dict]:
+    def get_salt_dict(self, cutoff: float = 1e-6, use_totals: bool = True) -> dict[str, dict[str, float | Salt]]:
         """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles present in the solution, e.g., {"NaCl(aq)": 1}. If the
-        Solution is pure water, the returned dict contains only 'HOH'.
+        Returns a dict that represents the salts of the Solution by pairing anions and cations.
+
+        The ``get_salt_dict()`` method examines the ionic composition of a solution and approximates it as a set of
+        salts instead of individual ions. The method returns a dictionary of Salt objects where the keys are the salt
+        formulas (e.g., 'NaCl'). The Salt object contains information about the stoichiometry of the salt to
+        enable its effective concentration to be calculated (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
 
         Args:
-            cutoff: Lowest salt concentration to consider. Analysis will stop once the concentrations of Salts being
-                analyzed goes below this value. Useful for excluding analysis of trace anions.
-            use_totals: Whether to base the analysis on total element concentrations or individual species
-                concentrations.
-
-        Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
-
-        Many empirical equations for solution properties such as activity coefficient,
-        partial molar volume, or viscosity are based on the concentration of
-        single salts (e.g., NaCl). When multiple ions are present (e.g., a solution
-        containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
-        these quantities.
-
-        The get_salt_dict() method examines the ionic composition of a solution and
-        simplifies it into a list of salts. The method returns a dictionary of
-        Salt objects where the keys are the salt formulas (e.g., 'NaCl'). The
-        Salt object contains information about the stoichiometry of the salt to
-        enable its effective concentration to be calculated
-        (e.g., 1 M MgCl2 yields 1 M Mg+2 and 2 M Cl-).
+            cutoff: Lowest molal concentration to consider. No salts below this value will be included in the output.
+                Useful for excluding analysis of trace anions. Defaults to 1e-6 (1 part per million).
+            use_totals: Whether or not to base the analysis on the concentration of the predominant species of each
+                element. Note that species in which a given element assumes a different oxidation state are always
+                treated separately.
 
         Returns:
             dict
-                A dictionary of Salt objects, keyed to the salt formula
-
-        See Also:
-            :py:attr:`osmotic_pressure`
-            :py:attr:`viscosity_kinematic`
-            :py:meth:`get_activity`
-            :py:meth:`get_activity_coefficient`
-            :py:meth:`get_water_activity`
-            :py:meth:`get_osmotic_coefficient`
-        """
-        """
-        Returns a dict of salts that approximates the composition of the Solution. Like `components`, the dict is
-        keyed by formula and the values are the total moles of salt present in the solution, e.g., {"NaCl(aq)": 1}
+                A dictionary of representing salts in the solution, keyed by the salt formula.
 
         Notes:
-            Salts are identified by pairing the predominant cations and anions in the solution, in descending order
-            of their respective equivalent amounts.
+            The dict maps salt formulas to dictionaries containing their amounts and composition. The amount is stored
+            in moles under the key "mol", and a :class:`pyEQL.salt_ion_match.Salt` object stored under the "salt" key
+            represents the composition. Salts are identified by pairing the predominant cations and anions in the
+            solution, in descending order of their respective equivalent amounts.
+
+            Many empirical equations for solution properties such as activity coefficient, partial molar volume, or
+            viscosity are based on the concentration of single salts (e.g., NaCl). When multiple ions are present
+            (e.g., a solution containing Na+, Cl-, and Mg+2), it is generally not possible to directly model
+            these quantities.
+
+        Examples:
+            >>> from pyEQL import Solution
+            >>> from pyEQL.salt_ion_match import Salt
+            >>> s1 = Solution(
+            ...     solutes={
+            ...         'Na[+1]': '1 mol/L',
+            ...         'Cl[-1]': '1 mol/L',
+            ...         'Ca[+2]': '0.01 mol/kg',
+            ...         'HCO3[-1]': '0.007 mol/kg',
+            ...         'CO3[-2]': '0.001 mol/kg',
+            ...         'ClO[-1]': '0.001 mol/kg',
+            ...     }
+            ... )
+            >>> salt_dict = s1.get_salt_dict()
+            >>> list(salt_dict)  # Only returns salts with concentrations > 1e-3 m
+            ['NaCl', 'Ca(HCO3)2']
+            >>> salt_dict['NaCl']['salt']
+            <pyEQL.salt_ion_match.Salt object at ...>
+            >>> salt_dict['NaCl']['mol']
+            1.0
+            >>> salt_dict = s1.get_salt_dict(cutoff=1e-4)
+            >>> list(salt_dict)  # Returns 'Ca(ClO)2' because of reduced cutoff and Cl has different oxidation state
+            ['NaCl', 'Ca(HCO3)2', 'Ca(ClO)2']
+            >>> salt_dict = s1.get_salt_dict(cutoff=1e-4, use_totals=False)
+            >>> list(salt_dict)  # Returns salts with minor (same oxidation state) species since use_totals=False
+            ['NaCl', 'Ca(HCO3)2', 'CaCO3', 'Ca(ClO)2']
 
         See Also:
             :attr:`components`
             :attr:`cations`
             :attr:`anions`
+            :class:`pyEQL.salt_ion_match.Salt`
+            :py:meth:`get_activity_coefficient`
+            :py:meth:`get_water_activity`
+            :py:meth:`get_osmotic_coefficient`
         """
-        salt_dict: dict[str, float] = {}
+        salt_dict: dict[str, dict[str, float | Salt]] = {}
 
         if use_totals:
             # # use only the predominant species for each element
             components = {}
             for el, lst in self.get_components_by_element().items():
-                components[lst[0]] = self.get_total_amount(el, "mol").magnitude
+                component = lst[0]
+                ion = Ion.from_formula(component)
+                el_no_oxi_state = el.split("(")[0]
+                nu_el = ion.get_el_amt_dict()[el_no_oxi_state]
+                components[component] = self.get_total_amount(el, "mol").magnitude / nu_el
             # add H+ and OH-, which would otherwise be excluded
             for k in ["H[+1]", "OH[-1]"]:
                 if self.components.get(k):
@@ -1591,7 +1595,7 @@ class Solution(MSONable):
         # calculate the charge-weighted (equivalent) concentration of each ion
         cation_equiv = {k: self.get_property(k, "charge") * components[k] for k in cations}
         anion_equiv = {
-            k: -1 * self.get_property(k, "charge") * components[k] for k in anions
+            k: self.get_property(k, "charge") * components[k] * -1 for k in anions
         }  # make sure amounts are positive
 
         # sort in descending order of equivalent concentration
@@ -1601,78 +1605,36 @@ class Solution(MSONable):
         len_cat = len(cation_equiv)
         len_an = len(anion_equiv)
 
-        # Only ions are H+ and OH-; return a Salt represnting water (with no amount)
-        if len_cat <= 1 and len_an <= 1 and self.solvent == "H2O(aq)":
-            x = Salt("H[+1]", "OH[-1]")
-            salt_dict.update({x.formula: x.as_dict()})
-            salt_dict[x.formula]["mol"] = self.get_amount("H2O", "mol")
-            return salt_dict
-
         # start with the first cation and anion
         index_cat = 0
         index_an = 0
 
-        # list(dict) returns a list of [(key, value), ]
-        cation_list = list(cation_equiv.items())
-        anion_list = list(anion_equiv.items())
-
-        # calculate the equivalent concentrations of each ion
-        c1 = cation_list[index_cat][-1]
-        a1 = anion_list[index_an][-1]
+        # list(dict) returns a list of [[key, value],]
+        cation_list = [[k, v] for k, v in cation_equiv.items()]
+        anion_list = [[k, v] for k, v in anion_equiv.items()]
+        solvent_mass = self.solvent_mass.to("kg").m
+        # tolerance for detecting edge cases where equilibrate() slightly changes the
+        # total amount of a solute
+        _atol = 1e-16
 
         while index_cat < len_cat and index_an < len_an:
-            # if the cation concentration is greater, there will be leftover cations
-            if c1 > a1:
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be leftover cation, so use the anion amount
-                salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = a1 / abs(x.z_anion * x.nu_anion)
-                # adjust the amounts of the respective ions
-                c1 = c1 - a1
-                # move to the next anion
-                index_an += 1
-                try:
-                    a1 = anion_list[index_an][-1]
-                    if a1 < cutoff:
-                        continue
-                except IndexError:
-                    continue
-            # if the anion concentration is greater, there will be leftover anions
-            if c1 < a1:
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be leftover anion, so use the cation amount
-                salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
-                # calculate the leftover cation amount
-                a1 = a1 - c1
-                # move to the next cation
-                index_cat += 1
-                try:
-                    a1 = cation_list[index_cat][-1]
-                    if a1 < cutoff:
-                        continue
-                except IndexError:
-                    continue
-            if np.isclose(c1, a1):
-                # create the salt
-                x = Salt(cation_list[index_cat][0], anion_list[index_an][0])
-                # there will be nothing leftover, so it doesn't matter which ion you use
-                salt_dict.update({x.formula: x.as_dict()})
-                salt_dict[x.formula]["mol"] = c1 / x.z_cation * x.nu_cation
-                # move to the next cation and anion
-                index_an += 1
-                index_cat += 1
-                try:
-                    c1 = cation_list[index_cat][-1]
-                    a1 = anion_list[index_an][-1]
-                    if (c1 < cutoff) or (a1 < cutoff):
-                        continue
-                except IndexError:
-                    continue
+            c1 = cation_list[index_cat][-1]
+            a1 = anion_list[index_an][-1]
+            salt = Salt(cation_list[index_cat][0], anion_list[index_an][0])
 
-        return salt_dict
+            # Use the smaller of the two amounts
+            equivs_consumed = min(c1, a1)
+            cation_list[index_cat][-1] -= equivs_consumed
+            anion_list[index_an][-1] -= equivs_consumed
+            index_an += 1 if a1 == equivs_consumed else 0
+            index_cat += 1 if c1 == equivs_consumed else 0
+            mol = equivs_consumed / (salt.z_cation * salt.nu_cation)
+
+            # filter out water and zero, effectively zero, and sub-cutoff salt amounts
+            if salt.formula != "HOH" and (mol / solvent_mass + _atol) >= cutoff:
+                salt_dict[salt.formula] = {"salt": salt, "mol": mol}
+
+        return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
     def equilibrate(self, **kwargs) -> None:
         """
@@ -2345,17 +2307,17 @@ class Solution(MSONable):
                     ]
                 )
                 self.set_amount("H+", f"{new_hplus} mol/L")
-                self.set_amount("OH-", f"{K_W/new_hplus} mol/L")
+                self.set_amount("OH-", f"{K_W / new_hplus} mol/L")
                 return
 
             z = self.get_property(self._cb_species, "charge")
             try:
-                self.add_amount(self._cb_species, f"{-1*cb/z} mol")
+                self.add_amount(self._cb_species, f"{-1 * cb / z} mol")
                 return
             except ValueError:
                 # if the concentration is negative, it must mean there is not enough present.
                 # remove everything that's present and log an error.
-                self.components[self._cb_species] = 0
+                self.components[self._cb_species] = 0.0
                 self.logger.error(
                     f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
                 )
@@ -2581,15 +2543,9 @@ class Solution(MSONable):
 
         # retrieve the amount of each component in the parent solution and
         # store in a list.
-        mix_species = FormulaDict({})
-        for sol, amt in self.components.items():
-            mix_species.update({sol: f"{amt} mol"})
-        for sol2, amt2 in other.components.items():
-            if mix_species.get(sol2):
-                orig_amt = float(mix_species[sol2].split(" ")[0])
-                mix_species[sol2] = f"{orig_amt+amt2} mol"
-            else:
-                mix_species.update({sol2: f"{amt2} mol"})
+        mix_amounts = FormulaDict({})
+        for sol, amt in [*self.components.items(), *other.components.items()]:
+            mix_amounts[sol] = amt + mix_amounts.get(sol, 0.0)
 
         # TODO - call equilibrate() here once the method is functional to get new pH and pE, instead of the below
         warnings.warn(
@@ -2597,21 +2553,27 @@ class Solution(MSONable):
             "this property is planned for a future release."
         )
         # calculate the new pH and pE (before reactions) by mixing
-        mix_pH = -np.log10(float(mix_species["H+"].split(" ")[0]) / mix_vol.to("L").magnitude)
+        # for pH, we make sure to conserve the mass of H+ and OH-. By not passing
+        # a kwarg for pH (i.e., by using the default value), the H+ concentration
+        # will override and determine the pH value of the mixed solution.
 
         # pE = -log[e-], so calculate the moles of e- in each solution and mix them
         mol_e_self = 10 ** (-1 * self.pE) * self.volume.to("L").magnitude
         mol_e_other = 10 ** (-1 * other.pE) * other.volume.to("L").magnitude
         mix_pE = -np.log10((mol_e_self + mol_e_other) / mix_vol.to("L").magnitude)
+        solutes = {sol: f"{amount} mol" for sol, amount in mix_amounts.items()}
 
         # create a new solution
         return Solution(
-            mix_species.data,  # pass a regular dict instead of the FormulaDict
+            solutes=solutes,
             volume=str(mix_vol),
             pressure=str(mix_pressure),
             temperature=str(mix_temperature.to("K")),
-            pH=mix_pH,
+            # pH=7, # leave at default value so that H+ concentration determines pH
             pE=mix_pE,
+            engine=self._engine,
+            solvent=self.solvent,
+            database=self.database,
         )
 
     def __sub__(self, other: Solution) -> None:
@@ -2651,7 +2613,7 @@ class Solution(MSONable):
             places: The number of decimal places to round the solute amounts.
         """
         print(self)
-        str1 = "Activities" if units == "activity" else "Amounts"
+        str1 = "Activities" if units == "activity" else "Concentrations"
         str2 = f" ({units})" if units != "activity" else ""
         header = f"\nComponent {str1}{str2}:"
         print(header)
@@ -2669,7 +2631,7 @@ class Solution(MSONable):
 
             amt = self.get_activity(i).magnitude if units == "activity" else self.get_amount(i, units).magnitude
 
-            print(f"{i}:\t {amt:0.{places}f}")
+            print(f"{i:<12} {amt:0.{places}f}")
 
     def __str__(self) -> str:
         # set output of the print() statement for the solution
@@ -2679,100 +2641,17 @@ class Solution(MSONable):
         l4 = f"pH: {self.pH:.1f}"
         l5 = f"pE: {self.pE:.1f}"
         l6 = f"Solvent: {self.solvent}"
-        l7 = f"Components: {self.list_solutes():}"
+        l7 = f"Components: {self.components.keys():}"
         return f"{l1}\n{l2}\n{l3}\n{l4}\n{l5}\n{l6}\n{l7}"
 
     """
     Legacy methods to be deprecated in a future release.
     """
 
-    @deprecated(
-        message="list_salts() is deprecated and will be removed in the next release! Use Solution.get_salt_dict() instead.)"
-    )
-    def list_salts(self, unit="mol/kg", decimals=4):  # pragma: no cover
-        for k, v in self.get_salt_dict().items():
-            print(k + "\t {:0.{decimals}f}".format(v, decimals=decimals))
-
-    @deprecated(
-        message="list_solutes() is deprecated and will be removed in the next release! Use Solution.components.keys() instead.)"
-    )
-    def list_solutes(self):  # pragma: no cover
-        """List all the solutes in the solution."""
-        return list(self.components.keys())
-
-    @deprecated(
-        message="list_concentrations() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
-    )
-    def list_concentrations(self, unit="mol/kg", decimals=4, type="all"):  # pragma: no cover
-        """
-        List the concentration of each species in a solution.
-
-        Parameters
-        ----------
-        unit: str
-            String representing the desired concentration ureg.
-        decimals: int
-            The number of decimal places to display. Defaults to 4.
-        type     : str
-            The type of component to be sorted. Defaults to 'all' for all
-            solutes. Other valid arguments are 'cations' and 'anions' which
-            return lists of cations and anions, respectively.
-
-        Returns:
-        -------
-        dict
-            Dictionary containing a list of the species in solution paired with their amount in the specified units
-        :meta private:
-        """
-        result_list = []
-        # populate a list with component names
-
-        if type == "all":
-            print("Component Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                amount = self.get_amount(item, unit)
-                result_list.append([item, amount])
-                print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-        elif type == "cations":
-            print("Cation Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                if self.components[item].charge > 0:
-                    amount = self.get_amount(item, unit)
-                    result_list.append([item, amount])
-                    print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-        elif type == "anions":
-            print("Anion Concentrations:\n")
-            print("========================\n")
-            for item in self.components:
-                if self.components[item].charge < 0:
-                    amount = self.get_amount(item, unit)
-                    result_list.append([item, amount])
-                    print(item + ":" + "\t {0:0.{decimals}f~}".format(amount, decimals=decimals))
-
-        return result_list
-
-    @deprecated(
-        message="list_activities() is deprecated and will be removed in the next release! Use Solution.print() instead.)"
-    )
-    def list_activities(self, decimals=4):  # pragma: no cover
-        """
-        List the activity of each species in a solution.
-
-        Parameters
-        ----------
-        decimals: int
-            The number of decimal places to display. Defaults to 4.
-
-        Returns:
-        -------
-        dict
-            Dictionary containing a list of the species in solution paired with their activity
-
-        :meta private:
-        """
-        print("Component Activities:\n")
-        print("=====================\n")
-        for i in self.components:
-            print(i + ":" + "\t {0.magnitude:0.{decimals}f}".format(self.get_activity(i), decimals=decimals))
+    @deprecated(message="add_solute() is deprecated. Use add_amount() instead.")
+    def add_solvent(self, formula: str, amount: str):  # pragma: no cover
+        """Same as add_solute but omits the need to pass solvent mass to pint."""
+        quantity = ureg.Quantity(amount)
+        mw = self.get_property(formula, "molecular_weight")
+        target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+        self.components[formula] = target_mol.to("moles").magnitude
