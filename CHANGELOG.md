@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2025-09-15
+
+### Fixed
+
+- `Solution.get_viscosity_kinematic()`: A recent change to get_salt_dict (#258) created a problem with `get_viscosity_kinetmatic`
+  in which an empty solution would cause the method to return an error. This has been fixed, and unit tests added for both
+  `get_viscosity_kinematic` and `get_viscosity_dynamic`.
+
 ## [1.3.1] - 2025-08-18
 
 ### Fixed

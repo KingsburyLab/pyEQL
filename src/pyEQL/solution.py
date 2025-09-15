@@ -651,7 +651,7 @@ class Solution(MSONable):
         a0 = a1 = b0 = b1 = 0
 
         # retrieve the parameters for the delta G equations
-        params = self.get_property(salt.formula, "model_parameters.viscosity_eyring")
+        params = None if salt is None else self.get_property(salt.formula, "model_parameters.viscosity_eyring")
         if params is not None:
             a0 = ureg.Quantity(params["a0"]["value"]).magnitude
             a1 = ureg.Quantity(params["a1"]["value"]).magnitude
@@ -662,11 +662,16 @@ class Solution(MSONable):
             temperature = self.temperature.to("degC").magnitude
             G_123 = a0 + a1 * (temperature) ** 0.75
             G_23 = b0 + b1 * (temperature) ** 0.5
+
+            # calculate the cation mole fraction
+            # x_cat = self.get_amount(cation, "fraction")
+            x_cat = self.get_amount(salt.cation, "fraction").magnitude
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            self.logger.warning(f"Viscosity coefficients for {salt.formula} not found. Viscosity will be approximate.")
+            self.logger.warning(f"Appropriate viscosity coefficients werenot found. Viscosity will be approximate.")
             G_123 = G_23 = 0
+            x_cat = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
         nu_w = self.water_substance.nu
@@ -677,10 +682,6 @@ class Solution(MSONable):
 
         # get the MW of water
         MW_w = self.get_property(self.solvent, "molecular_weight").magnitude
-
-        # calculate the cation mole fraction
-        # x_cat = self.get_amount(cation, "fraction")
-        x_cat = self.get_amount(salt.cation, "fraction").magnitude
 
         # calculate the kinematic viscosity
         nu = np.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
