@@ -97,7 +97,7 @@ def s6_Ca():
     )
 
 
-def test_empty_solution_3():
+def test_empty_solution():
     # create an empty solution
     s1 = Solution(database=None)
     # It should return type Solution
@@ -118,6 +118,9 @@ def test_empty_solution_3():
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
+    assert np.isclose(s1.density.to('kg/m**3').magnitude, 997.0479, atol=0.1)
+    assert np.isclose(s1.viscosity_kinematic.to('mm**2/s').magnitude, 0.8917, atol=1e-3) # 1 cSt = 1 mm2/s
+    assert np.isclose(s1.viscosity_dynamic, s1.viscosity_kinematic * s1.density, atol=1e-8)
 
 
 @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
