@@ -118,8 +118,8 @@ def test_empty_solution():
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
-    assert np.isclose(s1.density.to('kg/m**3').magnitude, 997.0479, atol=0.1)
-    assert np.isclose(s1.viscosity_kinematic.to('mm**2/s').magnitude, 0.8917, atol=1e-3) # 1 cSt = 1 mm2/s
+    assert np.isclose(s1.density.to("kg/m**3").magnitude, 997.0479, atol=0.1)
+    assert np.isclose(s1.viscosity_kinematic.to("mm**2/s").magnitude, 0.8917, atol=1e-3)  # 1 cSt = 1 mm2/s
     assert np.isclose(s1.viscosity_dynamic, s1.viscosity_kinematic * s1.density, atol=1e-8)
 
 
@@ -897,6 +897,50 @@ class TestSolutionAdd:
     @staticmethod
     def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
         assert solution.database == solution_sum.database
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.xfail
+    def test_should_replace_monatomic_species_from_engine(engine) -> None:
+        # When initializing a solution without specifying the charge on the ion,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # defined in the phreeqc database.
+        solution = Solution({"Na": "1 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Na(aq)" in solution.components
+        assert "Na[+1]" not in solution.components
+
+        solution.equilibrate()
+
+        assert "Na[+1]" in solution.components  # correct charge assignment
+        assert "Na(aq)" not in solution.components
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.xfail
+    def test_should_replace_diatomic_species_from_engine(engine) -> None:
+        # When initializing a solution by specifying the charge on the ion
+        # that is different from the one determined by phreeqc,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # determined by phreeqc.
+        solution = Solution({"ReO4-2": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "ReO4[-2]" in solution.components
+        assert "ReO4[-1]" not in solution.components
+
+        solution.equilibrate()
+        # [ReO4-2] is not in phreeqc, but the element Re[+7] is, so it comes
+        # up with ReO4[-1] as the species and replaces our incorrect ReO4[-2].
+        assert "ReO4[-1]" in solution.components
+        assert "ReO4[-2]" not in solution.components
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    def test_should_not_discard_missing_species_from_engine(engine) -> None:
+        # When initializing a solution by specifying a species with an element
+        # that is not found in phreeqc, the species should not be discarded.
+        solution = Solution({"Rh+3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Rh[+3]" in solution.components
+        solution.equilibrate()
+        assert "Rh[+3]" in solution.components  # still there
 
 
 class TestZeroSoluteVolume:
