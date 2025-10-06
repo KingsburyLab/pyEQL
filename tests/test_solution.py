@@ -900,7 +900,6 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    @pytest.mark.xfail
     def test_should_replace_monatomic_species_from_engine(engine) -> None:
         # When initializing a solution without specifying the charge on the ion,
         # `.equilibrate()` should replace the ion with the ion with the charge
@@ -916,7 +915,6 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    @pytest.mark.xfail
     def test_should_replace_diatomic_species_from_engine(engine) -> None:
         # When initializing a solution by specifying the charge on the ion
         # that is different from the one determined by phreeqc,
