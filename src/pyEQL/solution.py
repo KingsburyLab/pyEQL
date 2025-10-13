@@ -1107,7 +1107,9 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_components_by_element(self, nested: bool = False) -> dict[str, list[str]] | dict[dict[str, str], list[str]]:
+    def get_components_by_element(
+        self, nested: bool = False
+    ) -> dict[str, list[str]] | dict[str, dict[float | str, list[str]]]:
         """
         Return a list of all species associated with a given element.
 
@@ -1160,7 +1162,7 @@ class Solution(MSONable):
             return d
         return {f"{el}({val})": species for el, val_dict in d.items() for val, species in val_dict.items()}
 
-    def get_el_amt_dict(self, nested: bool = False) -> dict[str, float] | dict[str, dict[str, float]]:
+    def get_el_amt_dict(self, nested: bool = False) -> dict[str, float] | dict[str, dict[float | str, float]]:
         """
         Return a dict of Element: amount in mol.
 
