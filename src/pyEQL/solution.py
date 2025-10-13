@@ -669,7 +669,7 @@ class Solution(MSONable):
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            self.logger.warning(f"Appropriate viscosity coefficients werenot found. Viscosity will be approximate.")
+            self.logger.warning("Appropriate viscosity coefficients were not found. Viscosity will be approximate.")
             G_123 = G_23 = 0
             x_cat = 0
 
@@ -1107,13 +1107,31 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_components_by_element(self) -> dict[str, list]:
+    def get_components_by_element(
+        self, nested: bool = False
+    ) -> dict[str, list[str]] | dict[str, dict[float | str, list[str]]]:
         """
         Return a list of all species associated with a given element.
 
-        Elements (keys) are suffixed with their oxidation state in parentheses, e.g.,
+        Args:
+            nested : bool
+                Whether to return a nested dictionary of <element>
+                to <valence> => <list of species> mapping. False by default.
 
-        {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
+        Returns:
+            A mapping of element to a list of species in the solution.
+
+            If nested is False (default), elements (keys) are suffixed with
+            their oxidation state in parentheses, e.g.,
+
+            {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
+
+            If nested is True, the dictionary is nested, e.g.,
+
+            {"Na": [{1:["Na[+1]", "NaOH(aq)"]}]}.
+
+            Note that the valence may be a string, assuming the value "unk"
+            denoting an unknown oxidation state.
 
         Species associated with each element are sorted in descending order of the amount
         present (i.e., the first species listed is the most abundant).
@@ -1132,20 +1150,41 @@ class Solution(MSONable):
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
-                key = f"{el}({oxi_state})"
-                if d.get(key):
-                    d[key].append(s)
+                if d.get(el):
+                    if d[el].get(oxi_state):
+                        d[el][oxi_state].append(s)
+                    else:
+                        d[el][oxi_state] = [s]
                 else:
-                    d[key] = [s]
+                    d[el] = {oxi_state: [s]}
 
-        return d
+        if nested:
+            return d
+        return {f"{el}({val})": species for el, val_dict in d.items() for val, species in val_dict.items()}
 
-    def get_el_amt_dict(self):
+    def get_el_amt_dict(self, nested: bool = False) -> dict[str, float] | dict[str, dict[float | str, float]]:
         """
         Return a dict of Element: amount in mol.
 
-        Elements (keys) are suffixed with their oxidation state in parentheses,
-        e.g. "Fe(2.0)", "Cl(-1.0)".
+        Args:
+            nested : bool
+                Whether to return a nested dictionary of <element>
+                to <valence> => amount mapping. False by default.
+
+        Returns:
+            A mapping of element to its amount in moles in the solution.
+
+            If nested is False (default), elements (keys) are suffixed with
+            their oxidation state in parentheses, e.g.,
+
+            {"Fe(2.0)": 0.354, "Cl(-1.0)": 0.708}
+
+            If nested is True, the dictionary is nested, e.g.,
+
+            {"Fe": {2.0: 0.354}, "Cl": {-1.0: 0.708}}.}
+
+            Note that the valence may be a string, assuming the value "unk"
+            denoting an unknown oxidation state.
         """
         d = {}
         for s, mol in self.components.items():
@@ -1162,13 +1201,17 @@ class Solution(MSONable):
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
-                key = f"{el}({oxi_state})"
-                if d.get(key):
-                    d[key] += stoich * mol
+                if d.get(el):
+                    if d[el].get(oxi_state):
+                        d[el][oxi_state] += stoich * mol
+                    else:
+                        d[el][oxi_state] = stoich * mol
                 else:
-                    d[key] = stoich * mol
+                    d[el] = {oxi_state: stoich * mol}
 
-        return d
+        if nested:
+            return d
+        return {f"{el}({val})": amount for el, val_dict in d.items() for val, amount in val_dict.items()}
 
     def get_total_amount(self, element: str, units: str) -> Quantity:
         """

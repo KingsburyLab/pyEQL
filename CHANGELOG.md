@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- `get_components_by_element`: A new keyword argument `nested` was added to methods `get_components_by_element`
+  and `get_el_amt_dict` of the `Solution` class. It defaults to `False` (no change from prior behavior), but
+  can be set to `True` to return a 2-level dictionary, with the element symbol as the key at the top level, and
+  the valence (float, or "unk" for unknown) as the key at the second level. This should make it easier for future
+  code to calculate the total amount of a given element regardless of its valence. (#284, @vineetbansal)
+
 ## [1.3.2] - 2025-09-15
 
 ### Fixed
