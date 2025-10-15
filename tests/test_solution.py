@@ -1032,7 +1032,9 @@ class TestSolutionAdd:
             solution.equilibrate()
 
         assert "amounts of species ['Rh2O3(aq)', 'Rh[+3]'] were not modified by PHREEQC" in caplog.text
-        assert "Adding all components for element Rh" in caplog.text
+        assert (
+            "PHREEQC discarded element Rh during equilibration. Adding all components for this element." in caplog.text
+        )
         assert "Rh[+3]" in solution.components  # still there
         assert "Rh2O3(aq)" in solution.components  # still there
 
