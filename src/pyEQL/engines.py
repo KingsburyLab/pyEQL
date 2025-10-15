@@ -703,6 +703,7 @@ class NativeEOS(EOS):
                         component: self._stored_comp[component]
                         for components in orig_components_by_element[el].values()
                         for component in components
+                        if component not in solution.components
                     }
                 )
 
