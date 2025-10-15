@@ -697,7 +697,9 @@ class NativeEOS(EOS):
             # If this element went "missing", add back all components that
             # contain this element (for any valence value)
             if orig_el_amount - new_el_amount > _atol:
-                logger.info(f"Adding all components for element {el}")
+                logger.info(
+                    f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
+                )
                 solution.components.update(
                     {
                         component: self._stored_comp[component]
