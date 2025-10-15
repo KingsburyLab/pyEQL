@@ -1019,7 +1019,7 @@ class Solution(MSONable):
 
     # Concentration  Methods
 
-    def get_amount(self, solute: str, units: str = "mol/L", components: FormulaDict | None = None) -> Quantity:
+    def get_amount(self, solute: str, units: str = "mol/L") -> Quantity:
         """
         Return the amount of 'solute' in the parent solution.
 
@@ -1042,8 +1042,6 @@ class Solution(MSONable):
                         'mol/L','mol/kg','mol', 'kg', and 'g/L'
                         Use 'fraction' to return the mole fraction.
                         Use '%' to return the mass percent
-            components: FormulaDict, optional
-                A FormulaDict of components to use instead of the solution's current components.
 
         Returns:
             The amount of the solute in question, in the specified units
@@ -1058,9 +1056,6 @@ class Solution(MSONable):
             :meth:`get_total_moles_solute`
             :func:`pyEQL.utils.interpret_units`
         """
-        if components is None:
-            components = self.components
-
         z = 1
         # sanitized unit to be passed to pint
         if "eq" in units:
@@ -1073,7 +1068,7 @@ class Solution(MSONable):
 
         # retrieve the number of moles of solute and its molecular weight
         try:
-            moles = ureg.Quantity(components[solute], "mol")
+            moles = ureg.Quantity(self.components[solute], "mol")
         # if the solute is not present in the solution, we'll get a KeyError
         # In that case, the amount is zero
         except KeyError:
@@ -1218,7 +1213,7 @@ class Solution(MSONable):
             return d
         return {f"{el}({val})": amount for el, val_dict in d.items() for val, amount in val_dict.items()}
 
-    def get_total_amount(self, element: str, units: str, components: FormulaDict | None = None) -> Quantity:
+    def get_total_amount(self, element: str, units: str) -> Quantity:
         """
         Return the total amount of 'element' (across all solutes) in the solution.
 
@@ -1229,8 +1224,6 @@ class Solution(MSONable):
             units : str
                 Units desired for the output. Any unit understood by `get_amount` can be used. Examples of valid
                 units are 'mol/L','mol/kg','mol', 'kg', and 'g/L'.
-            components: FormulaDict, optional
-                A FormulaDict of components to use instead of the solution's current components.
 
         Returns:
             The total amount of the element in the solution, in the specified units
@@ -1239,9 +1232,6 @@ class Solution(MSONable):
             :meth:`get_amount`
             :func:`pyEQL.utils.interpret_units`
         """
-        if components is None:
-            components = self.components
-
         _units = interpret_units(units)
         TOT: Quantity = ureg.Quantity(0, _units)
 
@@ -1250,7 +1240,7 @@ class Solution(MSONable):
         units = interpret_units(units)
 
         # enumerate the species whose concentrations we need
-        comp_by_element = self.get_components_by_element(components)
+        comp_by_element = self.get_components_by_element()
 
         # compile list of species in different ways depending whether there is an oxidation state
         if "(" in element and UNKNOWN_OXI_STATE not in element:
@@ -1264,9 +1254,9 @@ class Solution(MSONable):
                     species.extend(v)
 
         # loop through the species of interest, adding moles of element
-        for item, amt in components.items():
+        for item, amt in self.components.items():
             if item in species:
-                amt = self.get_amount(item, units, components=components)
+                amt = self.get_amount(item, units)
                 ion = Ion.from_formula(item)
 
                 # convert the solute amount into the amount of element by

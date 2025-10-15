@@ -665,6 +665,11 @@ class NativeEOS(EOS):
         # store the original solvent mass
         orig_solvent_moles = solution.components[solution.solvent]
 
+        # store the original solvent elements and components with that element
+        # that we may need to add back later.
+        orig_el_dict = solution.get_el_amt_dict(nested=True)
+        orig_components_by_element = solution.get_components_by_element(nested=True)
+
         solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
@@ -673,30 +678,33 @@ class NativeEOS(EOS):
 
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
-        all_missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
-        if len(all_missing_species) > 0:
+        missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
+        if len(missing_species) > 0:
             logger.warning(
-                f"After equilibration, the amounts of species {all_missing_species} were not modified "
+                f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
                 "by PHREEQC. These species are likely absent from its database."
             )
 
-            # tolerance (in moles) for detecting cases where an element amount
-            # is no longer balanced because of species that are not recognized
-            # by PHREEQC.
-            _atol = 1e-16
+        # tolerance (in moles) for detecting cases where an element amount
+        # is no longer balanced because of species that are not recognized
+        # by PHREEQC.
+        _atol = 1e-16
 
-            for missing_species in all_missing_species:
-                elements = solution.get_property(missing_species, "elements")
-                for el in elements:
-                    orig_el_amount = solution.get_total_amount(el, "mol", components=self._stored_comp)
-                    el_amount = solution.get_total_amount(el, "mol")
-                    if orig_el_amount - el_amount > ureg.Quantity(_atol, "mol"):
-                        logger.debug(
-                            f"{missing_species} is needed to balance element {el} (original={orig_el_amount}, new={el_amount})"
-                        )
-                        solution.components[missing_species] = self._stored_comp[missing_species]
-                        # Only re-add the species once
-                        break
+        for el in orig_el_dict:
+            orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
+            new_el_amount = solution.get_total_amount(el, units="mol").magnitude
+
+            # If this element went "missing", add back all components that
+            # contain this element (for any valence value)
+            if orig_el_amount - new_el_amount > _atol:
+                logger.info(f"Adding all components for element {el}")
+                solution.components.update(
+                    {
+                        component: self._stored_comp[component]
+                        for components in orig_components_by_element[el].values()
+                        for component in components
+                    }
+                )
 
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.

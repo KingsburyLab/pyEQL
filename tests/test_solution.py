@@ -980,22 +980,28 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    def test_should_replace_monatomic_species_from_engine(engine) -> None:
+    def test_should_replace_monatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution without specifying the charge on the ion,
         # `.equilibrate()` should replace the ion with the ion with the charge
         # defined in the phreeqc database.
         solution = Solution({"Na": "1 mg/L"}, balance_charge="auto", engine=engine)
         assert "Na(aq)" in solution.components
         assert "Na[+1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Na", "mol")
 
-        solution.equilibrate()
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
 
+        assert "amounts of species ['Na(aq)'] were not modified by PHREEQC" in caplog.text
         assert "Na[+1]" in solution.components  # correct charge assignment
         assert "Na(aq)" not in solution.components
+        new_el_amount = solution.get_total_amount("Na", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    def test_should_replace_diatomic_species_from_engine(engine) -> None:
+    def test_should_replace_diatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying the charge on the ion
         # that is different from the one determined by phreeqc,
         # `.equilibrate()` should replace the ion with the ion with the charge
@@ -1004,21 +1010,31 @@ class TestSolutionAdd:
         assert "ReO4[-2]" in solution.components
         assert "ReO4[-1]" not in solution.components
 
-        solution.equilibrate()
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
         # [ReO4-2] is not in phreeqc, but the element Re[+7] is, so it comes
         # up with ReO4[-1] as the species and replaces our incorrect ReO4[-2].
+        assert "amounts of species ['ReO4[-2]'] were not modified by PHREEQC" in caplog.text
         assert "ReO4[-1]" in solution.components
         assert "ReO4[-2]" not in solution.components
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    def test_should_not_discard_missing_species_from_engine(engine) -> None:
+    def test_should_not_discard_missing_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying a species with an element
         # that is not found in phreeqc, the species should not be discarded.
-        solution = Solution({"Rh+3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        solution = Solution({"Rh+3": "0.001 mg/L", "Rh2O3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
         assert "Rh[+3]" in solution.components
-        solution.equilibrate()
+        assert "Rh2O3(aq)" in solution.components
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        assert "amounts of species ['Rh2O3(aq)', 'Rh[+3]'] were not modified by PHREEQC" in caplog.text
+        assert "Adding all components for element Rh" in caplog.text
         assert "Rh[+3]" in solution.components  # still there
+        assert "Rh2O3(aq)" in solution.components  # still there
 
 
 class TestZeroSoluteVolume:
