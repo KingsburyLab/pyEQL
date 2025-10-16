@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the valence (float, or "unk" for unknown) as the key at the second level. This should make it easier for future
   code to calculate the total amount of a given element regardless of its valence. (#284, @vineetbansal)
 
+### Fixed
+
+- `NativeEOS` `equilibrate`: We check if the total amount for any element decreases (within a tolerance of 1e-16 moles)
+  after speciation. If so, we add all species containing that element back in (unless they have been added by Phreeqc
+  already). As a result, we replace neutral (aq) molecules, and ions with incorrect charge, with ions with charge
+  determined by phreeqc, without double-counting. Missing elements (e.g. Rh) are handled correctly as well, since species
+  with the missing element are re-introduced in the solution. (#282, @vineetbansal)
+
 ## [1.3.2] - 2025-09-15
 
 ### Fixed

@@ -18,7 +18,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.utils import standardize_formula
+from pyEQL.utils import FormulaDict, standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
@@ -665,22 +665,50 @@ class NativeEOS(EOS):
         # store the original solvent mass
         orig_solvent_moles = solution.components[solution.solvent]
 
+        # store the original solvent elements and components with that element
+        # that we may need to add back later.
+        orig_el_dict = solution.get_el_amt_dict(nested=True)
+        orig_components_by_element = solution.get_components_by_element(nested=True)
+
+        solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
         for s, mol in self.ppsol.species_moles.items():
             solution.components[s] = mol
-
-        # make sure all species are accounted for
-        assert set(self._stored_comp.keys()) - set(solution.components.keys()) == set()
 
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
         if len(missing_species) > 0:
             logger.warning(
-                f"After equilibration, the amounts of species {missing_species} were not modified "
+                f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
                 "by PHREEQC. These species are likely absent from its database."
             )
+
+        # tolerance (in moles) for detecting cases where an element amount
+        # is no longer balanced because of species that are not recognized
+        # by PHREEQC.
+        _atol = 1e-16
+
+        new_el_dict = solution.get_el_amt_dict(nested=True)
+        for el in orig_el_dict:
+            orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
+            new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
+
+            # If this element went "missing", add back all components that
+            # contain this element (for any valence value)
+            if orig_el_amount - new_el_amount > _atol:
+                logger.info(
+                    f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
+                )
+                solution.components.update(
+                    {
+                        component: self._stored_comp[component]
+                        for components in orig_components_by_element[el].values()
+                        for component in components
+                        if component not in solution.components
+                    }
+                )
 
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
