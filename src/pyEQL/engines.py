@@ -690,9 +690,10 @@ class NativeEOS(EOS):
         # by PHREEQC.
         _atol = 1e-16
 
+        new_el_dict = solution.get_el_amt_dict(nested=True)
         for el in orig_el_dict:
             orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
-            new_el_amount = solution.get_total_amount(el, units="mol").magnitude
+            new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
 
             # If this element went "missing", add back all components that
             # contain this element (for any valence value)

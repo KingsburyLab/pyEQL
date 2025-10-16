@@ -1009,6 +1009,7 @@ class TestSolutionAdd:
         solution = Solution({"ReO4-2": "0.001 mg/L"}, balance_charge="auto", engine=engine)
         assert "ReO4[-2]" in solution.components
         assert "ReO4[-1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Re", "mol")
 
         with caplog.at_level(logging.INFO, "pyEQL"):
             solution.equilibrate()
@@ -1018,6 +1019,9 @@ class TestSolutionAdd:
         assert "amounts of species ['ReO4[-2]'] were not modified by PHREEQC" in caplog.text
         assert "ReO4[-1]" in solution.components
         assert "ReO4[-2]" not in solution.components
+        new_el_amount = solution.get_total_amount("Re", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
@@ -1027,6 +1031,7 @@ class TestSolutionAdd:
         solution = Solution({"Rh+3": "0.001 mg/L", "Rh2O3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
         assert "Rh[+3]" in solution.components
         assert "Rh2O3(aq)" in solution.components
+        orig_el_amount = solution.get_total_amount("Rh", "mol")
 
         with caplog.at_level(logging.INFO, "pyEQL"):
             solution.equilibrate()
@@ -1037,6 +1042,9 @@ class TestSolutionAdd:
         )
         assert "Rh[+3]" in solution.components  # still there
         assert "Rh2O3(aq)" in solution.components  # still there
+        new_el_amount = solution.get_total_amount("Rh", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
 
 
 class TestZeroSoluteVolume:
