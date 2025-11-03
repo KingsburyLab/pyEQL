@@ -37,6 +37,9 @@ Package = "https://pypi.org/project/pyEQL"
 
 
 [project.optional-dependencies]
+phreeqc = [
+    "pyEQL-phreeqc",
+    ]
 testing = [
     "setuptools>=68",
     "pre-commit>=2",
