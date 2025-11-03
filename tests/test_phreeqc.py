@@ -257,3 +257,41 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s6_Ca.equilibrate()
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+
+def test_equilibrate_vacuum():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate()
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
+
+
+def test_equilibrate_with_atm():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True)
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
+
+
+def test_equilibrate_with_co2_pp():
+    # Specify partial pressure of equilibrium gas(es) directly, as log10_<partial_pressure> values.
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(gases={"CO2": -2})
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
+
+
+def test_equilibrate_with_co2_pp_atm():
+    # Specify partial pressure of equilibrium gas(es) directly, but in some recognizable units.
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(gases={"CO2": "0.01 atm"})
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
+
+
+def test_equilibrate_with_calcite():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
+
+
+def test_equilibrate_with_calcite_and_atm():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(None)  # TODO: fill-in
