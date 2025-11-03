@@ -133,9 +133,9 @@ def test_conductivity(s1):
 
     for conc, cond in zip([0.001, 0.05, 0.1], [123.68, 111.01, 106.69], strict=False):
         s1 = Solution({"Na+": f"{conc} mol/L", "Cl-": f"{conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5
-        ), f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, conc * cond / 10, atol=0.5), (
+            f"Conductivity test failed for NaCl at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        )
 
     # higher concentration data points from Appelo, 2017 Figure 4.
     s1 = Solution({"Na+": "2 mol/kg", "Cl-": "2 mol/kg"})
@@ -143,10 +143,10 @@ def test_conductivity(s1):
 
     # MgCl2
     for conc, cond in zip([0.001, 0.05, 0.1], [124.15, 114.49, 97.05], strict=False):
-        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2*conc} mol/L"})
-        assert np.isclose(
-            s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1
-        ), f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        s1 = Solution({"Mg+2": f"{conc} mol/L", "Cl-": f"{2 * conc} mol/L"})
+        assert np.isclose(s1.conductivity.to("S/m").magnitude, 2 * conc * cond / 10, atol=1), (
+            f"Conductivity test failed for MgCl2 at {conc} mol/L. Result = {s1.conductivity.to('S/m').magnitude}"
+        )
 
     # per CRC handbook "standard KCl solutions for calibrating conductiVity cells",
     # 0.1m KCl has a conductivity of 12.824 mS/cm at 25 C
