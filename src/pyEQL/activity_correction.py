@@ -14,6 +14,7 @@ are called from within the get_activity_coefficient method of the Solution class
 """
 
 import logging
+import math
 
 import numpy as np
 from pint import Quantity
