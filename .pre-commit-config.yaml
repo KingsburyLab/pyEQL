@@ -21,11 +21,6 @@ repos:
       # Run the formatter. This WILL run on .ipynb files
       - id: ruff-format
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
-    hooks:
-      - id: black
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
