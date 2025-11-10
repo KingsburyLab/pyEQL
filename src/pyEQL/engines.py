@@ -695,6 +695,8 @@ class NativeEOS(EOS):
         orig_el_dict = solution.get_el_amt_dict(nested=True)
         orig_components_by_element = solution.get_components_by_element(nested=True)
 
+        # Use supplied gases, merged with atmospheric gases
+        # if atmosphere == True
         gases = (ATMOSPHERE if atmosphere else {}) | (gases or {})
 
         # Mapping from phase name to:
