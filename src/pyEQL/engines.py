@@ -8,6 +8,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 import copy
 import logging
+import math
 import os
 import warnings
 from abc import ABC, abstractmethod
@@ -18,6 +19,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
+from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
@@ -656,8 +658,31 @@ class NativeEOS(EOS):
 
         return solute_vol.to("L")
 
-    def equilibrate(self, solution: "solution.Solution") -> None:
-        """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str] | None = None,
+    ) -> None:
+        """
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
+
+        Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database,
+                and is assumed to have a saturation index of 1 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration in string format. (unit interpretation
+                and conversion is attempted on the values).
+        """
         if self.ppsol is not None:
             self.ppsol.forget()
         self._setup_ppsol(solution)
@@ -669,6 +694,31 @@ class NativeEOS(EOS):
         # that we may need to add back later.
         orig_el_dict = solution.get_el_amt_dict(nested=True)
         orig_components_by_element = solution.get_components_by_element(nested=True)
+
+        gases = (ATMOSPHERE if atmosphere else {}) | (gases or {})
+
+        # Mapping from phase name to:
+        #   (<saturation_index>, <amount_in_moles>) tuples (for solids).
+        #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
+        phases = {}
+        if solids is not None:
+            # Assume saturation index of 1 for all solids.
+            phases |= dict.fromkeys(solids, (1, EQUILIBRIUM_PHASE_AMOUNT))
+
+        for k, v in gases.items():
+            v_quantity = ureg.Quantity(v)
+            if v_quantity.dimensionless:
+                log_partial_pressure = v_quantity.magnitude
+            else:
+                log_partial_pressure = math.log10(v_quantity.to("atm").magnitude)
+            phases |= {f"{k}(g)": (log_partial_pressure, EQUILIBRIUM_PHASE_AMOUNT)}
+
+        if phases:
+            phase_names = list(phases.keys())
+            saturation_indices = [v[0] for v in phases.values()]
+            amounts = [v[1] for v in phases.values()]
+
+            self.ppsol.equalize(phases=phase_names, to_si=saturation_indices, in_phase=amounts)
 
         solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
