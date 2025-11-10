@@ -19,7 +19,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.presets import ATMOSPHERE
+from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
@@ -695,32 +695,23 @@ class NativeEOS(EOS):
         orig_el_dict = solution.get_el_amt_dict(nested=True)
         orig_components_by_element = solution.get_components_by_element(nested=True)
 
-        if atmosphere:
-            if gases is not None:
-                raise ValueError("When equilibrating with atmosphere, please do not specify gases.")
-            gases = ATMOSPHERE
+        gases = (ATMOSPHERE if atmosphere else {}) | (gases or {})
 
         # Mapping from phase name to:
         #   (<saturation_index>, <amount_in_moles>) tuples (for solids).
         #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
-
-        # We assume an amount of 10 moles for all solids/gases.
-        # See `https://wwwbrr.cr.usgs.gov/projects/GWC_coupled/phreeqc/html/final-38.html`:
-        #   If amount is equal to zero, then the phase can not dissolve, but
-        #   will precipitate if the solution becomes supersaturated with the
-        #   phase.
         phases = {}
         if solids is not None:
             # Assume saturation index of 1 for all solids.
-            phases |= dict.fromkeys(solids, (1, 10))
-        if gases is not None:
-            for k, v in gases.items():
-                v_quantity = ureg.Quantity(v)
-                if v_quantity.dimensionless:
-                    log_partial_pressure = v_quantity.magnitude
-                else:
-                    log_partial_pressure = math.log10(v_quantity.to("atm").magnitude)
-                phases |= {f"{k}(g)": (log_partial_pressure, 10)}
+            phases |= dict.fromkeys(solids, (1, EQUILIBRIUM_PHASE_AMOUNT))
+
+        for k, v in gases.items():
+            v_quantity = ureg.Quantity(v)
+            if v_quantity.dimensionless:
+                log_partial_pressure = v_quantity.magnitude
+            else:
+                log_partial_pressure = math.log10(v_quantity.to("atm").magnitude)
+            phases |= {f"{k}(g)": (log_partial_pressure, EQUILIBRIUM_PHASE_AMOUNT)}
 
         if phases:
             phase_names = list(phases.keys())
