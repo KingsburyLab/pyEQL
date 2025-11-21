@@ -257,3 +257,58 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s6_Ca.equilibrate()
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+
+def test_equilibrate_liquid():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate()
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(1.654340558452752)
+
+
+def test_equilibrate_with_atm():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(1.0422861990051868)
+    # No aqueous N2
+    assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0)
+
+
+def test_equilibrate_with_n2_pp():
+    # Specify partial pressure of equilibrium gas(es) directly, as log10_<partial_pressure> values.
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(gases={"N2": -0.1079}, solids=["Calcite"])
+    assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0.0007084184487814338)
+
+
+def test_equilibrate_with_co2_pp_and_atm():
+    # Along with atmospheric composition, (atmosphere=True),
+    # Specify partial pressure of equilibrium gas(es), as log10_<partial_pressure> values.
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, gases={"CO2": -2})
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(2.0966131693539927)
+
+
+def test_equilibrate_with_co2_pp_atm():
+    # Specify partial pressure of equilibrium gas(es) directly, but in some recognizable units.
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(gases={"CO2": "0.01 atm"})
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(2.0966131693539927)
+
+
+def test_equilibrate_with_calcite():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(1.6597326160055588)
+
+
+def test_equilibrate_with_calcite_and_atm():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(1.0422861990051895)
+
+
+def test_equilibrate_unrecognized_component():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    # Specifying an unrecognized solid raises an Exception
+    with pytest.raises(Exception):  # noqa: B017, PT011
+        solution.equilibrate(solids=["Ferroxite"])
