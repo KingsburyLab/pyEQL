@@ -257,3 +257,29 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s6_Ca.equilibrate()
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+
+def test_equilibrate_ca_co3_liquid():
+    solution = Solution([["Ca+2", "0.01 mol/L"], ["CO3-2", "0.01 mol/L"]], volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    assert solution.get_total_amount("Ca", "mol").magnitude == pytest.approx(0.01)
+
+
+def test_equilibrate_ca_co3_with_atm():
+    solution = Solution([["Ca+2", "0.01 mol/L"], ["CO3-2", "0.01 mol/L"]], volume="1 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, solids=["Calcite"])
+    assert solution.get_total_amount("Ca", "mol").magnitude == pytest.approx(0.00636, rel=0.01)
+    assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0, abs=1e-6)
+
+
+def test_equilibrate_ca_co3_with_n2_pp():
+    solution = Solution([["Ca+2", "0.01 mol/L"], ["CO3-2", "0.01 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(gases={"N2": -0.1079})
+    assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0.00206, rel=0.01)
+
+
+def test_equilibrate_calcite_with_co2():
+    solution = Solution(volume="1 L", pH=8.4, engine="phreeqc")
+    solution.equilibrate(solids=["Calcite"])
+    solution.equilibrate(gases={"CO2": -3.5})
+    assert solution.get_total_amount("Ca", "mol").magnitude == pytest.approx(0.000366, rel=0.01)
