@@ -308,4 +308,10 @@ def test_run_logstring():
         if exp:  # ignore blank lines
             got_first = got.split()[0]
             exp_first = exp.split()[0]
+
+            # The `---` lines seem to have different width depending on
+            # platform. In those cases just move on.
+            if got_first.startswith("---") and exp_first.startswith("---"):
+                continue
+
             assert got_first == exp_first
