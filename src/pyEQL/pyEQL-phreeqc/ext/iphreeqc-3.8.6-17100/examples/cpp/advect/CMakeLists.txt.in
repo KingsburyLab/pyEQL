@@ -1,0 +1,20 @@
+# set minimum cmake version
+cmake_minimum_required(VERSION 3.10)
+
+# set project name along with language
+project(advect_c CXX)
+
+# copy necessary files into build directory
+configure_file(phreeqc.dat phreeqc.dat COPYONLY)
+configure_file(ic ic COPYONLY)
+
+# find IPhreeqc export package
+# set CMAKE_PREFIX_PATH or IPhreeqc_DIR to the
+# location of the IPhreeqcConfig.cmake file
+find_package(IPhreeqc 3 REQUIRED)
+
+# add executable target
+add_executable(advect_cxx advect.cpp)
+
+# set link libraries as well as include paths
+target_link_libraries(advect_cxx IPhreeqc::IPhreeqc)

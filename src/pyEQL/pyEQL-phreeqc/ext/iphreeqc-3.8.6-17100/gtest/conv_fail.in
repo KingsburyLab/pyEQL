@@ -1,0 +1,11 @@
+SOLUTION 1
+	pH	7
+	Na	1
+PHASES
+	Fix_H+
+	H+ = H+
+	log_k	0
+EQUILIBRIUM_PHASES
+	Fix_H+ -10 HCl	10
+##SELECTED_OUTPUT
+END

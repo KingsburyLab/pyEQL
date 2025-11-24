@@ -1,0 +1,158 @@
+# Concrete minerals
+# Read this file in your input file with 
+#        INCLUDE$ c:\phreeqc\database\concrete_phr.dat
+
+PRINT; -reset false
+
+# # AFm (short for monosulfoaluminate) is an anion-exchanger, with the general formula Ca4Al2(Y-2)(OH)12:6H2O.
+# # Listed are the solubilities of end-members in the neutral form as Y-AFm, and with 5% surface charge as Y-AFmsura.
+# #
+# # Example of the combination of the charged AFmsura and charge-balancing EDL calculations:
+# SURFACE_MASTER_SPECIES
+# Sura Sura+
+# SURFACE_SPECIES
+# Sura+ = Sura+
+# SOLUTION 1
+# pH 7 charge
+# REACTION 1
+# Ca3O3Al2O3 1 gypsum 1; 0.113 # MW gfw("Ca3O3Al2O3CaSO4(H2O)2") = 442.4. 0.113 for w/s = 20
+# SAVE solution 2
+# END
+
+# RATES
+# Sum_all_AFmsura # Sums up with the single charge formula, Ca2Al...
+# 10 tot_ss = 2 * equi("AFmsura")
+# 20 SAVE (m - tot_ss) * time
+# -end
+
+# USE solution 2
+# EQUILIBRIUM_PHASES 2
+# AFmsura 0 0
+# KINETICS 2
+# Sum_all_AFmsura; -formula H2O 0; -m0 0; -time_step 30
+# SURFACE 2
+# Sura Sum_all_AFmsura kin 0.05 8.6e3; -donnan debye 2 ; -equil 1
+# END
+
+PHASES
+Portlandite # Reardon, 1990
+  Ca(OH)2 = Ca+2 + 2 OH-
+  -log_k -5.19; -Vm 33.1
+
+Gibbsite
+  Al(OH)3 + OH- = Al(OH)4-
+  -log_k  -1.123;  -Vm  32.2
+  -analyt  -7.234  1.068e-2  0  1.1829 # data from Wesolowski, 1992, GCA 56, 1065
+
+# AFm with a single exchange site...
+OH-AFm # Appelo, 2021
+  Ca2AlOH(OH)6:6H2O = 2 Ca+2 + Al(OH)4- + 3 OH- + 6 H2O
+  -log_k  -12.84; -Vm  185
+OH-AFmsura
+  Ca2Al(OH)0.95(OH)6:6H2O+0.05 = 2 Ca+2 + Al(OH)4- + OH- + 1.95 OH- + 6 H2O
+  -log_k  -12.74; -Vm  185
+
+Cl-AFm # Friedel's salt.  Appelo, 2021
+  Ca2AlCl(OH)6:2H2O = 2 Ca+2 + Al(OH)4- + Cl- + 2 OH- + 2 H2O
+  -log_k  -13.68; -Vm  136
+Cl-AFmsura
+  Ca2AlCl0.95(OH)6:2H2O+0.05 = 2 Ca+2 + Al(OH)4- + 0.95 Cl- + 2 OH- + 2 H2O
+  -log_k  -13.59; -Vm  136
+
+# AFm with a double exchange site...
+SO4-AFm # Monosulfoaluminate. Appelo, 2021
+  Ca4Al2(SO4)(OH)12:6H2O = 4 Ca+2 + 2 Al(OH)4- + SO4-2 + 4 OH- + 6 H2O
+  -log_k  -29.15; -Vm  309
+SO4-AFmsura
+  Ca4Al2(SO4)0.95(OH)12:6H2O+0.1 = 4 Ca+2 + 2 Al(OH)4- + 0.95   SO4-2 + 4 OH- + 6 H2O
+  -log_k  -28.88; -Vm  309
+
+SO4-OH-AFm # Hemisulfoaluminate. Appelo, 2021
+  Ca4Al2(SO4)0.5(OH)(OH)12:9H2O = 4 Ca+2 + 2 Al(OH)4- + 0.5 SO4-2 + 5 OH- + 9 H2O
+  -log_k  -27.24; -Vm  340
+SO4-OH-AFmsura
+  Ca4Al2(SO4)0.475(OH)0.95(OH)12:9H2O+0.1 = 4 Ca+2 + 2 Al(OH)4- + 0.475 SO4-2 + 4.95 OH- + 9 H2O
+  -log_k  -26.94; -Vm  340
+
+CO3-AFm # Monocarboaluminate. Appelo, 2021
+  Ca4Al2(CO3)(OH)12:5H2O = 4 Ca+2 + 2 Al(OH)4- + CO3-2 + 4 OH- + 5 H2O
+  -log_k  -31.32; -Vm  261
+CO3-AFmsura
+  Ca4Al2(CO3)0.95(OH)12:5H2O+0.1 = 4 Ca+2 + 2 Al(OH)4- + 0.95  CO3-2 + 4 OH- + 5 H2O
+  -log_k  -31.05; -Vm  261
+
+CO3-OH-AFm # Hemicarboaluminate. Appelo, 2021
+  Ca4Al2(CO3)0.5(OH)(OH)12:5.5H2O = 4 Ca+2 + 2 Al(OH)4- + 0.5 CO3-2 + 5 OH- + 5.5 H2O
+  -log_k  -29.06; -Vm  284
+CO3-OH-AFmsura
+  Ca4Al2(CO3)0.475(OH)0.95(OH)12:5.5H2O+0.1 = 4 Ca+2 + 2 Al(OH)4- + 0.475 CO3-2 + 4.95 OH- + 5.5 H2O
+  -log_k  -28.84; -Vm  284
+
+SO4-Cl-AFm # Kuzel's salt. Appelo, 2021
+  Ca4Al2(SO4)0.5Cl(OH)12:5H2O = 4 Ca+2 + 2 Al(OH)4- + 0.5 SO4-2 + Cl- + 4 OH- + 5 H2O
+  -log_k  -28.52; -Vm  290
+SO4-Cl-AFmsura
+  Ca4Al2(SO4)0.475Cl0.95(OH)12:5H2O+0.1 = 4 Ca+2 + 2 Al(OH)4- + 0.475 SO4-2 + 0.95 Cl- + 4 OH- + 5 H2O
+  -log_k  -28.41; -Vm  290
+
+SO4-AFem # Lothenbach 2019
+  Ca4Fe2(SO4)(OH)12:6H2O = 4 Ca+2 + 2 Fe(OH)4- + SO4-2 + 4 OH- + 6 H2O
+  -log_k  -31.57;  -Vm  321
+CO3-AFem # Lothenbach 2019
+  Ca4Fe2(CO3)(OH)12:6H2O = 4 Ca+2 + 2 Fe(OH)4- + CO3-2 + 4 OH- + 6 H2O
+  -log_k  -34.59;  -Vm  292
+CO3-OH-AFem # Lothenbach 2019. ?? 3.5 H2O??
+  Ca4Fe2(CO3)0.5(OH)(OH)12:3.5H2O = 4 Ca+2 + 2 Fe(OH)4- + 0.5 CO3-2 + 5 OH- + 3.5 H2O
+  -log_k  -30.83;  -Vm  273
+
+Ettringite # Matschei, 2007, fig. 27
+  Ca6Al2(SO4)3(OH)12:26H2O = 6 Ca+2 + 2 Al(OH)4- + 3 SO4-2 + 4 OH- + 26 H2O
+  -log_k  -44.8; -Vm  707
+  -analyt  334.09  0  -26251  -117.57  # 5 - 75 C
+
+CO3-ettringite # Matschei, 2007, tbl 13
+  Ca6Al2(CO3)3(OH)12:26H2O = 6 Ca+2 + 2 Al(OH)4- + 3 CO3-2 + 4 OH- + 26 H2O;
+  -log_k  -46.50; -Vm  652
+
+C2AH8 # Matschei, fig. 19
+  Ca2Al2(OH)10:3H2O = 2 Ca+2 + 2 Al(OH)4- + 2 OH- + 3 H2O
+  -log_k  -13.55; -Vm  184 
+  -analyt  -225.37  -0.12380  0  100.522 # 1 - 50 ºC
+
+CAH10  # Matschei, fig. 19
+  CaAl2(OH)8:6H2O = Ca+2 + 2 Al(OH)4- + 6 H2O
+  -log_k  -7.60; -Vm  194
+  -delta_h  43.2 # 1 - 20 ºC
+
+Hydrogarnet_Al # Matschei, 2007, Table 5
+  (CaO)3Al2O3(H2O)6 = 3 Ca+2 + 2 Al(OH)4- + 4 OH-
+  -log_k -20.84; -Vm 150
+ # -analyt  -20.64  -0.002  0  0.16 # 5 - 105 ºC
+ # -delta_h 6.4 kJ # Geiger et al., 2012, AM 97, 1252-1255
+
+Hydrogarnet_Fe # Lothenbach 2019
+  (CaO)3Fe2O3(H2O)6 = 3 Ca+2 + 2 Fe(OH)4- + 4 OH-
+  -log_k -26.3;  -Vm  155
+
+Hydrogarnet_Si # Matschei, 2007, Table 6
+  Ca3Al2Si0.8(OH)15.2 = 3 Ca+2 + 2 Al(OH)4- + 0.8 H4SiO4 + 4 OH-
+  -log_k  -33.69; -Vm 143
+  -analyt  -476.84  -0.2598  0  210.38 # 5 - 85 ºC
+
+Jennite # CSH2.1. Lothenbach 2019
+  Ca1.67SiO3.67:2.1H2O + 0.57 H2O = 1.67 Ca+2 + 2.34 OH- + H3SiO4-
+  -log_k  -13.12; -Vm  78.4
+
+Tobermorite-I # Lothenbach 2019
+  CaSi1.2O3.4:1.6H2O + 0.6 H2O = Ca+2 + 0.8 OH- + 1.2 H3SiO4-
+  -log_k -6.80; -Vm  70.4
+
+Tobermorite-II # Lothenbach 2019
+  Ca0.833SiO2.833:1.333H2O + 0.5 H2O = 0.833Ca+2 + 0.666 OH- + H3SiO4-
+  -log_k -7.99; -Vm  58.7
+
+PRINT; -reset true
+# Refs
+# Appelo 2021, Cem. Concr. Res. 140, https://doi.org/10.1016/j.cemconres.2020.106270.
+# Lothenbach, B. et al. 2019, Cem. Concr. Res. 115, 472-506.
+# Matschei, T. et al., 2007, Cem. Concr. Res. 37, 1379-1410. 

@@ -315,7 +315,8 @@ linkcheck_allowed_redirects = {
     r"http://pint\.readthedocs\.io": r"https://pint\.readthedocs\.io/.*/stable",
     r"https://tox\.wiki": r"https://tox\.wiki/.*",
 }
-linkcheck_ignore = [r"https://localhost:\d+/"]
+# https://idst.inl.gov/ is reachable, just not from the github runner.
+linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$"]
 linkcheck_rate_limit_timeout = 500
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)

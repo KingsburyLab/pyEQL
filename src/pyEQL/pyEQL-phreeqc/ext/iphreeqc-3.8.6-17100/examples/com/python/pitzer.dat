@@ -1,0 +1,790 @@
+SOLUTION_MASTER_SPECIES
+H	H+	     -1.     H	       1.008
+H(1)     H+	     -1.     0.0
+E	e-	     0.0     0.0	     0.0
+O	H2O	    0.0     O	       16.00
+O(-2)    H2O	    0.0     0.0
+Ca       Ca+2	   0.0     Ca	      40.08
+Mg       Mg+2	   0.0     Mg	      24.305
+Na       Na+	    0.0     Na	      22.9898
+K	K+	     0.0     K	       39.0983
+Fe       Fe+2	   0.0     Fe	      55.847
+Mn       Mn+2	   0.0     Mn	      54.938
+Ba       Ba+2	   0.0     Ba	      137.33
+Sr       Sr+2	   0.0     Sr	      87.62
+Cl       Cl-	    0.0     Cl	      35.453
+C	CO3-2	  2.0     HCO3	    12.0111
+C(4)     CO3-2	  2.0     HCO3	    12.0111
+Alkalinity CO3-2	1.0     Ca0.5(CO3)0.5   50.05
+S	SO4-2	  0.0     SO4	     32.064
+S(6)     SO4-2	  0.0     SO4
+B	B(OH)3	 0.0     B	       10.81
+Li       Li+	    0.0     Li	      6.941
+Br       Br-	    0.0     Br	      79.904
+SOLUTION_SPECIES
+
+H+ = H+
+	log_k	   0.000
+	-dw	 9.31e-9
+e- = e-
+	log_k	   0.000
+H2O = H2O
+	log_k	   0.000
+Ca+2 = Ca+2
+	log_k	   0.000
+	-dw	 0.793e-9
+	-millero -19.69 0.1058 -0.001256 1.617 -0.075 0.0008262
+Mg+2 = Mg+2
+	log_k	   0.000
+	-dw	 0.705e-9
+	-millero -22.32 0.0868 -0.0016 2.017 -0.125 0.001457
+Na+ = Na+
+	log_k	   0.000
+	-dw	 1.33e-9
+	-millero -3.46 0.1092 -0.000768 2.698 -0.106 0.001651
+K+ = K+
+	log_k	   0.000
+	-dw	 1.96e-9
+	-millero 7.26 0.0892 -0.000736 2.722 -0.101 0.00151
+Fe+2 = Fe+2
+	log_k	   0.000
+	-dw	 0.719e-9
+Mn+2 = Mn+2
+	log_k	   0.000
+	-dw	 0.688e-9
+Ba+2 = Ba+2
+	log_k	   0.000
+	-dw	 0.848e-9
+Sr+2 = Sr+2
+	log_k	   0.000
+	-dw	 0.794e-9
+	-millero -18.44 0.0082 -0.0006 1.727 -0.067 0.00084
+Cl- = Cl-
+	log_k	   0.000
+	-dw	 2.03e-9
+	-millero 16.37 0.0896 -0.001264 -1.494 0.034 -0.000621
+CO3-2 = CO3-2
+	log_k	   0.000
+	-dw	 0.955e-9
+	-millero -8.74 0.300 -0.004064 5.65;  # d is value for 25 oC, e and f not reported by Millero, 2000
+SO4-2 = SO4-2
+	log_k	   0.000
+	-dw	 1.07e-9
+	-millero 9.26 0.284 -0.003808 0.4348 -0.0099143 -8.4762e-05
+B(OH)3 = B(OH)3
+	log_k	   0.000
+	-dw	1.1e-9
+	-millero 36.56 0.130 -0.00081 # d, e and f not reported by Millero, 2000
+Li+ = Li+
+	log_k	   0.000
+	-dw	 1.03e-9
+Br- = Br-
+	log_k	   0.000
+	-dw	 2.01e-9
+	-millero 22.98 0.0934 -0.000968 -1.675 0.05 -0.001105
+H2O = OH- + H+
+	log_k	   -13.998
+	delta_h 13.345  kcal
+#	-analytic       -283.971       -0.05069842  13323.0    102.24447      -1119669.0
+	-dw	 5.27e-9
+CO3-2 + H+ = HCO3-
+	log_k	   10.3393
+	delta_h -3.561  kcal
+	-analytic       107.8975       0.03252849  -5151.79     -38.92561       563713.9
+	-dw	 1.18e-9
+	-millero 21.07 0.185 -0.002248 2.29 -0.006644 -3.667E-06
+CO3-2 + 2 H+ = CO2 + H2O
+	log_k	   16.6767
+	delta_h	 -5.738  kcal
+	-analytic       464.1925       0.09344813  -26986.16	-165.75951      2248628.9
+	-dw	 1.92e-9
+#CO3-2 + 2 H+ = CO2 + H2O
+#	log_k	   16.681
+#	delta_h -5.738  kcal
+#	-analytic       464.1965       0.09344813  -26986.16    -165.75951      2248628.9
+
+SO4-2 + H+ = HSO4-
+	log_k	   1.979
+	delta_h 4.91    kcal
+	-analytic      -5.3585     0.0183412   557.2461
+	-dw	 1.33e-9
+B(OH)3 + H2O = B(OH)4- + H+
+	log_k	   -9.239
+	delta_h 0   kcal
+
+3B(OH)3 = B3O3(OH)4- + 2H2O + H+
+	log_k	   -7.528
+	delta_h 0   kcal
+
+4B(OH)3 = B4O5(OH)4-2 + 3H2O + 2H+
+	log_k	   -16.134
+	delta_h 0   kcal
+
+Ca+2 + B(OH)3 + H2O = CaB(OH)4+ + H+
+	log_k	   -7.589
+	delta_h 0   kcal
+
+Mg+2 + B(OH)3 + H2O = MgB(OH)4+ + H+
+	log_k	   -7.840
+	delta_h 0   kcal
+
+Ca+2 + CO3-2 = CaCO3
+	log_k	   3.151
+	delta_h 3.547   kcal
+	-analytic       -1228.806     -0.299440    35512.75      485.818
+	-dw 4.46e-10	# complexes: calc'd with the Pikal formula
+Mg+2 + H2O = MgOH+ + H+
+	log_k	   -11.809
+	delta_h 15.419 kcal
+
+Mg+2 + CO3-2 = MgCO3
+	log_k	   2.928
+	delta_h 2.535   kcal
+	-analytic	-32.225     0.0	  1093.486    12.72433
+	-dw 4.21e-10
+
+PHASES
+Anhydrite
+	CaSO4 = Ca+2 + SO4-2
+	log_k	   -4.362
+	-analytic      422.950     0.0	 -18431.     -147.708
+
+Aragonite
+	CaCO3 = CO3-2 + Ca+2
+	log_k	   -8.336
+	delta_h -2.589 kcal
+	-analytic       -171.8607   -.077993    2903.293    71.595
+
+Arcanite
+	K2SO4  =  + 1.0000 SO4-- + 2.0000 K+
+	log_k	   -1.776
+	-analytic       2.823       0.0	 -1371.2
+
+Bischofite
+	MgCl2:6H2O  =  + 1.0000 Mg++ + 2.0000 Cl- + 6.0000 H2O
+	log_k	   4.455
+	-analytic       3.524       0.0	 277.6
+
+Bloedite
+	Na2Mg(SO4)2:4H2O  =  + 1.0000 Mg++ + 2.0000 Na+ + 2.0000 SO4-- + 4.0000 H2O
+	log_k	   -2.347
+	-delta_H	0	       # Not possible to calculate enthalpy of reaction	Bloedite
+Brucite
+	Mg(OH)2  =  + 1.0000 Mg++ + 2.0000 OH-
+	log_k	   -10.88
+	-delta_H	4.85    kcal/mol
+#	-analytic -1.0280e+002 -1.9759e-002 9.0180e+003 3.8282e+001 1.4075e+002
+#       -Range:  0-300
+
+Burkeite
+	Na6CO3(SO4)2  =  + 1.0000 CO3-2 + 2.0000 SO4-- + 6.0000 Na+
+	log_k	   -0.772
+
+Calcite
+	CaCO3 = CO3-2 + Ca+2
+	log_k	   -8.406
+	delta_h -2.297 kcal
+	-analytic       -171.8329    -0.077993      2839.319      71.595
+
+Carnallite
+	KMgCl3:6H2O  =  K+ + Mg++ + 3Cl- + 6H2O
+	log_k	   4.330
+
+Celestite
+	SrSO4 = Sr+2 + SO4-2
+	log_k	   -6.630
+	-analytic	35.3106    -0.00422837  0.	 -14.99586   -318312.
+
+Dolomite
+	CaMg(CO3)2 = Ca+2 + Mg+2 + 2 CO3-2
+	log_k	   -17.083
+	delta_h -9.436 kcal
+
+Epsomite
+	MgSO4:7H2O  =  Mg+2 + SO4-2 + 7 H2O
+	log_k	   -1.881
+	-analytical     1.718       0.0	 -1073.
+
+Gaylussite
+	CaNa2(CO3)2:5H2O = Ca+2 + 2 CO3-2 + 2 Na+ + 5 H2O
+	log_k	   -9.421
+
+Glaserite
+	NaK3(SO4)2 =  Na+ + 3K+ + 2SO4-2
+	log_k	   -3.803
+
+Glauberite
+	Na2Ca(SO4)2  =  Ca+2 + 2 Na+ + 2 SO4-2
+	log_k	   -5.245
+
+Gypsum
+	CaSO4:2H2O = Ca+2 + SO4-2 + 2 H2O
+	log_k	   -4.581
+	delta_h -0.109 kcal
+	-analytic       90.318      0.0	 -4213.      -32.641
+
+Halite
+	NaCl  =  Cl- + Na+
+	log_k	   1.570
+	-analytic -713.4616   -.1201241   37302.21    262.4583    -2106915.
+
+Hexahydrite
+	MgSO4:6H2O  =  Mg+2 + SO4-2 + 6 H2O
+	log_k	   -1.635
+	-analytic       -62.666     0.0	 1828.       22.187
+
+Kainite
+	KMgClSO4:3H2O  =  Cl- + K+ + Mg+2 + SO4-2 + 3 H2O
+	log_k	   -0.193
+
+Kalicinite
+	KHCO3  =  K+ + H+ + CO3-2
+	log_k	   -10.058
+
+Kieserite
+	MgSO4:H2O  =  Mg+2 + SO4-2 + H2O
+	log_k	   -0.123
+
+Labile_S
+	Na4Ca(SO4)3:2H2O = 4Na+ + Ca+2 + 3SO4-2 + 2H2O
+	log_k	   -5.672
+
+Leonhardite
+	MgSO4:4H2O = Mg+2 + SO4-2 + 4H2O
+	log_k	   -0.887
+
+Leonite
+	K2Mg(SO4)2:4H2O  =  Mg+2 + 2 K+ + 2 SO4-2 + 4 H2O
+	log_k	   -3.979
+
+Magnesite
+	MgCO3 =  CO3-2 + Mg+2
+	log_k	  -7.834
+	delta_h	-6.169
+
+Mirabilite
+	Na2SO4:10H2O  =  SO4-2 + 2 Na+ + 10 H2O
+	log_k	   -1.214
+	-analytic       -3862.234   -1.19856    93713.54    1577.756    0.
+
+Misenite
+	K8H6(SO4)7  =  6 H+ + 7 SO4-2 + 8 K+
+	log_k	   -10.806
+
+Nahcolite
+	NaHCO3  =  CO3-2 + H+ + Na+
+	log_k	   -10.742
+
+Natron
+	Na2CO3:10H2O = CO3-2 + 2 Na+ + 10.0000 H2O
+	log_k	   -0.825
+
+Nesquehonite
+	MgCO3:3H2O =  CO3-2 + Mg+2 + 3 H2O
+	log_k	   -5.167
+
+CO2(g)
+	CO2 = CO2
+	log_k	   -1.468
+	-analytic       108.3865    0.01985076  -6919.53    -40.45154    669365.0
+
+Pentahydrite
+	MgSO4:5H2O  =  Mg+2 + SO4-2 + 5 H2O
+	log_k	   -1.285
+
+Pirssonite
+	Na2Ca(CO3)2:2H2O = 2Na+ + Ca+2 + 2CO3-2 + 2 H2O
+	log_k	   -9.234
+
+Polyhalite
+	K2MgCa2(SO4)4:2H2O  = 2K+ +  Mg+2 + 2 Ca+2 + 4SO4-2 + 2 H2O
+	log_k	   -13.744
+
+Portlandite
+	Ca(OH)2 =  Ca+2 + 2 OH-
+	log_k	   -5.190
+
+Schoenite
+	K2Mg(SO4)2:6H2O  =  2K+ + Mg+2 + 2 SO4-2 + 6H2O
+	log_k	   -4.328
+
+Sylvite
+	KCl  = K+ + Cl-
+	log_k	   0.900
+	-analytic       3.984       0.0	 -919.55
+
+Syngenite
+	K2Ca(SO4)2:H2O  =  2K+ + Ca+2 + 2SO4-2 + H2O
+	log_k	   -7.448
+
+Trona
+	Na3H(CO3)2:2H2O =  3 Na+ + H+ + 2CO3-2 + 2H2O
+	log_k	   -11.384
+
+Borax
+	Na2(B4O5(OH)4):8H2O + 2 H+  =  4 B(OH)3 + 2 Na+ +  5 H2O
+	log_k	   12.464
+
+Boric_acid,s
+	B(OH)3  =  B(OH)3
+	log_k	   -0.030
+
+KB5O8:4H2O
+	KB5O8:4H2O + 3H2O + H+ = 5B(OH)3 + K+
+	log_k	   4.671
+
+K2B4O7:4H2O
+	K2B4O7:4H2O + H2O + 2H+ = 4B(OH)3 + 2K+
+	log_k	   13.906
+
+NaBO2:4H2O
+	NaBO2:4H2O + H+ = B(OH)3 + Na+ + 3H2O
+	log_k	   9.568
+
+NaB5O8:5H2O
+	NaB5O8:5H2O + 2H2O + H+ = 5B(OH)3 + Na+
+	log_k	   5.895
+
+Teepleite
+	Na2B(OH)4Cl + H+ = B(OH)3 + 2Na+ + Cl- + H2O
+	log_k	   10.840
+
+H2O(g)
+	H2O = H2O
+	log_k	   1.51
+	delta_h	 -44.03   kJ
+#    Stumm and Morgan, from NBS and Robie, Hemmingway, and Fischer (1978)
+
+PITZER
+-B0
+  Na+       Cl-       0.0765     -777.03     -4.4706	0.008946   -3.3158E-6
+  K+	Cl-       0.04835       0	   0	   5.794E-4
+  Mg+2      Cl-       0.35235       0	   0	  -1.943E-4
+  Ca+2      Cl-       0.3159	0	   0	  -1.725E-4
+  MgOH+     Cl-      -0.1
+  H+	Cl-       0.1775	0	   0	  -3.081E-4
+  Li+       Cl-       0.1494	0	   0	  -1.685E-4
+  Sr+2      Cl-       0.2858	0	   0	   0.717E-3
+  Fe+2      Cl-       0.335925
+  Mn+2      Cl-       0.327225
+  Ba+2      Cl-       0.2628	0	   0	   0.6405E-3
+  CaB(OH)4+   Cl-       0.12
+  MgB(OH)4+   Cl-       0.16
+  Na+       Br-       0.0973	0	   0	   7.692E-4
+  K+	Br-       0.0569	0	   0	   7.39E-4
+  H+	Br-       0.1960	0	   0	  -2.049E-4
+  Mg+2      Br-       0.4327	0	   0	  -5.625E-5
+  Ca+2      Br-       0.3816	0	   0	  -5.2275E-4
+  Li+       Br-       0.1748	0	   0	  -1.819E-4
+  Sr+2      Br-       0.331125      0	   0	  -0.32775E-3
+  Ba+2      Br-       0.31455       0	   0	  -0.33825E-3
+  Na+       SO4-2     0.01958       0	   0	   2.367E-3
+  K+	SO4-2     0.04995       0	   0	   1.44E-3
+  Mg+2      SO4-2     0.221	 0	   0	  -0.69E-3
+  Ca+2      SO4-2     0.2
+  H+	SO4-2     0.0298
+  Li+       SO4-2     0.136275      0	   0	   0.5055E-3
+  Sr+2      SO4-2     0.200	 0	   0	  -2.9E-3
+  Fe+2      SO4-2     0.2568
+  Mn+2      SO4-2     0.2065
+  Na+       HSO4-     0.0454
+  K+	HSO4-    -0.0003
+  Mg+2      HSO4-     0.4746
+  Ca+2      HSO4-     0.2145
+  H+	HSO4-     0.2065
+  Fe+2      HSO4-     0.4273
+  Na+       OH-       0.0864	0	   0	   7.00E-4
+  K+	OH-       0.1298
+  Ca+2      OH-      -0.1747
+  Li+       OH-       0.015
+  Ba+2      OH-       0.17175
+  Na+       HCO3-     0.0277	0	   0	   1.00E-3
+  K+	HCO3-     0.0296	0	   0	   0.996E-3
+  Mg+2      HCO3-     0.329
+  Ca+2      HCO3-     0.4
+  Sr+2      HCO3-     0.12
+  Na+       CO3-2     0.0399	0	   0	   1.79E-3
+  K+	CO3-2     0.1488	0	   0	   1.788E-3
+  Na+       B(OH)4-  -0.0427
+  Na+       B3O3(OH)4- -0.056
+  Na+       B4O5(OH)4-2 -0.11
+  K+	B(OH)4-   0.035
+  K+	B3O3(OH)4- -0.13
+  K+	B4O5(OH)4-2 -0.022
+-B1
+  Na+       Cl-       0.2664	0	   0	   6.1608E-5   1.0715E-6
+  K+	Cl-       0.2122	0	   0	   10.71E-4
+  Mg+2      Cl-       1.6815	0	   0	   3.6525E-3
+  Ca+2      Cl-       1.614	 0	   0	   3.9E-3
+  MgOH+     Cl-       1.658
+  H+	Cl-       0.2945	0	   0	   1.419E-4
+  Li+       Cl-       0.3074	0	   0	   5.366E-4
+  Sr+2      Cl-       1.667	 0	   0	   2.8425E-3
+  Fe+2      Cl-       1.53225
+  Mn+2      Cl-       1.55025
+  Ba+2      Cl-       1.49625       0	   0	   3.2325E-3
+  Na+       Br-       0.2791	0	   0	   10.79E-4
+  K+	Br-       0.2212	0	   0	   17.40E-4
+  H+	Br-       0.3564	0	   0	   4.467E-4
+  Mg+2      Br-       1.753	 0	   0	   3.8625E-3
+  Ca+2      Br-       1.613	 0	   0	   6.0375E-3
+  Li+       Br-       0.2547	0	   0	   6.636E-4
+  Sr+2      Br-       1.7115	0	   0	   6.5325E-3
+  Ba+2      Br-       1.56975       0	   0	   6.78E-3
+  Na+       SO4-2     1.113	 0	   0	   5.6325E-3
+  K+	SO4-2     0.7793	0	   0	   6.6975E-3
+  Mg+2      SO4-2     3.343	 0	   0	   1.53E-2
+  Ca+2      SO4-2     3.1973	0	   0	   5.46E-2
+  Li+       SO4-2     1.2705	0	   0	   1.41E-3
+  Sr+2      SO4-2     3.1973	0	   0	   27.0E-3
+  Fe+2      SO4-2     3.063
+  Mn+2      SO4-2     2.9511
+  Na+       HSO4-     0.398
+  K+	HSO4-     0.1735
+  Mg+2      HSO4-     1.729
+  Ca+2      HSO4-     2.53
+  H+	HSO4-     0.5556
+  Fe+2      HSO4-     3.48
+  Na+       OH-       0.253	 0	   0	   1.34E-4
+  K+	OH-       0.32
+  Ca+2      OH-      -0.2303
+  Li+       OH-       0.14
+  Ba+2      OH-       1.2
+  Na+       HCO3-     0.0411	0	   0	   1.10E-3
+  K+	HCO3-    -0.013	 0	   0	   1.104E-3
+  Mg+2      HCO3-     0.6072
+  Ca+2      HCO3-     2.977
+  Na+       CO3-2     1.389	 0	   0	   2.05E-3
+  K+	CO3-2     1.43	  0	   0	   2.051E-3
+  Na+       B(OH)4-   0.089
+  Na+       B3O3(OH)4- -0.910
+  Na+       B4O5(OH)4-2 -0.40
+  K+	B(OH)4-   0.14
+-B2
+  Mg+2      SO4-2    -37.23	 0	   0	  -0.253
+  Ca+2      SO4-2    -54.24	 0	   0	  -0.516
+  Sr+2      SO4-2    -54.24	 0	   0	  -0.42
+  Fe+2      SO4-2    -42.0
+  Mn+2      SO4-2    -40.0
+  Ca+2      OH-      -5.72
+-C0
+  Na+       Cl-       0.00127     33.317      0.09421    -4.655E-5
+  K+	Cl-      -0.00084       0	   0	-5.095E-5
+  Mg+2      Cl-       0.00519       0	   0	-1.64933E-4
+  Ca+2      Cl-      -0.00034
+  H+	Cl-       0.0008	0	   0	 6.213E-5
+  Li+       Cl-       0.00359       0	   0	-4.520E-5
+  Sr+2      Cl-      -0.00130
+  Fe+2      Cl-      -0.00860725
+  Mn+2      Cl-      -0.0204972
+  Ba+2      Cl-      -0.0193782     0	   0	-1.53796E-4
+  Na+       Br-       0.00116       0	   0	-9.30E-5
+  K+	Br-      -0.00180       0	   0	-7.004E-5
+  H+	Br-       0.00827       0	   0	-5.685E-5
+  Mg+2      Br-       0.00312
+  Ca+2      Br-      -0.00257
+  Li+       Br-       0.0053	0	   0	-2.813E-5
+  Sr+2      Br-       0.00122506
+  Ba+2      Br-      -0.0159576
+  Na+       SO4-2     0.00497       0	   0	-4.87904E-4
+  Mg+2      SO4-2     0.025	 0	   0	 0.523E-3
+  H+	SO4-2     0.0438
+  Li+       SO4-2    -0.00399338    0	   0	-2.33345E-4
+  Fe+2      SO4-2     0.0209
+  Mn+2      SO4-2     0.01636
+  Na+       OH-       0.0044	0	   0	 -18.94E-5
+  K+	OH-       0.0041
+  K+	HCO3-    -0.008
+  Na+       CO3-2     0.0044
+  K+	CO3-2    -0.0015
+  Na+       B(OH)4-   0.0114
+-THETA
+  K+	Na+      -0.012
+  Mg+2      Na+       0.07
+  Ca+2      Na+       0.07
+  Sr+2      Na+       0.051
+  H+	Na+       0.036
+  Ca+2      K+	0.032
+  H+	K+	0.005
+  Ca+2      Mg+2      0.007
+  H+	Mg+2      0.1
+  H+	Ca+2      0.092
+  SO4-2     Cl-       0.02
+  HSO4-     Cl-      -0.006
+  OH-       Cl-      -0.05
+  HCO3-     Cl-       0.03
+  CO3-2     Cl-      -0.02
+  B(OH)4-   Cl-      -0.065
+  B3O3(OH)4-  Cl-       0.12
+  B4O5(OH)4-2  Cl-       0.074
+  OH-       Br-      -0.065
+  OH-       SO4-2    -0.013
+  HCO3-     SO4-2     0.01
+  CO3-2     SO4-2     0.02
+  B(OH)4-   SO4-2    -0.012
+  B3O3(OH)4-  SO4-2     0.10
+  B4O5(OH)4-2  SO4-2     0.12
+  CO3-2     OH-       0.1
+  CO3-2     HCO3-    -0.04
+  B3O3(OH)4-  HCO3-    -0.10
+  B4O5(OH)4-2  HCO3-    -0.087
+-LAMBDA
+  Na+       CO2       0.1
+  K+	CO2       0.051
+  Mg+2      CO2       0.183
+  Ca+2      CO2       0.183
+  Cl-       CO2      -0.005
+  SO4-2     CO2       0.097
+  HSO4-     CO2      -0.003
+  Na+       B(OH)3   -0.097
+  K+	B(OH)3   -0.14
+  Cl-       B(OH)3    0.091
+  SO4-2     B(OH)3    0.018
+  B3O3(OH)4-  B(OH)3   -0.20
+-ZETA
+  H+	Cl-       B(OH)3    -0.0102
+  Na+       SO4-2     B(OH)3     0.046
+-PSI
+  Na+       K+	Cl-       -0.0018
+  Na+       K+	Br-       -0.0022
+  Na+       K+	SO4-2     -0.010
+  Na+       K+	HCO3-     -0.003
+  Na+       K+	CO3-2      0.003
+  Na+       Ca+2      Cl-       -0.007
+  Na+       Sr+2      Cl-       -0.0021
+  Na+       Ca+2      SO4-2     -0.055
+  Na+       Mg+2      Cl-       -0.012
+  Na+       Mg+2      SO4-2     -0.015
+  Na+       H+	Cl-       -0.004
+  Na+       H+	Br-       -0.012
+  Na+       H+	HSO4-     -0.0129
+  K+	Ca+2      Cl-       -0.025
+  K+	Mg+2      Cl-       -0.022
+  K+	Mg+2      SO4-2     -0.048
+  K+	H+	Cl-       -0.011
+  K+	H+	Br-       -0.021
+  K+	H+	SO4-2      0.197
+  K+	H+	HSO4-     -0.0265
+  Ca+2      Mg+2      Cl-       -0.012
+  Ca+2      Mg+2      SO4-2      0.024
+  Ca+2      H+	Cl-       -0.015
+  Mg+2      MgOH+     Cl-	0.028
+  Mg+2      H+	Cl-       -0.011
+  Mg+2      H+	HSO4-     -0.0178
+  Cl-       Br-       K+	 0.0000
+  Cl-       SO4-2     Na+	0.0014
+  Cl-       SO4-2     Ca+2      -0.018
+  Cl-       SO4-2     Mg+2      -0.004
+  Cl-       HSO4-     Na+       -0.006
+  Cl-       HSO4-     H+	 0.013
+  Cl-       OH-       Na+       -0.006
+  Cl-       OH-       K+	-0.006
+  Cl-       OH-       Ca+2      -0.025
+  Cl-       HCO3-     Na+       -0.015
+  Cl-       HCO3-     Mg+2      -0.096
+  Cl-       CO3-2     Na+	0.0085
+  Cl-       CO3-2     K+	 0.004
+  Cl-       B(OH)4-   Na+       -0.0073
+  Cl-       B3O3(OH)4-  Na+       -0.024
+  Cl-       B4O5(OH)4-2  Na+	0.026
+  SO4-2     HSO4-     Na+       -0.0094
+  SO4-2     HSO4-     K+	-0.0677
+  SO4-2     HSO4-     Mg+2      -0.0425
+  SO4-2     OH-       Na+       -0.009
+  SO4-2     OH-       K+	-0.050
+  SO4-2     HCO3-     Na+       -0.005
+  SO4-2     HCO3-     Mg+2      -0.161
+  SO4-2     CO3-2     Na+       -0.005
+  SO4-2     CO3-2     K+	-0.009
+  OH-       CO3-2     Na+       -0.017
+  OH-       CO3-2     K+	-0.01
+  OH-       Br-       Na+       -0.018
+  OH-       Br-       K+	-0.014
+  HCO3-     CO3-2     Na+	0.002
+  HCO3-     CO3-2     K+	 0.012
+
+EXCHANGE_MASTER_SPECIES
+	X       X-
+EXCHANGE_SPECIES
+	X- = X-
+	log_k	   0.0
+
+	Na+ + X- = NaX
+	log_k   0.0
+
+	K+ + X- = KX
+	log_k   0.7
+	delta_h  -4.3   # Jardine & Sparks, 1984
+
+	Li+ + X- = LiX
+	log_k   -0.08
+	delta_h  1.4    # Merriam & Thomas, 1956
+
+	Ca+2 + 2X- = CaX2
+	log_k   0.8
+	delta_h  7.2    # Van Bladel & Gheyl, 1980
+
+	Mg+2 + 2X- = MgX2
+	log_k   0.6
+	delta_h  7.4    # Laudelout et al., 1968
+
+	Sr+2 + 2X- = SrX2
+	log_k   0.91
+	delta_h  5.5    # Laudelout et al., 1968
+
+	Ba+2 + 2X- = BaX2
+	log_k   0.91
+	delta_h  4.5    # Laudelout et al., 1968
+
+	Mn+2 + 2X- = MnX2
+	log_k   0.52
+
+	Fe+2 + 2X- = FeX2
+	log_k   0.44
+
+SURFACE_MASTER_SPECIES
+	Hfo_s  Hfo_sOH
+	Hfo_w  Hfo_wOH
+SURFACE_SPECIES
+#   All surface data from
+#   Dzombak and Morel, 1990
+#
+#
+#   Acid-base data from table 5.7
+#
+#   strong binding site--Hfo_s,
+
+	Hfo_sOH = Hfo_sOH
+	log_k  0.0
+
+	Hfo_sOH  + H+ = Hfo_sOH2+
+	log_k  7.29    # = pKa1,int
+
+	Hfo_sOH = Hfo_sO- + H+
+	log_k  -8.93   # = -pKa2,int
+
+#   weak binding site--Hfo_w
+
+	Hfo_wOH = Hfo_wOH
+	log_k  0.0
+
+	Hfo_wOH  + H+ = Hfo_wOH2+
+	log_k  7.29    # = pKa1,int
+
+	Hfo_wOH = Hfo_wO- + H+
+	log_k  -8.93   # = -pKa2,int
+
+###############################################
+#	     CATIONS			 #
+###############################################
+#
+#   Cations from table 10.1 or 10.5
+#
+#   Calcium
+	Hfo_sOH + Ca+2 = Hfo_sOHCa+2
+	log_k  4.97
+
+	Hfo_wOH + Ca+2 = Hfo_wOCa+ + H+
+	log_k -5.85
+#   Strontium
+	Hfo_sOH + Sr+2 = Hfo_sOHSr+2
+	log_k  5.01
+
+	Hfo_wOH + Sr+2 = Hfo_wOSr+ + H+
+	log_k -6.58
+
+	Hfo_wOH + Sr+2 + H2O = Hfo_wOSrOH + 2H+
+	log_k -17.60
+#   Barium
+	Hfo_sOH + Ba+2 = Hfo_sOHBa+2
+	log_k  5.46
+
+	Hfo_wOH + Ba+2 = Hfo_wOBa+ + H+
+	log_k  -7.2		     # table 10.5
+#
+#   Derived constants table 10.5
+#
+#   Magnesium
+	Hfo_wOH + Mg+2 = Hfo_wOMg+ + H+
+	log_k -4.6
+#   Manganese
+	Hfo_sOH + Mn+2 = Hfo_sOMn+ + H+
+	log_k  -0.4		     # table 10.5
+
+	Hfo_wOH + Mn+2 = Hfo_wOMn+ + H+
+	log_k -3.5		      # table 10.5
+# Iron
+#	Hfo_sOH + Fe+2 = Hfo_sOFe+ + H+
+#	log_k   0.7     # LFER using table 10.5
+
+#	Hfo_wOH + Fe+2 = Hfo_wOFe+ + H+
+#	log_k -2.5      # LFER using table 10.5
+
+# Iron, strong site: Appelo, Van der Weiden, Tournassat & Charlet, subm.
+	 Hfo_sOH + Fe+2 = Hfo_sOFe+ + H+
+	 log_k   -0.95
+# Iron, weak site: Liger et al., GCA 63, 2939, re-optimized for D&M
+	 Hfo_wOH + Fe+2 = Hfo_wOFe+ + H+
+	 log_k -2.98
+
+	 Hfo_wOH + Fe+2 + H2O = Hfo_wOFeOH + 2H+
+	 log_k -11.55
+
+###############################################
+#	     ANIONS			  #
+###############################################
+#
+#   Anions from table 10.6
+#
+#
+#   Anions from table 10.7
+#
+#   Borate
+	Hfo_wOH + B(OH)3 = Hfo_wH2BO3 + H2O
+	log_k   0.62
+#
+#   Anions from table 10.8
+#
+#   Sulfate
+	Hfo_wOH + SO4-2 + H+ = Hfo_wSO4- + H2O
+	log_k   7.78
+
+	Hfo_wOH + SO4-2 = Hfo_wOHSO4-2
+	log_k   0.79
+#
+# Carbonate: Van Geen et al., 1994 reoptimized for HFO
+# 0.15 g HFO/L has 0.344 mM sites == 2 g of Van Geen's Goethite/L
+#
+#	Hfo_wOH + CO3-2 + H+ = Hfo_wCO3- + H2O
+#	log_k   12.56
+#
+#	Hfo_wOH + CO3-2 + 2H+= Hfo_wHCO3 + H2O
+#	log_k   20.62
+
+
+END
+MEAN GAM
+CaCl2
+CaSO4
+CaCO3
+Ca(OH)2
+MgCl2
+MgSO4
+MgCO3
+Mg(OH)2
+NaCl
+Na2SO4
+NaHCO3
+Na2CO3
+NaOH
+KCl
+K2SO4
+KHCO3
+K2CO3
+KOH
+HCl
+H2SO4
+HBr
+
+END
+

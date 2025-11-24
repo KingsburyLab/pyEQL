@@ -1,0 +1,17 @@
+In Fortran, you will need to include the source file IPhreeqc_interface.F90
+in your project files. This file defines the IPhreeqc Fortran module. This
+is the preferred method to use IPhreeqc from a Fortran program.
+
+     USE IPhreeqc
+     INTEGER(KIND=4) id
+     id = CreateIPhreeqc()
+
+Use of the include files IPhreeqc.f.inc and IPhreeqc.f90.inc has been
+deprecated. To continue using them you must unset IPHREEQC_ENABLE_MODULE in
+CMake builds or use the --disable-fortran-module in configure builds. If 
+either of these settings are used the Fortran include files will be
+installed to the include directory.
+
+     INCLUDE 'IPhreeqc.f90.inc'
+     INTEGER(KIND=4) id
+     id = CreateIPhreeqc()

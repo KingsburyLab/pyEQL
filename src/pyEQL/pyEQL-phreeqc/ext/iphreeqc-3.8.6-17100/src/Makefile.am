@@ -1,0 +1,210 @@
+EXTRA_DIST=\
+	fimpl.h\
+	fwrap.h\
+	fwrap.cpp\
+	fwrap1.cpp\
+	fwrap2.cpp\
+	fwrap3.cpp\
+	fwrap4.cpp\
+	fwrap5.cpp\
+	fwrap6.cpp\
+	fwrap7.cpp\
+	fwrap8.cpp\
+	IPhreeqc_interface.F90\
+	IPhreeqc.f.inc\
+	IPhreeqc.f90.inc\
+	phreeqcpp/ChartHandler.cpp\
+	phreeqcpp/ChartHandler.h\
+	phreeqcpp/ChartObject.cpp\
+	phreeqcpp/ChartObject.h\
+	phreeqcpp/CurveObject.cpp\
+	phreeqcpp/CurveObject.h\
+	phreeqcpp/Form1.h\
+	phreeqcpp/Form1.resX\
+	phreeqcpp/ZedGraph.dll
+
+AM_CPPFLAGS=-I$(top_srcdir)/src -I$(top_srcdir)/src/phreeqcpp -I$(top_srcdir)/src/phreeqcpp/common -I$(top_srcdir)/src/phreeqcpp/PhreeqcKeywords
+
+AM_LDFLAGS=-release 3.8.6
+
+# libtool libraries to build
+lib_LTLIBRARIES=libiphreeqc.la
+
+# library sources for libiphreeqc.la
+libiphreeqc_la_SOURCES=\
+	CSelectedOutput.cpp\
+	CSelectedOutput.hxx\
+	CVar.hxx\
+	Debug.h\
+	ErrorReporter.hxx\
+	IPhreeqc.cpp\
+	IPhreeqc_interface_F.cpp\
+	IPhreeqc_interface_F.h\
+	IPhreeqcLib.cpp\
+	phreeqcpp/advection.cpp\
+	phreeqcpp/basicsubs.cpp\
+	phreeqcpp/cl1.cpp\
+	phreeqcpp/common/Parser.cxx\
+	phreeqcpp/common/Parser.h\
+	phreeqcpp/common/PHRQ_base.cxx\
+	phreeqcpp/common/PHRQ_base.h\
+	phreeqcpp/common/PHRQ_exports.h\
+	phreeqcpp/common/PHRQ_io.cpp\
+	phreeqcpp/common/PHRQ_io.h\
+	phreeqcpp/common/phrqtype.h\
+	phreeqcpp/common/Utils.cxx\
+	phreeqcpp/common/Utils.h\
+	phreeqcpp/cvdense.cpp\
+	phreeqcpp/cvdense.h\
+	phreeqcpp/cvode.cpp\
+	phreeqcpp/cvode.h\
+	phreeqcpp/cxxKinetics.cxx\
+	phreeqcpp/cxxKinetics.h\
+	phreeqcpp/cxxMix.cxx\
+	phreeqcpp/cxxMix.h\
+	phreeqcpp/dense.cpp\
+	phreeqcpp/dense.h\
+	phreeqcpp/Dictionary.cpp\
+	phreeqcpp/Dictionary.h\
+	phreeqcpp/dumper.cpp\
+	phreeqcpp/dumper.h\
+	phreeqcpp/Exchange.cxx\
+	phreeqcpp/Exchange.h\
+	phreeqcpp/ExchComp.cxx\
+	phreeqcpp/ExchComp.h\
+	phreeqcpp/GasComp.cxx\
+	phreeqcpp/GasComp.h\
+	phreeqcpp/gases.cpp\
+	phreeqcpp/GasPhase.cxx\
+	phreeqcpp/GasPhase.h\
+	phreeqcpp/global_structures.h\
+	phreeqcpp/input.cpp\
+	phreeqcpp/integrate.cpp\
+	phreeqcpp/inverse.cpp\
+	phreeqcpp/ISolution.cxx\
+	phreeqcpp/ISolution.h\
+	phreeqcpp/ISolutionComp.cxx\
+	phreeqcpp/ISolutionComp.h\
+	phreeqcpp/isotopes.cpp\
+	phreeqcpp/kinetics.cpp\
+	phreeqcpp/KineticsComp.cxx\
+	phreeqcpp/KineticsComp.h\
+	phreeqcpp/mainsubs.cpp\
+	phreeqcpp/model.cpp\
+	phreeqcpp/NA.h\
+	phreeqcpp/NameDouble.cxx\
+	phreeqcpp/NameDouble.h\
+	phreeqcpp/NumKeyword.cxx\
+	phreeqcpp/NumKeyword.h\
+	phreeqcpp/nvector.cpp\
+	phreeqcpp/nvector.h\
+	phreeqcpp/nvector_serial.cpp\
+	phreeqcpp/nvector_serial.h\
+	phreeqcpp/parse.cpp\
+	phreeqcpp/PBasic.cpp\
+	phreeqcpp/PBasic.h\
+	phreeqcpp/phqalloc.cpp\
+	phreeqcpp/phqalloc.h\
+	phreeqcpp/Phreeqc.cpp\
+	phreeqcpp/Phreeqc.h\
+	phreeqcpp/PhreeqcKeywords/Keywords.cpp\
+	phreeqcpp/PhreeqcKeywords/Keywords.h\
+	phreeqcpp/PHRQ_io_output.cpp\
+	phreeqcpp/pitzer.cpp\
+	phreeqcpp/pitzer_structures.cpp\
+	phreeqcpp/PPassemblage.cxx\
+	phreeqcpp/PPassemblage.h\
+	phreeqcpp/PPassemblageComp.cxx\
+	phreeqcpp/PPassemblageComp.h\
+	phreeqcpp/prep.cpp\
+	phreeqcpp/Pressure.cxx\
+	phreeqcpp/Pressure.h\
+	phreeqcpp/print.cpp\
+	phreeqcpp/Reaction.cxx\
+	phreeqcpp/Reaction.h\
+	phreeqcpp/read.cpp\
+	phreeqcpp/ReadClass.cxx\
+	phreeqcpp/readtr.cpp\
+	phreeqcpp/runner.cpp\
+	phreeqcpp/runner.h\
+	phreeqcpp/SelectedOutput.cpp\
+	phreeqcpp/SelectedOutput.h\
+	phreeqcpp/Serializer.cxx\
+	phreeqcpp/Serializer.h\
+	phreeqcpp/sit.cpp\
+	phreeqcpp/smalldense.cpp\
+	phreeqcpp/smalldense.h\
+	phreeqcpp/Solution.cxx\
+	phreeqcpp/Solution.h\
+	phreeqcpp/SolutionIsotope.cxx\
+	phreeqcpp/SolutionIsotope.h\
+	phreeqcpp/spread.cpp\
+	phreeqcpp/SS.cxx\
+	phreeqcpp/SS.h\
+	phreeqcpp/SSassemblage.cxx\
+	phreeqcpp/SSassemblage.h\
+	phreeqcpp/SScomp.cxx\
+	phreeqcpp/SScomp.h\
+	phreeqcpp/step.cpp\
+	phreeqcpp/StorageBin.cxx\
+	phreeqcpp/StorageBin.h\
+	phreeqcpp/StorageBinList.cpp\
+	phreeqcpp/StorageBinList.h\
+	phreeqcpp/structures.cpp\
+	phreeqcpp/sundialsmath.cpp\
+	phreeqcpp/sundialsmath.h\
+	phreeqcpp/sundialstypes.h\
+	phreeqcpp/Surface.cxx\
+	phreeqcpp/Surface.h\
+	phreeqcpp/SurfaceCharge.cxx\
+	phreeqcpp/SurfaceCharge.h\
+	phreeqcpp/SurfaceComp.cxx\
+	phreeqcpp/SurfaceComp.h\
+	phreeqcpp/System.cxx\
+	phreeqcpp/System.h\
+	phreeqcpp/tally.cpp\
+	phreeqcpp/Temperature.cxx\
+	phreeqcpp/Temperature.h\
+	phreeqcpp/tidy.cpp\
+	phreeqcpp/transport.cpp\
+	phreeqcpp/Use.cpp\
+	phreeqcpp/Use.h\
+	phreeqcpp/UserPunch.cpp\
+	phreeqcpp/UserPunch.h\
+	phreeqcpp/utilities.cpp\
+	thread.h\
+	Var.c\
+	Version.h
+
+include_HEADERS=\
+	$(top_srcdir)/src/IPhreeqc.h\
+	$(top_srcdir)/src/IPhreeqc.hpp\
+	$(top_srcdir)/src/IPhreeqcCallbacks.h\
+	$(top_srcdir)/src/Var.h\
+	$(top_srcdir)/src/phreeqcpp/common/PHRQ_io.h\
+	$(top_srcdir)/src/phreeqcpp/PhreeqcKeywords/Keywords.h
+
+sourcedir=$(docdir)/src
+
+dist_source_DATA=$(SRC)
+
+SRC=\
+	$(top_srcdir)/src/README.Fortran
+
+if FORTRAN_MODULE
+
+SRC+=\
+	$(top_srcdir)/src/IPhreeqc_interface.F90
+
+else
+
+include_HEADERS+=\
+	$(top_srcdir)/src/IPhreeqc.f.inc\
+	$(top_srcdir)/src/IPhreeqc.f90.inc
+
+libiphreeqc_la_SOURCES+=\
+	fwrap.h\
+	fwrap.cpp\
+	IPhreeqcF.f
+
+endif
