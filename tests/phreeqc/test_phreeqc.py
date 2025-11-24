@@ -1,4 +1,3 @@
-import re
 import textwrap
 from pathlib import Path
 
@@ -148,8 +147,7 @@ def test_run_add_delete_solution():
     assert len(phreeqc) == 0
 
 
-def _test_run_dumpstring():
-    # This test is too platform-specific. Simplify!
+def test_run_dumpstring():
     phreeqc = Phreeqc()
 
     phreeqc.run_string(
@@ -178,6 +176,8 @@ def _test_run_dumpstring():
     dump_string = phreeqc.get_dump_string()
     phreeqc.set_dump_string_on(0)
 
+    # Due to platform specific differences, we only compare the first token
+    # from each of the lines below, to the output.
     expected = textwrap.dedent("""
         SOLUTION_RAW                 0 Solution after simulation 1.
           -temp                      25
@@ -218,11 +218,18 @@ def _test_run_dumpstring():
         USE reaction_pressure none
     """).lstrip("\n")
 
-    assert dump_string == expected
+    dump_lines = dump_string.splitlines()
+    expected_lines = expected.splitlines()
+
+    assert len(dump_lines) == len(expected_lines)
+
+    for got, exp in zip(dump_lines, expected_lines, strict=False):
+        got_first = got.strip().split()[0]
+        exp_first = exp.strip().split()[0]
+        assert got_first == exp_first
 
 
-def _test_run_logstring():
-    # This test is too platform-specific. Simplify!
+def test_run_logstring():
     phreeqc = Phreeqc()
     phreeqc.set_log_string_on(1)
     phreeqc.run_string(
@@ -242,6 +249,8 @@ def _test_run_logstring():
     log_string = phreeqc.get_log_string()
     phreeqc.set_log_string_on(0)
 
+    # Due to platform specific differences, we only compare the first token
+    # from each of the lines below, to the output.
     expected = textwrap.dedent("""
                -------------------------------------------
                Beginning of initial solution calculations.
@@ -288,6 +297,15 @@ def _test_run_logstring():
                ---------------------------------
            """).strip("\n")
 
-    normalized = re.sub(r"End of Run after .* Seconds\.", "End of Run after X Seconds.", log_string).rstrip()
+    log_lines = log_string.strip("\n").splitlines()
+    expected_lines = expected.splitlines()
 
-    assert normalized == expected
+    assert len(log_lines) == len(expected_lines)
+
+    for got, exp in zip(log_lines, expected_lines, strict=False):
+        got = got.strip()
+        exp = exp.strip()
+        if exp:  # ignore blank lines
+            got_first = got.split()[0]
+            exp_first = exp.split()[0]
+            assert got_first == exp_first
