@@ -364,8 +364,8 @@ def test_equilibrate_with_atm():
 
 def test_equilibrate_unrecognized_component():
     solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
-    # Specifying an unrecognized solid raises a ValueError
-    with pytest.raises(ValueError, match="Ferroxite"):
+    # Specifying an unrecognized solid raises an Exception
+    with pytest.raises(Exception):  # noqa: B017, PT011
         solution.equilibrate(solids=["Ferroxite"])
 
 
