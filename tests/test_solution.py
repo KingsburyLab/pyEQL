@@ -264,6 +264,7 @@ def test_chempot_energy(s1, s2):
     pass
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s5.charge_balance, 0, atol=1e-5)
@@ -980,6 +981,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
     def test_should_replace_monatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution without specifying the charge on the ion,
         # `.equilibrate()` should replace the ion with the ion with the charge
@@ -1001,6 +1003,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
     def test_should_replace_diatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying the charge on the ion
         # that is different from the one determined by phreeqc,
@@ -1025,6 +1028,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
     def test_should_not_discard_missing_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying a species with an element
         # that is not found in phreeqc, the species should not be discarded.
