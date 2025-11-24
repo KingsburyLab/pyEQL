@@ -258,6 +258,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
 
+
 def test_equilibrate_water_pH7():
     solution = Solution([], pH=7.00, temperature="25 degC", volume="1 L", engine="phreeqc")
     solution.equilibrate()
@@ -276,6 +277,7 @@ def test_equilibrate_CO2_with_calcite():
     solution.equilibrate(atmosphere=True, gases={"CO2": -2.95}, solids=["Calcite"])
     # 5 reactions: I) CaCO3 dissolution, II) Ka1, III) Ka2, IV) water dissociation, V) CaHCO3+ rxn in PHREEQC
     # 9 species, 5 components, 4 rxns exclude water dissociation
+    assert solution.get_amount("Na+", "mol").magnitude == pytest.approx(0, rel=0.01)
     assert solution.get_amount("CO2(aq)", "mol").magnitude == pytest.approx(3.8e-05, rel=0.01)
     assert solution.get_amount("HCO3-", "mol").magnitude == pytest.approx(1.48e-03, rel=0.01)
 
@@ -349,3 +351,15 @@ def test_alkalinity():
     total_alk_mgL = total_alk_molL * wt_caco3 * 1000  # mg/L
     # alkalinity reported by mg/L, and if tried converting to mol/L yields ZeroDivisionError: float division by zero
     assert alk.to("mg/L").magnitude == pytest.approx(total_alk_molL, abs=0.01)
+
+def test_equilibrate_unrecognized_component():
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    # Specifying an unrecognized solid raises an Exception
+    with pytest.raises(Exception):  # noqa: B017, PT011
+        solution.equilibrate(solids=["Ferroxite"])
+
+def test_equilibrate_with_atm():
+    solution = Solution([["Cu+2", "0.001 mol/L"], ["O-2", "1e-7 mol/L"]], volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, solids=["Calcite"])
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(0.001*2, rel=0.01)
+    assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0)
