@@ -358,13 +358,16 @@ def test_equilibrate_liquid():
 def test_equilibrate_with_atm():
     solution = Solution([["Cu+2", "0.001 mol/L"], ["O-2", "1e-7 mol/L"]], volume="2 L", engine="phreeqc")
     solution.equilibrate(atmosphere=True, solids=["Calcite"])
-    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(0.001*2, rel=0.01)
+    assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(0.001 * 2, rel=0.01)
     assert solution.get_total_amount("N(0)", "mol").magnitude == pytest.approx(0)
 
+
 def test_equilibrate_unrecognized_component():
-    solution = Solution([["Cu+2", "0.001 mol/L"], ["O-2", "1e-7 mol/L"]], volume="2 L", engine="phreeqc")
-    with pytest.raises(Exception):
+    solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    # Specifying an unrecognized solid raises a ValueError
+    with pytest.raises(ValueError, match="Ferroxite"):
         solution.equilibrate(solids=["Ferroxite"])
+
 
 # def test_equilibrate_with_n2_pp():
 #     solution = Solution([["Cu+2", "4 mol/L"], ["O-2", "4 mol/L"]], volume="2 L", engine="phreeqc")
@@ -391,4 +394,3 @@ def test_equilibrate_unrecognized_component():
 #     solution.equilibrate(atmosphere=True, solids=["Calcite"])
 #     assert solution.get_total_amount("Cu", "mol").magnitude == pytest.approx(1.0422861990051895)
 #
-
