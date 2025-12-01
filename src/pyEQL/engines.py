@@ -704,7 +704,7 @@ class NativeEOS(EOS):
         #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
         phases = {}
         if solids is not None:
-            # Assume saturation index of 0 for all solids.
+            # Assume log saturation index of 0 (equilibrium) for all solids.
             phases |= dict.fromkeys(solids, (0, EQUILIBRIUM_PHASE_AMOUNT))
 
         for k, v in gases.items():
