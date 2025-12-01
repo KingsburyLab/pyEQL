@@ -14,6 +14,7 @@ are called from within the get_activity_coefficient method of the Solution class
 """
 
 import logging
+import math
 
 import numpy as np
 from pint import Quantity
@@ -692,7 +693,6 @@ def _pitzer_B_phi(ionic_strength, alpha1, alpha2, beta0, beta1, beta2):
         and Representation with an Ion Interaction (Pitzer) Model.
         Journal of Chemical & Engineering Data, 55(2), 830-838. doi:10.1021/je900487a
     """
-    import math  # noqa: PLC0415
 
     # TODO - for some reason this specific method requires the use of math.exp rather than np.exp. Using np.exp raises
     # a dimensionalityerror.
