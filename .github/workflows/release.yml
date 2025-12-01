@@ -54,7 +54,7 @@ jobs:
 
       - name: Build packages for distribution
         run: |
-          tox -e clean,build,build_ext
+          tox -e clean,build
 
       - name: Upload to PyPi
         uses: pypa/gh-action-pypi-publish@v1.13.0
