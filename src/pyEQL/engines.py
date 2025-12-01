@@ -675,7 +675,7 @@ class NativeEOS(EOS):
             solids:
                 A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be present in the Phreeqc database,
-                and is assumed to have a saturation index of 1 and an infinite
+                and is assumed to have a saturation index of 0 and an infinite
                 amount of material.
             gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
@@ -704,7 +704,7 @@ class NativeEOS(EOS):
         #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
         phases = {}
         if solids is not None:
-            # Assume saturation index of 0 (equilibrium) for all solids.
+            # Assume log saturation index of 0 (equilibrium) for all solids.
             phases |= dict.fromkeys(solids, (0, EQUILIBRIUM_PHASE_AMOUNT))
 
         for k, v in gases.items():
