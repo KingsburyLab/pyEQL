@@ -1,0 +1,42 @@
+database ../database/Amm.dat
+solution 0
+units mol/kgw
+-water 0.4
+pH 7 charge
+Na 1
+
+solution 101
+units mol/kgw
+-water 0.2
+pH 7 charge
+
+solution 1-100
+units mol/kgw
+pH 7 charge
+-water 0.2
+Amm 1
+
+GAS_PHASE 1-100
+    -fixed_volume
+    -volume 1
+    -temperature 30
+    Amm(g)    0.1
+    N2(g)     0.9
+
+#---------------- OUTPUT and TRANSPORT ----------------#
+KNOBS
+    -logfile true
+
+transport
+-cells 100
+-shifts 100
+-lengths 0.1
+-time_step 0.1
+-flow_direction diffusion
+-bc 1 1
+-dump dump.phrq
+-dump_frequency 10
+-dump_restart 0
+-print_frequency 50
+end
+
