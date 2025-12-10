@@ -850,3 +850,61 @@ class PhreeqcEOS(NativeEOS):
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
         return ureg.Quantity(0, "L")
+
+
+class PyEQLEOS(EOS):
+    """Engine based on the PhreeqC model, as implemented in the pyphreeqc
+    module of pyEQL."""
+
+    def __init__(
+        self,
+        phreeqc_db: Literal[
+            "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
+        ] = "llnl.dat",
+    ) -> None:
+        """
+        Args:
+            phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
+        """
+
+        from pyEQL_phreeqc import Phreeqc  # noqa: PLC0415
+
+        self.phreeqc_db = phreeqc_db
+        # database files in this list are not distributed with phreeqpython
+        self.db_path = (
+            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+        )
+        # create the PhreeqcPython instance
+        self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
+        # attributes to hold the PhreeqPython solution.
+        self.ppsol = None
+        # store the solution composition to see whether we need to re-instantiate the solution
+        self._stored_comp = None
+
+    def _setup_ppsol(self, solution: "solution.Solution") -> None:
+        raise NotImplementedError
+
+    def _destroy_ppsol(self) -> None:
+        raise NotImplementedError
+
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
+        raise NotImplementedError
+
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
+        raise NotImplementedError
+
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
+        """Return the volume of the solutes."""
+        # TODO - phreeqc seems to have no concept of volume, but it does calculate density
+        return ureg.Quantity(0, "L")
+
+    def equilibrate(self, solution: "solution.Solution") -> None:
+        raise NotImplementedError

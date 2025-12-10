@@ -1,0 +1,7 @@
+# look into replacing this with cmake commands rather than using ctest
+set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
+set(CTEST_SOURCE_DIRECTORY "@CMAKE_INSTALL_PREFIX@/@example_DIR@")
+set(CTEST_BINARY_DIRECTORY "@CMAKE_INSTALL_PREFIX@/@example_DIR@/_build")
+
+ctest_start("Experimental")
+ctest_configure(OPTIONS "-DCMAKE_PREFIX_PATH:PATH=@FULL_INSTALL_PREFIX@")
