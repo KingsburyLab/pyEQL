@@ -388,11 +388,20 @@ def test_get_amount_units():
     na_mass_mg = s.get_total_amount("Na", "mg")
     # 0.01 mol * 35.45 g/mol = 0.3545 g
     cl_mass = s.get_total_amount("Cl", "g")
-    # substance/mass and mass/mass coverage
+    # Cover [substance]/[mass] and [mass]/[mass]
     na_mol_per_kg = s.get_total_amount("Na", "mol/kg")
     na_g_per_kg = s.get_total_amount("Na", "g/kg")
+    # Cover [substance] and [substance]/[volume]
+    na_mol = s.get_total_amount("Na", "mol")
+    na_mol_L = s.get_total_amount("Na", "mol/L")
+    # Cover [mass]/[volume]
+    na_g_L = s.get_total_amount("Na", "g/L")
+
     assert np.isclose(na_mass.magnitude, 0.2298977, atol=1e-8)
     assert np.isclose(na_mass_mg.magnitude, 229.8977, atol=1e-8)
     assert np.isclose(cl_mass.magnitude, 0.35453, atol=1e-8)
     assert np.isclose(na_mol_per_kg.magnitude, 0.01 / 0.99688, atol=1e-8)
     assert np.isclose(na_g_per_kg.magnitude, 0.2298977 / 0.99688, atol=1e-8)
+    assert np.isclose(na_mol.magnitude, 0.01, atol=1e-8)
+    assert np.isclose(na_mol_L.magnitude, 0.01, atol=1e-8)
+    assert np.isclose(na_g_L.magnitude, 0.2298977, atol=1e-8)
