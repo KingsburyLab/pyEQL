@@ -388,6 +388,11 @@ def test_get_amount_units():
     na_mass_mg = s.get_total_amount("Na", "mg")
     # 0.01 mol * 35.45 g/mol = 0.3545 g
     cl_mass = s.get_total_amount("Cl", "g")
-    assert na_mass.magnitude == pytest.approx(0.2299, rel=1e-3)
-    assert na_mass_mg.magnitude == pytest.approx(229.9, rel=1e-3)
-    assert cl_mass.magnitude == pytest.approx(0.3545, rel=1e-3)
+    # substance/mass and mass/mass coverage
+    na_mol_per_kg = s.get_total_amount("Na", "mol/kg")
+    na_g_per_kg = s.get_total_amount("Na", "g/kg")
+    assert np.isclose(na_mass.magnitude, 0.2298977, atol=1e-8)
+    assert np.isclose(na_mass_mg.magnitude, 229.8977, atol=1e-8)
+    assert np.isclose(cl_mass.magnitude, 0.35453, atol=1e-8)
+    assert np.isclose(na_mol_per_kg.magnitude, 0.01 / 0.99688, atol=1e-8)
+    assert np.isclose(na_g_per_kg.magnitude, 0.2298977 / 0.99688, atol=1e-8)
