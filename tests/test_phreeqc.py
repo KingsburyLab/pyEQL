@@ -257,3 +257,115 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s6_Ca.equilibrate()
     assert s6_Ca.get_total_amount("Ca", "mol").magnitude != initial_Ca
     assert np.isclose(s6_Ca.charge_balance, 0, atol=1e-8)
+
+
+def test_equilibrate_water_pH7():
+    solution = Solution({}, pH=7.00, temperature="25 degC", volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    # pH = -log10[H+]
+    assert np.isclose(solution.get_amount("H+", "mol/kg").magnitude, 1.001e-07, atol=1e-8)
+    # # 14 - pH = log10[OH-]
+    assert np.isclose(solution.get_amount("OH-", "mol/kg").magnitude, 1.013e-07, atol=1e-8)
+    # # small amount of H2 gas
+    assert np.isclose(solution.get_amount("H2", "mol/kg").magnitude, 0, atol=1e-8)
+    # # Approx 55.5 mol/kg
+    assert np.isclose(solution.get_amount("H2O", "mol/kg").magnitude, 55.5084, atol=1e-8)
+
+
+def test_equilibrate_CO2_with_calcite():
+    solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True, gases={"CO2": -2.95}, solids=["Calcite"])
+    # 5 reactions: I) CaCO3 dissolution, II) Ka1, III) Ka2, IV) water dissociation, V) CaHCO3+ rxn in PHREEQC
+    # 9 species, 5 components, 4 rxns exclude water dissociation
+    assert np.isclose(solution.get_amount("Na+", "mol").magnitude, 0, atol=1e-5)
+    assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 3.816e-05 * 0.99714, atol=1e-8)
+    assert np.isclose(
+        solution.get_amount("HCO3-", "mol").magnitude, 1.482e-03 * 0.99714, atol=1e-6
+    )  # slight tolerance adjustment
+    assert np.isclose(
+        solution.get_amount("Ca+2", "mol").magnitude, 7.427e-04 * 0.99714, atol=1e-6
+    )  # slight tolerance adjustment
+
+
+def test_equilibrate_FeO3H3_ppt():
+    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    Fe_3 = solution.get_amount("Fe+3", "mol/L").magnitude
+    OH_ = solution.get_amount("OH-", "mol/L").magnitude
+    assert np.isclose(Fe_3, 3.093e-11, atol=1e-8)
+    assert np.isclose(OH_, 1.067e-07, atol=1e-8)
+    # SI_FeO3H3 = np.log10((Fe_3) * (OH_) ** 3 / 10**-38.8) # To be discussed
+    assert solution.engine.ppsol.si("Fe(OH)3(a)") > 0
+
+
+def test_equilibrate_logC_pH_carbonate_3():
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    # H2CO3 approx CO2(aq) dominant species at pH 3
+    assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 0.999507e-3, atol=1e-8)
+    # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
+    # (10^-3 / 10^-6.3)[HCO3-] + [HCO3-] = total C = 0.001 mol
+    assert np.isclose(solution.get_amount("HCO3-", "mol").magnitude, 4.5610212e-07, atol=1e-8)
+    # CO3-2 negligible at pH 3
+    assert np.isclose(solution.get_amount("CO3-2", "mol").magnitude, 0, atol=1e-8)
+
+
+def test_equilibrate_logC_pH_carbonate_8_3():
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=8.3, volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    # To evaluate CO2 equilibrium using Henry's law
+    # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
+    # [H2CO3] + 100[H2CO3] + 2.5119e-3[H2CO3] = total C = 0.001 mol
+    assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 1.079e-5 * 0.9971, atol=1e-8)
+    # HCO3- approx CO2(aq) dominant species at pH 7
+    assert np.isclose(solution.get_amount("HCO3-", "mol").magnitude, 9.8219e-4 * 0.9971, atol=1e-8)
+    # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
+    # [H2CO3] + 100[H2CO3] + 5.0119e-9[H2CO3] = total C = 0.001 mol
+    assert np.isclose(solution.get_amount("CO3-2", "mol").magnitude, 9.923e-6 * 0.9971, atol=1e-8)
+
+
+def test_equilibrate_logC_pH_carbonate_13():
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=13.0, volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    # H2CO3 approx CO2(aq) is negligible at pH 13
+    assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 0 * 1.00096, atol=1e-8)
+    # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
+    # 1.995e-7[HCO3-] + [HCO3-] + (10^-10.3 / 10^-13)[CO3-2] = total C = 0.001 mol
+    assert np.isclose(solution.get_amount("HCO3-", "mol").magnitude, 1.152e-6 * 1.00096, atol=1e-8)
+    # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
+    # (10^-3*2 / 10^-16.6)[CO3-2] + (10^-3 / 10^-10.3)[CO3-2] + [CO3-2] = total C = 0.001 mol
+    assert np.isclose(solution.get_amount("CO3-2", "mol").magnitude, 9.979e-4 * 1.00096, atol=1e-8)
+
+
+@pytest.mark.xfail
+def test_alkalinity():
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc")
+    solution.equilibrate()
+    alk = solution.alkalinity
+    # Total alkalinity
+    HCO3 = solution.get_amount("HCO3-", "mg/L").magnitude
+    CO3 = solution.get_amount("CO3-2", "mg/L").magnitude
+    OH = solution.get_amount("OH-", "mg/L").magnitude
+    H = solution.get_amount("H+", "mg/L").magnitude
+    # Alkalinity calculated from the excess of negative charges from weak acids
+    total_alk = HCO3 + 2 * CO3 + OH - H
+    assert alk.to("mg/L").magnitude == pytest.approx(total_alk, abs=0.001)
+
+
+def test_equilibrate_liquid():
+    solution = Solution({"Cu+2": "4 mol/L", "O-2": "4 mol/L"}, volume="2 L", engine="phreeqc")
+    solution.equilibrate(atmosphere=True)
+    assert np.isclose(solution.get_total_amount("Cu", "mol").magnitude, 1.6709396333185211, atol=1e-8)
+
+
+def test_equilibrate_unrecognized_component():
+    solution = Solution({"Cu+2": "4 mol/L", "O-2": "4 mol/L"}, volume="2 L", engine="phreeqc")
+    # Specifying an unrecognized solid raises an Exception
+    with pytest.raises(Exception):  # noqa: B017, PT011
+        solution.equilibrate(solids=["Ferroxite"])
+
+
+def test_equilibrate_OER_region():
+    solution = Solution({}, pH=12.0, pE=13, volume="1 L", engine="phreeqc")
+    with pytest.raises(ValueError, match=".*"):
+        solution.equilibrate()
