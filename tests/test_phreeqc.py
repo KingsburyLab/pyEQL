@@ -378,3 +378,16 @@ def test_henrys_law_CO2():
     s1 = solution.equilibrate(atmosphere=True, gases={"CO2": "0.003206 atm"})
     s2 = solution.equilibrate(atmosphere=True, gases={"CO2": -2.95})
     assert s1 == s2
+
+
+def test_get_amount_units():
+    s = Solution({"Na+": "0.01 mol/L", "Cl-": "0.01 mol/L"}, volume="1 L")
+    # 0.01 mol * 22.99 g/mol = 0.2299 g
+    na_mass = s.get_total_amount("Na", "g")
+    # Conversion from g to mg
+    na_mass_mg = s.get_total_amount("Na", "mg")
+    # 0.01 mol * 35.45 g/mol = 0.3545 g
+    cl_mass = s.get_total_amount("Cl", "g")
+    assert na_mass.magnitude == pytest.approx(0.2299, rel=1e-3)
+    assert na_mass_mg.magnitude == pytest.approx(229.9, rel=1e-3)
+    assert cl_mass.magnitude == pytest.approx(0.3545, rel=1e-3)
