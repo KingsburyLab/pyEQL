@@ -369,3 +369,12 @@ def test_equilibrate_OER_region():
     solution = Solution({}, pH=12.0, pE=13, volume="1 L", engine="phreeqc")
     with pytest.raises(ValueError, match=".*"):
         solution.equilibrate()
+
+
+def test_henrys_law_CO2():
+    solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    # Henry's Law for CO2 at 25 degC:  K0 = 0.035 mol/(L·atm)
+    # 10^-2.95 / 0.035 = 0.03206 atm CO2 partial pressure
+    s1 = solution.equilibrate(atmosphere=True, gases={"CO2": "0.003206 atm"})
+    s2 = solution.equilibrate(atmosphere=True, gases={"CO2": -2.95})
+    assert s1 == s2
