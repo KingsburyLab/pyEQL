@@ -277,7 +277,7 @@ def test_equilibrate_CO2_with_calcite():
     solution.equilibrate(atmosphere=True, gases={"CO2": -2.95}, solids=["Calcite"])
     # 5 reactions: I) CaCO3 dissolution, II) Ka1, III) Ka2, IV) water dissociation, V) CaHCO3+ rxn in PHREEQC
     # 9 species, 5 components, 4 rxns exclude water dissociation
-    assert np.isclose(solution.get_amount("Na+", "mol").magnitude, 0, atol=1e-5)
+    assert np.isclose(solution.get_amount("Na+", "mol").magnitude, 0 * 0.99714, atol=1e-8)
     assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 3.816e-05 * 0.99714, atol=1e-8)
     assert np.isclose(
         solution.get_amount("HCO3-", "mol").magnitude, 1.482e-03 * 0.99714, atol=1e-6
@@ -300,7 +300,7 @@ def test_equilibrate_FeO3H3_ppt():
 
 def test_equilibrate_logC_pH_carbonate_3():
     solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc")
-    solution.equilibrate()
+    solution.equilibrate(atmosphere=False, solids=None, gases=None)
     # H2CO3 approx CO2(aq) dominant species at pH 3
     assert np.isclose(solution.get_amount("CO2(aq)", "mol").magnitude, 0.999507e-3, atol=1e-8)
     # CO2 + HCO3- + CO3-2 = total C = 0.001 mol with Ka1 = 10^6.3 and Ka2 = 10^-10.3
