@@ -291,6 +291,7 @@ def test_equilibrate_CO2_with_calcite():
 
 
 def test_equilibrate_FeO3H3_ppt():
+    """Test an oversaturated solution"""
     solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc")
     solution.equilibrate()
     assert np.isclose(solution.get_amount("Fe+3", "mol/L").magnitude, 3.093e-11)
@@ -378,15 +379,15 @@ def test_alkalinity():
 
 
 def test_equilibrate_2L():
-    solution = Solution({"Cu+2": "4 mol/L", "O-2": "4 mol/L"}, volume="2 L", engine="phreeqc")
+    solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc")
     solution.equilibrate(atmosphere=True)
-    assert np.isclose(solution.get_total_amount("Cu", "mol").magnitude, 1.6709396333185211)
+    assert np.isclose(solution.get_total_amount("Cu", "umol").magnitude, 1.999936444444759)
 
 
 def test_equilibrate_unrecognized_component():
     solution = Solution({}, engine="phreeqc")
-    # Specifying an unrecognized solid raises an Exception
-    with pytest.raises(Exception, match="Calculations terminating due to input errors."):
+    # Specifying an unrecognized solid raises a ValueError
+    with pytest.raises(ValueError, match="Phase not found in database, Ferroxite."):
         solution.equilibrate(solids=["Ferroxite"])
 
 
@@ -398,7 +399,11 @@ def test_equilibrate_OER_region():
 
 
 def test_equilibrate_gas_units():
-    solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
-    s1 = solution.equilibrate(atmosphere=True, gases={"CO2": "0.003206 atm"})
-    s2 = solution.equilibrate(atmosphere=True, gases={"CO2": -2.95})
-    assert s1 == s2
+    # Specify CO2 partial pressure directly as log10 partial pressure, as well
+    # as an explicit pressure unit.
+    # Note: log10(0.000316) = -3.5
+    s0 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    s0.equilibrate(atmosphere=True, gases={"CO2": "0.00031622776601683794 atm"})
+    s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    s1.equilibrate(atmosphere=True, gases={"CO2": -3.5})
+    assert s0.components == s1.components

@@ -663,7 +663,7 @@ class NativeEOS(EOS):
         solution: "solution.Solution",
         atmosphere: bool = False,
         solids: list[str] | None = None,
-        gases: dict[str, str] | None = None,
+        gases: dict[str, str | float] | None = None,
     ) -> None:
         """
         Adjust the speciation of a Solution object to achieve chemical equilibrium.
@@ -680,8 +680,11 @@ class NativeEOS(EOS):
             gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
                 Each key denotes the gas species, and the corresponding value
-                denotes its concentration in string format. (unit interpretation
-                and conversion is attempted on the values).
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                  {"CO2": "0.000316 atm"}
+                  {"CO2": -3.5}
         """
         if self.ppsol is not None:
             self.ppsol.forget()
@@ -720,7 +723,13 @@ class NativeEOS(EOS):
             saturation_indices = [v[0] for v in phases.values()]
             amounts = [v[1] for v in phases.values()]
 
-            self.ppsol.equalize(phases=phase_names, to_si=saturation_indices, in_phase=amounts)
+            try:
+                self.ppsol.equalize(phases=phase_names, to_si=saturation_indices, in_phase=amounts)
+            except Exception as e:
+                # Re-raise exception due to unrecognized phases as ValueError.
+                if "Phase not found in database" in str(e):
+                    raise ValueError(str(e))
+                raise e
 
         solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
