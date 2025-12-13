@@ -1248,7 +1248,7 @@ class Solution(MSONable):
         if "(" in element and UNKNOWN_OXI_STATE not in element:
             ox = float(element.split("(")[-1].split(")")[0])
             key = f"{el}({ox})"
-            species = comp_by_element.get(key)
+            species = comp_by_element.get(key, [])
         else:
             species = []
             for k, v in comp_by_element.items():
