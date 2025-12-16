@@ -1,4 +1,4 @@
-exclude: "^docs/conf.py"
+exclude: ^(docs/conf\.py|src/pyEQL/pyEQL-phreeqc/ext|tests/phreeqc/.*\.dat)
 
 default_stages: [pre-commit]
 
@@ -21,17 +21,12 @@ repos:
       # Run the formatter. This WILL run on .ipynb files
       - id: ruff-format
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
-    hooks:
-      - id: black
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
         stages: [pre-commit, commit-msg]
-        exclude_types: [html, svg]
+        exclude_types: [html, svg, jupyter]
         additional_dependencies: [tomli] # needed to read pyproject.toml below py3.11
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

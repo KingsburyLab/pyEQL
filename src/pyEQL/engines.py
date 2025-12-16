@@ -18,7 +18,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.utils import standardize_formula
+from pyEQL.utils import FormulaDict, standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
@@ -665,22 +665,50 @@ class NativeEOS(EOS):
         # store the original solvent mass
         orig_solvent_moles = solution.components[solution.solvent]
 
+        # store the original solvent elements and components with that element
+        # that we may need to add back later.
+        orig_el_dict = solution.get_el_amt_dict(nested=True)
+        orig_components_by_element = solution.get_components_by_element(nested=True)
+
+        solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
         for s, mol in self.ppsol.species_moles.items():
             solution.components[s] = mol
-
-        # make sure all species are accounted for
-        assert set(self._stored_comp.keys()) - set(solution.components.keys()) == set()
 
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
         if len(missing_species) > 0:
             logger.warning(
-                f"After equilibration, the amounts of species {missing_species} were not modified "
+                f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
                 "by PHREEQC. These species are likely absent from its database."
             )
+
+        # tolerance (in moles) for detecting cases where an element amount
+        # is no longer balanced because of species that are not recognized
+        # by PHREEQC.
+        _atol = 1e-16
+
+        new_el_dict = solution.get_el_amt_dict(nested=True)
+        for el in orig_el_dict:
+            orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
+            new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
+
+            # If this element went "missing", add back all components that
+            # contain this element (for any valence value)
+            if orig_el_amount - new_el_amount > _atol:
+                logger.info(
+                    f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
+                )
+                solution.components.update(
+                    {
+                        component: self._stored_comp[component]
+                        for components in orig_components_by_element[el].values()
+                        for component in components
+                        if component not in solution.components
+                    }
+                )
 
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
@@ -770,3 +798,61 @@ class PhreeqcEOS(NativeEOS):
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
         return ureg.Quantity(0, "L")
+
+
+class PyEQLEOS(EOS):
+    """Engine based on the PhreeqC model, as implemented in the pyphreeqc
+    module of pyEQL."""
+
+    def __init__(
+        self,
+        phreeqc_db: Literal[
+            "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
+        ] = "llnl.dat",
+    ) -> None:
+        """
+        Args:
+            phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
+        """
+
+        from pyEQL_phreeqc import Phreeqc  # noqa: PLC0415
+
+        self.phreeqc_db = phreeqc_db
+        # database files in this list are not distributed with phreeqpython
+        self.db_path = (
+            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+        )
+        # create the PhreeqcPython instance
+        self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
+        # attributes to hold the PhreeqPython solution.
+        self.ppsol = None
+        # store the solution composition to see whether we need to re-instantiate the solution
+        self._stored_comp = None
+
+    def _setup_ppsol(self, solution: "solution.Solution") -> None:
+        raise NotImplementedError
+
+    def _destroy_ppsol(self) -> None:
+        raise NotImplementedError
+
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
+        raise NotImplementedError
+
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
+        raise NotImplementedError
+
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
+        """Return the volume of the solutes."""
+        # TODO - phreeqc seems to have no concept of volume, but it does calculate density
+        return ureg.Quantity(0, "L")
+
+    def equilibrate(self, solution: "solution.Solution") -> None:
+        raise NotImplementedError

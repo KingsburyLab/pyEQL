@@ -118,8 +118,8 @@ def test_empty_solution():
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
-    assert np.isclose(s1.density.to('kg/m**3').magnitude, 997.0479, atol=0.1)
-    assert np.isclose(s1.viscosity_kinematic.to('mm**2/s').magnitude, 0.8917, atol=1e-3) # 1 cSt = 1 mm2/s
+    assert np.isclose(s1.density.to("kg/m**3").magnitude, 997.0479, atol=0.1)
+    assert np.isclose(s1.viscosity_kinematic.to("mm**2/s").magnitude, 0.8917, atol=1e-3)  # 1 cSt = 1 mm2/s
     assert np.isclose(s1.viscosity_dynamic, s1.viscosity_kinematic * s1.density, atol=1e-8)
 
 
@@ -264,6 +264,7 @@ def test_chempot_energy(s1, s2):
     pass
 
 
+@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
 def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s5.charge_balance, 0, atol=1e-5)
@@ -376,6 +377,7 @@ def test_get_el_amt_dict(s6):
     # scale volume to 8L
     s6 *= 8
     d = s6.get_el_amt_dict()
+    d_nested = s6.get_el_amt_dict(nested=True)
     for el, amt in zip(
         ["H(1.0)", "O(-2.0)", "Ca(2.0)", "Mg(2.0)", "Na(1.0)", "Ag(1.0)", "C(4.0)", "S(6.0)", "Br(-1.0)"],
         [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
@@ -383,10 +385,19 @@ def test_get_el_amt_dict(s6):
     ):
         assert np.isclose(d[el], amt, atol=1e-3)
 
+        el_no_valence = el.split("(")[0]
+        valence = float(el.split("(")[1].split(")")[0])
+        assert np.isclose(d_nested[el_no_valence][valence], amt, atol=1e-3)
+
     s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
     d = s.get_el_amt_dict()
+    d_nested = s.get_el_amt_dict(nested=True)
     for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015], strict=False):
         assert np.isclose(d[el], amt, atol=1e-3)
+
+        el_no_valence = el.split("(")[0]
+        valence = float(el.split("(")[1].split(")")[0])
+        assert np.isclose(d_nested[el_no_valence][valence], amt, atol=1e-3)
 
 
 def test_p(s2):
@@ -488,6 +499,76 @@ def test_components_by_element(s1, s2):
         "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
         "Cl(5.0)": ["ClO3[-1]"],
         "Cl(7.0)": ["ClO4[-1]"],
+    }
+
+
+def test_components_by_element_nested(s1, s2):
+    assert s1.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: ["H2O(aq)", "OH[-1]", "H[+1]"],
+        },
+        "O": {
+            -2.0: ["H2O(aq)", "OH[-1]"],
+        },
+    }
+
+    assert s2.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: ["H2O(aq)", "OH[-1]", "H[+1]"],
+        },
+        "O": {
+            -2.0: ["H2O(aq)", "OH[-1]"],
+        },
+        "Na": {
+            1.0: ["Na[+1]"],
+        },
+        "Cl": {
+            -1.0: ["Cl[-1]"],
+        },
+    }
+
+    if platform.machine() == "arm64" and platform.system() == "Darwin":
+        pytest.skip(reason="arm64 not supported")
+
+    s2.equilibrate()
+
+    assert s2.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: [
+                "H2O(aq)",
+                "OH[-1]",
+                "H[+1]",
+                "HCl(aq)",
+                "NaOH(aq)",
+                "HClO(aq)",
+                "HClO2(aq)",
+            ],
+            0.0: ["H2(aq)"],
+        },
+        "O": {
+            -2.0: [
+                "H2O(aq)",
+                "OH[-1]",
+                "NaOH(aq)",
+                "HClO(aq)",
+                "ClO[-1]",
+                "ClO2[-1]",
+                "ClO3[-1]",
+                "ClO4[-1]",
+                "HClO2(aq)",
+            ],
+            0.0: ["O2(aq)"],
+        },
+        "Na": {
+            1.0: ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
+        },
+        "Cl": {
+            -1.0: ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
+            1.0: ["HClO(aq)", "ClO[-1]"],
+            3.0: ["ClO2[-1]", "HClO2(aq)"],
+            5.0: ["ClO3[-1]"],
+            7.0: ["ClO4[-1]"],
+        },
     }
 
 
@@ -897,6 +978,77 @@ class TestSolutionAdd:
     @staticmethod
     def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
         assert solution.database == solution_sum.database
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    def test_should_replace_monatomic_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution without specifying the charge on the ion,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # defined in the phreeqc database.
+        solution = Solution({"Na": "1 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Na(aq)" in solution.components
+        assert "Na[+1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Na", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        assert "amounts of species ['Na(aq)'] were not modified by PHREEQC" in caplog.text
+        assert "Na[+1]" in solution.components  # correct charge assignment
+        assert "Na(aq)" not in solution.components
+        new_el_amount = solution.get_total_amount("Na", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    def test_should_replace_diatomic_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution by specifying the charge on the ion
+        # that is different from the one determined by phreeqc,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # determined by phreeqc.
+        solution = Solution({"ReO4-2": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "ReO4[-2]" in solution.components
+        assert "ReO4[-1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Re", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        # [ReO4-2] is not in phreeqc, but the element Re[+7] is, so it comes
+        # up with ReO4[-1] as the species and replaces our incorrect ReO4[-2].
+        assert "amounts of species ['ReO4[-2]'] were not modified by PHREEQC" in caplog.text
+        assert "ReO4[-1]" in solution.components
+        assert "ReO4[-2]" not in solution.components
+        new_el_amount = solution.get_total_amount("Re", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    def test_should_not_discard_missing_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution by specifying a species with an element
+        # that is not found in phreeqc, the species should not be discarded.
+        solution = Solution({"Rh+3": "0.001 mg/L", "Rh2O3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Rh[+3]" in solution.components
+        assert "Rh2O3(aq)" in solution.components
+        orig_el_amount = solution.get_total_amount("Rh", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        assert "amounts of species ['Rh2O3(aq)', 'Rh[+3]'] were not modified by PHREEQC" in caplog.text
+        assert (
+            "PHREEQC discarded element Rh during equilibration. Adding all components for this element." in caplog.text
+        )
+        assert "Rh[+3]" in solution.components  # still there
+        assert "Rh2O3(aq)" in solution.components  # still there
+        new_el_amount = solution.get_total_amount("Rh", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
 
 
 class TestZeroSoluteVolume:
