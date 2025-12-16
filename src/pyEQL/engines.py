@@ -683,8 +683,8 @@ class NativeEOS(EOS):
                 denotes its concentration, as a log partial pressure value or
                 other interpretable pressure units. For example, the following
                 are equivalent (log10(0.000316) = -3.5)
-                  {"CO2": "0.000316 atm"}
-                  {"CO2": -3.5}
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
         """
         if self.ppsol is not None:
             self.ppsol.forget()
