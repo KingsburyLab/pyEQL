@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 from pyEQL_phreeqc import Phreeqc
+from pyEQL_phreeqc.solution import Solution
 
 
 def test_load_database_internal():
@@ -132,17 +133,19 @@ def test_run_simple():
 
 def test_run_add_solution():
     phreeqc = Phreeqc()
-    phreeqc.add_solution(
+    solution = Solution(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
+    phreeqc.add_solution(solution)
     assert len(phreeqc) == 1
 
 
 def test_run_add_delete_solution():
     phreeqc = Phreeqc()
-    phreeqc.add_solution(
+    solution = Solution(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
+    phreeqc.add_solution(solution)
     phreeqc.remove_solution(0)
     assert len(phreeqc) == 0
 
@@ -399,10 +402,10 @@ def test_accumulate():
     )
 
     phreeqc.add_solution(
-        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
     phreeqc.add_solution(
-        {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
 
     expected = (
@@ -457,10 +460,10 @@ def test_speciation_add_solutions():
         """)
 
     phreeqc.add_solution(
-        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
     phreeqc.add_solution(
-        {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
     # execute!
     phreeqc()
@@ -469,3 +472,35 @@ def test_speciation_add_solutions():
     assert phreeqc.get_selected_output_row_count() == 3
     # [<name>, <molality>, <activity>], repeated for each (4) species
     assert phreeqc.get_selected_output_column_count() == 12
+
+
+def test_speciate():
+    solutions = [
+        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}),
+        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}),
+    ]
+    phreeqc = Phreeqc()
+    all_solution_species = phreeqc.speciate(solutions)
+
+    expected_species = {
+        0: {
+            "H+": {"ACT": 1.0001522689856982e-07, "MOL": 1.0005246407839175e-07},
+            "H2": {"ACT": 7.079457681907915e-35, "MOL": 7.079457517820301e-35},
+            "O2": {"ACT": 8.317637520771417e-25, "MOL": 8.317637327985348e-25},
+            "OH-": {"ACT": 1.0123126727760366e-07, "MOL": 1.0126897880811404e-07},
+        },
+        1: {
+            "H+": {"ACT": 1e-10, "MOL": 1.0197827284798617e-10},
+            "H2": {"ACT": 5.626700758118202e-41, "MOL": 0.0},
+            "O2": {"ACT": 3.659468532125681e-05, "MOL": 3.6592332322612637e-05},
+            "OH-": {"ACT": 0.0005473549298676792, "MOL": 0.0005585111533405827},
+        },
+    }
+
+    assert len(all_solution_species) == len(expected_species)
+    for solution_index, solution_species in all_solution_species.items():
+        assert solution_index in expected_species
+        assert set(solution_species.keys()) == set(expected_species[solution_index].keys())
+        for k in solution_species:
+            for prop in ("ACT", "MOL"):
+                assert np.isclose(solution_species[k][prop], expected_species[solution_index][k][prop])

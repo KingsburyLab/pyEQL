@@ -41,11 +41,13 @@ class Phreeqc:
     def __str__(self):
         return self._str
 
+    def clear(self):
+        self._str = ""
+
     def accumulate(self, s: str) -> None:
         self._str += dedent(s)
 
-    def add_solution(self, solution_dict: dict) -> None:
-        solution = Solution(solution_dict)
+    def add_solution(self, solution: Solution) -> None:
         index = len(self)
         template = (
             "\n"
@@ -71,6 +73,52 @@ class Phreeqc:
         )
         self.accumulate(_str)
         return self._solutions.pop(index)
+
+    def speciate(
+        self, solutions: Solution | list[Solution], props: tuple[str] | None = None
+    ) -> dict[int, dict[str, Any]]:
+        if props is None:
+            props = ("MOL", "ACT")
+        punch_line = ", ".join([f"{prop}(name$(i))" for prop in props])
+
+        self.clear()
+        self.accumulate(f"""
+            SELECTED_OUTPUT
+                -reset false
+
+            USER_PUNCH
+            10 t = SYS("aq", count, name$, type$, moles)
+            20 FOR i = 1 to count
+            30 PUNCH name$(i), {punch_line}
+            40 NEXT i
+            """)
+
+        if isinstance(solutions, Solution):
+            solutions = [solutions]
+
+        for solution in solutions:
+            self.add_solution(solution)
+
+        self()
+
+        # first line is always the header, but ensure this so we can skip it.
+        assert self.output[0][0].startswith("no_heading")
+
+        all_solution_species: dict[int, dict[str, Any]] = {}
+        for solution_i, line in enumerate(self.output[1:]):
+            this_solution_species = {}
+            n_tokens = len(line)
+            j = 0
+            while j < n_tokens:
+                species = line[j]
+                this_solution_species[species] = {}
+                j += 1
+                for prop in props:
+                    this_solution_species[species][prop] = line[j]
+                    j += 1
+            all_solution_species[solution_i] = this_solution_species
+
+        return all_solution_species
 
 
 class PhreeqcOutput:
