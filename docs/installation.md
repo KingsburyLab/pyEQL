@@ -68,7 +68,7 @@ pyEQL also requires the following packages:
 - [pint](https://github.com/hgrecco/pint) - for automated unit conversion
 - [pymatgen](https://github.com/materialsproject/pymatgen/) - used to interpret chemical formulas
 - [iapws](https://github.com/jjgomera/iapws/) - used to calculate the properties of water
-- [monty](https://github.com/materialsvirtuallab/monty) - used for saving and loading `Solution` objects to files
+- [monty](https://github.com/materialyzeai/monty) - used for saving and loading `Solution` objects to files
 - [maggma](https://materialsproject.github.io/maggma/) - used by the internal property database
 - [scipy](https://scipy.org/)
 - [numpy](https://numpy.org/)
