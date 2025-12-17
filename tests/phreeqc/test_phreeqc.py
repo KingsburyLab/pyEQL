@@ -1,4 +1,4 @@
-import textwrap
+from inspect import cleandoc
 from pathlib import Path
 
 import numpy as np
@@ -150,8 +150,7 @@ def test_run_add_delete_solution():
 def test_run_dumpstring():
     phreeqc = Phreeqc()
 
-    phreeqc.run_string(
-        textwrap.dedent("""
+    phreeqc.run_string("""
         SOLUTION 0
           temp 25.0
         REACTION 1
@@ -161,24 +160,21 @@ def test_run_dumpstring():
         SAVE SOLUTION 0
         END
     """)
-    )
 
     phreeqc.set_dump_string_on(1)
 
-    phreeqc.run_string(
-        textwrap.dedent("""
+    phreeqc.run_string("""
         DUMP
           -solution 0
         END
     """)
-    )
 
     dump_string = phreeqc.get_dump_string()
     phreeqc.set_dump_string_on(0)
 
     # Due to platform specific differences, we only compare the first token
     # from each of the lines below, to the output.
-    expected = textwrap.dedent("""
+    expected = cleandoc("""
         SOLUTION_RAW                 0 Solution after simulation 1.
           -temp                      25
           -pressure                  1
@@ -216,7 +212,7 @@ def test_run_dumpstring():
         USE reaction none
         USE reaction_temperature none
         USE reaction_pressure none
-    """).lstrip("\n")
+    """)
 
     dump_lines = dump_string.splitlines()
     expected_lines = expected.splitlines()
@@ -232,8 +228,7 @@ def test_run_dumpstring():
 def test_run_logstring():
     phreeqc = Phreeqc()
     phreeqc.set_log_string_on(1)
-    phreeqc.run_string(
-        textwrap.dedent("""
+    phreeqc.run_string("""
         KNOBS
           -logfile true
         SOLUTION 0
@@ -245,13 +240,13 @@ def test_run_logstring():
         SAVE SOLUTION 0
         END
     """)
-    )
+
     log_string = phreeqc.get_log_string()
     phreeqc.set_log_string_on(0)
 
     # Due to platform specific differences, we only compare the first token
     # from each of the lines below, to the output.
-    expected = textwrap.dedent("""
+    expected = cleandoc("""
                -------------------------------------------
                Beginning of initial solution calculations.
                -------------------------------------------
@@ -295,7 +290,7 @@ def test_run_logstring():
                ---------------------------------
                End of Run after X Seconds.
                ---------------------------------
-           """).strip("\n")
+           """)
 
     log_lines = log_string.strip("\n").splitlines()
     expected_lines = expected.splitlines()
@@ -315,3 +310,162 @@ def test_run_logstring():
                 continue
 
             assert got_first == exp_first
+
+
+def test_speciation_one_solution():
+    phreeqc = Phreeqc()
+
+    phreeqc.run_string("""
+        SELECTED_OUTPUT
+            -reset false
+
+        USER_PUNCH
+        10 t = SYS("aq", count, name$, type$, moles)
+        20 FOR i = 1 to count
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        40 NEXT i
+
+        SOLUTION 0
+          temp 25.0
+          units mol/kgw
+          pH 7.0
+          pe 8.5
+          redox pe
+          water 0.9970480319717386
+        END
+        """)
+
+    # heading + soln 0 data (regardless of whether we have -headings in USER_PUNCH or not)
+    assert phreeqc.get_selected_output_row_count() == 2
+    # [<name>, <molality>, <activity>], repeated for each (4) species
+    assert phreeqc.get_selected_output_column_count() == 12
+
+
+def test_speciation_two_solutions():
+    phreeqc = Phreeqc()
+
+    phreeqc.run_string("""
+        SELECTED_OUTPUT
+            -reset false
+
+        USER_PUNCH
+        10 t = SYS("aq", count, name$, type$, moles)
+        20 FOR i = 1 to count
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        40 NEXT i
+
+        SOLUTION 0
+          temp 25.0
+          units mol/kgw
+          pH 7.0
+          pe 8.5
+          redox pe
+          water 0.9970480319717386
+        SAVE SOLUTION 0
+        END
+
+        SOLUTION 1
+          temp 50.0
+          units mol/kgw
+          pH 10.0
+          pe 8.5
+          redox pe
+          water 0.9970480319717386
+        SAVE SOLUTION 1
+        END
+        """)
+
+    # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
+    assert phreeqc.get_selected_output_row_count() == 3
+    # [<name>, <molality>, <activity>], repeated for each (4) species
+    assert phreeqc.get_selected_output_column_count() == 12
+
+
+def test_accumulate():
+    phreeqc = Phreeqc()
+
+    phreeqc.accumulate(
+        cleandoc("""
+        SELECTED_OUTPUT
+            -reset false
+
+        USER_PUNCH
+        10 t = SYS("aq", count, name$, type$, moles)
+        20 FOR i = 1 to count
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        40 NEXT i
+        """)
+        + "\n"
+    )
+
+    phreeqc.add_solution(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc.add_solution(
+        {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+
+    expected = (
+        cleandoc("""
+        SELECTED_OUTPUT
+            -reset false
+
+        USER_PUNCH
+        10 t = SYS("aq", count, name$, type$, moles)
+        20 FOR i = 1 to count
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        40 NEXT i
+
+        SOLUTION 0
+          pH 7.0
+          pe 8.5
+          redox pe
+          temp 25.0
+          units mol/kgw
+          water 0.9970480319717386
+        SAVE SOLUTION 0
+        END
+
+        SOLUTION 1
+          pH 10.0
+          pe 8.5
+          redox pe
+          temp 50.0
+          units mol/kgw
+          water 0.9970480319717386
+        SAVE SOLUTION 1
+        END
+    """)
+        + "\n"
+    )
+
+    assert str(phreeqc) == expected
+
+
+def test_speciation_add_solutions():
+    phreeqc = Phreeqc()
+
+    phreeqc.accumulate("""
+        SELECTED_OUTPUT
+            -reset false
+
+        USER_PUNCH
+        10 t = SYS("aq", count, name$, type$, moles)
+        20 FOR i = 1 to count
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        40 NEXT i
+        """)
+
+    phreeqc.add_solution(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc.add_solution(
+        {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    # execute!
+    phreeqc()
+
+    # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
+    assert phreeqc.get_selected_output_row_count() == 3
+    # [<name>, <molality>, <activity>], repeated for each (4) species
+    assert phreeqc.get_selected_output_column_count() == 12
