@@ -1,4 +1,6 @@
 # Partial pressures of reactive gases in atmosphere
+# Obtained from https://www.noaa.gov/jetstream/atmosphere on 12/15/25
+# (N2=78.084%, O2=20.946%, CO2=0.042%)
 ATMOSPHERE = {"N2": -0.1074379, "CO2": -3.3767507, "O2": -0.6788989}
 
 # The amount, in moles, of an assemblage of pure phases that can react

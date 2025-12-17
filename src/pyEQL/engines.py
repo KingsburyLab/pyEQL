@@ -674,8 +674,8 @@ class NativeEOS(EOS):
                 w.r.t atmospheric gases.
             solids:
                 A list of solids used to achieve liquid-solid equilibrium. Each
-                solid in this list should be present in the Phreeqc database,
-                and is assumed to have a saturation index of 0 and an infinite
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
                 amount of material.
             gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
