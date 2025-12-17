@@ -1,4 +1,6 @@
+from inspect import cleandoc
 from pathlib import Path
+from textwrap import dedent, indent
 from typing import Any
 
 from pyEQL_phreeqc._bindings import PyIPhreeqc
@@ -14,6 +16,7 @@ class Phreeqc:
             database_directory = Path(__file__).parent / "database"
         self._ext.load_database(str(database_directory / database))
 
+        self._str = ""
         self._solutions: list[Solution] = []
 
         # TODO: Is VAR the common denominator for most operations?
@@ -32,22 +35,41 @@ class Phreeqc:
             return getattr(self._ext, item)
         raise AttributeError(f"Phreeqc has no attribute '{item}'")
 
+    def __call__(self, *args, **kwargs):
+        self.run_string(self._str)
+
+    def __str__(self):
+        return self._str
+
+    def accumulate(self, s: str) -> None:
+        self._str += dedent(s)
+
     def add_solution(self, solution_dict: dict) -> None:
         solution = Solution(solution_dict)
         index = len(self)
-        self.run_string(f"""
+        template = (
+            "\n"
+            + cleandoc(f"""
             SOLUTION {index}
-              {solution}
+            {{solution}}
             SAVE SOLUTION {index}
             END
         """)
+            + "\n"
+        )
+        _str = template.format(solution=indent(str(solution), "  "))
+        self.accumulate(_str)
         self._solutions.append(solution)
 
     def remove_solution(self, index: int) -> Solution:
-        self.run_string(f"""
+        _str = (
+            cleandoc(f"""
             DELETE
               -solution {index}
         """)
+            + "\n"
+        )
+        self.accumulate(_str)
         return self._solutions.pop(index)
 
 
