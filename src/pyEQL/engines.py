@@ -899,16 +899,99 @@ class PyEQLEOS(EOS):
         self._stored_comp = None
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        raise NotImplementedError
+        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
+
+        from pyEQL_phreeqc import Solution  # noqa: PLC0415
+
+        self._stored_comp = solution.components.copy()
+        solv_mass = solution.solvent_mass.to("kg").magnitude
+        # inherit bulk solution properties
+        d = {
+            "temp": solution.temperature.to("degC").magnitude,
+            "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
+            "pH": solution.pH,
+            "pe": solution.pE,
+            "redox": "pe",  # hard-coded to use the pe
+            # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
+            # really have to specify the solvent mass in 1 liter of solution
+            "water": solv_mass,
+        }
+        if solution.balance_charge == "pH":
+            d["pH"] = str(d["pH"]) + " charge"
+        if solution.balance_charge == "pE":
+            d["pe"] = str(d["pe"]) + " charge"
+
+        # add the composition to the dict
+        # also, skip H and O
+        for el, mol in solution.get_el_amt_dict().items():
+            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
+            # all distinct oxi states of each element present. If there are elements present whose oxi states
+            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
+            # entered into the composition dict. This can especially cause problems after equilibrate() has already
+            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
+            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
+            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
+            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
+            # oxi state happens to be iterated through last.
+
+            # strip off the oxi state
+            bare_el = el.split("(")[0]
+            if bare_el in SPECIAL_ELEMENTS:
+                # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
+                # passing, e.g. 'C(4)' and not 'C(4.0)'
+                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
+            elif bare_el in ["H", "O"]:
+                continue
+            else:
+                key = bare_el
+
+            if key in d:
+                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
+                # add all their amounts together
+                d[key] += str(mol / solv_mass)
+            else:
+                d[key] = str(mol / solv_mass)
+
+            # tell PHREEQC which species to use for charge balance
+            if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
+                d[key] += " charge"
+
+        ppsol = self.pp.add_solution(Solution(d))
+        self.ppsol = ppsol
 
     def _destroy_ppsol(self) -> None:
-        raise NotImplementedError
+        if self.ppsol is not None:
+            self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+            self.ppsol = None
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
-        raise NotImplementedError
+        """
+        Return the *molal scale* activity coefficient of solute, given a Solution
+        object.
+        """
+        if (self.ppsol is None) or (solution.components != self._stored_comp):
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+
+        # translate the species into keys that phreeqc will understand
+        k = standardize_formula(solute)
+        spl = k.split("[")
+        el = spl[0]
+        chg = spl[1].split("]")[0]
+        if chg[-1] == "1":
+            chg = chg[0]  # just pass + or -, not +1 / -1
+        k = el + chg
+
+        # calculate the molal scale activity coefficient
+        # act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
+        act = self.ppsol.get_activity(k) / self.ppsol.get_molality(k)
+
+        return ureg.Quantity(act, "dimensionless")
 
     def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
-        raise NotImplementedError
+        osmotic = self.ppsol.get_osmotic_coefficient()  # noqa: F841
+        # TODO: Why is the wrapper defaulting to 1 instead of 0 (default behavior for phreeqc) for phreeqpython?
+        return ureg.Quantity(1, "dimensionless")
 
     def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""

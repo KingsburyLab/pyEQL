@@ -2,8 +2,8 @@ from inspect import cleandoc
 from pathlib import Path
 
 import numpy as np
-from pyEQL_phreeqc import Phreeqc
-from pyEQL_phreeqc.solution import Solution
+from pyEQL_phreeqc import Phreeqc, Solution
+from pytest import approx
 
 
 def test_load_database_internal():
@@ -384,36 +384,26 @@ def test_speciation_two_solutions():
     assert phreeqc.get_selected_output_column_count() == 12
 
 
-def test_accumulate():
+def test_add_solution_input():
     phreeqc = Phreeqc()
 
-    phreeqc.accumulate(
-        cleandoc("""
+    phreeqc.add_solution(
+        [
+            Solution(
+                {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+            ),
+            Solution(
+                {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+            ),
+        ]
+    )
+
+    expected = cleandoc("""
         SELECTED_OUTPUT
             -reset false
 
         USER_PUNCH
-        10 t = SYS("aq", count, name$, type$, moles)
-        20 FOR i = 1 to count
-        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
-        40 NEXT i
-        """)
-        + "\n"
-    )
-
-    phreeqc.add_solution(
-        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
-    )
-    phreeqc.add_solution(
-        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386})
-    )
-
-    expected = (
-        cleandoc("""
-        SELECTED_OUTPUT
-            -reset false
-
-        USER_PUNCH
+        5 PUNCH OSMOTIC, EOL_NOTAB$
         10 t = SYS("aq", count, name$, type$, moles)
         20 FOR i = 1 to count
         30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
@@ -439,39 +429,28 @@ def test_accumulate():
         SAVE SOLUTION 1
         END
     """)
-        + "\n"
-    )
 
     assert str(phreeqc) == expected
 
 
-def test_speciation_add_solutions():
+def test_add_solution_output():
     phreeqc = Phreeqc()
 
-    phreeqc.accumulate("""
-        SELECTED_OUTPUT
-            -reset false
-
-        USER_PUNCH
-        10 t = SYS("aq", count, name$, type$, moles)
-        20 FOR i = 1 to count
-        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
-        40 NEXT i
-        """)
-
     phreeqc.add_solution(
-        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
+        [
+            Solution(
+                {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+            ),
+            Solution(
+                {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
+            ),
+        ]
     )
-    phreeqc.add_solution(
-        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386})
-    )
-    # execute!
-    phreeqc()
 
     # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
     assert phreeqc.get_selected_output_row_count() == 3
-    # [<name>, <molality>, <activity>], repeated for each (4) species
-    assert phreeqc.get_selected_output_column_count() == 12
+    # <osmotic>, "\n", +[<name>, <molality>, <activity>] repeated for each (4) species
+    assert phreeqc.get_selected_output_column_count() == 14
 
 
 def test_speciate():
@@ -480,27 +459,70 @@ def test_speciate():
         Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}),
     ]
     phreeqc = Phreeqc()
-    all_solution_species = phreeqc.speciate(solutions)
+    phreeqc.add_solution(solutions)
 
-    expected_species = {
+    expected = {
         0: {
-            "H+": {"ACT": 1.0001522689856982e-07, "MOL": 1.0005246407839175e-07},
-            "H2": {"ACT": 7.079457681907915e-35, "MOL": 7.079457517820301e-35},
-            "O2": {"ACT": 8.317637520771417e-25, "MOL": 8.317637327985348e-25},
-            "OH-": {"ACT": 1.0123126727760366e-07, "MOL": 1.0126897880811404e-07},
+            "OSMOTIC": 0.0,
+            "species": {
+                "H+": {"ACT": 1.0001522689856982e-07, "MOL": 1.0005246407839175e-07},
+                "H2": {"ACT": 7.079457681907915e-35, "MOL": 7.079457517820301e-35},
+                "O2": {"ACT": 8.317637520771417e-25, "MOL": 8.317637327985348e-25},
+                "OH-": {"ACT": 1.0123126727760366e-07, "MOL": 1.0126897880811404e-07},
+            },
         },
         1: {
-            "H+": {"ACT": 1e-10, "MOL": 1.0197827284798617e-10},
-            "H2": {"ACT": 5.626700758118202e-41, "MOL": 0.0},
-            "O2": {"ACT": 3.659468532125681e-05, "MOL": 3.6592332322612637e-05},
-            "OH-": {"ACT": 0.0005473549298676792, "MOL": 0.0005585111533405827},
+            "OSMOTIC": 0.0,
+            "species": {
+                "H+": {"ACT": 1e-10, "MOL": 1.0197827284798617e-10},
+                "H2": {"ACT": 5.626700758118202e-41, "MOL": 0.0},
+                "O2": {"ACT": 3.659468532125681e-05, "MOL": 3.6592332322612637e-05},
+                "OH-": {"ACT": 0.0005473549298676792, "MOL": 0.0005585111533405827},
+            },
         },
     }
 
-    assert len(all_solution_species) == len(expected_species)
-    for solution_index, solution_species in all_solution_species.items():
-        assert solution_index in expected_species
-        assert set(solution_species.keys()) == set(expected_species[solution_index].keys())
-        for k in solution_species:
+    assert len(phreeqc) == len(expected)
+    for solution_index, solution_props in expected.items():
+        props = phreeqc[solution_index]._get_calculated_props()
+        assert set(props.keys()) == set(expected[solution_index].keys())
+        for k in expected[solution_index]:
+            if k != "species":
+                assert props[k] == approx(expected[solution_index][k])
+
+        for k in solution_props["species"]:
             for prop in ("ACT", "MOL"):
-                assert np.isclose(solution_species[k][prop], expected_species[solution_index][k][prop])
+                assert np.isclose(props["species"][k][prop], expected[solution_index]["species"][k][prop])
+
+
+def test_speciate_molality():
+    solution = Solution(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc = Phreeqc()
+    phreeqc.add_solution(solution)
+
+    activity = phreeqc[0].get_molality("H+")
+    assert activity == approx(1.0005246407839175e-07)
+
+
+def test_speciate_activity():
+    solution = Solution(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc = Phreeqc()
+    phreeqc.add_solution(solution)
+
+    activity = phreeqc[0].get_activity("H+")
+    assert activity == approx(1.0001522689856982e-07)
+
+
+def test_osmotic_coefficient():
+    solution = Solution(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc = Phreeqc()
+    phreeqc.add_solution(solution)
+
+    osmotic_coefficient = phreeqc[0].get_osmotic_coefficient()
+    assert osmotic_coefficient == approx(0.0)
