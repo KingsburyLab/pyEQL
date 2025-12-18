@@ -29,6 +29,9 @@ class Phreeqc:
     def __len__(self):
         return len(self._solutions)
 
+    def __getitem__(self, item):
+        return self._solutions[item]
+
     def __getattr__(self, item) -> None:
         """Delegate attribute access to the underlying PyIPhreeqc instance."""
         if hasattr(self._ext, item):
@@ -39,7 +42,7 @@ class Phreeqc:
         self.run_string(self._str)
 
     def __str__(self):
-        return self._str
+        return cleandoc(self._str)
 
     def clear(self):
         self._str = ""
@@ -47,21 +50,29 @@ class Phreeqc:
     def accumulate(self, s: str) -> None:
         self._str += dedent(s)
 
-    def add_solution(self, solution: Solution) -> None:
-        index = len(self)
-        template = (
-            "\n"
-            + cleandoc(f"""
-            SOLUTION {index}
-            {{solution}}
-            SAVE SOLUTION {index}
-            END
-        """)
-            + "\n"
-        )
-        _str = template.format(solution=indent(str(solution), "  "))
-        self.accumulate(_str)
-        self._solutions.append(solution)
+    def _add_solution(self, solution: Solution | list[Solution]) -> Solution | list[Solution]:
+        singleton = isinstance(solution, Solution)
+        solutions = [solution] if singleton else solution
+
+        for solution in solutions:
+            index = len(self)
+            solution._number = index
+            # TODO: This should go in the Solution class
+            template = (
+                "\n"
+                + cleandoc(f"""
+                SOLUTION {index}
+                {{solution}}
+                SAVE SOLUTION {index}
+                END
+            """)
+                + "\n"
+            )
+            _str = template.format(solution=indent(str(solution), "  "))
+            self.accumulate(_str)
+            self._solutions.append(solution)
+
+        return self._solutions[-1] if singleton else self._solutions
 
     def remove_solution(self, index: int) -> Solution:
         _str = (
@@ -72,14 +83,22 @@ class Phreeqc:
             + "\n"
         )
         self.accumulate(_str)
+        self()
         return self._solutions.pop(index)
 
-    def speciate(
-        self, solutions: Solution | list[Solution], props: tuple[str] | None = None
-    ) -> dict[int, dict[str, Any]]:
-        if props is None:
-            props = ("MOL", "ACT")
-        punch_line = ", ".join([f"{prop}(name$(i))" for prop in props])
+    def add_solution(
+        self,
+        solution: Solution | list[Solution],
+        solution_props: tuple[str] | None = None,
+        species_props: tuple[str] | None = None,
+    ) -> Solution | list[Solution]:
+        if solution_props is None:
+            solution_props = ("OSMOTIC",)
+        solution_punch_line = ", ".join(list(solution_props))
+
+        if species_props is None:
+            species_props = ("MOL", "ACT")
+        species_punch_line = ", ".join([f"{prop}(name$(i))" for prop in species_props])
 
         self.clear()
         self.accumulate(f"""
@@ -87,38 +106,43 @@ class Phreeqc:
                 -reset false
 
             USER_PUNCH
+            5 PUNCH {solution_punch_line}, EOL_NOTAB$
             10 t = SYS("aq", count, name$, type$, moles)
             20 FOR i = 1 to count
-            30 PUNCH name$(i), {punch_line}
+            30 PUNCH name$(i), {species_punch_line}
             40 NEXT i
             """)
 
-        if isinstance(solutions, Solution):
-            solutions = [solutions]
-
-        for solution in solutions:
-            self.add_solution(solution)
+        return_value = self._add_solution(solution)
 
         self()
 
         # first line is always the header, but ensure this so we can skip it.
         assert self.output[0][0].startswith("no_heading")
 
-        all_solution_species: dict[int, dict[str, Any]] = {}
-        for solution_i, line in enumerate(self.output[1:]):
-            this_solution_species = {}
+        output = self.output[:][1:]
+        for solution_i, line in enumerate(output):
+            solution_i_props = {"species": {}}
             n_tokens = len(line)
             j = 0
             while j < n_tokens:
-                species = line[j]
-                this_solution_species[species] = {}
-                j += 1
-                for prop in props:
-                    this_solution_species[species][prop] = line[j]
-                    j += 1
-            all_solution_species[solution_i] = this_solution_species
+                # everything before the first '\n' are solution_props
+                if not solution_i_props["species"]:
+                    while (solution_prop := line[j]) != "\n":
+                        solution_i_props[solution_props[j]] = solution_prop
+                        j += 1
+                    j += 1  # skip "\n"
 
-        return all_solution_species
+                species = line[j]
+                solution_i_props["species"][species] = {}
+                j += 1
+                for prop in species_props:
+                    solution_i_props["species"][species][prop] = line[j]
+                    j += 1
+
+            self[solution_i]._set_calculated_props(solution_i_props)
+
+        return return_value
 
 
 class PhreeqcOutput:
