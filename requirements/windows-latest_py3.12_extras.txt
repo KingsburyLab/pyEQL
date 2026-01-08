@@ -77,7 +77,7 @@ flexcache==0.3
     # via pint
 flexparser==0.4
     # via pint
-fonttools==4.59.2
+fonttools==4.60.2
     # via matplotlib
 iapws==1.5.4
     # via pyEQL (setup.py)
