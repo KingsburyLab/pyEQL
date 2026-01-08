@@ -358,7 +358,7 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uncertainties==3.2.3
     # via pymatgen
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   botocore
     #   requests
