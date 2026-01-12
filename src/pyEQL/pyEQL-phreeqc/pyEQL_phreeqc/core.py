@@ -2,10 +2,19 @@ from inspect import cleandoc
 from pathlib import Path
 from textwrap import dedent, indent
 from typing import Any
+from weakref import ref
 
 from pyEQL_phreeqc._bindings import PyIPhreeqc
 from pyEQL_phreeqc.solution import Solution
 from pyEQL_phreeqc.var import Var
+
+SOLUTION_PROPS = (
+    "CELL_NO",
+    "TOT['water']",
+    "OSMOTIC",
+)
+SPECIES_PROPS = ("MOL", "ACT")
+EQ_SPECIES_PROPS = ("SI",)
 
 
 class Phreeqc:
@@ -56,7 +65,9 @@ class Phreeqc:
 
         for solution in solutions:
             index = len(self)
+            solution._phreeqc = ref(self)
             solution._number = index
+
             # TODO: This should go in the Solution class
             template = (
                 "\n"
@@ -86,19 +97,10 @@ class Phreeqc:
         self()
         return self._solutions.pop(index)
 
-    def add_solution(
-        self,
-        solution: Solution | list[Solution],
-        solution_props: tuple[str] | None = None,
-        species_props: tuple[str] | None = None,
-    ) -> Solution | list[Solution]:
-        if solution_props is None:
-            solution_props = ("OSMOTIC",)
-        solution_punch_line = ", ".join(list(solution_props))
-
-        if species_props is None:
-            species_props = ("MOL", "ACT")
-        species_punch_line = ", ".join([f"{prop}(name$(i))" for prop in species_props])
+    def add_solution(self, solution: Solution | list[Solution]) -> Solution | list[Solution]:
+        solution_punch_line = ", ".join(list(SOLUTION_PROPS))
+        species_punch_line = ", ".join([f"{prop}(name$(i))" for prop in SPECIES_PROPS])
+        eq_species_punch_line = ", ".join([f"{prop}(name$(j))" for prop in EQ_SPECIES_PROPS])
 
         self.clear()
         self.accumulate(f"""
@@ -111,38 +113,71 @@ class Phreeqc:
             20 FOR i = 1 to count
             30 PUNCH name$(i), {species_punch_line}
             40 NEXT i
+            50 PUNCH EOL$
+            60 p = SYS("phases", count, name$, type$, moles)
+            70 FOR j = 1 TO count
+            80 PUNCH name$(j), {eq_species_punch_line}
+            90 NEXT j
             """)
 
         return_value = self._add_solution(solution)
-
         self()
+        self._parse_output()
 
+        return return_value
+
+    def _parse_output(self):
         # first line is always the header, but ensure this so we can skip it.
         assert self.output[0][0].startswith("no_heading")
 
         output = self.output[:][1:]
-        for solution_i, line in enumerate(output):
-            solution_i_props = {"species": {}}
+        for line in output:
+            solution_i_props = {"species": {}, "eq_species": {}}
             n_tokens = len(line)
             j = 0
-            while j < n_tokens:
-                # everything before the first '\n' are solution_props
-                if not solution_i_props["species"]:
-                    while (solution_prop := line[j]) != "\n":
-                        solution_i_props[solution_props[j]] = solution_prop
-                        j += 1
-                    j += 1  # skip "\n"
 
+            while j < len(SOLUTION_PROPS):
+                solution_i_props[SOLUTION_PROPS[j]] = line[j]
+                j += 1
+
+            j += 1  # skip "\n"
+
+            while line[j] != "\n":
                 species = line[j]
                 solution_i_props["species"][species] = {}
                 j += 1
-                for prop in species_props:
+                for prop in SPECIES_PROPS:
                     solution_i_props["species"][species][prop] = line[j]
                     j += 1
 
+            j += 1  # skip "\n"
+            while j < n_tokens:
+                # We encounter None values here, indicating end of valid
+                # entries.
+                if line[j] is None:
+                    break
+                eq_species = line[j]
+                solution_i_props["eq_species"][eq_species] = {}
+                j += 1
+                for prop in EQ_SPECIES_PROPS:
+                    solution_i_props["eq_species"][eq_species][prop] = line[j]
+                    j += 1
+
+            solution_i = int(solution_i_props["CELL_NO"])
             self[solution_i]._set_calculated_props(solution_i_props)
 
-        return return_value
+    def equalize(self, index: int, phases: list[str], saturation_indices: list[float], amounts: list[float]) -> None:
+        phases_lines = "\n".join(
+            f"{p} {si} {amount}" for (p, si, amount) in zip(phases, saturation_indices, amounts, strict=False)
+        )
+        self.accumulate(f"""
+            USE SOLUTION {index}
+            EQUILIBRIUM PHASES 1
+            {phases_lines}
+            END
+            """)
+        self()
+        self._parse_output()
 
 
 class PhreeqcOutput:
