@@ -737,6 +737,16 @@ class NativeEOS(EOS):
         for s, mol in self.ppsol.species_moles.items():
             solution.components[s] = mol
 
+        # --- Code to demonstrate bug ---
+        # The standardized formula for (CO2)2 is still CO2, so this amount
+        # (negligible) ends up overwriting the original CO2 amount.
+        # We simply get lucky in the loop above that (CO2)2 is encountered
+        # before CO2 in the old wrapper, but we force surfacing the bug here.
+        problematic_keys = ("(CO2)2",)
+        for k in problematic_keys:
+            if k in self.ppsol.species_moles:
+                solution.components[k] = self.ppsol.species_moles[k]
+
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
