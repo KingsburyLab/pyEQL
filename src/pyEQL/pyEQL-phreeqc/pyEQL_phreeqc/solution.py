@@ -62,9 +62,7 @@ class Solution:
 
     @property
     def species_moles(self) -> dict[str, float]:
-        amounts = {species: self.get_moles(species) for species in self.species}
-        # filtering only till issue (TODO) is resolved
-        return {k: v for k, v in amounts.items() if k != "(CO2)2"}
+        return {species: self.get_moles(species) for species in self.species}
 
     def forget(self) -> None:
         if self._phreeqc is not None:
