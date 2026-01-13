@@ -62,7 +62,7 @@ docutils==0.21.2
     #   sphinx-rtd-theme
 execnet==2.1.1
     # via pytest-xdist
-filelock==3.19.1
+filelock==3.20.1
     # via
     #   tox
     #   virtualenv
@@ -70,7 +70,7 @@ flexcache==0.3
     # via pint
 flexparser==0.4
     # via pint
-fonttools==4.59.2
+fonttools==4.60.2
     # via matplotlib
 iapws==1.5.4
     # via pyEQL (setup.py)
@@ -226,7 +226,7 @@ pymatgen==2025.6.14
     # via pyEQL (setup.py)
 pymongo==4.10.1
     # via maggma
-pynacl==1.5.0
+pynacl==1.6.2
     # via paramiko
 pyparsing==3.2.3
     # via
@@ -358,7 +358,7 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uncertainties==3.2.3
     # via pymatgen
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   botocore
     #   requests

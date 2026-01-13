@@ -62,6 +62,10 @@ def test_standardize_formula():
     assert standardize_formula("(NH4)2SO4") == "(NH4)2SO4(aq)"
     assert standardize_formula("NH4SO4-") == "NH4SO4[-1]"
 
+    # Polymers should be left intact
+    assert standardize_formula("(CO2)2") == "(CO2)2"
+    assert standardize_formula("(H2O)3") == "(H2O)3"
+
 
 def test_formula_dict():
     """
