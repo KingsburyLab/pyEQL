@@ -998,9 +998,8 @@ class PyEQLEOS(EOS):
         return ureg.Quantity(act, "dimensionless")
 
     def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
-        osmotic = self.ppsol.get_osmotic_coefficient()  # noqa: F841
-        # TODO: Why is the wrapper defaulting to 1 instead of 0 (default behavior for phreeqc) for phreeqpython?
-        return ureg.Quantity(1, "dimensionless")
+        osmotic = self.ppsol.get_osmotic_coefficient()
+        return ureg.Quantity(osmotic, "dimensionless")
 
     def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
