@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] | None = None,
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -236,6 +236,16 @@ class Solution(MSONable):
         """`Store` instance containing the solute property database."""
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
+
+        if engine is None:
+            engine = "native"
+            warnings.warn(
+                "The default value of the 'engine' parameter will change from "
+                "'native' to 'pyeql' in a future release. "
+                "Please specify 'engine' explicitly to silence this warning.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         # set the equation of state engine
         self._engine = engine
