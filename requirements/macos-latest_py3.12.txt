@@ -45,7 +45,7 @@ flexcache==0.3
     # via pint
 flexparser==0.4
     # via pint
-fonttools==4.59.2
+fonttools==4.60.2
     # via matplotlib
 iapws==1.5.4
     # via pyEQL (setup.py)
@@ -143,7 +143,7 @@ pymatgen==2025.6.14
     # via pyEQL (setup.py)
 pymongo==4.10.1
     # via maggma
-pynacl==1.5.0
+pynacl==1.6.2
     # via paramiko
 pyparsing==3.2.3
     # via
@@ -223,7 +223,7 @@ tzdata==2025.2
     # via pandas
 uncertainties==3.2.3
     # via pymatgen
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   botocore
     #   requests
