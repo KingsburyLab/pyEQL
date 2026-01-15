@@ -901,7 +901,7 @@ class PyEQLEOS(EOS):
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
 
-        from pyEQL_phreeqc import Solution  # noqa: PLC0415
+        from pyEQL_phreeqc import PHRQSol  # noqa: PLC0415
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -957,7 +957,7 @@ class PyEQLEOS(EOS):
                 d[key] += " charge"
 
         try:
-            ppsol = self.pp.add_solution(Solution(d))
+            ppsol = self.pp.add_solution(PHRQSol(d))
         except Exception as e:
             # catch problems with the input to phreeqc
             raise ValueError(

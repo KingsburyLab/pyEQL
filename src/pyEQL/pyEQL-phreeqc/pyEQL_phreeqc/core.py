@@ -5,7 +5,7 @@ from typing import Any
 from weakref import ref
 
 from pyEQL_phreeqc._bindings import PyIPhreeqc
-from pyEQL_phreeqc.solution import Solution
+from pyEQL_phreeqc.solution import PHRQSol
 from pyEQL_phreeqc.var import Var
 
 SOLUTION_PROPS = (
@@ -26,7 +26,7 @@ class Phreeqc:
         self._ext.load_database(str(database_directory / database))
 
         self._str = ""
-        self._solutions: list[Solution] = []
+        self._solutions: list[PHRQSol] = []
 
         # TODO: Is VAR the common denominator for most operations?
         # Here we create one and modify it in operations instead of having
@@ -59,8 +59,8 @@ class Phreeqc:
     def accumulate(self, s: str) -> None:
         self._str += dedent(s)
 
-    def _add_solution(self, solution: Solution | list[Solution]) -> Solution | list[Solution]:
-        singleton = isinstance(solution, Solution)
+    def _add_solution(self, solution: PHRQSol | list[PHRQSol]) -> PHRQSol | list[PHRQSol]:
+        singleton = isinstance(solution, PHRQSol)
         solutions = [solution] if singleton else solution
 
         for solution in solutions:
@@ -68,7 +68,7 @@ class Phreeqc:
             solution._phreeqc = ref(self)
             solution._number = index
 
-            # TODO: This should go in the Solution class
+            # TODO: This should go in the PHRQSol class
             template = (
                 "\n"
                 + cleandoc(f"""
@@ -85,7 +85,7 @@ class Phreeqc:
 
         return self._solutions[-1] if singleton else self._solutions
 
-    def remove_solution(self, index: int) -> Solution:
+    def remove_solution(self, index: int) -> PHRQSol:
         _str = (
             cleandoc(f"""
             DELETE
@@ -97,7 +97,7 @@ class Phreeqc:
         self()
         return self._solutions.pop(index)
 
-    def add_solution(self, solution: Solution | list[Solution]) -> Solution | list[Solution]:
+    def add_solution(self, solution: PHRQSol | list[PHRQSol]) -> PHRQSol | list[PHRQSol]:
         solution_punch_line = ", ".join(list(SOLUTION_PROPS))
         species_punch_line = ", ".join([f"{prop}(name$(i))" for prop in SPECIES_PROPS])
         eq_species_punch_line = ", ".join([f"{prop}(name$(j))" for prop in EQ_SPECIES_PROPS])

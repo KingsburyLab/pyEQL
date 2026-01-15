@@ -2,7 +2,7 @@ from inspect import cleandoc
 from pathlib import Path
 
 import numpy as np
-from pyEQL_phreeqc import Phreeqc, Solution
+from pyEQL_phreeqc import Phreeqc, PHRQSol
 from pytest import approx
 
 
@@ -133,7 +133,7 @@ def test_run_simple():
 
 def test_run_add_solution():
     phreeqc = Phreeqc()
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc.add_solution(solution)
@@ -142,7 +142,7 @@ def test_run_add_solution():
 
 def test_run_add_delete_solution():
     phreeqc = Phreeqc()
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc.add_solution(solution)
@@ -389,10 +389,10 @@ def test_add_solution_input():
 
     phreeqc.add_solution(
         [
-            Solution(
+            PHRQSol(
                 {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
             ),
-            Solution(
+            PHRQSol(
                 {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
             ),
         ]
@@ -442,10 +442,10 @@ def test_add_solution_output():
 
     phreeqc.add_solution(
         [
-            Solution(
+            PHRQSol(
                 {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
             ),
-            Solution(
+            PHRQSol(
                 {"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}
             ),
         ]
@@ -462,7 +462,7 @@ def test_add_solution_output():
 def test_kgw():
     phreeqc = Phreeqc()
     phreeqc.add_solution(
-        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
+        PHRQSol({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
     assert phreeqc[0].get_kgw() == approx(0.9970480319717386)
 
@@ -470,13 +470,13 @@ def test_kgw():
 def test_speciate():
     phreeqc = Phreeqc()
     phreeqc.add_solution(
-        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
+        PHRQSol({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386})
     )
     assert phreeqc[0].get_species_list() == ["OH-", "H+", "O2", "H2"]
 
 
 def test_speciate_get_molality():
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc = Phreeqc()
@@ -487,7 +487,7 @@ def test_speciate_get_molality():
 
 
 def test_speciate_get_moles():
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc = Phreeqc()
@@ -498,7 +498,7 @@ def test_speciate_get_moles():
 
 
 def test_speciate_species_moles():
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc = Phreeqc()
@@ -518,8 +518,8 @@ def test_speciate_species_moles():
 
 def test_species_all_props():
     solutions = [
-        Solution({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}),
-        Solution({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}),
+        PHRQSol({"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}),
+        PHRQSol({"pH": 10.0, "pe": 8.5, "redox": "pe", "temp": 50.0, "units": "mol/kgw", "water": 0.9970480319717386}),
     ]
     phreeqc = Phreeqc()
     phreeqc.add_solution(solutions)
@@ -577,7 +577,7 @@ def test_species_all_props():
 
 
 def test_speciate_get_activity():
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc = Phreeqc()
@@ -588,7 +588,7 @@ def test_speciate_get_activity():
 
 
 def test_get_osmotic_coefficient():
-    solution = Solution(
+    solution = PHRQSol(
         {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
     )
     phreeqc = Phreeqc()
