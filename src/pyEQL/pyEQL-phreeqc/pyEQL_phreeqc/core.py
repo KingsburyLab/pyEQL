@@ -13,7 +13,7 @@ SOLUTION_PROPS = (
     "TOT['water']",
     "OSMOTIC",
 )
-SPECIES_PROPS = ("MOL", "ACT")
+SPECIES_PROPS = ("MOL", "ACT", "DIFF_C")
 EQ_SPECIES_PROPS = ("SI",)
 
 
