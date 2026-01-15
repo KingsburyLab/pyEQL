@@ -46,8 +46,6 @@ jobs:
         include:
           - os: ubuntu-latest
             python-version: "3.11"
-          - os: ubuntu-latest
-            python-version: "3.12"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -60,6 +58,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[testing]"
           pip install src/pyEQL/pyEQL-phreeqc
+      - name: List installed requirements
+        run: |
+          pip freeze
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
