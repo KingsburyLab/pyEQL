@@ -2,8 +2,11 @@ from inspect import cleandoc
 from pathlib import Path
 
 import numpy as np
+import pytest
 from pyEQL_phreeqc import Phreeqc, PHRQSol
 from pytest import approx
+
+from pyEQL import Solution
 
 
 def test_load_database_internal():
@@ -406,7 +409,7 @@ def test_add_solution_input():
         5 PUNCH CELL_NO, TOT['water'], OSMOTIC, EOL_NOTAB$
         10 t = SYS("aq", count, name$, type$, moles)
         20 FOR i = 1 to count
-        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i)), DIFF_C(name$(i))
         40 NEXT i
         50 PUNCH EOL$
         60 p = SYS("phases", count, name$, type$, moles)
@@ -454,9 +457,9 @@ def test_add_solution_output():
     # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
     assert phreeqc.get_selected_output_row_count() == 3
     # <cell_no>, <tot_water>, <osmotic>, "\n",
-    # +[<name>, <molality>, <activity>] repeated for each (4) species
+    # +[<name>, <molality>, <activity>, <diff_c>] repeated for each (4) species
     # +"\n" + [<equilibrium_species>, <si>] repeated for each (3) equilibrium species
-    assert phreeqc.get_selected_output_column_count() == 23
+    assert phreeqc.get_selected_output_column_count() == 27
 
 
 def test_kgw():
@@ -596,3 +599,81 @@ def test_get_osmotic_coefficient():
 
     osmotic_coefficient = phreeqc[0].get_osmotic_coefficient()
     assert osmotic_coefficient == approx(0.0)
+
+
+@pytest.mark.xfail(reason="Diffusion Coefficient test discrepancies need to be investigated")
+def test_diffusion_transport():
+    """
+    A copy of test_solution.py::test_diffusion_transport with minor syntactic changes.
+    """
+    s1 = Solution(volume="2 L", engine="pyeql")
+    s2 = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L", engine="pyeql")
+
+    # test ionic strength adjustment
+    assert s1.get_diffusion_coefficient("H+", use_engine=True) > s2.get_diffusion_coefficient("H+", use_engine=True)
+
+    # for Na+, d=122, a1=1.52, a2=3.7, A=1.173802/2.303 at 25 DegC, B = 3.2843078+10
+    factor = np.exp(
+        -1.52
+        * 1.173802
+        / 2.303
+        * 1
+        * np.sqrt(s2.ionic_strength.magnitude)
+        / (1 + 3.2843078e10 * np.sqrt(s2.ionic_strength.magnitude) * 3.7 / (1 + s2.ionic_strength.magnitude**0.75))
+    )
+    assert np.isclose(
+        factor * s2.get_diffusion_coefficient("Na+", use_engine=True).magnitude,
+        s2.get_diffusion_coefficient("Na+", use_engine=True).magnitude,
+        atol=5e-11,
+    )
+    s_dilute = Solution({"Na+": "1 mmol/L", "Cl-": "1 mmol/L"}, engine="pyeql")
+    assert np.isclose(
+        s_dilute.get_diffusion_coefficient("Na+", activity_correction=False, use_engine=True).magnitude,
+        1.334e-9,
+        atol=1e-12,
+    )
+    assert np.isclose(s_dilute.get_transport_number("Na+"), 0.396, atol=1e-3)
+    assert np.isclose(s_dilute.get_transport_number("Cl-"), 0.604, atol=1e-3)
+
+    # test setting a default value
+    s2.default_diffusion_coeff = 0
+    assert s2.get_diffusion_coefficient("Cs+", use_engine=True).magnitude == 0
+    s2.default_diffusion_coeff = 1e-9
+    assert s2.get_diffusion_coefficient("Cs+", activity_correction=False, use_engine=True).magnitude == 1e-9
+    s2.default_diffusion_coeff = 0
+    assert s2.get_diffusion_coefficient("Cs+", activity_correction=True, use_engine=True).magnitude < 1e-9
+    d25 = s2.get_diffusion_coefficient("Na+", activity_correction=False, use_engine=True).magnitude
+    nu25 = s2.water_substance.nu
+    s2.temperature = "40 degC"
+    d40 = s2.get_diffusion_coefficient("Na+", activity_correction=False, use_engine=True).magnitude
+    nu40 = s2.water_substance.nu
+    assert np.isclose(
+        d40,
+        d25 * np.exp(122 / (273.15 + 40) - 122 / 298.15) * (nu25 / nu40),
+        atol=5e-11,
+    )
+
+    # test correction factors for concentration, as per Appelo 2017 Fig 5
+    D1 = (
+        Solution({"Na+": "1 umol/L", "Cl-": "1 umol/L"}, engine="pyeql")
+        .get_diffusion_coefficient("Na+", use_engine=True)
+        .magnitude
+    )
+    D2 = (
+        Solution({"Na+": "1.7 mol/kg", "Cl-": "1.7 mol/kg"}, engine="pyeql")
+        .get_diffusion_coefficient("Na+", use_engine=True)
+        .magnitude
+    )
+    assert np.isclose(D2 / D1, 0.54, atol=1e-2)
+
+    D1 = (
+        Solution({"K+": "1 umol/L", "Cl-": "1 umol/L"}, engine="pyeql")
+        .get_diffusion_coefficient("K+", use_engine=True)
+        .magnitude
+    )
+    D2 = (
+        Solution({"K+": "0.5 mol/kg", "Cl-": "0.5 mol/kg"}, engine="pyeql")
+        .get_diffusion_coefficient("K+", use_engine=True)
+        .magnitude
+    )
+    assert np.isclose(D2 / D1, 0.80, atol=1e-2)

@@ -31,6 +31,9 @@ class PHRQSol:
     def get_molality(self, species) -> float:
         return self._get_calculated_prop("MOL", species=species)
 
+    def get_diffusion_coefficient(self, species) -> float:
+        return self._get_calculated_prop("DIFF_C", species=species)
+
     def get_osmotic_coefficient(self) -> float:
         return self._get_calculated_prop("OSMOTIC")
 

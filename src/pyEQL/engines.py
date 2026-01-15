@@ -1128,3 +1128,20 @@ class PyEQLEOS(EOS):
         # weights for water. Since water amount is passed to PHREEQC in kg but returned in moles, each
         # call to equilibrate can thus result in a slight change in the Solution mass.
         solution.components[solution.solvent] = orig_solvent_moles
+
+    def get_diffusion_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
+        if (self.ppsol is None) or (solution.components != self._stored_comp):
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+
+        # translate the species into keys that phreeqc will understand
+        k = standardize_formula(solute)
+        spl = k.split("[")
+        el = spl[0]
+        chg = spl[1].split("]")[0]
+        if chg[-1] == "1":
+            chg = chg[0]  # just pass + or -, not +1 / -1
+        k = el + chg
+
+        diffusion_coefficient = self.ppsol.get_diffusion_coefficient(k)
+        return ureg.Quantity(diffusion_coefficient, "meter ** 2 / s")

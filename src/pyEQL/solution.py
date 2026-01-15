@@ -2173,7 +2173,9 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True) -> Quantity:
+    def _get_diffusion_coefficient(
+        self, solute: str, activity_correction: bool = True, use_engine: bool = False
+    ) -> Quantity:
         r"""
         Get the **temperature-adjusted** diffusion coefficient of a solute.
 
@@ -2181,6 +2183,8 @@ class Solution(MSONable):
             solute: the solute for which to retrieve the diffusion coefficient.
             activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
                 strength using a model from Ref 2.
+            use_engine: Whether to use the underlying phreeqc engine to determine diffusion coefficient.
+                Only the 'pyeql' engine is supported.
 
         Notes:
             This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
@@ -2218,6 +2222,10 @@ class Solution(MSONable):
             pyEQL.activity_correction._debye_parameter_activity
 
         """
+        if use_engine:
+            assert self._engine == "pyeql", "Only supported for pyeql engine"
+            return self.engine.get_diffusion_coefficient(self, solute)
+
         D = self.get_property(solute, "transport.diffusion_coefficient")
         rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
