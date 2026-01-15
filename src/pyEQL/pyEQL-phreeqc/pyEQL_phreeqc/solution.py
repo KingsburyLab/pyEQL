@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Any
 
 
-class Solution:
+class PHRQSol:
     def __init__(self, props, phreeqc=None):
         self._phreeqc = phreeqc
         self._number = -1

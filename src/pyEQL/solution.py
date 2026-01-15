@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] | None = None,
+        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -237,12 +237,13 @@ class Solution(MSONable):
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
 
-        if engine is None:
-            engine = "native"
+        if engine == "native":
             warnings.warn(
-                "The default value of the 'engine' parameter will change from "
-                "'native' to 'pyeql' in a future release. "
-                "Please specify 'engine' explicitly to silence this warning.",
+                'In the next release, the default engine ("native") will'
+                "transition to a new version of the PHREEQC wrapper for"
+                "speciation calculations. No change in your script is"
+                "required, but if you call .equilibrate(), compare results"
+                "carefully between releases.",
                 DeprecationWarning,
                 stacklevel=2,
             )

@@ -1,4 +1,4 @@
 from .core import Phreeqc
-from .solution import Solution
+from .solution import PHRQSol
 
-__all__ = ["Phreeqc", "Solution"]
+__all__ = ["PHRQSol", "Phreeqc"]
