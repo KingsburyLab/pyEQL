@@ -1,9 +1,8 @@
-from pyEQL_phreeqc import Phreeqc
+from pyEQL_phreeqc import PHRQSol
 
 
-def test_add_solution():
-    phreeqc = Phreeqc()
-    phreeqc.add_solution(
+def test_create_solution():
+    PHRQSol(
         {
             "Cl": "4.011842831773806",
             "Na": "4.011842831773806",

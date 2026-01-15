@@ -237,6 +237,17 @@ class Solution(MSONable):
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
 
+        if engine == "native":
+            warnings.warn(
+                'In the next release, the default engine ("native") will'
+                "transition to a new version of the PHREEQC wrapper for"
+                "speciation calculations. No change in your script is"
+                "required, but if you call .equilibrate(), compare results"
+                "carefully between releases.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         # set the equation of state engine
         self._engine = engine
         # self.engine: Optional[EOS] = None
