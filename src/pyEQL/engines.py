@@ -1136,12 +1136,15 @@ class PyEQLEOS(EOS):
 
         # translate the species into keys that phreeqc will understand
         k = standardize_formula(solute)
-        spl = k.split("[")
-        el = spl[0]
-        chg = spl[1].split("]")[0]
-        if chg[-1] == "1":
-            chg = chg[0]  # just pass + or -, not +1 / -1
-        k = el + chg
+        if "[" in k:
+            spl = k.split("[")
+            el = spl[0]
+            chg = spl[1].split("]")[0]
+            if chg[-1] == "1":
+                chg = chg[0]  # just pass + or -, not +1 / -1
+            k = el + chg
 
         diffusion_coefficient = self.ppsol.get_diffusion_coefficient(k)
+        if diffusion_coefficient is None:
+            return None
         return ureg.Quantity(diffusion_coefficient, "meter ** 2 / s")

@@ -20,9 +20,11 @@ class PHRQSol:
 
     def _get_calculated_prop(self, which, species: str | None = None, eq_species: str | None = None):
         if species is not None:
-            return self._calculated_props["species"][species][which]
+            species_props = self._calculated_props["species"].get(species)
+            return species_props[which] if species_props is not None else None
         if eq_species is not None:
-            return self._calculated_props["eq_species"][eq_species][which]
+            eq_species_props = self._calculated_props["eq_species"].get(species)
+            return eq_species_props[which] if eq_species_props is not None else None
         return self._calculated_props[which]
 
     def get_activity(self, species) -> float:
