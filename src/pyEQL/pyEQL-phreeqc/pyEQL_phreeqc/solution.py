@@ -23,7 +23,7 @@ class PHRQSol:
             species_props = self._calculated_props["species"].get(species)
             return species_props[which] if species_props is not None else None
         if eq_species is not None:
-            eq_species_props = self._calculated_props["eq_species"].get(species)
+            eq_species_props = self._calculated_props["eq_species"].get(eq_species)
             return eq_species_props[which] if eq_species_props is not None else None
         return self._calculated_props[which]
 
