@@ -596,3 +596,14 @@ def test_get_osmotic_coefficient():
 
     osmotic_coefficient = phreeqc[0].get_osmotic_coefficient()
     assert osmotic_coefficient == approx(0.0)
+
+
+def test_get_diffusion_coefficient():
+    solution = PHRQSol(
+        {"pH": 7.0, "pe": 8.5, "redox": "pe", "temp": 25.0, "units": "mol/kgw", "water": 0.9970480319717386}
+    )
+    phreeqc = Phreeqc()
+    phreeqc.add_solution(solution)
+
+    diffusion_coefficient = phreeqc[0].get_diffusion_coefficient("H+")
+    assert diffusion_coefficient == approx(9.31e-09)
