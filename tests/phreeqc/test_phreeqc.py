@@ -406,7 +406,7 @@ def test_add_solution_input():
         5 PUNCH CELL_NO, TOT['water'], OSMOTIC, EOL_NOTAB$
         10 t = SYS("aq", count, name$, type$, moles)
         20 FOR i = 1 to count
-        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i)), DIFF_C(name$(i))
+        30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i))
         40 NEXT i
         50 PUNCH EOL$
         60 p = SYS("phases", count, name$, type$, moles)
@@ -454,9 +454,9 @@ def test_add_solution_output():
     # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
     assert phreeqc.get_selected_output_row_count() == 3
     # <cell_no>, <tot_water>, <osmotic>, "\n",
-    # +[<name>, <molality>, <activity>, <diff_c>] repeated for each (4) species
+    # +[<name>, <molality>, <activity>] repeated for each (4) species
     # +"\n" + [<equilibrium_species>, <si>] repeated for each (3) equilibrium species
-    assert phreeqc.get_selected_output_column_count() == 27
+    assert phreeqc.get_selected_output_column_count() == 23
 
 
 def test_kgw():

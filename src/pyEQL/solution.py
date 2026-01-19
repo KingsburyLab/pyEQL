@@ -2071,7 +2071,7 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
-    def get_transport_number(self, solute: str, use_engine: bool = False) -> Quantity:
+    def get_transport_number(self, solute: str) -> Quantity:
         r"""Calculate the transport number of the solute in the solution.
 
         Args:
@@ -2114,7 +2114,7 @@ class Solution(MSONable):
             # cancels out
             # using species amounts in mol is equivalent to using concentrations in mol/L
             # since there is only one solution volume, and it's much faster.
-            term = self.get_molar_conductivity(item, use_engine=use_engine).magnitude * mol
+            term = self.get_molar_conductivity(item).magnitude * mol
 
             if item == solute:
                 numerator = term
@@ -2123,7 +2123,7 @@ class Solution(MSONable):
 
         return ureg.Quantity(numerator / denominator, "dimensionless")
 
-    def _get_molar_conductivity(self, solute: str, use_engine: bool = False) -> Quantity:
+    def _get_molar_conductivity(self, solute: str) -> Quantity:
         r"""
         Calculate the molar (equivalent) conductivity for a solute.
 
@@ -2160,7 +2160,7 @@ class Solution(MSONable):
         See Also:
             :py:meth:`get_diffusion_coefficient`
         """
-        D = self.get_diffusion_coefficient(solute, use_engine=use_engine)
+        D = self.get_diffusion_coefficient(solute)
 
         if D != 0:
             molar_cond = (
@@ -2173,9 +2173,7 @@ class Solution(MSONable):
 
         return molar_cond.to("mS / cm / (mol/L)")
 
-    def _get_diffusion_coefficient(
-        self, solute: str, activity_correction: bool = True, use_engine: bool = False
-    ) -> Quantity:
+    def _get_diffusion_coefficient(self, solute: str, activity_correction: bool = True) -> Quantity:
         r"""
         Get the **temperature-adjusted** diffusion coefficient of a solute.
 
@@ -2183,8 +2181,6 @@ class Solution(MSONable):
             solute: the solute for which to retrieve the diffusion coefficient.
             activity_correction: If True (default), adjusts the diffusion coefficient for the effects of ionic
                 strength using a model from Ref 2.
-            use_engine: Whether to use the underlying phreeqc engine to determine diffusion coefficient.
-                Only the 'pyeql' engine is supported.
 
         Notes:
             This method is equivalent to self.get_property(solute, "transport.diffusion_coefficient")
@@ -2222,20 +2218,8 @@ class Solution(MSONable):
             pyEQL.activity_correction._debye_parameter_activity
 
         """
-        rform = standardize_formula(solute)
-
-        if use_engine:
-            assert self._engine == "pyeql", "Only supported for pyeql engine"
-            D = self.engine.get_diffusion_coefficient(self, solute)
-            if D is None or D.magnitude == 0:
-                self.logger.warning(
-                    f"Diffusion coefficient not found for species {rform}. Using default value of "
-                    f"{self.default_diffusion_coeff} m**2/s."
-                )
-                return ureg.Quantity(self.default_diffusion_coeff, "m**2/s")
-            return D
-
         D = self.get_property(solute, "transport.diffusion_coefficient")
+        rform = standardize_formula(solute)
         if D is None or D.magnitude == 0:
             self.logger.warning(
                 f"Diffusion coefficient not found for species {rform}. Using default value of "
