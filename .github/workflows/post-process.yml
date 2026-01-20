@@ -8,7 +8,6 @@ on:
 
 jobs:
   lint:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
