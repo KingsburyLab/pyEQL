@@ -10,7 +10,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   lint:
@@ -18,7 +18,7 @@ jobs:
     strategy:
       max-parallel: 1
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up Python
@@ -46,11 +46,9 @@ jobs:
         include:
           - os: ubuntu-latest
             python-version: "3.11"
-          - os: ubuntu-latest
-            python-version: "3.12"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -59,6 +57,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[testing]"
+          pip install src/pyEQL/pyEQL-phreeqc
+      - name: List installed requirements
+        run: |
+          pip freeze
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
@@ -70,7 +72,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
         with:

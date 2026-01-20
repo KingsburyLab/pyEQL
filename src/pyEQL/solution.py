@@ -27,7 +27,7 @@ from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS, PyEQLEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -237,6 +237,17 @@ class Solution(MSONable):
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
 
+        if engine == "native":
+            warnings.warn(
+                'In the next release, the default engine ("native") will'
+                "transition to a new version of the PHREEQC wrapper for"
+                "speciation calculations. No change in your script is"
+                "required, but if you call .equilibrate(), compare results"
+                "carefully between releases.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         # set the equation of state engine
         self._engine = engine
         # self.engine: Optional[EOS] = None
@@ -248,6 +259,8 @@ class Solution(MSONable):
             self.engine = NativeEOS()
         elif self._engine == "phreeqc":
             self.engine = PhreeqcEOS()
+        elif self._engine == "pyeql":
+            self.engine = PyEQLEOS()
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 
@@ -1246,7 +1259,7 @@ class Solution(MSONable):
         if "(" in element and UNKNOWN_OXI_STATE not in element:
             ox = float(element.split("(")[-1].split(")")[0])
             key = f"{el}({ox})"
-            species = comp_by_element.get(key)
+            species = comp_by_element.get(key, [])
         else:
             species = []
             for k, v in comp_by_element.items():

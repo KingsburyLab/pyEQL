@@ -15,7 +15,7 @@ jobs:
     strategy:
       max-parallel: 1
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up Python
@@ -45,7 +45,7 @@ jobs:
           - macos-14
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -55,6 +55,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install uv
           uv pip install '.[${{ matrix.version.extras }}]' --system --resolution=${{ matrix.version.resolution }}
+          uv pip install src/pyEQL/pyEQL-phreeqc
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope

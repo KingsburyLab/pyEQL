@@ -1,0 +1,1579 @@
+#  $Id: phreeqc.dat 3428 2009-03-23 16:31:34Z dlpark $
+SOLUTION_MASTER_SPECIES
+#
+#element species	alk     gfw_formula     element_gfw
+#
+H	H+	     -1.     H	       1.008
+H(0)     H2	     0.0     H
+H(1)     H+	     -1.     0.0
+E	e-	     0.0     0.0	     0.0
+O	H2O	    0.0     O	       16.00
+O(0)     O2	     0.0     O
+O(-2)    H2O	    0.0     0.0
+Ca       Ca+2	   0.0     Ca	      40.08
+Mg       Mg+2	   0.0     Mg	      24.312
+Na       Na+	    0.0     Na	      22.9898
+K	K+	     0.0     K	       39.102
+Fe       Fe+2	   0.0     Fe	      55.847
+Fe(+2)   Fe+2	   0.0     Fe
+Fe(+3)   Fe+3	   -2.0    Fe
+Mn       Mn+2	   0.0     Mn	      54.938
+Mn(+2)   Mn+2	   0.0     Mn
+Mn(+3)   Mn+3	   0.0     Mn
+Al       Al+3	   0.0     Al	      26.9815
+Ba       Ba+2	   0.0     Ba	      137.34
+Sr       Sr+2	   0.0     Sr	      87.62
+Si       H4SiO4	 0.0     SiO2	    28.0843
+Cl       Cl-	    0.0     Cl	      35.453
+C	CO3-2	  2.0     HCO3	    12.0111
+C(+4)    CO3-2	  2.0     HCO3
+C(-4)    CH4	    0.0     CH4
+Alkalinity CO3-2	1.0     Ca0.5(CO3)0.5   50.05
+S	SO4-2	  0.0     SO4	     32.064
+S(6)     SO4-2	  0.0     SO4
+S(-2)    HS-	    1.0     S
+N	NO3-	   0.0     N	       14.0067
+N(+5)    NO3-	   0.0     N
+N(+3)    NO2-	   0.0     N
+N(0)     N2	     0.0     N
+N(-3)    NH4+	   0.0     N
+B	H3BO3	  0.0     B	       10.81
+P	PO4-3	  2.0     P	       30.9738
+F	F-	     0.0     F	       18.9984
+Li       Li+	    0.0     Li	      6.939
+Br       Br-	    0.0     Br	      79.904
+Zn       Zn+2	   0.0     Zn	      65.37
+Cd       Cd+2	   0.0     Cd	      112.4
+Pb       Pb+2	   0.0     Pb	      207.19
+Cu       Cu+2	   0.0     Cu	      63.546
+Cu(+2)   Cu+2	   0.0     Cu
+Cu(+1)   Cu+1	   0.0     Cu
+
+SOLUTION_SPECIES
+
+H+ = H+
+	log_k	   0.000
+	-gamma	  9.0000    0.0000
+	-dw	 9.31e-9
+e- = e-
+	log_k	   0.000
+
+H2O = H2O
+	log_k	   0.000
+
+Ca+2 = Ca+2
+	log_k	   0.000
+	-gamma    5.0000    0.1650
+	-dw	 0.793e-9
+	-millero -19.69 0.1058 -0.001256 1.617 -0.075 0.0008262
+Mg+2 = Mg+2
+	log_k	   0.000
+	-gamma    5.5000    0.2000
+	-dw	 0.705e-9
+	-millero -22.32 0.0868 -0.0016 2.017 -0.125 0.001457
+Na+ = Na+
+	log_k	   0.000
+	-gamma    4.0000    0.0750
+	-dw	 1.33e-9
+	-millero -3.46 0.1092 -0.000768 2.698 -0.106 0.001651
+K+ = K+
+	log_k	   0.000
+	-gamma    3.5000    0.0150
+	-dw	 1.96e-9
+	-millero 7.26 0.0892 -0.000736 2.722 -0.101 0.00151
+Fe+2 = Fe+2
+	log_k	   0.000
+	-gamma    6.0000    0.0000
+	-dw	 0.719e-9
+Mn+2 = Mn+2
+	log_k	   0.000
+	-gamma    6.0000    0.0000
+	-dw	 0.688e-9
+Al+3 = Al+3
+	log_k	   0.000
+	-gamma    9.0000    0.0000
+	-dw	 0.559e-9
+Ba+2 = Ba+2
+	log_k	   0.000
+	-gamma    5.0000    0.0000
+	-dw	 0.848e-9
+Sr+2 = Sr+2
+	log_k	   0.000
+	-gamma    5.2600    0.1210
+	-dw	 0.794e-9
+	-millero -18.44 0.0082 -0.0006 1.727 -0.067 0.00084
+H4SiO4 = H4SiO4
+	log_k	   0.000
+	-dw	 1.10e-9
+	-millero 56.0 # b, c, d, e and f not reported by Millero, 2000
+Cl- = Cl-
+	log_k	   0.000
+	-gamma    3.5000    0.0150
+	-dw	 2.03e-9
+	-millero 16.37 0.0896 -0.001264 -1.494 0.034 -0.000621
+CO3-2 = CO3-2
+	log_k	   0.000
+	-gamma    5.4000    0.0000
+	-dw	 0.955e-9
+	-millero -8.74 0.300 -0.004064 5.65;  # d is value for 25 oC, e and f not reported by Millero, 2000
+SO4-2 = SO4-2
+	log_k	   0.000
+	-gamma    5.0000   -0.0400
+	-dw	 1.07e-9
+	-millero 9.26 0.284 -0.003808 0.4348 -0.0099143 -8.4762e-05
+NO3- = NO3-
+	log_k	   0.000
+	-gamma    3.0000    0.0000
+	-dw	 1.9e-9
+	-millero 25.51 0.1888 -0.001984 -0.654; # d is value for 25 oC, e and f not reported by Millero, 2000
+H3BO3 = H3BO3
+	log_k	   0.000
+	-dw	1.1e-9
+	-millero 36.56 0.130 -0.00081 # d, e and f not reported by Millero, 2000
+PO4-3 = PO4-3
+	log_k	   0.000
+	-gamma    4.0000    0.0000
+	-dw	 0.612e-9
+F- = F-
+	log_k	   0.000
+	-gamma    3.5000    0.0000
+	-dw	 1.46e-9
+	-millero -3.05 0.3276 -0.00352 1.271 -0.074 8.857e-05
+Li+ = Li+
+	log_k	   0.000
+	-gamma    6.0000    0.0000
+	-dw	 1.03e-9
+Br- = Br-
+	log_k	   0.000
+	-gamma    3.0000    0.0000
+	-dw	 2.01e-9
+	-millero 22.98 0.0934 -0.000968 -1.675 0.05 -0.001105
+Zn+2 = Zn+2
+	log_k	   0.000
+	-gamma    5.0000    0.0000
+	-dw	 0.715e-9
+Cd+2 = Cd+2
+	log_k	   0.000
+	-dw	 0.717e-9
+Pb+2 = Pb+2
+	log_k	   0.000
+	-dw	 0.945e-9
+Cu+2 = Cu+2
+	log_k	   0.000
+	-gamma    6.0000    0.0000
+	-dw	 0.733e-9
+H2O = OH- + H+
+	log_k	   -14.000
+	delta_h 13.362  kcal
+	-analytic       -283.971       -0.05069842  13323.0    102.24447      -1119669.0
+	-gamma    3.5000    0.0000
+	-dw	 5.27e-9
+2 H2O = O2 + 4 H+ + 4 e-
+	log_k	   -86.08
+	delta_h 134.79 kcal
+	-dw	 2.35e-9
+2 H+ + 2 e- = H2
+	log_k	   -3.15
+	delta_h -1.759 kcal
+	-dw	 5.1e-9
+CO3-2 + H+ = HCO3-
+	log_k	   10.329
+	delta_h -3.561  kcal
+	-analytic       107.8871       0.03252849  -5151.79     -38.92561       563713.9
+	-gamma    5.4000    0.0000
+	-dw	 1.18e-9
+	-millero 21.07 0.185 -0.002248 2.29 -0.006644 -3.667E-06
+CO3-2 + 2 H+ = CO2 + H2O
+	log_k	   16.681
+	delta_h -5.738  kcal
+	-analytic       464.1965       0.09344813  -26986.16    -165.75951      2248628.9
+	-dw	 1.92e-9
+CO3-2 + 10 H+ + 8 e- = CH4 + 3 H2O
+	log_k	   41.071
+	delta_h -61.039 kcal
+	-dw	 1.85e-9
+SO4-2 + H+ = HSO4-
+	log_k	   1.988
+	delta_h 3.85    kcal
+	-analytic       -56.889	0.006473    2307.9       19.8858	 0.0
+	-dw	 1.33e-9
+HS- = S-2 + H+
+	log_k	   -12.918
+	delta_h 12.1    kcal
+	-gamma    5.0000    0.0000
+	-dw	 0.731e-9
+SO4-2 + 9 H+ + 8 e- = HS- + 4 H2O
+	log_k	   33.65
+	delta_h -60.140 kcal
+	-gamma    3.5000    0.0000
+	-dw	 1.73e-9
+HS- + H+ = H2S
+	log_k	   6.994
+	delta_h -5.300  kcal
+	-analytical  -11.17   0.02386  3279.0
+	-dw	 2.1e-9
+
+NO3- + 2 H+ + 2 e- = NO2- + H2O
+	log_k	   28.570
+	delta_h -43.760 kcal
+	-gamma    3.0000    0.0000
+	-dw	 1.91e-9
+2 NO3- + 12 H+ + 10 e- = N2 + 6 H2O
+	log_k	   207.080
+	delta_h -312.130	kcal
+	-dw	 1.96e-9
+NH4+ = NH3 + H+
+	log_k	   -9.252
+	delta_h 12.48   kcal
+	-analytic    0.6322    -0.001225     -2835.76
+	-dw	 2.28e-9
+NO3- + 10 H+ + 8 e- = NH4+ + 3 H2O
+	log_k	   119.077
+	delta_h -187.055	kcal
+	-gamma    2.5000    0.0000
+	-dw	 1.98e-9
+	-millero 17.47 -3.400e-3 7.600e-4 # From Millero, 1971, d, e and f not reported
+NH4+ + SO4-2 = NH4SO4-
+	log_k	   1.11
+
+H3BO3 = H2BO3- + H+
+	log_k	   -9.240
+	delta_h 3.224   kcal
+#       -analytical 24.3919    0.012078   -1343.9    -13.2258
+
+H3BO3 + F- = BF(OH)3-
+	log_k	   -0.400
+	delta_h 1.850   kcal
+
+H3BO3 + 2 F- + H+ = BF2(OH)2- + H2O
+	log_k	   7.63
+	delta_h 1.618   kcal
+
+H3BO3 + 2 H+ + 3 F- = BF3OH- + 2 H2O
+	log_k	   13.67
+	delta_h -1.614  kcal
+
+H3BO3 + 3 H+ + 4 F- = BF4- + 3 H2O
+	log_k	   20.28
+	delta_h -1.846  kcal
+
+PO4-3 + H+ = HPO4-2
+	log_k	   12.346
+	delta_h -3.530  kcal
+	-gamma    4.0000    0.0000
+	-dw	0.69e-9
+PO4-3 + 2 H+ = H2PO4-
+	log_k	   19.553
+	delta_h -4.520  kcal
+	-gamma    4.5000    0.0000
+	-dw	 0.846e-9
+	-millero 33.6 # b, c, d, e and f not reported by Millero, 2000
+H+ + F- = HF
+	log_k	   3.18
+	delta_h 3.18    kcal
+	-analytic       -2.033	 0.012645      429.01
+
+H+ + 2 F- = HF2-
+	log_k	   3.760
+	delta_h 4.550   kcal
+
+Ca+2 + H2O = CaOH+ + H+
+	log_k	   -12.780
+
+Ca+2 + CO3-2 = CaCO3
+	log_k	   3.224
+	delta_h 3.545   kcal
+	-analytic       -1228.732     -0.299440    35512.75      485.818
+	-dw 4.46e-10	# complexes: calc'd with the Pikal formula
+Ca+2 + CO3-2 + H+ = CaHCO3+
+	log_k	   11.435
+	delta_h -0.871	  kcal
+	-analytic       1317.0071     0.34546894   -39916.84     -517.70761     563713.9
+	-gamma    5.4000    0.0000
+	-dw 5.06e-10
+Ca+2 + SO4-2 = CaSO4
+	log_k	   2.300
+	delta_h 1.650   kcal
+	-dw 4.71e-10
+Ca+2 + HSO4- = CaHSO4+
+	log_k	   1.08
+
+Ca+2 + PO4-3 = CaPO4-
+	log_k	   6.459
+	delta_h 3.100   kcal
+
+Ca+2 + HPO4-2 = CaHPO4
+	log_k	   2.739
+	delta_h 3.3 kcal
+
+Ca+2 + H2PO4- = CaH2PO4+
+	log_k	   1.408
+	delta_h 3.4 kcal
+
+Ca+2 + F- = CaF+
+	log_k	   0.940
+	delta_h 4.120   kcal
+
+Mg+2 + H2O = MgOH+ + H+
+	log_k	   -11.440
+	delta_h 15.952 kcal
+
+Mg+2 + CO3-2 = MgCO3
+	log_k	   2.98
+	delta_h 2.713   kcal
+	-analytic       0.9910	0.00667
+
+Mg+2 + H+ + CO3-2 = MgHCO3+
+	log_k	   11.399
+	delta_h -2.771	  kcal
+	-analytic       48.6721       0.03252849   -2614.335     -18.00263      563713.9
+
+Mg+2 + SO4-2 = MgSO4
+	log_k	   2.370
+	delta_h 4.550   kcal
+
+Mg+2 + PO4-3 = MgPO4-
+	log_k	   6.589
+	delta_h 3.100   kcal
+
+Mg+2 + HPO4-2 = MgHPO4
+	log_k	   2.87
+	delta_h 3.3 kcal
+
+Mg+2 + H2PO4- = MgH2PO4+
+	log_k	   1.513
+	delta_h 3.4 kcal
+
+Mg+2 + F- = MgF+
+	log_k	   1.820
+	delta_h 3.200   kcal
+
+Na+ + H2O = NaOH + H+
+	log_k	   -14.180
+
+Na+ + CO3-2 = NaCO3-
+	log_k	   1.270
+	delta_h 8.910   kcal
+	-dw 5.85e-10
+Na+ + HCO3- = NaHCO3
+	log_k	   -0.25
+	-dw 6.73e-10
+Na+ + SO4-2 = NaSO4-
+	log_k	0.7
+	delta_h 1.120   kcal
+	-dw 6.18e-10
+Na+ + HPO4-2 = NaHPO4-
+	log_k	   0.29
+
+Na+ + F- = NaF
+	log_k	   -0.240
+
+K+ + H2O = KOH + H+
+	log_k	   -14.460
+
+K+ + SO4-2 = KSO4-
+	log_k	   0.850
+	delta_h 2.250   kcal
+	-analytical      3.106  0.0   -673.6
+	-dw 7.46e-10
+
+K+ + HPO4-2 = KHPO4-
+	log_k	   0.29
+
+Fe+2 + H2O = FeOH+ + H+
+	log_k	   -9.500
+	delta_h 13.200  kcal
+
+Fe+2 + Cl- = FeCl+
+	log_k	   0.140
+
+Fe+2 + CO3-2 = FeCO3
+	log_k	   4.380
+
+Fe+2 + HCO3- = FeHCO3+
+	log_k	   2.0
+
+Fe+2 + SO4-2 = FeSO4
+	log_k	   2.250
+	delta_h 3.230   kcal
+
+Fe+2 + HSO4- = FeHSO4+
+	log_k	   1.08
+
+Fe+2 + 2HS- = Fe(HS)2
+	log_k	   8.95
+
+Fe+2 + 3HS- = Fe(HS)3-
+	log_k	   10.987
+
+Fe+2 + HPO4-2 = FeHPO4
+	log_k	   3.6
+
+Fe+2 + H2PO4- = FeH2PO4+
+	log_k	   2.7
+
+Fe+2 + F- = FeF+
+	log_k	   1.000
+
+Fe+2 = Fe+3 + e-
+	log_k	   -13.020
+	delta_h 9.680   kcal
+	-gamma    9.0000    0.0000
+
+Fe+3 + H2O = FeOH+2 + H+
+	log_k	   -2.19
+	delta_h 10.4    kcal
+
+Fe+3 + 2 H2O = Fe(OH)2+ + 2 H+
+	log_k	   -5.67
+	delta_h 17.1    kcal
+
+Fe+3 + 3 H2O = Fe(OH)3 + 3 H+
+	log_k	   -12.56
+	delta_h 24.8    kcal
+
+Fe+3 + 4 H2O = Fe(OH)4- + 4 H+
+	log_k	   -21.6
+	delta_h 31.9    kcal
+
+2 Fe+3 + 2 H2O = Fe2(OH)2+4 + 2 H+
+	log_k	   -2.95
+	delta_h 13.5    kcal
+
+3 Fe+3 + 4 H2O = Fe3(OH)4+5 + 4 H+
+	log_k	   -6.3
+	delta_h 14.3    kcal
+
+Fe+3 + Cl- = FeCl+2
+	log_k	   1.48
+	delta_h 5.6     kcal
+
+Fe+3 + 2 Cl- = FeCl2+
+	log_k	   2.13
+
+Fe+3 + 3 Cl- = FeCl3
+	log_k	   1.13
+
+Fe+3 + SO4-2 = FeSO4+
+	log_k	   4.04
+	delta_h 3.91    kcal
+
+Fe+3 + HSO4- = FeHSO4+2
+	log_k	   2.48
+
+Fe+3 + 2 SO4-2 = Fe(SO4)2-
+	log_k	   5.38
+	delta_h 4.60	    kcal
+
+Fe+3 + HPO4-2 = FeHPO4+
+	log_k	   5.43
+	delta_h 5.76	    kcal
+
+Fe+3 + H2PO4- = FeH2PO4+2
+	log_k	   5.43
+
+Fe+3 + F- = FeF+2
+	log_k	   6.2
+	delta_h 2.7	     kcal
+
+Fe+3 + 2 F- = FeF2+
+	log_k	   10.8
+	delta_h 4.8	     kcal
+
+Fe+3 + 3 F- = FeF3
+	log_k	   14.0
+	delta_h 5.4	     kcal
+
+Mn+2 + H2O = MnOH+ + H+
+	log_k	   -10.590
+	delta_h 14.400  kcal
+
+Mn+2 + Cl- = MnCl+
+	log_k	   0.610
+
+Mn+2 + 2 Cl- = MnCl2
+	log_k	   0.250
+
+Mn+2 + 3 Cl- = MnCl3-
+	log_k	   -0.310
+
+Mn+2 + CO3-2 = MnCO3
+	log_k	   4.900
+
+Mn+2 + HCO3- = MnHCO3+
+	log_k	   1.95
+
+Mn+2 + SO4-2 = MnSO4
+	log_k	   2.250
+	delta_h 3.370   kcal
+
+Mn+2 + 2 NO3- = Mn(NO3)2
+	log_k	   0.600
+	delta_h -0.396  kcal
+
+Mn+2 + F- = MnF+
+	log_k	   0.840
+
+Mn+2 = Mn+3 + e-
+	log_k	   -25.510
+	delta_h 25.800  kcal
+
+Al+3 + H2O = AlOH+2 + H+
+	log_k	   -5.00
+	delta_h 11.49   kcal
+	-analytic       -38.253	0.0	  -656.27	14.327
+
+Al+3 + 2 H2O = Al(OH)2+ + 2 H+
+	log_k	   -10.1
+	delta_h 26.90	   kcal
+	-analytic       88.500	0.0	  -9391.6       -27.121
+
+Al+3 + 3 H2O = Al(OH)3 + 3 H+
+	log_k	   -16.9
+	delta_h 39.89	   kcal
+	-analytic       226.374       0.0	  -18247.8      -73.597
+
+Al+3 + 4 H2O = Al(OH)4- + 4 H+
+	log_k	   -22.7
+	delta_h 42.30	   kcal
+	-analytic       51.578	0.0	  -11168.9      -14.865
+
+Al+3 + SO4-2 = AlSO4+
+	log_k	   3.5
+	delta_h 2.29 kcal
+
+Al+3 + 2SO4-2 = Al(SO4)2-
+	log_k	   5.0
+	delta_h 3.11 kcal
+
+Al+3 + HSO4- = AlHSO4+2
+	log_k	   0.46
+
+Al+3 + F- = AlF+2
+	log_k	   7.000
+	delta_h 1.060   kcal
+
+Al+3 + 2 F- = AlF2+
+	log_k	   12.700
+	delta_h 1.980   kcal
+
+Al+3 + 3 F- = AlF3
+	log_k	   16.800
+	delta_h 2.160   kcal
+
+Al+3 + 4 F- = AlF4-
+	log_k	   19.400
+	delta_h 2.200   kcal
+
+Al+3 + 5 F- = AlF5-2
+	log_k	   20.600
+	delta_h 1.840   kcal
+
+Al+3 + 6 F- = AlF6-3
+	log_k	   20.600
+	delta_h -1.670  kcal
+
+H4SiO4 = H3SiO4- + H+
+	log_k	   -9.83
+	delta_h 6.12	    kcal
+	-analytic       -302.3724     -0.050698      15669.69      108.18466    -1119669.0
+
+H4SiO4 = H2SiO4-2 + 2 H+
+	log_k	   -23.0
+	delta_h 17.6	    kcal
+	-analytic       -294.0184     -0.072650      11204.49      108.18466    -1119669.0
+
+H4SiO4 + 4 H+ + 6 F- = SiF6-2 + 4 H2O
+	log_k	   30.180
+	delta_h -16.260	 kcal
+
+Ba+2 + H2O = BaOH+ + H+
+	log_k	   -13.470
+
+Ba+2 + CO3-2 = BaCO3
+	log_k	   2.71
+	delta_h 3.55	    kcal
+	-analytic       0.113	 0.008721
+
+Ba+2 + HCO3- = BaHCO3+
+	log_k	   0.982
+	delta_h 5.56 kcal
+	-analytical     -3.0938	 0.013669	0.0     0.0     0.0
+
+Ba+2 + SO4-2 = BaSO4
+	log_k	   2.700
+
+Sr+2 + H2O = SrOH+ + H+
+	log_k	   -13.290
+	-gamma    5.0000    0.0000
+
+Sr+2 + CO3-2 + H+ = SrHCO3+
+	log_k	   11.509
+	delta_h 2.489	   kcal
+	-analytic       104.6391      0.04739549   -5151.79      -38.92561      563713.9
+	-gamma    5.4000    0.0000
+
+Sr+2 + CO3-2 = SrCO3
+	log_k	   2.81
+	delta_h 5.22    kcal
+	-analytic       -1.019	 0.012826
+
+Sr+2 + SO4-2 = SrSO4
+	log_k	   2.290
+	delta_h 2.080   kcal
+
+Li+ + H2O = LiOH + H+
+	log_k	   -13.640
+
+Li+ + SO4-2 = LiSO4-
+	log_k	   0.640
+
+Cu+2 + e- = Cu+
+	log_k	   2.720
+	delta_h 1.650   kcal
+	-gamma    2.5000    0.0000
+
+Cu+2 + H2O = CuOH+ + H+
+	log_k	   -8.000
+	-gamma    4.0000    0.0000
+
+Cu+2 + 2 H2O = Cu(OH)2 + 2 H+
+	log_k	   -13.680
+
+Cu+2 + 3 H2O = Cu(OH)3- + 3 H+
+	log_k	   -26.900
+
+Cu+2 + 4 H2O = Cu(OH)4-2 + 4 H+
+	log_k	   -39.600
+
+Cu+2 + SO4-2 = CuSO4
+	log_k	   2.310
+	delta_h 1.220   kcal
+
+Zn+2 + H2O = ZnOH+ + H+
+	log_k	   -8.96
+	delta_h 13.4 kcal
+
+Zn+2 + 2 H2O = Zn(OH)2 + 2 H+
+	log_k	   -16.900
+
+Zn+2 + 3 H2O = Zn(OH)3- + 3 H+
+	log_k	   -28.400
+
+Zn+2 + 4 H2O = Zn(OH)4-2 + 4 H+
+	log_k	   -41.200
+
+Zn+2 + Cl- = ZnCl+
+	log_k	   0.43
+	delta_h 7.79 kcal
+
+Zn+2 + 2 Cl- = ZnCl2
+	log_k	   0.45
+	delta_h 8.5 kcal
+
+Zn+2 + 3Cl- = ZnCl3-
+	log_k	   0.5
+	delta_h 9.56 kcal
+
+Zn+2 + 4Cl- = ZnCl4-2
+	log_k	   0.2
+	delta_h 10.96 kcal
+
+Zn+2 + CO3-2 = ZnCO3
+	log_k	   5.3
+
+Zn+2 + 2CO3-2 = Zn(CO3)2-2
+	log_k	   9.63
+
+Zn+2 + HCO3- = ZnHCO3+
+	log_k	   2.1
+
+Zn+2 + SO4-2 = ZnSO4
+	log_k	   2.37
+	delta_h 1.36 kcal
+
+Zn+2 + 2SO4-2 = Zn(SO4)2-2
+	log_k	   3.28
+
+Cd+2 + H2O = CdOH+ + H+
+	log_k	   -10.080
+	delta_h 13.1 kcal
+
+Cd+2 + 2 H2O = Cd(OH)2 + 2 H+
+	log_k	   -20.350
+
+Cd+2 + 3 H2O = Cd(OH)3- + 3 H+
+	log_k	   -33.300
+
+Cd+2 + 4 H2O = Cd(OH)4-2 + 4 H+
+	log_k	   -47.350
+
+Cd+2 + Cl- = CdCl+
+	log_k	   1.980
+	delta_h 0.59 kcal
+
+Cd+2 + 2 Cl- = CdCl2
+	log_k	   2.600
+	delta_h 1.24 kcal
+
+Cd+2 + 3 Cl- = CdCl3-
+	log_k	   2.400
+	delta_h 3.9 kcal
+
+Cd+2 + CO3-2 = CdCO3
+	log_k	   2.9
+
+Cd+2 + 2CO3-2 = Cd(CO3)2-2
+	log_k	   6.4
+
+Cd+2 + HCO3- = CdHCO3+
+	log_k	   1.5
+
+Cd+2 + SO4-2 = CdSO4
+	log_k	   2.460
+	delta_h 1.08 kcal
+
+Cd+2 + 2SO4-2 = Cd(SO4)2-2
+	log_k	   3.5
+
+Pb+2 + H2O = PbOH+ + H+
+	log_k	   -7.710
+
+Pb+2 + 2 H2O = Pb(OH)2 + 2 H+
+	log_k	   -17.120
+
+Pb+2 + 3 H2O = Pb(OH)3- + 3 H+
+	log_k	   -28.060
+
+Pb+2 + 4 H2O = Pb(OH)4-2 + 4 H+
+	log_k	   -39.700
+
+2 Pb+2 + H2O = Pb2OH+3 + H+
+	log_k	   -6.360
+
+Pb+2 + Cl- = PbCl+
+	log_k	   1.600
+	delta_h 4.38 kcal
+
+Pb+2 + 2 Cl- = PbCl2
+	log_k	   1.800
+	delta_h 1.08 kcal
+
+Pb+2 + 3 Cl- = PbCl3-
+	log_k	   1.700
+	delta_h 2.17 kcal
+
+Pb+2 + 4 Cl- = PbCl4-2
+	log_k	   1.380
+	delta_h 3.53 kcal
+
+Pb+2 + CO3-2 = PbCO3
+	log_k	   7.240
+
+Pb+2 + 2 CO3-2 = Pb(CO3)2-2
+	log_k	   10.640
+
+Pb+2 + HCO3- = PbHCO3+
+	log_k	   2.9
+
+Pb+2 + SO4-2 = PbSO4
+	log_k	   2.750
+
+Pb+2 + 2 SO4-2 = Pb(SO4)2-2
+	log_k	   3.470
+
+Pb+2 + NO3- = PbNO3+
+	log_k	   1.170
+
+PHASES
+
+Calcite
+	CaCO3 = CO3-2 + Ca+2
+	log_k	   -8.480
+	delta_h -2.297 kcal
+	-analytic       -171.9065     -0.077993      2839.319      71.595
+
+Aragonite
+	CaCO3 = CO3-2 + Ca+2
+	log_k	   -8.336
+	delta_h -2.589 kcal
+	-analytic       -171.9773     -0.077993      2903.293      71.595
+
+Dolomite
+	CaMg(CO3)2 = Ca+2 + Mg+2 + 2 CO3-2
+	log_k	   -17.090
+	delta_h -9.436 kcal
+
+Siderite
+	FeCO3 = Fe+2 + CO3-2
+	log_k	   -10.890
+	delta_h -2.480 kcal
+
+Rhodochrosite
+	MnCO3 = Mn+2 + CO3-2
+	log_k	   -11.130
+	delta_h -1.430 kcal
+
+Strontianite
+	SrCO3 = Sr+2 + CO3-2
+	log_k	   -9.271
+	delta_h -0.400 kcal
+	-analytic       155.0305      0.0	  -7239.594     -56.58638
+
+Witherite
+	BaCO3 = Ba+2 + CO3-2
+	log_k	   -8.562
+	delta_h 0.703 kcal
+	-analytic       607.642       0.121098     -20011.25     -236.4948
+
+Gypsum
+	CaSO4:2H2O = Ca+2 + SO4-2 + 2 H2O
+	log_k	   -4.580
+	delta_h -0.109 kcal
+	-analytic       68.2401       0.0	  -3221.51      -25.0627
+
+Anhydrite
+	CaSO4 = Ca+2 + SO4-2
+	log_k	   -4.360
+	delta_h -1.710 kcal
+	-analytic       197.52	0.0	  -8669.8       -69.835
+
+Celestite
+	SrSO4 = Sr+2 + SO4-2
+	log_k	   -6.630
+	delta_h -1.037 kcal
+	-analytic       -14805.9622    -2.4660924   756968.533    5436.3588      -40553604.0
+
+Barite
+	BaSO4 = Ba+2 + SO4-2
+	log_k	   -9.970
+	delta_h 6.350 kcal
+	-analytic       136.035       0.0	  -7680.41      -48.595
+
+Hydroxyapatite
+	Ca5(PO4)3OH + 4 H+ = H2O + 3 HPO4-2 + 5 Ca+2
+	log_k	   -3.421
+	delta_h -36.155 kcal
+
+Fluorite
+	CaF2 = Ca+2 + 2 F-
+	log_k	   -10.600
+	delta_h 4.690 kcal
+	-analytic       66.348	0.0	  -4298.2       -25.271
+
+SiO2(a)
+	SiO2 + 2 H2O = H4SiO4
+	log_k	   -2.710
+	delta_h 3.340 kcal
+	-analytic       -0.26	  0.0	  -731.0
+
+Chalcedony
+	SiO2 + 2 H2O = H4SiO4
+	log_k	   -3.550
+	delta_h 4.720 kcal
+	-analytic       -0.09	  0.0	  -1032.0
+
+Quartz
+	SiO2 + 2 H2O = H4SiO4
+	log_k	   -3.980
+	delta_h 5.990 kcal
+	-analytic       0.41	  0.0	  -1309.0
+
+Gibbsite
+	Al(OH)3 + 3 H+ = Al+3 + 3 H2O
+	log_k	   8.110
+	delta_h -22.800 kcal
+
+Al(OH)3(a)
+	Al(OH)3 + 3 H+ = Al+3 + 3 H2O
+	log_k	   10.800
+	delta_h -26.500 kcal
+
+Kaolinite
+	Al2Si2O5(OH)4 + 6 H+ = H2O + 2 H4SiO4 + 2 Al+3
+	log_k	   7.435
+	delta_h -35.300 kcal
+
+Albite
+	NaAlSi3O8 + 8 H2O = Na+ + Al(OH)4- + 3 H4SiO4
+	log_k	   -18.002
+	delta_h 25.896 kcal
+
+Anorthite
+	CaAl2Si2O8 + 8 H2O = Ca+2 + 2 Al(OH)4- + 2 H4SiO4
+	log_k	   -19.714
+	delta_h 11.580 kcal
+
+K-feldspar
+	KAlSi3O8 + 8 H2O = K+ + Al(OH)4- + 3 H4SiO4
+	log_k	   -20.573
+	delta_h 30.820  kcal
+
+K-mica
+	KAl3Si3O10(OH)2 + 10 H+ = K+ + 3 Al+3 + 3 H4SiO4
+	log_k	   12.703
+	delta_h -59.376 kcal
+
+Chlorite(14A)
+	Mg5Al2Si3O10(OH)8 + 16H+ = 5Mg+2 + 2Al+3 + 3H4SiO4 + 6H2O
+	log_k	   68.38
+	delta_h -151.494 kcal
+
+Ca-Montmorillonite
+	Ca0.165Al2.33Si3.67O10(OH)2 + 12 H2O = 0.165Ca+2 + 2.33 Al(OH)4- + 3.67 H4SiO4 + 2 H+
+	log_k	   -45.027
+	delta_h 58.373  kcal
+
+Talc
+	Mg3Si4O10(OH)2 + 4 H2O + 6 H+ = 3 Mg+2 + 4 H4SiO4
+	log_k	   21.399
+	delta_h -46.352 kcal
+
+Illite
+	K0.6Mg0.25Al2.3Si3.5O10(OH)2 + 11.2H2O = 0.6K+ + 0.25Mg+2 + 2.3Al(OH)4- + 3.5H4SiO4 + 1.2H+
+	log_k	   -40.267
+	delta_h 54.684 kcal
+
+Chrysotile
+	Mg3Si2O5(OH)4 + 6 H+ = H2O + 2 H4SiO4 + 3 Mg+2
+	log_k	   32.200
+	delta_h -46.800 kcal
+	-analytic       13.248	0.0	  10217.1       -6.1894
+
+Sepiolite
+	Mg2Si3O7.5OH:3H2O + 4 H+ + 0.5H2O = 2 Mg+2 + 3 H4SiO4
+	log_k	   15.760
+	delta_h -10.700 kcal
+
+Sepiolite(d)
+	Mg2Si3O7.5OH:3H2O + 4 H+ + 0.5H2O = 2 Mg+2 + 3 H4SiO4
+	log_k	   18.660
+
+Hematite
+	Fe2O3 + 6 H+ = 2 Fe+3 + 3 H2O
+	log_k	   -4.008
+	delta_h -30.845 kcal
+
+Goethite
+	FeOOH + 3 H+ = Fe+3 + 2 H2O
+	log_k	   -1.000
+	delta_h	 -14.48 kcal
+
+Fe(OH)3(a)
+	Fe(OH)3 + 3 H+ = Fe+3 + 3 H2O
+	log_k	   4.891
+
+Pyrite
+	FeS2 + 2 H+ + 2 e- = Fe+2 + 2 HS-
+	log_k	   -18.479
+	delta_h 11.300 kcal
+
+FeS(ppt)
+	FeS + H+ = Fe+2 + HS-
+	log_k	   -3.915
+
+Mackinawite
+	FeS + H+ = Fe+2 + HS-
+	log_k	   -4.648
+
+Sulfur
+	S + 2H+ + 2e- = H2S
+	log_k	   4.882
+	delta_h -9.5 kcal
+
+Vivianite
+	Fe3(PO4)2:8H2O = 3 Fe+2 + 2 PO4-3 + 8 H2O
+	log_k	   -36.000
+
+Pyrolusite
+	MnO2 + 4 H+ + 2 e- = Mn+2 + 2 H2O
+	log_k	   41.380
+	delta_h -65.110 kcal
+
+Hausmannite
+	Mn3O4 + 8 H+ + 2 e- = 3 Mn+2 + 4 H2O
+	log_k	   61.030
+	delta_h -100.640 kcal
+
+Manganite
+	MnOOH + 3 H+ + e- = Mn+2 + 2 H2O
+	log_k	   25.340
+
+Pyrochroite
+	Mn(OH)2 + 2 H+ = Mn+2 + 2 H2O
+	log_k	   15.200
+
+Halite
+	NaCl = Na+ + Cl-
+	log_k	   1.582
+	delta_h 0.918 kcal
+
+CO2(g)
+	CO2 = CO2
+	log_k	   -1.468
+	delta_h -4.776 kcal
+	-analytic       108.3865      0.01985076   -6919.53      -40.45154      669365.0
+
+O2(g)
+	O2 = O2
+#	log_k	   -2.960
+#	delta_h -1.844  kcal
+	 # log K from llnl.dat  Aug 23, 2005
+	log_k	   -2.8983
+	-analytic -7.5001e+000 7.8981e-003 0.0000e+000 0.0000e+000 2.0027e+005
+
+H2(g)
+	H2 = H2
+	log_k	   -3.150
+	delta_h -1.759  kcal
+
+H2O(g)
+	H2O = H2O
+	log_k	   1.51
+	delta_h	 -44.03   kJ
+#    Stumm and Morgan, from NBS and Robie, Hemmingway, and Fischer (1978)
+
+N2(g)
+	N2 = N2
+	log_k	   -3.260
+	delta_h -1.358  kcal
+
+H2S(g)
+	H2S = H2S
+	log_k	   -0.997
+	delta_h -4.570  kcal
+
+CH4(g)
+	CH4 = CH4
+	log_k	   -2.860
+	delta_h -3.373  kcal
+
+NH3(g)
+	NH3 = NH3
+	log_k	   1.770
+	delta_h -8.170  kcal
+
+Melanterite
+	FeSO4:7H2O = 7 H2O + Fe+2 + SO4-2
+	log_k	   -2.209
+	delta_h 4.910	   kcal
+	-analytic       1.447	-0.004153      0.0	   0.0	  -214949.0
+
+Alunite
+	KAl3(SO4)2(OH)6 + 6 H+ = K+ + 3 Al+3 + 2 SO4-2 + 6H2O
+	log_k	   -1.400
+	delta_h -50.250 kcal
+
+Jarosite-K
+	KFe3(SO4)2(OH)6 + 6 H+ = 3 Fe+3 + 6 H2O + K+ + 2 SO4-2
+	log_k	   -9.210
+	delta_h -31.280 kcal
+
+Zn(OH)2(e)
+	Zn(OH)2 + 2 H+ = Zn+2 + 2 H2O
+	log_k	   11.50
+
+Smithsonite
+	ZnCO3 = Zn+2 + CO3-2
+	log_k	   -10.000
+	delta_h -4.36   kcal
+
+Sphalerite
+	ZnS + H+ = Zn+2 + HS-
+	log_k	   -11.618
+	delta_h 8.250   kcal
+
+Willemite	   289
+	Zn2SiO4 + 4H+ = 2Zn+2 + H4SiO4
+	log_k	   15.33
+	delta_h -33.37  kcal
+
+Cd(OH)2
+	Cd(OH)2 + 2 H+ = Cd+2 + 2 H2O
+	log_k	   13.650
+
+Otavite	     315
+	CdCO3 = Cd+2 + CO3-2
+	log_k	   -12.1
+	delta_h -0.019  kcal
+
+CdSiO3	      328
+	CdSiO3 + H2O + 2H+ = Cd+2 + H4SiO4
+	log_k	   9.06
+	delta_h -16.63  kcal
+
+CdSO4	       329
+	CdSO4 = Cd+2 + SO4-2
+	log_k	   -0.1
+	delta_h -14.74  kcal
+
+Cerrusite	   365
+	PbCO3 = Pb+2 + CO3-2
+	log_k	   -13.13
+	delta_h 4.86    kcal
+
+Anglesite	   384
+	PbSO4 = Pb+2 + SO4-2
+	log_k	   -7.79
+	delta_h 2.15    kcal
+
+Pb(OH)2	     389
+	Pb(OH)2 + 2H+ = Pb+2 + 2H2O
+	log_k	   8.15
+	delta_h -13.99  kcal
+
+EXCHANGE_MASTER_SPECIES
+	X       X-
+EXCHANGE_SPECIES
+	X- = X-
+	log_k	   0.0
+
+	Na+ + X- = NaX
+	log_k   0.0
+	-gamma  4.0     0.075
+
+	K+ + X- = KX
+	log_k   0.7
+	-gamma  3.5     0.015
+	delta_h  -4.3   # Jardine & Sparks, 1984
+
+	Li+ + X- = LiX
+	log_k   -0.08
+	-gamma  6.0     0.0
+	delta_h  1.4    # Merriam & Thomas, 1956
+
+	NH4+ + X- = NH4X
+	log_k   0.6
+	-gamma  2.5     0.0
+	delta_h  -2.4   # Laudelout et al., 1968
+
+	Ca+2 + 2X- = CaX2
+	log_k   0.8
+	-gamma  5.0     0.165
+	delta_h  7.2    # Van Bladel & Gheyl, 1980
+
+	Mg+2 + 2X- = MgX2
+	log_k   0.6
+	-gamma  5.5     0.2
+	delta_h  7.4    # Laudelout et al., 1968
+
+	Sr+2 + 2X- = SrX2
+	log_k   0.91
+	-gamma  5.26    0.121
+	delta_h  5.5    # Laudelout et al., 1968
+
+	Ba+2 + 2X- = BaX2
+	log_k   0.91
+	-gamma  5.0     0.0
+	delta_h  4.5    # Laudelout et al., 1968
+
+	Mn+2 + 2X- = MnX2
+	log_k   0.52
+	-gamma  6.0     0.0
+
+	Fe+2 + 2X- = FeX2
+	log_k   0.44
+	-gamma  6.0     0.0
+
+	Cu+2 + 2X- = CuX2
+	log_k   0.6
+	-gamma  6.0     0.0
+
+	Zn+2 + 2X- = ZnX2
+	log_k   0.8
+	-gamma  5.0     0.0
+
+	Cd+2 + 2X- = CdX2
+	log_k   0.8
+	-gamma  0.0     0.0
+
+	Pb+2 + 2X- = PbX2
+	log_k   1.05
+	-gamma  0.0     0.0
+
+	Al+3 + 3X- = AlX3
+	log_k   0.41
+	-gamma  9.0     0.0
+
+	AlOH+2 + 2X- = AlOHX2
+	log_k   0.89
+	-gamma  0.0     0.0
+SURFACE_MASTER_SPECIES
+	Hfo_s  Hfo_sOH
+	Hfo_w  Hfo_wOH
+SURFACE_SPECIES
+#   All surface data from
+#   Dzombak and Morel, 1990
+#
+#
+#   Acid-base data from table 5.7
+#
+#   strong binding site--Hfo_s,
+
+	Hfo_sOH = Hfo_sOH
+	log_k  0.0
+
+	Hfo_sOH  + H+ = Hfo_sOH2+
+	log_k  7.29    # = pKa1,int
+
+	Hfo_sOH = Hfo_sO- + H+
+	log_k  -8.93   # = -pKa2,int
+
+#   weak binding site--Hfo_w
+
+	Hfo_wOH = Hfo_wOH
+	log_k  0.0
+
+	Hfo_wOH  + H+ = Hfo_wOH2+
+	log_k  7.29    # = pKa1,int
+
+	Hfo_wOH = Hfo_wO- + H+
+	log_k  -8.93   # = -pKa2,int
+
+###############################################
+#	     CATIONS			 #
+###############################################
+#
+#   Cations from table 10.1 or 10.5
+#
+#   Calcium
+	Hfo_sOH + Ca+2 = Hfo_sOHCa+2
+	log_k  4.97
+
+	Hfo_wOH + Ca+2 = Hfo_wOCa+ + H+
+	log_k -5.85
+#   Strontium
+	Hfo_sOH + Sr+2 = Hfo_sOHSr+2
+	log_k  5.01
+
+	Hfo_wOH + Sr+2 = Hfo_wOSr+ + H+
+	log_k -6.58
+
+	Hfo_wOH + Sr+2 + H2O = Hfo_wOSrOH + 2H+
+	log_k -17.60
+#   Barium
+	Hfo_sOH + Ba+2 = Hfo_sOHBa+2
+	log_k  5.46
+
+	Hfo_wOH + Ba+2 = Hfo_wOBa+ + H+
+	log_k  -7.2		     # table 10.5
+#
+#   Cations from table 10.2
+#
+#   Cadmium
+	Hfo_sOH + Cd+2 = Hfo_sOCd+ + H+
+	log_k  0.47
+
+	Hfo_wOH + Cd+2 = Hfo_wOCd+ + H+
+	log_k   -2.91
+#   Zinc
+	Hfo_sOH + Zn+2 = Hfo_sOZn+ + H+
+	log_k  0.99
+
+	Hfo_wOH + Zn+2 = Hfo_wOZn+ + H+
+	log_k   -1.99
+#   Copper
+	Hfo_sOH + Cu+2 = Hfo_sOCu+ + H+
+	log_k  2.89
+
+	Hfo_wOH + Cu+2 = Hfo_wOCu+ + H+
+	log_k  0.6		      # table 10.5
+#   Lead
+	Hfo_sOH + Pb+2 = Hfo_sOPb+ + H+
+	log_k  4.65
+
+	Hfo_wOH + Pb+2 = Hfo_wOPb+ + H+
+	log_k  0.3		      # table 10.5
+#
+#   Derived constants table 10.5
+#
+#   Magnesium
+	Hfo_wOH + Mg+2 = Hfo_wOMg+ + H+
+	log_k -4.6
+#   Manganese
+	Hfo_sOH + Mn+2 = Hfo_sOMn+ + H+
+	log_k  -0.4		     # table 10.5
+
+	Hfo_wOH + Mn+2 = Hfo_wOMn+ + H+
+	log_k -3.5		      # table 10.5
+# Iron
+#	Hfo_sOH + Fe+2 = Hfo_sOFe+ + H+
+#	log_k   0.7     # LFER using table 10.5
+
+#	Hfo_wOH + Fe+2 = Hfo_wOFe+ + H+
+#	log_k -2.5      # LFER using table 10.5
+
+# Iron, strong site: Appelo, Van der Weiden, Tournassat & Charlet, EST 36,
+	 Hfo_sOH + Fe+2 = Hfo_sOFe+ + H+
+	 log_k   -0.95
+# Iron, weak site: Liger et al., GCA 63, 2939, re-optimized for D&M
+	 Hfo_wOH + Fe+2 = Hfo_wOFe+ + H+
+	 log_k -2.98
+
+	 Hfo_wOH + Fe+2 + H2O = Hfo_wOFeOH + 2H+
+	 log_k -11.55
+
+###############################################
+#	     ANIONS			  #
+###############################################
+#
+#   Anions from table 10.6
+#
+#   Phosphate
+	Hfo_wOH + PO4-3 + 3H+ = Hfo_wH2PO4 + H2O
+	log_k   31.29
+
+	Hfo_wOH + PO4-3 + 2H+ = Hfo_wHPO4- + H2O
+	log_k   25.39
+
+	Hfo_wOH + PO4-3 + H+ = Hfo_wPO4-2 + H2O
+	log_k   17.72
+#
+#   Anions from table 10.7
+#
+#   Borate
+	Hfo_wOH + H3BO3 = Hfo_wH2BO3 + H2O
+	log_k   0.62
+#
+#   Anions from table 10.8
+#
+#   Sulfate
+	Hfo_wOH + SO4-2 + H+ = Hfo_wSO4- + H2O
+	log_k   7.78
+
+	Hfo_wOH + SO4-2 = Hfo_wOHSO4-2
+	log_k   0.79
+#
+#   Derived constants table 10.10
+#
+	Hfo_wOH + F- + H+ = Hfo_wF + H2O
+	log_k   8.7
+
+	Hfo_wOH + F- = Hfo_wOHF-
+	log_k   1.6
+#
+# Carbonate: Van Geen et al., 1994 reoptimized for HFO
+# 0.15 g HFO/L has 0.344 mM sites == 2 g of Van Geen's Goethite/L
+#
+#	Hfo_wOH + CO3-2 + H+ = Hfo_wCO3- + H2O
+#	log_k   12.56
+#
+#	Hfo_wOH + CO3-2 + 2H+= Hfo_wHCO3 + H2O
+#	log_k   20.62
+
+# 9/19/96
+#       Added analytical expression for H2S, NH3, KSO4.
+#       Added species CaHSO4+.
+#       Added delta H for Goethite.
+
+RATES
+
+###########
+#K-feldspar
+###########
+#
+# Sverdrup, H.U., 1990, The kinetics of base cation release due to
+# chemical weathering: Lund University Press, Lund, 246 p.
+#
+# Example of KINETICS data block for K-feldspar rate:
+#       KINETICS 1
+#       K-feldspar
+#	       -m0 2.16  # 10% K-fsp, 0.1 mm cubes
+#	       -m  1.94
+#	       -parms 1.36e4  0.1
+
+K-feldspar
+ -start
+   1 rem specific rate from Sverdrup, 1990, in kmol/m2/s
+   2 rem parm(1) = 10 * (A/V, 1/dm) (recalc's sp. rate to mol/kgw)
+   3 rem parm(2) = corrects for field rate relative to lab rate
+   4 rem temp corr: from p. 162. E (kJ/mol) / R / 2.303 = H in H*(1/T-1/298)
+
+   10    dif_temp = 1/TK - 1/298
+   20    pk_H = 12.5 + 3134 * dif_temp
+   30    pk_w = 15.3 + 1838 * dif_temp
+   40    pk_OH = 14.2 + 3134 * dif_temp
+   50    pk_CO2 = 14.6 + 1677 * dif_temp
+   #60   pk_org = 13.9 + 1254 * dif_temp  # rate increase with DOC
+   70    rate = 10^-pk_H * ACT("H+")^0.5 + 10^-pk_w + 10^-pk_OH * ACT("OH-")^0.3
+   71    rate = rate + 10^-pk_CO2 * (10^SI("CO2(g)"))^0.6
+   #72   rate = rate + 10^-pk_org * TOT("Doc")^0.4
+   80    moles = parm(1) * parm(2) * rate * (1 - SR("K-feldspar")) * time
+   81 rem decrease rate on precipitation
+   90    if SR("K-feldspar") > 1 then moles = moles * 0.1
+   100   save moles
+ -end
+
+###########
+#Albite
+###########
+#
+# Sverdrup, H.U., 1990, The kinetics of base cation release due to
+# chemical weathering: Lund University Press, Lund, 246 p.
+#
+# Example of KINETICS data block for Albite rate:
+#       KINETICS 1
+#       Albite
+#	       -m0 0.43  # 2% Albite, 0.1 mm cubes
+#	       -parms 2.72e3  0.1
+
+Albite
+ -start
+   1 rem specific rate from Sverdrup, 1990, in kmol/m2/s
+   2 rem parm(1) = 10 * (A/V, 1/dm) (recalc's sp. rate to mol/kgw)
+   3 rem parm(2) = corrects for field rate relative to lab rate
+   4 rem temp corr: from p. 162. E (kJ/mol) / R / 2.303 = H in H*(1/T-1/298)
+
+   10    dif_temp = 1/TK - 1/298
+   20    pk_H = 12.5 + 3359 * dif_temp
+   30    pk_w = 14.8 + 2648 * dif_temp
+   40    pk_OH = 13.7 + 3359 * dif_temp
+   #41 rem	 ^12.9 in Sverdrup, but larger than for oligoclase...
+   50    pk_CO2 = 14.0 + 1677 * dif_temp
+   #60   pk_org = 12.5 + 1254 * dif_temp # ...rate increase for DOC
+   70    rate = 10^-pk_H * ACT("H+")^0.5 + 10^-pk_w + 10^-pk_OH * ACT("OH-")^0.3
+   71    rate = rate + 10^-pk_CO2 * (10^SI("CO2(g)"))^0.6
+   #72   rate = rate + 10^-pk_org * TOT("Doc")^0.4
+   80    moles = parm(1) * parm(2) * rate * (1 - SR("Albite")) * time
+   81 rem decrease rate on precipitation
+   90    if SR("Albite") > 1 then moles = moles * 0.1
+   100   save moles
+ -end
+
+########
+#Calcite
+########
+#
+# Plummer, L.N., Wigley, T.M.L., and Parkhurst, D.L., 1978,
+# American Journal of Science, v. 278, p. 179-216.
+#
+# Example of KINETICS data block for calcite rate:
+#
+#       KINETICS 1
+#       Calcite
+#	       -tol    1e-8
+#	       -m0     3.e-3
+#	       -m      3.e-3
+#	       -parms  5.0      0.6
+Calcite
+  -start
+   1 REM	Modified from Plummer and others, 1978
+   2 REM	M = current moles of calcite
+   3 REM	M0 = initial moles of calcite
+   4 REM	parm(1) = Area/Volume, cm^2/L   (or cm^2 per cell)
+   5 REM	parm(2) = exponent for M/M0 for surface area correction
+   10  REM rate = 0 if no calcite and undersaturated
+   20    si_cc = SI("Calcite")
+   30    if (M <= 0  and si_cc < 0) then goto 300
+   40    k1 = 10^(0.198 - 444.0 / TK )
+   50    k2 = 10^(2.84 - 2177.0 / TK )
+   60    if TC <= 25 then k3 = 10^(-5.86 - 317.0 / TK )
+   70    if TC > 25 then k3 = 10^(-1.1 - 1737.0 / TK )
+   80  REM surface area calculation
+   90    t = 1
+   100   if M0 > 0 then t = M/M0
+   110   if t = 0 then t = 1
+   120   area = PARM(1) * (t)^PARM(2)
+   130   rf = k1 * ACT("H+") + k2 * ACT("CO2") + k3 * ACT("H2O")
+   140 REM 1e-3 converts mmol to mol
+   150   rate = area * 1e-3 * rf * (1 - 10^(2/3*si_cc))
+   160   moles = rate * TIME
+   170 REM do not dissolve more calcite than present
+   180   if (moles > M) then moles = M
+   190   if (moles >= 0) then goto 300
+   200 REM do not precipitate more Ca or C(4) than present
+   210   temp = TOT("Ca")
+   220   mc  = TOT("C(4)")
+   230   if mc < temp then temp = mc
+   240   if -moles > temp then moles = -temp
+   300 SAVE moles
+  -end
+
+#######
+#Pyrite
+#######
+#
+# Williamson, M.A. and Rimstidt, J.D., 1994,
+# Geochimica et Cosmochimica Acta, v. 58, p. 5443-5454.
+#
+# Example of KINETICS data block for pyrite rate:
+#       KINETICS 1
+#       Pyrite
+#	       -tol    1e-8
+#	       -m0     5.e-4
+#	       -m      5.e-4
+#	       -parms  2.0     0.67     .5      -0.11
+Pyrite
+  -start
+   1 rem	Williamson and Rimstidt, 1994
+   2 rem	parm(1) = log10(A/V, 1/dm)      parm(2) = exp for (m/m0)
+   3 rem	parm(3) = exp for O2	    parm(4) = exp for H+
+
+   10 if (m <= 0) then goto 200
+   20 if (si("Pyrite") >= 0) then goto 200
+   25  rate = -10.19 + parm(1) + parm(3)*lm("O2") + parm(4)*lm("H+") + parm(2)*log10(m/m0)
+   30  moles = 10^rate * time
+   40 if (moles > m) then moles = m
+   200 save moles
+  -end
+
+##########
+#Organic_C
+##########
+#
+# Example of KINETICS data block for Organic_C rate:
+#       KINETICS 1
+#       Organic_C
+#	       -tol    1e-8
+#	      # m in mol/kgw
+#	       -m0     5e-3
+#	       -m      5e-3
+Organic_C
+ -start
+   1  rem      Additive Monod kinetics
+   2  rem      Electron acceptors: O2, NO3, and SO4
+
+   10 if (m <= 0) then goto 200
+   20  mO2 = mol("O2")
+   30  mNO3 = tot("N(5)")
+   40  mSO4 = tot("S(6)")
+   50   rate = 1.57e-9*mO2/(2.94e-4 + mO2) + 1.67e-11*mNO3/(1.55e-4 + mNO3)
+   60   rate = rate + 1.e-13*mSO4/(1.e-4 + mSO4)
+   70  moles = rate * m * (m/m0) * time
+   80 if (moles > m) then moles = m
+   200 save moles
+ -end
+
+###########
+#Pyrolusite
+###########
+#
+# Postma, and Appelo., GCA 64, 1237
+#
+# Example of KINETICS data block for Pyrolusite
+#       KINETICS 1-12
+#       Pyrolusite
+#	       -tol    1.e-7
+#	       -m0     0.1
+#	       -m      0.1
+Pyrolusite
+  -start
+   5    if (m <= 0.0) then goto 200
+   7    sr_pl = sr("Pyrolusite")
+   9    if abs(1 - sr_pl) < 0.1 then goto 200
+   10   if (sr_pl > 1.0) then goto 100
+   #20 rem      initially 1 mol Fe+2 = 0.5 mol pyrolusite. k*A/V = 1/time (3 cells)
+   #22 rem       time (3 cells) = 1.432e4.  1/time = 6.98e-5
+   30   Fe_t = tot("Fe(2)")
+   32   if Fe_t < 1.e-8 then goto 200
+   40   moles = 6.98e-5 * Fe_t  * (m/m0)^0.67 * time * (1 - sr_pl)
+   50   if moles > Fe_t / 2 then moles = Fe_t / 2
+   70   if moles > m then moles = m
+   90   goto 200
+   100  Mn_t = tot("Mn")
+   110  moles = 2e-3 * 6.98e-5 * (1-sr_pl) * time
+   120  if moles <= -Mn_t then moles = -Mn_t
+   200  save moles
+  -end
+END
+

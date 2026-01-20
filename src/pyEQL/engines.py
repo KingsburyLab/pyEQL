@@ -8,6 +8,7 @@ pyEQL engines for computing aqueous equilibria (e.g., speciation, redox, etc.).
 
 import copy
 import logging
+import math
 import os
 import warnings
 from abc import ABC, abstractmethod
@@ -18,6 +19,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
+from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
 # These are the only elements that are allowed to have parenthetical oxidation states
@@ -656,8 +658,34 @@ class NativeEOS(EOS):
 
         return solute_vol.to("L")
 
-    def equilibrate(self, solution: "solution.Solution") -> None:
-        """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
+        """
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
+
+        Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
+        """
         if self.ppsol is not None:
             self.ppsol.forget()
         self._setup_ppsol(solution)
@@ -669,6 +697,39 @@ class NativeEOS(EOS):
         # that we may need to add back later.
         orig_el_dict = solution.get_el_amt_dict(nested=True)
         orig_components_by_element = solution.get_components_by_element(nested=True)
+
+        # Use supplied gases, merged with atmospheric gases
+        # if atmosphere == True
+        gases = (ATMOSPHERE if atmosphere else {}) | (gases or {})
+
+        # Mapping from phase name to:
+        #   (<saturation_index>, <amount_in_moles>) tuples (for solids).
+        #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
+        phases = {}
+        if solids is not None:
+            # Assume saturation index of 0 for all solids.
+            phases |= dict.fromkeys(solids, (0, EQUILIBRIUM_PHASE_AMOUNT))
+
+        for k, v in gases.items():
+            v_quantity = ureg.Quantity(v)
+            if v_quantity.dimensionless:
+                log_partial_pressure = v_quantity.magnitude
+            else:
+                log_partial_pressure = math.log10(v_quantity.to("atm").magnitude)
+            phases |= {f"{k}(g)": (log_partial_pressure, EQUILIBRIUM_PHASE_AMOUNT)}
+
+        if phases:
+            phase_names = list(phases.keys())
+            saturation_indices = [v[0] for v in phases.values()]
+            amounts = [v[1] for v in phases.values()]
+
+            try:
+                self.ppsol.equalize(phases=phase_names, to_si=saturation_indices, in_phase=amounts)
+            except Exception as e:
+                # Re-raise exception due to unrecognized phases as ValueError.
+                if "Phase not found in database" in str(e):
+                    raise ValueError(str(e))
+                raise e
 
         solution.components = FormulaDict({})
         # use the output from PHREEQC to update the Solution composition
@@ -798,3 +859,272 @@ class PhreeqcEOS(NativeEOS):
         """Return the volume of the solutes."""
         # TODO - phreeqc seems to have no concept of volume, but it does calculate density
         return ureg.Quantity(0, "L")
+
+
+class PyEQLEOS(EOS):
+    """Engine based on the PhreeqC model, as implemented in the pyphreeqc
+    module of pyEQL."""
+
+    def __init__(
+        self,
+        phreeqc_db: Literal[
+            "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
+        ] = "phreeqc.dat",
+    ) -> None:
+        """
+        Args:
+            phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
+        """
+
+        from pyEQL_phreeqc import Phreeqc  # noqa: PLC0415
+
+        self.phreeqc_db = phreeqc_db
+        # database files in this list are not distributed with phreeqpython
+        self.db_path = (
+            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+        )
+        # create the PhreeqcPython instance
+        self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
+        # attributes to hold the PhreeqPython solution.
+        self.ppsol = None
+        # store the solution composition to see whether we need to re-instantiate the solution
+        self._stored_comp = None
+
+    def _setup_ppsol(self, solution: "solution.Solution") -> None:
+        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
+
+        from pyEQL_phreeqc import PHRQSol  # noqa: PLC0415
+
+        self._stored_comp = solution.components.copy()
+        solv_mass = solution.solvent_mass.to("kg").magnitude
+        # inherit bulk solution properties
+        d = {
+            "temp": solution.temperature.to("degC").magnitude,
+            "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
+            "pH": solution.pH,
+            "pe": solution.pE,
+            "redox": "pe",  # hard-coded to use the pe
+            # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
+            # really have to specify the solvent mass in 1 liter of solution
+            "water": solv_mass,
+        }
+        if solution.balance_charge == "pH":
+            d["pH"] = str(d["pH"]) + " charge"
+        if solution.balance_charge == "pE":
+            d["pe"] = str(d["pe"]) + " charge"
+
+        # add the composition to the dict
+        # also, skip H and O
+        for el, mol in solution.get_el_amt_dict().items():
+            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
+            # all distinct oxi states of each element present. If there are elements present whose oxi states
+            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
+            # entered into the composition dict. This can especially cause problems after equilibrate() has already
+            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
+            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
+            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
+            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
+            # oxi state happens to be iterated through last.
+
+            # strip off the oxi state
+            bare_el = el.split("(")[0]
+            if bare_el in SPECIAL_ELEMENTS:
+                # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
+                # passing, e.g. 'C(4)' and not 'C(4.0)'
+                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
+            elif bare_el in ["H", "O"]:
+                continue
+            else:
+                key = bare_el
+
+            if key in d:
+                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
+                # add all their amounts together
+                d[key] += str(mol / solv_mass)
+            else:
+                d[key] = str(mol / solv_mass)
+
+            # tell PHREEQC which species to use for charge balance
+            if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
+                d[key] += " charge"
+
+        try:
+            ppsol = self.pp.add_solution(PHRQSol(d))
+        except Exception as e:
+            # catch problems with the input to phreeqc
+            raise ValueError(
+                "There is a problem with your input. The error message received from "
+                f" phreeqc is:\n\n {e}\n Check your input arguments, especially "
+                "the composition dictionary, and try again."
+            )
+
+        self.ppsol = ppsol
+
+    def _destroy_ppsol(self) -> None:
+        if self.ppsol is not None:
+            self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+            self.ppsol = None
+
+    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
+        """
+        Return the *molal scale* activity coefficient of solute, given a Solution
+        object.
+        """
+        if (self.ppsol is None) or (solution.components != self._stored_comp):
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+
+        # translate the species into keys that phreeqc will understand
+        k = standardize_formula(solute)
+        spl = k.split("[")
+        el = spl[0]
+        chg = spl[1].split("]")[0]
+        if chg[-1] == "1":
+            chg = chg[0]  # just pass + or -, not +1 / -1
+        k = el + chg
+
+        # calculate the molal scale activity coefficient
+        # act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
+        act = self.ppsol.get_activity(k) / self.ppsol.get_molality(k)
+
+        return ureg.Quantity(act, "dimensionless")
+
+    def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
+        osmotic = self.ppsol.get_osmotic_coefficient()
+        return ureg.Quantity(osmotic, "dimensionless")
+
+    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
+        """Return the volume of the solutes."""
+        # TODO - phreeqc seems to have no concept of volume, but it does calculate density
+        return ureg.Quantity(0, "L")
+
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
+        """
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
+
+        Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
+        """
+        if self.ppsol is not None:
+            self.ppsol.forget()
+        self._setup_ppsol(solution)
+
+        # store the original solvent mass
+        orig_solvent_moles = solution.components[solution.solvent]
+
+        # store the original solvent elements and components with that element
+        # that we may need to add back later.
+        orig_el_dict = solution.get_el_amt_dict(nested=True)
+        orig_components_by_element = solution.get_components_by_element(nested=True)
+
+        # Use supplied gases, merged with atmospheric gases
+        # if atmosphere == True
+        gases = (ATMOSPHERE if atmosphere else {}) | (gases or {})
+
+        # Mapping from phase name to:
+        #   (<saturation_index>, <amount_in_moles>) tuples (for solids).
+        #   (<log_partial_pressure>, <amount_in_moles>) tuples (for gases).
+        phases = {}
+        if solids is not None:
+            # Assume saturation index of 0 for all solids.
+            phases |= dict.fromkeys(solids, (0, EQUILIBRIUM_PHASE_AMOUNT))
+
+        for k, v in gases.items():
+            v_quantity = ureg.Quantity(v)
+            if v_quantity.dimensionless:
+                log_partial_pressure = v_quantity.magnitude
+            else:
+                log_partial_pressure = math.log10(v_quantity.to("atm").magnitude)
+            phases |= {f"{k}(g)": (log_partial_pressure, EQUILIBRIUM_PHASE_AMOUNT)}
+
+        if phases:
+            phase_names = list(phases.keys())
+            saturation_indices = [v[0] for v in phases.values()]
+            amounts = [v[1] for v in phases.values()]
+
+            try:
+                self.ppsol.equalize(phases=phase_names, saturation_indices=saturation_indices, amounts=amounts)
+            except Exception as e:
+                # Re-raise exception due to unrecognized phases as ValueError.
+                if "Phase not found in database" in str(e):
+                    raise ValueError(str(e))
+                raise e
+
+        solution.components = FormulaDict({})
+        # use the output from PHREEQC to update the Solution composition
+        # the .species_moles attribute should return MOLES (not moles per ___)
+        for s, mol in self.ppsol.species_moles.items():
+            solution.components[s] = mol
+
+        # log a message if any components were not touched by PHREEQC
+        # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
+        missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
+        if len(missing_species) > 0:
+            logger.warning(
+                f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
+                "by PHREEQC. These species are likely absent from its database."
+            )
+
+        # tolerance (in moles) for detecting cases where an element amount
+        # is no longer balanced because of species that are not recognized
+        # by PHREEQC.
+        _atol = 1e-16
+
+        new_el_dict = solution.get_el_amt_dict(nested=True)
+        for el in orig_el_dict:
+            orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
+            new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
+
+            # If this element went "missing", add back all components that
+            # contain this element (for any valence value)
+            if orig_el_amount - new_el_amount > _atol:
+                logger.info(
+                    f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
+                )
+                solution.components.update(
+                    {
+                        component: self._stored_comp[component]
+                        for components in orig_components_by_element[el].values()
+                        for component in components
+                        if component not in solution.components
+                    }
+                )
+
+        # re-adjust charge balance for any missing species
+        # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
+        solution._adjust_charge_balance()
+
+        # rescale the solvent mass to ensure the total mass of solution does not change
+        # this is important because PHREEQC and the pyEQL database may use slightly different molecular
+        # weights for water. Since water amount is passed to PHREEQC in kg but returned in moles, each
+        # call to equilibrate can thus result in a slight change in the Solution mass.
+        solution.components[solution.solvent] = orig_solvent_moles
