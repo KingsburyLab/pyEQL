@@ -37,9 +37,6 @@ Package = "https://pypi.org/project/pyEQL"
 
 
 [project.optional-dependencies]
-phreeqc = [
-    "pyEQL-phreeqc",
-    ]
 testing = [
     "setuptools>=68",
     "pre-commit>=2",
@@ -59,9 +56,11 @@ docs = [
 full = ["rich"]
 
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[tool.setuptools.exclude-package-data]
+pyEQL = ["phreeqc/ext/*"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

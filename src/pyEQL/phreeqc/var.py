@@ -1,6 +1,6 @@
 from typing import Any
 
-from pyEQL_phreeqc._bindings import PY_VAR_TYPE, PY_VRESULT, PyVar
+from pyEQL._phreeqc import PY_VAR_TYPE, PY_VRESULT, PyVar
 
 
 class Var:
