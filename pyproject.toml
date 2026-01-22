@@ -56,7 +56,7 @@ docs = [
 full = ["rich"]
 
 [build-system]
-requires = ["scikit-build-core", "pybind11"]
+requires = ["scikit-build-core", "pybind11", "setuptools_scm[toml]>=5"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
@@ -64,9 +64,6 @@ install.components = ["python", "iphreeqc_database"]
 
 [tool.scikit-build.cmake.define]
 PYEQL_ENABLE_EXT = {env="PYEQL_ENABLE_EXT"}
-
-[tool.setuptools.exclude-package-data]
-pyEQL = ["phreeqc/ext/*"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
