@@ -25,7 +25,7 @@ def ext_module():
     except ModuleNotFoundError:
         return None
     else:
-        return PyIPhreeqc
+        return PyIPhreeqc()
 
 
 IS_AVAILABLE = ext_module() is not None
