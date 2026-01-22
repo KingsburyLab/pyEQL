@@ -884,7 +884,7 @@ class PyEQLEOS(EOS):
                 usable because they do not allow for conductivity calculations.
         """
 
-        from pyEQL_phreeqc import Phreeqc  # noqa: PLC0415
+        from pyEQL.phreeqc import Phreeqc  # noqa: PLC0415
 
         self.phreeqc_db = phreeqc_db
         # database files in this list are not distributed with phreeqpython
@@ -901,7 +901,7 @@ class PyEQLEOS(EOS):
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
 
-        from pyEQL_phreeqc import PHRQSol  # noqa: PLC0415
+        from pyEQL.phreeqc import PHRQSol  # noqa: PLC0415
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude

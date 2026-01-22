@@ -4,9 +4,9 @@ from textwrap import dedent, indent
 from typing import Any
 from weakref import ref
 
-from pyEQL_phreeqc._bindings import PyIPhreeqc
-from pyEQL_phreeqc.solution import PHRQSol
-from pyEQL_phreeqc.var import Var
+from pyEQL._phreeqc import PyIPhreeqc
+from pyEQL.phreeqc.solution import PHRQSol
+from pyEQL.phreeqc.var import Var
 
 SOLUTION_PROPS = (
     "CELL_NO",

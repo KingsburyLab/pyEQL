@@ -38,7 +38,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e . --no-deps
-          pip install src/pyEQL/pyEQL-phreeqc --no-deps
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
