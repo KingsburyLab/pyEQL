@@ -861,7 +861,7 @@ class PhreeqcEOS(NativeEOS):
         return ureg.Quantity(0, "L")
 
 
-class PyEQLEOS(EOS):
+class Phreeqc2026EOS(EOS):
     """Engine based on the PhreeqC model, as implemented in the pyphreeqc
     module of pyEQL."""
 
