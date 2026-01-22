@@ -1,3 +1,4 @@
+from importlib import resources
 from inspect import cleandoc
 from pathlib import Path
 from textwrap import dedent, indent
@@ -22,7 +23,7 @@ class Phreeqc:
         self._ext = PyIPhreeqc()
 
         if database_directory is None:
-            database_directory = Path(__file__).parent / "database"
+            database_directory = resources.files("pyEQL.phreeqc.database")
         self._ext.load_database(str(database_directory / database))
 
         self._str = ""
