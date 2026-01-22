@@ -62,6 +62,9 @@ build-backend = "scikit_build_core.build"
 [tool.scikit-build]
 install.components = ["python", "iphreeqc_database"]
 
+[tool.scikit-build.cmake.define]
+PYEQL_ENABLE_EXT = {env="PYEQL_ENABLE_EXT"}
+
 [tool.setuptools.exclude-package-data]
 pyEQL = ["phreeqc/ext/*"]
 
