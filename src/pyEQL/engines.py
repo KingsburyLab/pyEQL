@@ -884,7 +884,10 @@ class PyEQLEOS(EOS):
                 usable because they do not allow for conductivity calculations.
         """
 
-        from pyEQL.phreeqc import Phreeqc  # noqa: PLC0415
+        from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
+
+        if not IS_AVAILABLE:
+            raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         self.phreeqc_db = phreeqc_db
         # database files in this list are not distributed with phreeqpython
