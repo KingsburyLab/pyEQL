@@ -11,7 +11,7 @@ find_package(
 find_package(pybind11 CONFIG REQUIRED)
 
 # -------------------------------------------------------
-# IPhreeqc setup
+# Setup for IPhreeqc
 # -------------------------------------------------------
 set(IPHREEQC_BASE ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/ext/iphreeqc-3.8.6-17100)
 set(IPHREEQC_DIR         ${IPHREEQC_BASE})
@@ -32,7 +32,7 @@ pybind11_add_module(_phreeqc ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/bindi
 target_compile_definitions(_phreeqc
                            PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_link_libraries(_phreeqc PRIVATE IPhreeqc)
-install(TARGETS _phreeqc LIBRARY DESTINATION pyEQL)
+install(TARGETS _phreeqc LIBRARY DESTINATION pyEQL COMPONENT python)
 
 # -------------------------------------------------------
 # IPhreeqc databases
@@ -44,4 +44,14 @@ set(IPHREEQC_DATABASE_DIR   ${IPHREEQC_BASE}/database)
 install(DIRECTORY
        "${IPHREEQC_DATABASE_DIR}"
        DESTINATION pyEQL/phreeqc COMPONENT iphreeqc_database)
+# Make it a python module so we can access it using importlib.resources
+file(GENERATE
+    OUTPUT "__init__.py"
+    CONTENT ""
+)
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/__init__.py"
+        DESTINATION pyEQL/phreeqc/database
+        COMPONENT iphreeqc_database
+)
 # -------------------------------------------------------

@@ -59,6 +59,9 @@ full = ["rich"]
 requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
+[tool.scikit-build]
+install.components = ["python", "iphreeqc_database"]
+
 [tool.setuptools.exclude-package-data]
 pyEQL = ["phreeqc/ext/*"]
 
