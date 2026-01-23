@@ -1,4 +1,4 @@
-from pyEQL_phreeqc import PHRQSol
+from pyEQL.phreeqc import PHRQSol
 
 
 def test_create_solution():
