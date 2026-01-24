@@ -1,57 +1,93 @@
 name: release
 
-# runs when the Post merge workflow completes successfully
-# tags new release and pushes to PyPi
-# see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
 on:
-  workflow_run:
-    workflows: [Post merge]
-    types: [completed]
-
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
 
 jobs:
-  # https://github.com/marketplace/actions/tag-release-on-push-action
-  tag-release:
-    name: Tag/Release on merge of labeled PRs
+
+  build_sdist:
+    name: Build source
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: rymndhng/release-on-push-action@v0.28.0
-        with:
-          # loonly release when PRs with release:major/minor/patch labels are merged
-          bump_version_scheme: norelease
-          use_github_release_notes: true
-          release_body: "See [CHANGELOG](https://github.com/KingsburyLab/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."
-
-  # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
-
-  deploy:
-    name: Upload release to PyPI
-    runs-on: ubuntu-latest
-    needs: tag-release
-    environment:
-      name: publish
-      url: https://pypi.org/p/pyEQL
-
-    permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
 
     steps:
-      - uses: actions/checkout@v6
+    - uses: actions/checkout@v6
+
+    - name: Build source
+      run: |
+        python -m pip install pip --upgrade
+        pip install build --upgrade
+        python -m build --sdist --outdir=wheelhouse
+
+    - name: Upload sdist to github
+      uses: actions/upload-artifact@v5
+      with:
+        name: wheels-sdist
+        path: wheelhouse/*.tar.gz
+        if-no-files-found: error
+
+  build_wheels:
+    name: Build wheel on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
+    needs: [build_sdist]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cibw_archs: "x86_64"
+          - os: ubuntu-24.04-arm
+            cibw_archs: "auto"
+          - os: windows-2022
+            cibw_archs: "auto64"
+          # macos-15-intel for Intel and maos-latest for Apple Silicon
+          - os: macos-15-intel
+            cibw_archs: "x86_64"
+          - os: macos-latest
+            cibw_archs: "arm64"
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.23
+      with:
+        config-file: cibuildwheel.toml
+        output-dir: wheelhouse
+      env:
+        CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw_archs }}
+
+    - name: Upload artifacts to github
+      uses: actions/upload-artifact@v5
+      with:
+        name: wheels-${{ runner.os }}-${{ matrix.cibw_archs }}
+        path: ./wheelhouse/*.whl
+        if-no-files-found: error
+
+  publish_to_pypi:
+    name: Publish wheels to PyPi
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    needs: [build_sdist, build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v6
         with:
-          fetch-depth: 0
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
+      - name: Print out packages
+        run: ls -la dist/*
 
-      - name: Install dependencies
+      - name: Upload wheels to pypi
+        if: false
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.pypi_password }}
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools setuptools_scm wheel tox
-
-      - name: Build packages for distribution
-        run: |
-          tox -e clean,build,build_ext
+          python -m pip install --upgrade twine
+          twine upload dist/*
