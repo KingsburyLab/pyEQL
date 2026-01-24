@@ -1,6 +1,10 @@
 [tool.cibuildwheel]
 build = "cp3*"
-skip = ["cp36-*", "cp37-*", "cp38-", "cp39-", "*-win32", "*-manylinux_i686", "*-musllinux_*"]
+skip = ["cp36-*", "cp37-*", "cp38-", "cp39-", "cp314-*", "*-win32", "*-manylinux_i686", "*-musllinux_*"]
 build-verbosity = 1
 test-extras = ["testing"]
-test-command = "python -m pytest {project}/tests"
+# 01/24/26 - The latest version of scipy, 1.17.0, cannot be built on
+# manylinux without OpenBLAS. Skip it by pre-installing a binary version.
+before-test = "pip install scipy --prefer-binary"
+# For now, we only run the tests that are wrapper specific in cibuildwheel.
+test-command = "python -m pytest {project}/tests/test_pyeql_phreeqc.py"

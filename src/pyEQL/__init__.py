@@ -6,21 +6,15 @@ and performing chemical thermodynamics computations.
 :license: LGPL, see LICENSE for more details.
 """
 
+# The _version.py file is managed by setuptools-scm
+#   and is not in version control.
 import logging
-from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 from importlib.resources import files
 
 from maggma.stores import JSONStore
 from pint import UnitRegistry
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = __name__
-    __version__ = version(dist_name)
-except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError
+from pyEQL._version import version as __version__
 
 # logging
 logger = logging.getLogger("pyEQL")

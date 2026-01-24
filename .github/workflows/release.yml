@@ -4,13 +4,28 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
 
 jobs:
 
+  detect_tag:
+    name: Detect Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tagcheck.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: tagcheck
+        run: |
+          echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
+
   build_sdist:
     name: Build source
+    needs: detect_tag
+    if: needs.detect_tag.outputs.tag != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +46,8 @@ jobs:
 
   build_wheels:
     name: Build wheel on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
-    needs: [build_sdist]
+    needs: [detect_tag, build_sdist]
+    if: needs.detect_tag.outputs.tag != ''
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -69,8 +85,8 @@ jobs:
 
   publish_to_pypi:
     name: Publish wheels to PyPi
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [build_sdist, build_wheels]
+    needs: [detect_tag, build_sdist, build_wheels]
+    if: needs.detect_tag.outputs.tag != ''
     runs-on: ubuntu-latest
     steps:
       - name: Download packages
@@ -84,7 +100,6 @@ jobs:
         run: ls -la dist/*
 
       - name: Upload wheels to pypi
-        if: false
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.pypi_password }}
