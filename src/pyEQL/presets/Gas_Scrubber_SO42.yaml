@@ -1,0 +1,25 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': 1.3.2.post1.dev89+g8391a3291
+solutes:
+  H2O(aq): 55.301623998397226 mol
+  SO4[-2]: 0.038294617161808 mol
+  H[+1]: 0.011227226308669841 mol
+  Zn[+2]: 0.0002593676794439157 mol
+  As[+3]: 0.00024470023775964914 mol
+  Pb[+2]: 4.337520160304971e-05 mol
+  Fe[+2]: 1.700003740008228e-05 mol
+  Cu[+2]: 9.2917506451687e-06 mol
+  Cd[+2]: 7.882466567925635e-06 mol
+  Se[-2]: 6.86719999421796e-06 mol
+  Ni[+2]: 1.9888354995574904e-06 mol
+  Hg[+2]: 3.879605746704771e-08 mol
+  OH[-1]: 8.906919416310191e-13 mol
+volume: 1 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 1.9497275231352726
+pE: 8.5
+charge_balance: -0.06396375216811201
+solvent: H2O(aq)
+engine: native
