@@ -52,5 +52,5 @@ MANIFEST
 .venv*/
 .conda*/
 
-# External code
-# src/pyEQL/phreeqc/ext/*
+# setuptools-scm managed version file
+src/pyEQL/_version.py
