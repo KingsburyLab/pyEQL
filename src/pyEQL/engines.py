@@ -32,6 +32,26 @@ if TYPE_CHECKING:
     from pyEQL import solution
 
 
+"""
+We determine if PhreeqPython from the phreeqpython package is actually
+invocable on this platform, regardless of whether it is installed.
+This flag helps us selectively skip phreeqpython-related tests inside
+manylinux containers, among other uses.
+"""
+
+
+def _phreeqpython_available():
+    try:
+        PhreeqPython()
+    except:  # noqa: E722
+        return False
+    else:
+        return True
+
+
+PHREEQPYTHON_AVAILABLE = _phreeqpython_available()
+
+
 class EOS(ABC):
     """
     Abstract base class for pyEQL equation of state classes.

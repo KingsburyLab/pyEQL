@@ -7,16 +7,18 @@ used by pyEQL's Solution class
 """
 
 import logging
-import platform
 
 import numpy as np
 import pytest
 
 from pyEQL import Solution
-from pyEQL.engines import PhreeqcEOS
+from pyEQL.engines import PHREEQPYTHON_AVAILABLE, PhreeqcEOS
 
-if platform.machine().startswith("arm64") and platform.system().startswith("Darwin"):
-    pytest.skip("skipping PHREEQC tests because arm64 is not supported", allow_module_level=True)
+if not PHREEQPYTHON_AVAILABLE:
+    pytest.skip(
+        "Phreeqpython not available",
+        allow_module_level=True,
+    )
 
 
 @pytest.fixture
