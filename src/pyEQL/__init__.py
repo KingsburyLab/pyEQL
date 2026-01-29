@@ -14,7 +14,10 @@ from importlib.resources import files
 from maggma.stores import JSONStore
 from pint import UnitRegistry
 
-from pyEQL._version import version as __version__
+try:
+    from pyEQL._version import version as __version__
+except ImportError:
+    __version__ = "src"
 
 # logging
 logger = logging.getLogger("pyEQL")

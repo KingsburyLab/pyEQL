@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - vb/deleteme
 
 jobs:
 
@@ -23,6 +22,7 @@ jobs:
         run: |
           TAG=$(git tag --points-at HEAD)
           if [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "Detected tag: $TAG"
             echo "tag=$TAG" >> $GITHUB_OUTPUT
           fi
 
@@ -34,6 +34,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Build source
       run: |
@@ -47,6 +49,21 @@ jobs:
         name: wheels-sdist
         path: wheelhouse/*.tar.gz
         if-no-files-found: error
+
+  create_gh_release:
+    name: Create Github Release
+    needs: [detect_tag, build_sdist]
+    if: needs.detect_tag.outputs.tag != ''
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.detect_tag.outputs.tag }}
+        generate_release_notes: true
 
   build_wheels:
     name: Build wheel on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
@@ -71,6 +88,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.23
