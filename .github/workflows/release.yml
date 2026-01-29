@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - vb/deleteme
 
 jobs:
 
@@ -20,7 +21,10 @@ jobs:
 
       - id: tagcheck
         run: |
-          echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
+          TAG=$(git tag --points-at HEAD)
+          if [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          fi
 
   build_sdist:
     name: Build source
