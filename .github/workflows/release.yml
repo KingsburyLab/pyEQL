@@ -1,57 +1,131 @@
 name: release
 
-# runs when the Post merge workflow completes successfully
-# tags new release and pushes to PyPi
-# see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
 on:
-  workflow_run:
-    workflows: [Post merge]
-    types: [completed]
-
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  # https://github.com/marketplace/actions/tag-release-on-push-action
-  tag-release:
-    name: Tag/Release on merge of labeled PRs
+
+  detect_tag:
+    name: Detect Tag
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: rymndhng/release-on-push-action@v0.28.0
-        with:
-          # loonly release when PRs with release:major/minor/patch labels are merged
-          bump_version_scheme: norelease
-          use_github_release_notes: true
-          release_body: "See [CHANGELOG](https://github.com/KingsburyLab/pyEQL/blob/main/CHANGELOG.md) for a detailed explanation of changes."
-
-  # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
-
-  deploy:
-    name: Upload release to PyPI
-    runs-on: ubuntu-latest
-    needs: tag-release
-    environment:
-      name: publish
-      url: https://pypi.org/p/pyEQL
-
-    permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+    outputs:
+      tag: ${{ steps.tagcheck.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v6
+      - id: tagcheck
+        run: |
+          TAG=$(git tag --points-at HEAD)
+          if [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "Detected tag: $TAG"
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+
+  build_sdist:
+    name: Build source
+    needs: detect_tag
+    if: needs.detect_tag.outputs.tag != ''
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Build source
+      run: |
+        python -m pip install pip --upgrade
+        pip install build --upgrade
+        python -m build --sdist --outdir=wheelhouse
+
+    - name: Upload sdist to github
+      uses: actions/upload-artifact@v5
+      with:
+        name: wheels-sdist
+        path: wheelhouse/*.tar.gz
+        if-no-files-found: error
+
+  create_gh_release:
+    name: Create Github Release
+    needs: [detect_tag, build_sdist]
+    if: needs.detect_tag.outputs.tag != ''
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.detect_tag.outputs.tag }}
+        generate_release_notes: true
+
+  build_wheels:
+    name: Build wheel on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
+    needs: [detect_tag, build_sdist]
+    if: needs.detect_tag.outputs.tag != ''
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cibw_archs: "x86_64"
+          - os: ubuntu-24.04-arm
+            cibw_archs: "auto"
+          - os: windows-2022
+            cibw_archs: "auto64"
+          # macos-15-intel for Intel and maos-latest for Apple Silicon
+          - os: macos-15-intel
+            cibw_archs: "x86_64"
+          - os: macos-latest
+            cibw_archs: "arm64"
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.23
+      with:
+        config-file: cibuildwheel.toml
+        output-dir: wheelhouse
+      env:
+        CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw_archs }}
+
+    - name: Upload artifacts to github
+      uses: actions/upload-artifact@v5
+      with:
+        name: wheels-${{ runner.os }}-${{ matrix.cibw_archs }}
+        path: ./wheelhouse/*.whl
+        if-no-files-found: error
+
+  publish_to_pypi:
+    name: Publish wheels to PyPi
+    needs: [detect_tag, build_sdist, build_wheels]
+    if: needs.detect_tag.outputs.tag != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v6
         with:
-          python-version: "3.10"
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools setuptools_scm wheel tox
+      - name: Print out packages
+        run: ls -la dist/*
 
-      - name: Build packages for distribution
+      - name: Upload wheels to pypi
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.pypi_password }}
         run: |
-          tox -e clean,build,build_ext
+          python -m pip install --upgrade twine
+          twine upload dist/*
