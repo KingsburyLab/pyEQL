@@ -44,7 +44,7 @@ jobs:
         python -m build --sdist --outdir=wheelhouse
 
     - name: Upload sdist to github
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: wheels-sdist
         path: wheelhouse/*.tar.gz
@@ -92,7 +92,7 @@ jobs:
         fetch-depth: 0
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.23
+      uses: pypa/cibuildwheel@v3.3
       with:
         config-file: cibuildwheel.toml
         output-dir: wheelhouse
@@ -100,7 +100,7 @@ jobs:
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw_archs }}
 
     - name: Upload artifacts to github
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: wheels-${{ runner.os }}-${{ matrix.cibw_archs }}
         path: ./wheelhouse/*.whl
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           path: dist
