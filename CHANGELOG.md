@@ -5,10 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.4.0rc0] - 2026-02-04
 
 ### Added
 
+- `EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by USGS. This
+  new PHREEQC interface is accessible via the new `phreeqc2026` electrolyte modeling engine, and will be used
+  by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, @vineetbansal)
+
+### Changed
+
+- `Solution.equilibrate`: Added support for solid-liquid and gas-liquid equilibrium via three new kwargs - `atmopshere`,
+  `solids`, and `gases`. See docstring for details and usage.(#292, #294, @vineetbansal, @YitongPan1, @SuixiongTay)
 - `get_components_by_element`: A new keyword argument `nested` was added to methods `get_components_by_element`
   and `get_el_amt_dict` of the `Solution` class. It defaults to `False` (no change from prior behavior), but
   can be set to `True` to return a 2-level dictionary, with the element symbol as the key at the top level, and
@@ -22,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   already). As a result, we replace neutral (aq) molecules, and ions with incorrect charge, with ions with charge
   determined by phreeqc, without double-counting. Missing elements (e.g. Rh) are handled correctly as well, since species
   with the missing element are re-introduced in the solution. (#282, @vineetbansal)
+- `standardize_formula`: Fixed incorrect reduction of dimers. For example, `(CO2)2` was being standardized to `CO2`, which
+  could cause incorrect concentrations to be reported. Dimers are no longer reduced. (#309, @vineetbansal)
 
 ## [1.3.2] - 2025-09-15
 
