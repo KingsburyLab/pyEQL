@@ -1,6 +1,7 @@
-from pyEQL_phreeqc._bindings import PY_VRESULT
-from pyEQL_phreeqc.var import Var
 from pytest import approx
+
+from pyEQL._phreeqc import PY_VRESULT
+from pyEQL.phreeqc.var import Var
 
 
 def test_var_new():

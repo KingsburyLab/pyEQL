@@ -27,7 +27,7 @@ from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS, PyEQLEOS
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc", "phreeqc2026"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -259,8 +259,8 @@ class Solution(MSONable):
             self.engine = NativeEOS()
         elif self._engine == "phreeqc":
             self.engine = PhreeqcEOS()
-        elif self._engine == "pyeql":
-            self.engine = PyEQLEOS()
+        elif self._engine == "phreeqc2026":
+            self.engine = Phreeqc2026EOS()
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 

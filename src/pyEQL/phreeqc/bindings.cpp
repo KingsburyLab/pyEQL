@@ -20,7 +20,7 @@ public:
 };
 
 
-PYBIND11_MODULE(_bindings, m) {
+PYBIND11_MODULE(_phreeqc, m) {
 
     py::enum_<VAR_TYPE>(m, "PY_VAR_TYPE", py::module_local())
         .value("TT_EMPTY", TT_EMPTY)

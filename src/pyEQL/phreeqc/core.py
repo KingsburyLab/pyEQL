@@ -1,12 +1,11 @@
+from importlib import resources
 from inspect import cleandoc
 from pathlib import Path
 from textwrap import dedent, indent
 from typing import Any
 from weakref import ref
 
-from pyEQL_phreeqc._bindings import PyIPhreeqc
-from pyEQL_phreeqc.solution import PHRQSol
-from pyEQL_phreeqc.var import Var
+from pyEQL.phreeqc.solution import PHRQSol
 
 SOLUTION_PROPS = (
     "CELL_NO",
@@ -17,16 +16,33 @@ SPECIES_PROPS = ("MOL", "ACT", "DIFF_C")
 EQ_SPECIES_PROPS = ("SI",)
 
 
+def ext_module():
+    """
+    Return the compiled extension module is available, else None.
+    """
+    try:
+        from pyEQL._phreeqc import PyIPhreeqc  # noqa: PLC0415
+    except ModuleNotFoundError:
+        return None
+    else:
+        return PyIPhreeqc()
+
+
+IS_AVAILABLE = ext_module() is not None
+
+
 class Phreeqc:
     def __init__(self, database: str = "phreeqc.dat", database_directory: Path | None = None):
-        self._ext = PyIPhreeqc()
+        self._ext = ext_module()
 
         if database_directory is None:
-            database_directory = Path(__file__).parent / "database"
+            database_directory = resources.files("pyEQL.phreeqc.database")
         self._ext.load_database(str(database_directory / database))
 
         self._str = ""
         self._solutions: list[PHRQSol] = []
+
+        from pyEQL.phreeqc.var import Var  # noqa: PLC0415
 
         # TODO: Is VAR the common denominator for most operations?
         # Here we create one and modify it in operations instead of having
