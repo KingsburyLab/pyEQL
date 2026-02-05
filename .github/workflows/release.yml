@@ -20,11 +20,16 @@ jobs:
 
       - id: tagcheck
         run: |
-          TAG=$(git tag --points-at HEAD)
-          if [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            echo "Detected tag: $TAG"
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          # Get the merged commit (PR tip)
+          MERGED_COMMIT=$(git rev-parse HEAD^2 2>/dev/null || true)
+
+          TAG=""
+          if [ -n "$MERGED_COMMIT" ]; then
+            TAG=$(git tag --points-at "$MERGED_COMMIT" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)
           fi
+
+          echo "Detected tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
   build_sdist:
     name: Build source
@@ -123,6 +128,7 @@ jobs:
         run: ls -la dist/*
 
       - name: Upload wheels to pypi
+        if: false
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.pypi_password }}
