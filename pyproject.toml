@@ -173,5 +173,5 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
 [tool.codespell]
-ignore-words-list = "nd,formate,Te,CaCl,CaF"
+ignore-words-list = "nd,formate,Te,CaCl,CaF,ore"
 skip = "tests/test_files/*,src/pyEQL/database/*"
