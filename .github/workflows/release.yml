@@ -86,7 +86,6 @@ jobs:
         run: ls -la dist/*
 
       - name: Upload wheels to pypi
-        if: false
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.pypi_password }}
