@@ -74,6 +74,9 @@ jobs:
     name: Publish wheels to PyPi
     needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
+    # https://docs.pypi.org/trusted-publishers/using-a-publisher/
+    permissions:
+      id-token: write
     steps:
       - name: Download packages
         uses: actions/download-artifact@v7
@@ -85,10 +88,5 @@ jobs:
       - name: Print out packages
         run: ls -la dist/*
 
-      - name: Upload wheels to pypi
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.pypi_password }}
-        run: |
-          python -m pip install --upgrade pip setuptools wheel packaging twine
-          twine upload dist/*
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
