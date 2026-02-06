@@ -75,6 +75,7 @@ jobs:
     needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
     # https://docs.pypi.org/trusted-publishers/using-a-publisher/
+    environment: publish
     permissions:
       id-token: write
     steps:
