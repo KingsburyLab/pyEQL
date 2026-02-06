@@ -832,10 +832,10 @@ def test_serialization(s1, s2, tmp_path):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset(tmp_path):
-    preset_name = "seawater"
+@pytest.mark.parametrize("preset_name", ["seawater", "batt_mfg", "ash"])
+def test_from_preset(preset_name, tmp_path):
     solution = Solution.from_preset(preset_name)
-    preset_path = files("pyEQL") / "presets" / "seawater.yaml"
+    preset_path = files("pyEQL") / "presets" / f"{preset_name}.yaml"
 
     with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
