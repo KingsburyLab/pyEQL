@@ -832,7 +832,34 @@ def test_serialization(s1, s2, tmp_path):
     # assert s2_new.database != s2.database
 
 
-@pytest.mark.parametrize("preset_name", ["seawater", "batt_mfg", "ash"])
+@pytest.mark.parametrize(
+    "preset_name",
+    [
+        "seawater",
+        "ash",
+        "batt_mfg",
+        "batt_recycling",
+        "coal_washing",
+        "CRL",
+        "drilling",
+        "excavation",
+        "FGD",
+        "flotation",
+        "flue_gas",
+        "gasification",
+        "geothermal",
+        "leachate",
+        "mine_drainage",
+        "mine_tailings",
+        "plating",
+        "pw_conv",
+        "pw_unconv",
+        "refining",
+        "semiconductor",
+        "smelting",
+        "tanning",
+    ],
+)
 def test_from_preset(preset_name, tmp_path):
     solution = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / f"{preset_name}.yaml"
