@@ -7,13 +7,13 @@ salt_ion_match.py
 """
 
 import logging
-import platform
 from itertools import combinations, product
 
 import numpy as np
 import pytest
 
 import pyEQL
+from pyEQL.engines import PHREEQPYTHON_AVAILABLE
 from pyEQL.salt_ion_match import Salt
 
 _ANIONS = ["Cl[-1]", "SO4[-2]", "PO4[-3]", "ClO[-1]", "NO3[-1]", "CO3[-2]", "MnO4[-2]"]
@@ -147,7 +147,7 @@ def test_single_ion() -> None:
     assert s1.get_salt().nu_anion == 3
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_salt_with_equilibration() -> None:
     """
     test matching a solution containing a salt, before and after equilibration.

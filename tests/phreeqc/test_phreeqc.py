@@ -2,8 +2,9 @@ from inspect import cleandoc
 from pathlib import Path
 
 import numpy as np
-from pyEQL_phreeqc import Phreeqc, PHRQSol
 from pytest import approx
+
+from pyEQL.phreeqc import Phreeqc, PHRQSol
 
 
 def test_load_database_internal():

@@ -32,6 +32,26 @@ if TYPE_CHECKING:
     from pyEQL import solution
 
 
+"""
+We determine if PhreeqPython from the phreeqpython package is actually
+invocable on this platform, regardless of whether it is installed.
+This flag helps us selectively skip phreeqpython-related tests inside
+manylinux containers, among other uses.
+"""
+
+
+def _phreeqpython_available():
+    try:
+        PhreeqPython()
+    except:  # noqa: E722
+        return False
+    else:
+        return True
+
+
+PHREEQPYTHON_AVAILABLE = _phreeqpython_available()
+
+
 class EOS(ABC):
     """
     Abstract base class for pyEQL equation of state classes.
@@ -861,7 +881,7 @@ class PhreeqcEOS(NativeEOS):
         return ureg.Quantity(0, "L")
 
 
-class PyEQLEOS(EOS):
+class Phreeqc2026EOS(EOS):
     """Engine based on the PhreeqC model, as implemented in the pyphreeqc
     module of pyEQL."""
 
@@ -884,7 +904,10 @@ class PyEQLEOS(EOS):
                 usable because they do not allow for conductivity calculations.
         """
 
-        from pyEQL_phreeqc import Phreeqc  # noqa: PLC0415
+        from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
+
+        if not IS_AVAILABLE:
+            raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         self.phreeqc_db = phreeqc_db
         # database files in this list are not distributed with phreeqpython
@@ -901,7 +924,7 @@ class PyEQLEOS(EOS):
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
 
-        from pyEQL_phreeqc import PHRQSol  # noqa: PLC0415
+        from pyEQL.phreeqc import PHRQSol  # noqa: PLC0415
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
