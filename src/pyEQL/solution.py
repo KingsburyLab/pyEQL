@@ -186,7 +186,7 @@ class Solution(MSONable):
         # per-instance cache of get_property and other calls that do not depend
         # on composition
         # see https://rednafi.com/python/lru_cache_on_methods/
-        self.get_property = lru_cache(maxsize=8192)(self._get_property)
+        self.get_property = lru_cache()(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
         self.get_mobility = lru_cache()(self._get_mobility)
         self.default_diffusion_coeff = default_diffusion_coeff
