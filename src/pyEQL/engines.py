@@ -1013,7 +1013,14 @@ class Phreeqc2026EOS(EOS):
         return ureg.Quantity(act, "dimensionless")
 
     def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
+        if self.ppsol is not None:
+            self.ppsol.forget()
+        self._setup_ppsol(solution)
+
         osmotic = self.ppsol.get_osmotic_coefficient()
+        if osmotic == 0:
+            # PHREEQC returns 0 when it assumes a unit osmotic coefficient, so we need to catch that case and return 1 instead.
+            osmotic = 1
         return ureg.Quantity(osmotic, "dimensionless")
 
     def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
