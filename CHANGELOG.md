@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0rc3] - 2026-02-04
+## [1.4.0rc9] - 2026-02-05
 
 ### Added
 
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   can be set to `True` to return a 2-level dictionary, with the element symbol as the key at the top level, and
   the valence (float, or "unk" for unknown) as the key at the second level. This should make it easier for future
   code to calculate the total amount of a given element regardless of its valence. (#284, @vineetbansal)
+- Docs: `sphinx-material` theme migrated to `sphinx-immaterial` (#2xX, @ugognw, @rkingsbury)
 
 ### Fixed
 
@@ -99,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
-- Docs: `tox -e docs` command configured to fail on warning (#255, @ugognw)
+- Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)
 - Support `numpy>2.0`

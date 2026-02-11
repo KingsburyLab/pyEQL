@@ -506,9 +506,6 @@ class Solution(MSONable):
         r"""
         Returns the dielectric constant of the solution.
 
-        Args:
-            None
-
         Returns:
             Quantity: the dielectric constant of the solution, dimensionless.
 
@@ -1294,10 +1291,10 @@ class Solution(MSONable):
         """Primary method for adding substances to a pyEQL solution.
 
         Args:
-            formula (str): Chemical formula for the solute. Charged species must contain a + or - and
-            (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
-            amount (str): The amount of substance in the specified unit system. The string should contain
-            both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
+            formula (str): Chemical formula for the solute. Charged species must contain a+ or - and
+               (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+            amount (str): The amount of substance in the specified unit system. The string should
+               contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1719,9 +1716,6 @@ class Solution(MSONable):
         Args:
             solute: The solute for which to retrieve the activity coefficient
             scale:  The activity coefficient concentration scale
-            verbose: If True, pyEQL will print a message indicating the parent salt
-                     that is being used for activity calculations. This option is
-                     useful when modeling multicomponent solutions. False by default.
 
         Returns:
             Quantity: the activity coefficient as a dimensionless pint Quantity
@@ -1766,10 +1760,6 @@ class Solution(MSONable):
                 The concentration scale for the returned activity.
                 Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                 By default, the molal scale activity is returned.
-            verbose:
-                If True, pyEQL will print a message indicating the parent salt
-                that is being used for activity calculations. This option is
-                useful when modeling multicomponent solutions. False by default.
 
         Returns:
             The thermodynamic activity of the solute in question (dimensionless Quantity)
