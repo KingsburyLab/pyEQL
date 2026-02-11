@@ -1696,16 +1696,16 @@ class Solution(MSONable):
 
         Adjust the speciation of a Solution object to achieve chemical equilibrium.
 
-        Args:
-            atmosphere:
+        Keyword Args:
+            atmosphere (bool):
                 Boolean indicating whether to equilibrate the solution
                 w.r.t atmospheric gases.
-            solids:
+            solids (list):
                 A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be present in the Phreeqc database.
                 We assume a target saturation index of 0 and an infinite
                 amount of material.
-            gases:
+            gases (dict):
                 A dictionary of gases used to achieve liquid-gas equilibrium.
                 Each key denotes the gas species, and the corresponding value
                 denotes its concentration, as a log partial pressure value or
