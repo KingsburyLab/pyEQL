@@ -1,4 +1,4 @@
-exclude: ^(docs/conf\.py|src/pyEQL/pyEQL-phreeqc/ext|tests/phreeqc/.*\.dat)
+exclude: ^(docs/conf\.py|src/pyEQL/phreeqc/ext|tests/phreeqc/.*\.dat)
 
 default_stages: [pre-commit]
 

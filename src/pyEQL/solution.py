@@ -27,7 +27,7 @@ from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS, PyEQLEOS
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc", "pyeql"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc", "phreeqc2026"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -259,8 +259,8 @@ class Solution(MSONable):
             self.engine = NativeEOS()
         elif self._engine == "phreeqc":
             self.engine = PhreeqcEOS()
-        elif self._engine == "pyeql":
-            self.engine = PyEQLEOS()
+        elif self._engine == "phreeqc2026":
+            self.engine = Phreeqc2026EOS()
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 
@@ -505,9 +505,6 @@ class Solution(MSONable):
     def dielectric_constant(self) -> Quantity:
         r"""
         Returns the dielectric constant of the solution.
-
-        Args:
-            None
 
         Returns:
             Quantity: the dielectric constant of the solution, dimensionless.
@@ -1294,10 +1291,10 @@ class Solution(MSONable):
         """Primary method for adding substances to a pyEQL solution.
 
         Args:
-            formula (str): Chemical formula for the solute. Charged species must contain a + or - and
-            (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
-            amount (str): The amount of substance in the specified unit system. The string should contain
-            both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
+            formula (str): Chemical formula for the solute. Charged species must contain a+ or - and
+               (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+            amount (str): The amount of substance in the specified unit system. The string should
+               contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1719,9 +1716,6 @@ class Solution(MSONable):
         Args:
             solute: The solute for which to retrieve the activity coefficient
             scale:  The activity coefficient concentration scale
-            verbose: If True, pyEQL will print a message indicating the parent salt
-                     that is being used for activity calculations. This option is
-                     useful when modeling multicomponent solutions. False by default.
 
         Returns:
             Quantity: the activity coefficient as a dimensionless pint Quantity
@@ -1766,10 +1760,6 @@ class Solution(MSONable):
                 The concentration scale for the returned activity.
                 Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                 By default, the molal scale activity is returned.
-            verbose:
-                If True, pyEQL will print a message indicating the parent salt
-                that is being used for activity calculations. This option is
-                useful when modeling multicomponent solutions. False by default.
 
         Returns:
             The thermodynamic activity of the solute in question (dimensionless Quantity)

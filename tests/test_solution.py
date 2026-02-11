@@ -8,7 +8,6 @@ used by pyEQL's Solution class
 
 import copy
 import logging
-import platform
 from importlib.resources import files
 from itertools import zip_longest
 
@@ -21,7 +20,7 @@ from pint import Quantity
 import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
-from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
@@ -123,7 +122,7 @@ def test_empty_solution():
     assert np.isclose(s1.viscosity_dynamic, s1.viscosity_kinematic * s1.density, atol=1e-8)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_oxi_state_handling():
     # see https://github.com/KingsburyLab/pyEQL/issues/116
     # and https://github.com/materialsproject/pymatgen/issues/3687
@@ -264,7 +263,7 @@ def test_chempot_energy(s1, s2):
     pass
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s5.charge_balance, 0, atol=1e-5)
@@ -475,8 +474,9 @@ def test_components_by_element(s1, s2):
         "Na(1.0)": ["Na[+1]"],
         "Cl(-1.0)": ["Cl[-1]"],
     }
-    if platform.machine() == "arm64" and platform.system() == "Darwin":
-        pytest.skip(reason="arm64 not supported")
+    if not PHREEQPYTHON_AVAILABLE:
+        pytest.skip(reason="Phreeqpython not available")
+
     s2.equilibrate()
     assert s2.get_components_by_element() == {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
@@ -527,8 +527,8 @@ def test_components_by_element_nested(s1, s2):
         },
     }
 
-    if platform.machine() == "arm64" and platform.system() == "Darwin":
-        pytest.skip(reason="arm64 not supported")
+    if not PHREEQPYTHON_AVAILABLE:
+        pytest.skip(reason="Phreeqpython not available")
 
     s2.equilibrate()
 
@@ -583,7 +583,7 @@ def test_get_total_amount(s2):
     assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_equilibrate(s1, s2, s5_pH):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
@@ -686,7 +686,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_arithmetic_and_copy(s2, s6):
     s6_scale = copy.deepcopy(s6)
     s6_scale *= 1.5
@@ -1008,7 +1008,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
     def test_should_replace_monatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution without specifying the charge on the ion,
         # `.equilibrate()` should replace the ion with the ion with the charge
@@ -1030,7 +1030,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
     def test_should_replace_diatomic_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying the charge on the ion
         # that is different from the one determined by phreeqc,
@@ -1055,7 +1055,7 @@ class TestSolutionAdd:
 
     @staticmethod
     @pytest.mark.parametrize("engine", ["native"])
-    @pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
     def test_should_not_discard_missing_species_from_engine(engine, caplog) -> None:
         # When initializing a solution by specifying a species with an element
         # that is not found in phreeqc, the species should not be discarded.
