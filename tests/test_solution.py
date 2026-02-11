@@ -870,8 +870,6 @@ def test_from_preset(preset_name, tmp_path):
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution.pressure == ureg.Quantity(data["pressure"])
     assert np.isclose(solution.pH, data["pH"], atol=0.01)
-    # for solute in solution._solutes:
-    #     assert solute in data["solutes"]
     assert set(solution._solutes) == set(data["solutes"])
     # test invalid preset
     with pytest.raises(FileNotFoundError):
