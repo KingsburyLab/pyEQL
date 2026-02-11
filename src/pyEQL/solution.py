@@ -186,7 +186,7 @@ class Solution(MSONable):
         # per-instance cache of get_property and other calls that do not depend
         # on composition
         # see https://rednafi.com/python/lru_cache_on_methods/
-        self.get_property = lru_cache()(self._get_property)
+        self.get_property = lru_cache(maxsize=8192)(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
         self.get_mobility = lru_cache()(self._get_mobility)
         self.default_diffusion_coeff = default_diffusion_coeff
@@ -2427,7 +2427,37 @@ class Solution(MSONable):
 
     @classmethod
     def from_preset(
-        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
+        cls,
+        preset: Literal[
+            "seawater",
+            "rainwater",
+            "wastewater",
+            "urine",
+            "normal saline",
+            "Ringers lactate",
+            "ash",
+            "batt_mfg",
+            "batt_recycling",
+            "coal_washing",
+            "CRL",
+            "drilling",
+            "excavation",
+            "FGD",
+            "flotation",
+            # "flue_gas",
+            "gasification",
+            "geothermal",
+            # "leachate",
+            "mine_drainage",
+            "mine_tailings",
+            # "plating",
+            "pw_conv",
+            "pw_unconv",
+            "refining",
+            "semiconductor",
+            "smelting",
+            "tanning",
+        ],
     ) -> Solution:
         r"""Instantiate a solution from a preset composition.
 
@@ -2451,6 +2481,28 @@ class Solution(MSONable):
             - 'urine' - typical human urine. See Table 3-15 of [me13]_
             - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
             - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
+            - 'ash' - bottom ash transport wastewater from fossil fuel combustion [kwptr2026]_
+            - 'batt_mfg' - wastewater from lead-acid and legacy battery manufacturing processes [kwptr2026]_
+            - 'batt_recycling' - wastewater from lithium ion battery recycling operations [kwptr2026]_
+            - 'coal_washing' - wastewater generated from coal preparation and washing [kwptr2026]_
+            - 'CRL' - combustion residual leachate (CRL) from fossil fuel combustion landfills [kwptr2026]_
+            - 'drilling' - oil and gas drilling wastewater from drilling fluids and cuttings [kwptr2026]_
+            - 'excavation' - wastewater from excavation in metal ore mining operations [kwptr2026]_
+            - 'FGD' - flue gas desulfurization wastewater from SO2 removal from fossil fuel combustion [kwptr2026]_
+            - 'flotation' - milling and flotation wastewater from metal ore extraction [kwptr2026]_
+            - 'flue_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
+            - 'gasification' - wastewater from gasification of carbon-based feedstocks to syngas [kwptr2026]_
+            - 'geothermal' - geothermal produced water from geothermal power generation [kwptr2026]_
+            - 'leachate' - leachate from metal ore mining wastes [kwptr2026]_
+            - 'mine_drainage' - acid mine drainage wastewater from coal and metal ore mining operations [kwptr2026]_
+            - 'mine_tailings' - mine tailings pond water from collective metal ore and mining wastes [kwptr2026]_
+            - 'plating' - typical wastewater from metal electroplating operations [kwptr2026]_
+            - 'pw_conv' - produced water from conventional hydrocarbon production [kwptr2026]_
+            - 'pw_unconv' - produced water from unconventional hydrocarbon production [kwptr2026]_
+            - 'refining' - petroleum refining wastewater from crude oil refineries [kwptr2026]_
+            - 'semiconductor' - semiconductor and electronics manufacturing wastewater  [kwptr2026]_
+            - 'smelting' - wastewater from metal ore smelting and refining from pyrometallurgical slags [kwptr2026]_
+            - 'tanning' - wastewater from leather tanning and finishing operations [kwptr2026]_
 
         References:
             .. [mf08] Millero, Frank J. "The composition of Standard Seawater and the definition of
@@ -2462,6 +2514,8 @@ class Solution(MSONable):
             .. [saline] https://en.wikipedia.org/w/index.php?title=Saline_(medicine)&oldid=1298292693
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+
+            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://doi.org/10.21203/rs.3.rs-8743330/v2]
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset

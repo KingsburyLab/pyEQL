@@ -3,7 +3,7 @@ pyEQL volume and concentration methods test suite
 =================================================
 
 This file contains tests for the volume and concentration-related methods
-used by pyEQL's Solution class
+used by pyEQL's Solution class using the `phreeqc2026` engine.
 """
 
 import logging
@@ -12,41 +12,42 @@ import numpy as np
 import pytest
 
 from pyEQL import Solution
-from pyEQL.engines import PHREEQPYTHON_AVAILABLE, PhreeqcEOS
+from pyEQL.engines import Phreeqc2026EOS
+from pyEQL.phreeqc import IS_AVAILABLE
 
-if not PHREEQPYTHON_AVAILABLE:
+if not IS_AVAILABLE:
     pytest.skip(
-        "Phreeqpython not available",
+        "pyEQL._phreeqc extension not available",
         allow_module_level=True,
     )
 
 
 @pytest.fixture
 def s1():
-    return Solution(volume="2 L", engine="phreeqc")
+    return Solution(volume="2 L", engine="phreeqc2026")
 
 
 @pytest.fixture
 def s2():
-    return Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L", engine="phreeqc")
+    return Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], volume="2 L", engine="phreeqc2026")
 
 
 @pytest.fixture
 def s3():
-    return Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L", engine="phreeqc")
+    return Solution([["Na+", "4 mol/kg"], ["Cl-", "4 mol/kg"]], volume="2 L", engine="phreeqc2026")
 
 
 @pytest.fixture
 def s5():
     # 100 mg/L as CaCO3 ~ 1 mM
-    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", engine="phreeqc")
+    return Solution([["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", engine="phreeqc2026")
 
 
 @pytest.fixture
 def s5_pH():
     # 100 mg/L as CaCO3 ~ 1 mM
     return Solution(
-        [["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH", engine="phreeqc"
+        [["Ca+2", "40.078 mg/L"], ["CO3-2", "60.0089 mg/L"]], volume="1 L", balance_charge="pH", engine="phreeqc2026"
     )
 
 
@@ -66,7 +67,7 @@ def s6():
             ["Br-", "20 mM"],
         ],  # -20 meq/L
         volume="1 L",
-        engine="phreeqc",
+        engine="phreeqc2026",
     )
 
 
@@ -87,13 +88,13 @@ def s6_Ca():
         ],  # -20 meq/L
         volume="1 L",
         balance_charge="Ca+2",
-        engine="phreeqc",
+        engine="phreeqc2026",
     )
 
 
 def test_empty_solution_3():
     # create an empty solution
-    s1 = Solution(database=None, engine="phreeqc")
+    s1 = Solution(database=None, engine="phreeqc2026")
     # It should return type Solution
     assert isinstance(s1, Solution)
     # It should have exactly 1L volume
@@ -118,9 +119,11 @@ def test_init_engines():
     """
     Test passing an EOS instance as well as the ideal and native EOS
     """
-    s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine="phreeqc")
-    assert isinstance(s.engine, PhreeqcEOS)
+    s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine="phreeqc2026")
+    assert isinstance(s.engine, Phreeqc2026EOS)
     assert s.get_activity_coefficient("Na+").magnitude * s.get_activity_coefficient("Cl-").magnitude < 1
+    # PHREEQC itself returns a value of 0 for this, but we need to use a value of 1 (reprseneting ideal solution)
+    # in order to ensure correct osmotic pressure output.
     assert s.get_osmotic_coefficient().magnitude == 1
     # with pytest.warns(match="Solute Mg+2 not found"):
     assert s.get_activity_coefficient("Mg+2").magnitude == 1
@@ -128,6 +131,10 @@ def test_init_engines():
     s.engine._destroy_ppsol()
     assert s.engine.ppsol is None
 
+def test_osmotic_pressure():
+    s1 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="phreeqc2026")
+    s2 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="ideal")
+    assert np.isclose(s1.osmotic_pressure.to("MPa").magnitude, s2.osmotic_pressure.to("MPa").magnitude), f"PHREEQC2026 = {s1.osmotic_pressure.to('MPa').magnitude} MPa, Ideal = {s2.osmotic_pressure.to('MPa').magnitude} MPa"
 
 def test_conductivity(s1):
     # even an empty solution should have some conductivity
@@ -189,7 +196,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     assert np.isclose(s2.mass, orig_mass)
     assert np.isclose(s2.density.magnitude, orig_density)
     assert np.isclose(s2.solvent_mass.magnitude, orig_solv_mass)
-    assert "NaOH(aq)" in s2.components
+    # Phreeqc 3.8 does not include NaOH log_k values, so instead of checking
+    # NaOH(aq), we check HCl(aq) instead.
+    assert "HCl(aq)" in s2.components
 
     # total element concentrations should be conserved after equilibrating
     assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
@@ -211,7 +220,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution(
-        {"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc", log_level="WARNING"
+        {"Zr+4": "0.05 mol/kg", "Na+": "0.05 mol/kg", "Cl-": "0.1 mol/kg"}, engine="phreeqc2026", log_level="WARNING"
     )
     totzr = s_zr.get_total_amount("Zr", "mol")
     with caplog.at_level(logging.WARNING, "pyEQL.engines"):
@@ -262,7 +271,7 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
 
 
 def test_equilibrate_water_pH7():
-    solution = Solution({}, pH=7.00, temperature="25 degC", volume="1 L", engine="phreeqc")
+    solution = Solution({}, pH=7.00, temperature="25 degC", volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
     # pH = -log10[H+]
     assert np.isclose(solution.get_amount("H+", "mol/kg").magnitude, 1.001e-07)
@@ -278,7 +287,7 @@ def test_equilibrate_water_pH7():
 
 
 def test_equilibrate_CO2_with_calcite():
-    solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=False, gases={"CO2": -2.95, "O2": -0.6778}, solids=["Calcite"])
     # 5 rxns: I) CaCO3 dissolution, II) Ka1, III) Ka2, IV) water dissociation, V) CaHCO3+ rxn in PHREEQC
     # 9 species, 5 components, 4 rxns exclude water dissociation
@@ -294,7 +303,7 @@ def test_equilibrate_CO2_with_calcite():
 
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
-    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc")
+    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
     assert np.isclose(solution.get_amount("Fe+3", "mol/L").magnitude, 3.093e-11)
     assert np.isclose(solution.get_amount("OH-", "mol/L").magnitude, 1.067e-07)
@@ -307,9 +316,9 @@ def test_equilibrate_FeO3H3_ppt():
 def test_equilibrate_nophaseeq():
     # Test to see that equilibrating without any solids/gases has no effect
     # on the concentrations.
-    solution0 = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc")
+    solution0 = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc2026")
     solution0.equilibrate()
-    solution1 = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc")
+    solution1 = Solution({"CO2(aq)": "0.001 mol/L"}, pH=3.0, volume="1 L", engine="phreeqc2026")
     solution1.equilibrate(atmosphere=False, solids=None, gases=None)
 
     assert np.isclose(solution0.get_amount("CO2(aq)", "mol"), solution1.get_amount("CO2(aq)", "mol"))
@@ -318,7 +327,7 @@ def test_equilibrate_nophaseeq():
 
 
 def test_equilibrate_logC_pH_carbonate_8_3():
-    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=8.3, volume="1 L", engine="phreeqc")
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=8.3, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
 
     # To evaluate CO2 equilibrium using Henry's law
@@ -342,7 +351,7 @@ def test_equilibrate_logC_pH_carbonate_8_3():
 
 
 def test_equilibrate_logC_pH_carbonate_13():
-    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=13.0, volume="1 L", engine="phreeqc")
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=13.0, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
 
     # To evaluate CO2 equilibrium using Henry's law
@@ -367,7 +376,7 @@ def test_equilibrate_logC_pH_carbonate_13():
 
 @pytest.mark.xfail(strict=True, reason="alkalinity discrepancy needs to be investigated")
 def test_alkalinity():
-    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc")
+    solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
 
     HCO3 = solution.get_amount("HCO3-", "mg/L").magnitude
@@ -381,13 +390,13 @@ def test_alkalinity():
 
 
 def test_equilibrate_2L():
-    solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc")
+    solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=True)
     assert np.isclose(solution.get_total_amount("Cu", "umol").magnitude, 1.9999998687384424)
 
 
 def test_equilibrate_unrecognized_component():
-    solution = Solution({}, engine="phreeqc")
+    solution = Solution({}, engine="phreeqc2026")
     # Specifying an unrecognized solid raises a ValueError
     with pytest.raises(ValueError, match="Phase not found in database, Ferroxite."):
         solution.equilibrate(solids=["Ferroxite"])
@@ -395,7 +404,7 @@ def test_equilibrate_unrecognized_component():
 
 def test_equilibrate_OER_region():
     # The combination of pH and pE values don't fall within the water stability region.
-    solution = Solution({}, pH=12.0, pE=13, volume="1 L", engine="phreeqc")
+    solution = Solution({}, pH=12.0, pE=13, volume="1 L", engine="phreeqc2026")
     with pytest.raises(ValueError, match="Activity of water has not converged."):
         solution.equilibrate()
 
@@ -404,17 +413,17 @@ def test_equilibrate_gas_units():
     # Specify CO2 partial pressure directly as log10 partial pressure, as well
     # as an explicit pressure unit.
     # Note: log10(0.000316) = -3.5
-    s0 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    s0 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     s0.equilibrate(atmosphere=True, gases={"CO2": "0.00031622776601683794 atm"})
-    s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     s1.equilibrate(atmosphere=True, gases={"CO2": -3.5})
     assert s0.components == s1.components
 
 
 def test_equilibrate_with_atm():
-    s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
+    s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     s1.equilibrate(atmosphere=True)
     # PHREEQCUI final CO2, O2, and N2 concentrations were slightly adjusted for consistency with wrapper outputs
-    assert np.isclose(s1.get_amount("CO2(aq)", "mol/L").magnitude, 1.3839163960791439e-05)  # PHREQCUI - 1.389e-05
+    assert np.isclose(s1.get_amount("CO2(aq)", "mol/L").magnitude, 1.397209520185121e-05)  # PHREQCUI - 1.389e-05
     assert np.isclose(s1.get_amount("O2(aq)", "mol/L").magnitude, 0.00025982718533575387)  # PHREEQCUI - 2.615e-04
     assert np.isclose(s1.get_amount("N2(aq)", "mol/L").magnitude, 0.0005043306329272451)  # PHREEQCUI - 5.064e-04
