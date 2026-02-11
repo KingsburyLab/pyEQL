@@ -1,26 +1,13 @@
-name: lint and docs
+name: docs
 
 on:
-  workflow_call:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - CHANGELOG.md
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Run pre-commit
-        run: |
-          pip install pre-commit
-          pre-commit run
-
   docs:
     runs-on: ubuntu-latest
 

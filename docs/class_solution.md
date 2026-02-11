@@ -9,6 +9,7 @@ This page contains detailed information on each of the methods, attributes, and 
 ```{eval-rst}
 .. autoclass:: pyEQL.Solution
    :members:
+   :exclude-members: save
    :private-members: _get_property, _get_diffusion_coefficient, _get_molar_conductivity, _get_mobility
    :member-order: bysource
 ```

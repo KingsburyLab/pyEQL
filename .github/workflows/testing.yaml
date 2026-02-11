@@ -14,11 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  lint-and-docs:
-    uses: ./.github/workflows/lint_and_docs.yml
+  lint:
+    uses: ./.github/workflows/lint.yml
 
   test:
-    needs: [lint-and-docs]
+    needs: [lint]
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12","3.13"]
