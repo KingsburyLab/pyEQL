@@ -2702,33 +2702,3 @@ class Solution(MSONable):
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
-
-    def to_phreeqc(self, units: str = "mol/L", charge_balance: bool = "False") -> str:
-        """Generate a PHREEQC input string representing the Solution.
-
-        Returns:
-            A string that can be used as part of a PHREEQC input file to define
-            the solution.
-        """
-        lines = ["SOLUTION 0"]
-        lines.append(f" temp {self.temperature.to('degC').magnitude:.2f}")
-        if charge_balance == "True":
-            lines.append(f" pH {self.pH:.2f} charge")
-        else:
-            lines.append(f" pH {self.pH:.2f}")
-        lines.append(f" pe {self.pE:.2f}")
-        lines.append(f" units {units}")
-        for solute, amount in self.components.items():
-            amount = self.get_amount(solute, units).magnitude
-            if solute in ["H2O(aq)", "H[+1]", "OH[-1]"]:
-                continue
-            k = standardize_formula(solute)
-            spl = k.split("[")
-            el = spl[0]
-            chg = spl[1].split("]")[0]
-            if chg[-1] == "1":
-                chg = chg[0]
-            k = el + chg
-            lines.append(f" {k} {amount:.6e}")
-        lines.append("END")
-        return "\n".join(lines)
