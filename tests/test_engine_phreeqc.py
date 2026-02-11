@@ -3,7 +3,7 @@ pyEQL volume and concentration methods test suite
 =================================================
 
 This file contains tests for the volume and concentration-related methods
-used by pyEQL's Solution class
+used by pyEQL's Solution class using the `phreeqc` engine (phreeqpython)
 """
 
 import logging
@@ -127,6 +127,11 @@ def test_init_engines():
     assert s.get_activity("Mg+2").magnitude == 0
     s.engine._destroy_ppsol()
     assert s.engine.ppsol is None
+
+def test_osmotic_pressure():
+    s1 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="phreeqc")
+    s2 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="ideal")
+    assert np.isclose(s1.osmotic_pressure.to("MPa").magnitude, s2.osmotic_pressure.to("MPa").magnitude), f"PHREEQC = {s1.osmotic_pressure.to('MPa').magnitude} MPa, Ideal = {s2.osmotic_pressure.to('MPa').magnitude} MPa"
 
 
 def test_conductivity(s1):

@@ -832,10 +832,37 @@ def test_serialization(s1, s2, tmp_path):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset(tmp_path):
-    preset_name = "seawater"
+@pytest.mark.parametrize(
+    "preset_name",
+    [
+        "seawater",
+        "ash",
+        "batt_mfg",
+        "batt_recycling",
+        "coal_washing",
+        "CRL",
+        "drilling",
+        "excavation",
+        "FGD",
+        "flotation",
+        # "flue_gas",
+        "gasification",
+        "geothermal",
+        # "leachate",
+        "mine_drainage",
+        "mine_tailings",
+        # "plating",
+        "pw_conv",
+        "pw_unconv",
+        "refining",
+        "semiconductor",
+        "smelting",
+        "tanning",
+    ],
+)
+def test_from_preset(preset_name, tmp_path):
     solution = Solution.from_preset(preset_name)
-    preset_path = files("pyEQL") / "presets" / "seawater.yaml"
+    preset_path = files("pyEQL") / "presets" / f"{preset_name}.yaml"
 
     with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
@@ -843,8 +870,7 @@ def test_from_preset(tmp_path):
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution.pressure == ureg.Quantity(data["pressure"])
     assert np.isclose(solution.pH, data["pH"], atol=0.01)
-    for solute in solution._solutes:
-        assert solute in data["solutes"]
+    assert set(solution._solutes) == set(data["solutes"])
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
@@ -855,7 +881,7 @@ def test_from_preset(tmp_path):
     assert isinstance(solution_json, Solution)
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.001)
 
 
 def test_to_from_file(tmp_path):

@@ -3,7 +3,7 @@ pyEQL volume and concentration methods test suite
 =================================================
 
 This file contains tests for the volume and concentration-related methods
-used by pyEQL's Solution class
+used by pyEQL's Solution class using the `phreeqc2026` engine.
 """
 
 import logging
@@ -122,13 +122,19 @@ def test_init_engines():
     s = Solution([["Na+", "4 mol/L"], ["Cl-", "4 mol/L"]], engine="phreeqc2026")
     assert isinstance(s.engine, Phreeqc2026EOS)
     assert s.get_activity_coefficient("Na+").magnitude * s.get_activity_coefficient("Cl-").magnitude < 1
-    assert s.get_osmotic_coefficient().magnitude == 0
+    # PHREEQC itself returns a value of 0 for this, but we need to use a value of 1 (reprseneting ideal solution)
+    # in order to ensure correct osmotic pressure output.
+    assert s.get_osmotic_coefficient().magnitude == 1
     # with pytest.warns(match="Solute Mg+2 not found"):
     assert s.get_activity_coefficient("Mg+2").magnitude == 1
     assert s.get_activity("Mg+2").magnitude == 0
     s.engine._destroy_ppsol()
     assert s.engine.ppsol is None
 
+def test_osmotic_pressure():
+    s1 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="phreeqc2026")
+    s2 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="ideal")
+    assert np.isclose(s1.osmotic_pressure.to("MPa").magnitude, s2.osmotic_pressure.to("MPa").magnitude), f"PHREEQC2026 = {s1.osmotic_pressure.to('MPa').magnitude} MPa, Ideal = {s2.osmotic_pressure.to('MPa').magnitude} MPa"
 
 def test_conductivity(s1):
     # even an empty solution should have some conductivity
