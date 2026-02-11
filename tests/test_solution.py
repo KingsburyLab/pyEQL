@@ -870,8 +870,9 @@ def test_from_preset(preset_name, tmp_path):
     assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution.pressure == ureg.Quantity(data["pressure"])
     assert np.isclose(solution.pH, data["pH"], atol=0.01)
-    for solute in solution._solutes:
-        assert solute in data["solutes"]
+    # for solute in solution._solutes:
+    #     assert solute in data["solutes"]
+    assert set(solution._solutes) == set(data["solutes"])
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
@@ -882,7 +883,7 @@ def test_from_preset(preset_name, tmp_path):
     assert isinstance(solution_json, Solution)
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.001)
 
 
 def test_to_from_file(tmp_path):
