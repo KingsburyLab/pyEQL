@@ -302,12 +302,9 @@ class NativeEOS(EOS):
 
         Args:
             solute: String representing the name of the solute of interest
-            scale: The concentration scale for the returned activity coefficient.
-                Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
-                By default, the molal scale activity coefficient is returned.
 
         Returns:
-            The mean ion activity coefficient of the solute in question on  the selected scale.
+            The mean ion activity coefficient of the solute in question.
 
         Notes:
             For multicomponent mixtures, pyEQL implements the "effective Pitzer model"
@@ -461,11 +458,6 @@ class NativeEOS(EOS):
         where :math:`g` is the rational osmotic coefficient, :math:`M_{w}` is
         the molecular weight of water, the summation represents the total molality of
         all solute  species, and :math:`x_{w}` is the mole fraction of water.
-
-        Args:
-            scale: The concentration scale for the returned osmotic coefficient. Valid options are "molal",
-                "rational" (i.e., mole fraction), and "fugacity".  By default, the molal scale osmotic
-                coefficient is returned.
 
         Returns:
             Quantity:
