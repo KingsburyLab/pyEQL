@@ -1,11 +1,7 @@
 name: lint and docs
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - CHANGELOG.md
+  workflow_call:
 
 jobs:
   lint:

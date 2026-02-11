@@ -9,7 +9,11 @@ on:
       - docs/**
 
 jobs:
+  lint-and-docs:
+    uses: ./.github/workflows/lint_and_docs.yml
+
   test:
+    needs: [lint-and-docs]
     strategy:
       matrix:
         # We only test on min. and max. supported Python versions here.
