@@ -1,0 +1,32 @@
+name: docs
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - CHANGELOG.md
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install tox
+        run: |
+          python -m pip install tox
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Build docs
+        run: tox -e docs
+
+      - name: Check links
+        run: tox -e links
