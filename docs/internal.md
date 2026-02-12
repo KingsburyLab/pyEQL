@@ -30,7 +30,7 @@ These internal modules are used by `Solution` but typically are not directly acc
 ## Speciation functions
 
 ```{eval-rst}
-.. automodule:: pyEQL.engines
+.. automodule:: pyEQL.equilibrium
     :members:
     :private-members:
 ```
