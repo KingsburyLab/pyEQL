@@ -820,14 +820,14 @@ class PhreeqcEOS(NativeEOS):
         """
         Args:
         phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
-                and speciation calculations. Generally speaking, `llnl.dat` is recommended
-                for moderate salinity water and prediction of mineral solubilities,
-                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
-                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
-                when accurate activity coefficients in solutions above 1 M TDS are desired, but
-                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
-                may offer improved prediction of LSI but currently these databases are not
-                usable because they do not allow for conductivity calculations.
+        and speciation calculations. Generally speaking, `llnl.dat` is recommended
+        for moderate salinity water and prediction of mineral solubilities,
+        `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+        similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+        when accurate activity coefficients in solutions above 1 M TDS are desired, but
+        it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+        may offer improved prediction of LSI but currently these databases are not
+        usable because they do not allow for conductivity calculations.
         """
         super().__init__(phreeqc_db=phreeqc_db)
 
