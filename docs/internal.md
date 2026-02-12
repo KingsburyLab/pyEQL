@@ -31,13 +31,14 @@ These internal modules are used by `Solution` but typically are not directly acc
 
 ```{eval-rst}
 .. currentmodule:: pyEQL.engines
+
 .. autosummary::
     :toctree: generated/
     :nosignatures:
 
-    pyEQL.engines.NativeEOS
-    pyEQL.engines.PhreeqcEOS
-    pyEQL.engines.Phreeqc2026EOS
+    NativeEOS
+    PhreeqcEOS
+    Phreeqc2026EOS
 ```
 
 ## Utilities
