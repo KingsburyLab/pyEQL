@@ -35,6 +35,7 @@ These internal modules are used by `Solution` but typically are not directly acc
 .. autosummary::
     :toctree: generated/
     :nosignatures:
+    :template: autosummary/class.rst
 
     NativeEOS
     PhreeqcEOS
