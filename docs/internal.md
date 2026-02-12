@@ -30,8 +30,10 @@ These internal modules are used by `Solution` but typically are not directly acc
 ## Speciation functions
 
 ```{eval-rst}
+.. currentmodule:: pyEQL.engines
 .. autosummary::
     :toctree: generated/
+    :nosignatures:
 
     pyEQL.engines.NativeEOS
     pyEQL.engines.PhreeqcEOS
