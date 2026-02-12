@@ -2573,7 +2573,7 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(self, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
@@ -2606,7 +2606,7 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
-            return Solution(**solution_dict)
+            return cls.from_dict(solution_dict)
         return loadfn(filename)
 
     # arithmetic operations
