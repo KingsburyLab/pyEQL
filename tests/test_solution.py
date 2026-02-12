@@ -875,7 +875,7 @@ def test_from_preset(preset_name, tmp_path):
     # from the file. Check that this happens correctly.
     assert np.isclose(solution_yaml.pH, data["pH"], atol=0.0001)
     assert np.isclose(solution_yaml.components["H2O(aq)"], float(data["solutes"]["H2O(aq)"].split(" ")[0]), atol=1e-7)
-    assert solution_yaml.volume == ureg.Quantity(data["volume"])
+    assert np.isclose(solution_yaml.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
@@ -886,7 +886,7 @@ def test_from_preset(preset_name, tmp_path):
     assert isinstance(solution_json, Solution)
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
-    assert solution_json.volume == ureg.Quantity(data["volume"])
+    assert np.isclose(solution_json.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
     assert np.isclose(solution_json.pH, data["pH"], atol=0.0001)
 
 
