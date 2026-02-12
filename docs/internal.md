@@ -30,17 +30,12 @@ These internal modules are used by `Solution` but typically are not directly acc
 ## Speciation functions
 
 ```{eval-rst}
-.. autosummary:: pyEQL.engines.NativeEOS
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: generated/
 
-.. autosummary:: pyEQL.engines.PhreeqcEOS
-    :members:
-    :inherited-members:
-
-.. autosummary:: pyEQL.engines.Phreeqc2026EOS
-    :members:
-    :inherited-members:
+    pyEQL.engines.NativeEOS
+    pyEQL.engines.PhreeqcEOS
+    pyEQL.engines.Phreeqc2026EOS
 ```
 
 ## Utilities
