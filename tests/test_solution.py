@@ -887,7 +887,7 @@ def test_from_preset(preset_name, tmp_path):
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
     assert solution_json.volume == ureg.Quantity(data["volume"])
-    assert np.isclose(solution_json.pH, data["pH"], atol=0.001)
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.0001)
 
 
 def test_to_from_file(tmp_path):
