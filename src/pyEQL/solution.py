@@ -2515,7 +2515,7 @@ class Solution(MSONable):
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
-            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://doi.org/10.21203/rs.3.rs-8743330/v2]
+            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://www.researchsquare.com/article/rs-8743330/v2]
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset

@@ -3,6 +3,7 @@ Tests of pyEQL.utils module
 
 """
 
+import numpy as np
 from iapws import IAPWS95, IAPWS97
 from pytest import raises
 
@@ -78,7 +79,7 @@ def test_formula_dict():
     del d["Mg+2"]
     assert "Mg[+2]" not in d
     assert not d.get("Mg[++]")
-    d.update({"Cl-": 0.5})
+    d.update({"Cl-": np.float64(0.5)})
     print(d, d.data)
     assert d["Cl[-1]"] == 0.5
     assert d.get("Na+") == 0.5

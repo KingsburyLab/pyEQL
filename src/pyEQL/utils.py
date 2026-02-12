@@ -224,7 +224,9 @@ class FormulaDict(UserDict):
         return super().__getitem__(standardize_formula(key))
 
     def __setitem__(self, key, value) -> None:
-        super().__setitem__(standardize_formula(key), value)
+        # ensure that all values are stored as python floats, not numpy types
+        # see https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
+        super().__setitem__(standardize_formula(key), float(value))
         # sort contents anytime an item is set
         self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 
