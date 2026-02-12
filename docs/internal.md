@@ -32,15 +32,15 @@ These internal modules are used by `Solution` but typically are not directly acc
 ```{eval-rst}
 .. autosummary:: pyEQL.engines.NativeEOS
     :members:
-    :private-members:
+    :inherited-members:
 
 .. autosummary:: pyEQL.engines.PhreeqcEOS
     :members:
-    :private-members:
+    :inherited-members:
 
 .. autosummary:: pyEQL.engines.Phreeqc2026EOS
     :members:
-    :private-members:
+    :inherited-members:
 ```
 
 ## Utilities
