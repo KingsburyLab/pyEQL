@@ -1690,16 +1690,37 @@ class Solution(MSONable):
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
-    def equilibrate(self, **kwargs) -> None:
+    def equilibrate(
+        self,
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+        **kwargs,
+    ) -> None:
         """
-        Update the composition of the Solution using the thermodynamic engine.
+        This method follows the equilibrate logic used in the NativeEOS engine, adapted as the default behavior for this class.
 
-        Any kwargs specified are passed through to self.engine.equilibrate()
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
 
-        Returns:
-            Nothing. The .components attribute of the Solution is updated.
+        Keyword Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
         """
-        self.engine.equilibrate(self, **kwargs)
+        self.engine.equilibrate(self, atmosphere=atmosphere, solids=solids, gases=gases, **kwargs)
 
     # Activity-related methods
     def get_activity_coefficient(
