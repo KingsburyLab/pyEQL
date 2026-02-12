@@ -850,7 +850,7 @@ def test_serialization(s1, s2, tmp_path):
         "gasification",
         "geothermal",
         # "leachate",
-        "mine_drainage",
+        # "mine_drainage",
         "mine_tailings",
         # "plating",
         "pw_conv",

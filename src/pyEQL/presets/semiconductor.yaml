@@ -1,6 +1,6 @@
 '@module': pyEQL.solution
 '@class': Solution
-'@version': 1.3.2.post1.dev89+g8391a3291
+'@version': src
 solutes:
   H2O(aq): 55.34446603833366 mol
   F[-1]: 0.00470269741393121 mol
@@ -58,6 +58,8 @@ temperature: 298.15 K
 pressure: 1 atm
 pH: 7.114967569140219
 pE: 8.5
-charge_balance: '2.2559888817032374e-09'
+balance_charge: F[-1]
 solvent: H2O(aq)
 engine: native
+default_diffusion_coeff: 1.6106e-09
+log_level: ERROR
