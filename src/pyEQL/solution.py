@@ -297,7 +297,6 @@ class Solution(MSONable):
                         self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
                     # if user specifies non-default pH that does not match the supplied H+, raise an error
                     elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                        print(f"pH kwarg: {self._pH}, pH from H+ concentration: {self.pH}")
                         raise ValueError(
                             "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
                         )
@@ -2586,8 +2585,7 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
-            return Solution(**solution_dict)
-            # return cls.from_dict(solution_dict)
+            return cls.from_dict(solution_dict)
         return loadfn(filename)
 
     # arithmetic operations
