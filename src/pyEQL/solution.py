@@ -1690,22 +1690,28 @@ class Solution(MSONable):
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
-    def equilibrate(self, **kwargs) -> None:
+    def equilibrate(
+        self,
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+        **kwargs,
+    ) -> None:
         """
         This method follows the equilibrate logic used in the NativeEOS engine, adapted as the default behavior for this class.
 
         Adjust the speciation of a Solution object to achieve chemical equilibrium.
 
         Keyword Args:
-            atmosphere (bool):
+            atmosphere:
                 Boolean indicating whether to equilibrate the solution
                 w.r.t atmospheric gases.
-            solids (list):
+            solids:
                 A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be present in the Phreeqc database.
                 We assume a target saturation index of 0 and an infinite
                 amount of material.
-            gases (dict):
+            gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
                 Each key denotes the gas species, and the corresponding value
                 denotes its concentration, as a log partial pressure value or
@@ -1714,7 +1720,7 @@ class Solution(MSONable):
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
         """
-        self.engine.equilibrate(self, **kwargs)
+        self.engine.equilibrate(self, atmosphere=atmosphere, solids=solids, gases=gases, **kwargs)
 
     # Activity-related methods
     def get_activity_coefficient(
