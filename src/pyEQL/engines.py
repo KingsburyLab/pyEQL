@@ -808,7 +808,7 @@ class NativeEOS(EOS):
         return result
 
 
-class PhreeqcEOS(NativeEOS):
+class PhreeqcEOS(EOS):
     """Engine based on the PhreeqC model, as implemented via the phreeqpython package."""
 
     def __init__(
@@ -819,17 +819,35 @@ class PhreeqcEOS(NativeEOS):
     ) -> None:
         """
         Args:
-        phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
-        and speciation calculations. Generally speaking, `llnl.dat` is recommended
-        for moderate salinity water and prediction of mineral solubilities,
-        `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
-        similar to vitens.dat but has many more species. `pitzer.dat` is recommended
-        when accurate activity coefficients in solutions above 1 M TDS are desired, but
-        it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
-        may offer improved prediction of LSI but currently these databases are not
-        usable because they do not allow for conductivity calculations.
+            phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
+                and speciation calculations. Generally speaking, `llnl.dat` is recommended
+                for moderate salinity water and prediction of mineral solubilities,
+                `wateq4f_PWN.dat` is recommended for low to moderate salinity waters. It is
+                similar to vitens.dat but has many more species. `pitzer.dat` is recommended
+                when accurate activity coefficients in solutions above 1 M TDS are desired, but
+                it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
+                may offer improved prediction of LSI but currently these databases are not
+                usable because they do not allow for conductivity calculations.
         """
-        super().__init__(phreeqc_db=phreeqc_db)
+        self.phreeqc_db = phreeqc_db
+        # database files in this list are not distributed with phreeqpython
+        self.db_path = (
+            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
+        )
+        # create the PhreeqcPython instance
+        # try/except added to catch unsupported architectures, such as Apple Silicon
+        try:
+            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+        except OSError:
+            logger.error(
+                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
+                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
+                " pyEQL will work, but equilibrate() will have no effect."
+            )
+        # attributes to hold the PhreeqPython solution.
+        self.ppsol = None
+        # store the solution composition to see whether we need to re-instantiate the solution
+        self._stored_comp = None
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a PhreeqPython solution for subsequent analysis."""
