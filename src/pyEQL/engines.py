@@ -1087,7 +1087,7 @@ class Phreeqc2026EOS(EOS):
         solution.components[solution.solvent] = orig_solvent_moles
 
 
-class PhreeqcEOS(EOS):
+class PhreeqcEOS(Phreeqc2026EOS):
     """Engine based on the PhreeqC model, as implemented via the phreeqpython package."""
 
     def __init__(
