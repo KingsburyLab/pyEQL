@@ -237,17 +237,6 @@ class Solution(MSONable):
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
 
-        if engine == "native":
-            warnings.warn(
-                'In the next release, the default engine ("native") will'
-                "transition to a new version of the PHREEQC wrapper for"
-                "speciation calculations. No change in your script is"
-                "required, but if you call .equilibrate(), compare results"
-                "carefully between releases.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         # set the equation of state engine
         self._engine = engine
         # self.engine: Optional[EOS] = None
@@ -1720,6 +1709,17 @@ class Solution(MSONable):
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
         """
+        if self.engine == "native":
+            warnings.warn(
+                'In the next release, the default engine ("native") will '
+                "transition to a new version of the PHREEQC wrapper for "
+                "speciation calculations. No change in your script is "
+                "required, but if you call .equilibrate(), compare results "
+                "carefully between releases.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         self.engine.equilibrate(self, atmosphere=atmosphere, solids=solids, gases=gases, **kwargs)
 
     # Activity-related methods
@@ -2573,7 +2573,7 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(self, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
@@ -2606,7 +2606,7 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
-            return Solution(**solution_dict)
+            return cls.from_dict(solution_dict)
         return loadfn(filename)
 
     # arithmetic operations

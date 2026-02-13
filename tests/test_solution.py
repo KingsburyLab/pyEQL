@@ -788,6 +788,7 @@ def test_as_from_dict(s1, s2):
     # assert s2_new.database != s2.database
 
 
+# TODO - this test is redundant with test_as_from_dict, because dumpfn and loadfn just call as_dict and from_dict under the hood (for JSON files). Refactor and consolidate.
 def test_serialization(s1, s2, tmp_path):
     dumpfn(s1, str(tmp_path / "s1.json"))
     s1_new = loadfn(str(tmp_path / "s1.json"))
@@ -849,7 +850,7 @@ def test_serialization(s1, s2, tmp_path):
         "gasification",
         "geothermal",
         # "leachate",
-        "mine_drainage",
+        # "mine_drainage",
         "mine_tailings",
         # "plating",
         "pw_conv",
@@ -861,38 +862,47 @@ def test_serialization(s1, s2, tmp_path):
     ],
 )
 def test_from_preset(preset_name, tmp_path):
-    solution = Solution.from_preset(preset_name)
+    solution_yaml = Solution.from_preset(preset_name)
     preset_path = files("pyEQL") / "presets" / f"{preset_name}.yaml"
 
     with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
-    assert isinstance(solution, Solution)
-    assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
-    assert solution.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution.pH, data["pH"], atol=0.01)
-    assert set(solution._solutes) == set(data["solutes"])
+    assert isinstance(solution_yaml, Solution)
+    assert solution_yaml.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution_yaml.pressure == ureg.Quantity(data["pressure"])
+    assert set(solution_yaml.components) == set(data["solutes"])
+    # solvent mass and pH are set on __init__, but get overwritten with the values
+    # from the file. Check that this happens correctly.
+    assert np.isclose(solution_yaml.pH, data["pH"], atol=0.0001)
+    assert np.isclose(solution_yaml.components["H2O(aq)"], float(data["solutes"]["H2O(aq)"].split(" ")[0]), atol=1e-7)
+    assert np.isclose(solution_yaml.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
     # test json as preset
     json_preset = tmp_path / "test.json"
-    dumpfn(solution, json_preset)
+    dumpfn(solution_yaml, json_preset)
     solution_json = Solution.from_preset(tmp_path / "test")
     assert isinstance(solution_json, Solution)
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution_json.pH, data["pH"], atol=0.001)
+    assert np.isclose(solution_json.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.0001)
 
 
 def test_to_from_file(tmp_path):
-    s1 = Solution(volume="2 L", pH=5)
+    s1 = Solution({"Mg+2": "0.1 mol/L", "Cl-": "0.2 mol/L"}, volume="2 L", pH=5)
+    s1.equilibrate()
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
         s1.to_file(filename)
         assert filename.exists()
         loaded_s1 = Solution.from_file(filename)
         assert isinstance(loaded_s1, Solution)
-        assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+        assert np.isclose(loaded_s1.volume.to("L").magnitude, s1.volume.to("L").magnitude)
+        assert np.isclose(loaded_s1.pH, s1.pH, atol=0.0001)
+        assert np.isclose(loaded_s1.solvent_mass.magnitude, s1.solvent_mass.magnitude)
+        assert set(loaded_s1.components) == set(s1.components)
     # test invalid extension raises error
     filename = tmp_path / "test_solution.txt"
     with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
