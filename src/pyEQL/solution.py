@@ -237,17 +237,6 @@ class Solution(MSONable):
         self.database.connect()
         self.logger.debug(f"Connected to property database {self.database!s}")
 
-        if engine == "native":
-            warnings.warn(
-                'In the next release, the default engine ("native") will'
-                "transition to a new version of the PHREEQC wrapper for"
-                "speciation calculations. No change in your script is"
-                "required, but if you call .equilibrate(), compare results"
-                "carefully between releases.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         # set the equation of state engine
         self._engine = engine
         # self.engine: Optional[EOS] = None
@@ -1690,16 +1679,48 @@ class Solution(MSONable):
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
-    def equilibrate(self, **kwargs) -> None:
+    def equilibrate(
+        self,
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+        **kwargs,
+    ) -> None:
         """
-        Update the composition of the Solution using the thermodynamic engine.
+        This method follows the equilibrate logic used in the NativeEOS engine, adapted as the default behavior for this class.
 
-        Any kwargs specified are passed through to self.engine.equilibrate()
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
 
-        Returns:
-            Nothing. The .components attribute of the Solution is updated.
+        Keyword Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
         """
-        self.engine.equilibrate(self, **kwargs)
+        if self.engine == "native":
+            warnings.warn(
+                'In the next release, the default engine ("native") will '
+                "transition to a new version of the PHREEQC wrapper for "
+                "speciation calculations. No change in your script is "
+                "required, but if you call .equilibrate(), compare results "
+                "carefully between releases.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        self.engine.equilibrate(self, atmosphere=atmosphere, solids=solids, gases=gases, **kwargs)
 
     # Activity-related methods
     def get_activity_coefficient(
@@ -2515,7 +2536,7 @@ class Solution(MSONable):
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
-            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://doi.org/10.21203/rs.3.rs-8743330/v2]
+            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://www.researchsquare.com/article/rs-8743330/v2]
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset
@@ -2552,7 +2573,7 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(self, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
@@ -2585,7 +2606,7 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
-            return Solution(**solution_dict)
+            return cls.from_dict(solution_dict)
         return loadfn(filename)
 
     # arithmetic operations

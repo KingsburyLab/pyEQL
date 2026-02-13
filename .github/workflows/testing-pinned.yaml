@@ -6,9 +6,14 @@ on:
       - main
     paths-ignore:
       - CHANGELOG.md
+      - docs/**
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
   test:
+    needs: [lint]
     strategy:
       matrix:
         # We only test on min. and max. supported Python versions here.
