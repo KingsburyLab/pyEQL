@@ -48,9 +48,9 @@ class PHRQSol:
     def get_moles(self, species) -> float:
         return self.get_molality(species) * self.get_kgw()
 
-    def equalize(self, phases: list[str], saturation_indices: list[float], amounts: list[float]) -> None:
+    def equalize(self, phases: list[str], to_si: list[float], in_phase: list[float]) -> None:
         if self._phreeqc is not None:
-            self._phreeqc().equalize(self._number, phases, saturation_indices, amounts)
+            self._phreeqc().equalize(self._number, phases, to_si, in_phase)
 
     def si(self, eq_species) -> float:
         return self._get_calculated_prop("SI", eq_species=eq_species)
