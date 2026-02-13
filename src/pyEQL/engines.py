@@ -1197,12 +1197,6 @@ class PhreeqcEOS(Phreeqc2026EOS):
 
         self.ppsol = ppsol
 
-    def _destroy_ppsol(self) -> None:
-        """Remove the PhreeqPython solution from memory."""
-        if self.ppsol is not None:
-            self.ppsol.forget()
-            self.ppsol = None
-
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
@@ -1238,11 +1232,6 @@ class PhreeqcEOS(Phreeqc2026EOS):
         """
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
-
-    def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
-        """Return the volume of the solutes."""
-        # TODO - phreeqc seems to have no concept of volume, but it does calculate density
-        return ureg.Quantity(0, "L")
 
     def __deepcopy__(self, memo) -> "NativeEOS":
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
