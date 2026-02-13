@@ -391,7 +391,7 @@ def test_alkalinity():
 def test_equilibrate_2L():
     solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc")
     solution.equilibrate(atmosphere=True)
-    assert np.isclose(solution.get_total_amount("Cu", "umol").magnitude, 1.9999, atol=1e-1)  # PHREEQCUI - 2e-06
+    assert np.isclose(solution.get_total_amount("Cu", "umol/L").magnitude, 0.9999, atol=1e-1)  # PHREEQCUI - 2e-06
 
 
 def test_equilibrate_unrecognized_component():
