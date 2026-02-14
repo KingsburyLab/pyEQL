@@ -784,7 +784,7 @@ class NativeEOS(EOS):
                     }
                 )
             elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
-                logger.warning(
+                logger.error(
                     f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
                     f"which differs from the original concentration of {orig_el_amount}. This "
                     "should never occur and indicates an error in the PHREEQC database or calculation."
