@@ -761,7 +761,7 @@ class NativeEOS(EOS):
         # tolerance (in moles) for detecting cases where an element amount
         # is no longer balanced because of species that are not recognized
         # by PHREEQC.
-        _atol = 1e-16
+        _rtol = 0.05  # differing by more than 5%
 
         new_el_dict = solution.get_el_amt_dict(nested=True)
         for el in orig_el_dict:
@@ -770,7 +770,8 @@ class NativeEOS(EOS):
 
             # If this element went "missing", add back all components that
             # contain this element (for any valence value)
-            if orig_el_amount - new_el_amount > _atol:
+            # if orig_el_amount - new_el_amount > _atol:
+            if new_el_amount == 0 and orig_el_amount > 0:
                 logger.info(
                     f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
                 )
@@ -781,6 +782,12 @@ class NativeEOS(EOS):
                         for component in components
                         if component not in solution.components
                     }
+                )
+            elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
+                logger.warning(
+                    f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
+                    f"which differs from the original concentration of {orig_el_amount}. This "
+                    "should never occur and indicates an error in the PHREEQC database or calculation."
                 )
 
         # re-adjust charge balance for any missing species
