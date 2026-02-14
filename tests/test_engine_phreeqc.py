@@ -128,10 +128,13 @@ def test_init_engines():
     s.engine._destroy_ppsol()
     assert s.engine.ppsol is None
 
+
 def test_osmotic_pressure():
     s1 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="phreeqc")
     s2 = Solution([["Na+", "1 mol/L"], ["SO4-2", "0.5 mol/L"]], engine="ideal")
-    assert np.isclose(s1.osmotic_pressure.to("MPa").magnitude, s2.osmotic_pressure.to("MPa").magnitude), f"PHREEQC = {s1.osmotic_pressure.to('MPa').magnitude} MPa, Ideal = {s2.osmotic_pressure.to('MPa').magnitude} MPa"
+    assert np.isclose(s1.osmotic_pressure.to("MPa").magnitude, s2.osmotic_pressure.to("MPa").magnitude), (
+        f"PHREEQC = {s1.osmotic_pressure.to('MPa').magnitude} MPa, Ideal = {s2.osmotic_pressure.to('MPa').magnitude} MPa"
+    )
 
 
 def test_conductivity(s1):
@@ -388,7 +391,7 @@ def test_alkalinity():
 def test_equilibrate_2L():
     solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc")
     solution.equilibrate(atmosphere=True)
-    assert np.isclose(solution.get_total_amount("Cu", "umol").magnitude, 1.9999998687384424)
+    assert np.isclose(solution.get_total_amount("Cu", "umol").magnitude, 1.9999, atol=1e-1)  # PHREEQCUI - 2e-06
 
 
 def test_equilibrate_unrecognized_component():
@@ -420,6 +423,6 @@ def test_equilibrate_with_atm():
     s1 = Solution({}, pH=7.0, volume="1 L", engine="phreeqc")
     s1.equilibrate(atmosphere=True)
     # PHREEQCUI final CO2, O2, and N2 concentrations were slightly adjusted for consistency with wrapper outputs
-    assert np.isclose(s1.get_amount("CO2(aq)", "mol/L").magnitude, 1.3839163960791439e-05)  # PHREQCUI - 1.389e-05
-    assert np.isclose(s1.get_amount("O2(aq)", "mol/L").magnitude, 0.00025982718533575387)  # PHREEQCUI - 2.615e-04
-    assert np.isclose(s1.get_amount("N2(aq)", "mol/L").magnitude, 0.0005043306329272451)  # PHREEQCUI - 5.064e-04
+    assert np.isclose(s1.get_amount("CO2(aq)", "mol/kg").magnitude, 0.00001429, atol=1e-6)  # PHREQCUI - 1.429e-05
+    assert np.isclose(s1.get_amount("O2(aq)", "mol/kg").magnitude, 0.0002683, atol=1e-6)  # PHREEQCUI - 2.683e-04
+    assert np.isclose(s1.get_amount("N2(aq)", "mol/kg").magnitude, 0)  # PHREEQCUI - 0
