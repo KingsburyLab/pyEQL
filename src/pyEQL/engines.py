@@ -359,6 +359,16 @@ class Phreeqc2026EOS(EOS):
                 "by PHREEQC. These species are likely absent from its database."
             )
 
+        # rescale the solvent mass to ensure the total mass of solution does not change
+        # this is important because PHREEQC and the pyEQL database may use slightly different molecular
+        # weights for water. Since water amount is passed to PHREEQC in kg but returned in moles, each
+        # call to equilibrate can thus result in a slight change in the Solution mass.
+        # NOTE - a second reason for doing this here is that the PHREEQC2026 wrapper does not include
+        # H2O(aq) in the list of components. pyEQL adds it back in the line below. If this is not done
+        # before the "missing element" check, then it can cause false positive errors because it will
+        # appear that H and O have "disappeared" from the solution.
+        solution.components[solution.solvent] = orig_solvent_moles
+
         # tolerance (in moles) for detecting cases where an element amount
         # is no longer balanced because of species that are not recognized
         # by PHREEQC.
@@ -394,11 +404,6 @@ class Phreeqc2026EOS(EOS):
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
 
-        # rescale the solvent mass to ensure the total mass of solution does not change
-        # this is important because PHREEQC and the pyEQL database may use slightly different molecular
-        # weights for water. Since water amount is passed to PHREEQC in kg but returned in moles, each
-        # call to equilibrate can thus result in a slight change in the Solution mass.
-        solution.components[solution.solvent] = orig_solvent_moles
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
