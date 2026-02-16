@@ -366,30 +366,29 @@ class Phreeqc2026EOS(EOS):
 
         new_el_dict = solution.get_el_amt_dict(nested=True)
         for el in orig_el_dict:
-            if el not in ['H', 'O']:  # skip H and O since they are part of H2O and always handled by PHREEQC.
-                orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
-                new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
+            orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
+            new_el_amount = sum([new_el_dict[el][k] for k in new_el_dict.get(el, [])])
 
-                # If this element went "missing", add back all components that
-                # contain this element (for any valence value)
-                if new_el_amount == 0 and orig_el_amount > 0:
-                    logger.info(
-                        f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
-                    )
-                    solution.components.update(
-                        {
-                            component: self._stored_comp[component]
-                            for components in orig_components_by_element[el].values()
-                            for component in components
-                            if component not in solution.components
-                        }
-                    )
-                elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
-                    logger.error(
-                        f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
-                        f"which differs from the original concentration of {orig_el_amount}. This "
-                        "should never occur and indicates an error in the PHREEQC database or calculation."
-                    )
+            # If this element went "missing", add back all components that
+            # contain this element (for any valence value)
+            if new_el_amount == 0 and orig_el_amount > 0:
+                logger.info(
+                    f"PHREEQC discarded element {el} during equilibration. Adding all components for this element."
+                )
+                solution.components.update(
+                    {
+                        component: self._stored_comp[component]
+                        for components in orig_components_by_element[el].values()
+                        for component in components
+                        if component not in solution.components
+                    }
+                )
+            elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
+                logger.error(
+                    f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
+                    f"which differs from the original concentration of {orig_el_amount}. This "
+                    "should never occur and indicates an error in the PHREEQC database or calculation."
+                )
 
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
