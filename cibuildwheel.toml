@@ -7,4 +7,4 @@ test-extras = ["testing"]
 # manylinux without OpenBLAS. Skip it by pre-installing a binary version.
 before-test = "pip install scipy --prefer-binary"
 # For now, we only run the tests that are wrapper specific in cibuildwheel.
-test-command = "python -m pytest {project}/tests/test_pyeql_phreeqc.py"
+test-command = "python -m pytest {project}/tests/test_engine_phreeqc2026.py"
