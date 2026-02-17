@@ -5,34 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0rc9] - 2026-02-05
+## [1.4.0] - 2026-02-17
 
 ### Added
 
-- `EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by USGS. This
+- `Phreeqc2026EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by USGS. This
   new PHREEQC interface is accessible via the new `phreeqc2026` electrolyte modeling engine, and will be used
-  by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, @vineetbansal)
+  by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
+- `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
+  our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
+  Treatment and Resource Recovery Technologies," available at [https://doi.org/10.21203/rs.3.rs-8743330/]
 
 ### Changed
 
 - `Solution.equilibrate`: Added support for solid-liquid and gas-liquid equilibrium via three new kwargs - `atmopshere`,
-  `solids`, and `gases`. See docstring for details and usage.(#292, #294, @vineetbansal, @YitongPan1, @SuixiongTay)
+  `solids`, and `gases`. See docstring for details and usage.(#292, #294, #339, @vineetbansal, @YitongPan1, @SuixiongTay)
 - `get_components_by_element`: A new keyword argument `nested` was added to methods `get_components_by_element`
   and `get_el_amt_dict` of the `Solution` class. It defaults to `False` (no change from prior behavior), but
   can be set to `True` to return a 2-level dictionary, with the element symbol as the key at the top level, and
   the valence (float, or "unk" for unknown) as the key at the second level. This should make it easier for future
   code to calculate the total amount of a given element regardless of its valence. (#284, @vineetbansal)
-- Docs: `sphinx-material` theme migrated to `sphinx-immaterial` (#2xX, @ugognw, @rkingsbury)
+- `Solution.get_property`: Changed the `lru_cache` size to greatly enhance performance when creating `Solution` that
+  contain a large number of solutes (@vineetbansal, @SuixiongTay)
+- Docs: `sphinx-material` theme migrated to `sphinx-immaterial` (#272, @ugognw, @rkingsbury)
+- Docs: resolved all the `spinx` build warnings and errors (#338, @vineetbansal)
+- Docs: Added documentation of `phreeqc2026` engine and new `equilibrate` features (#344, #349, @SuixiongTay, @YitongPan1)
+- CI: Various changes to optimize our continuous integration testing workflows. Notably, changes to the docs (only) no
+  longer trigger unit tests of the code (only of the docs), and now test against a specific set of pinned dependencies
+  from `requirements.txt`. (#285, #314, #320, #327, #328, #330, #340, @vineetbansal, @rkingsbury)
 
 ### Fixed
 
-- `NativeEOS` `equilibrate`: We check if the total amount for any element decreases (within a tolerance of 1e-16 moles)
-  after speciation. If so, we add all species containing that element back in (unless they have been added by Phreeqc
-  already). As a result, we replace neutral (aq) molecules, and ions with incorrect charge, with ions with charge
-  determined by phreeqc, without double-counting. Missing elements (e.g. Rh) are handled correctly as well, since species
-  with the missing element are re-introduced in the solution. (#282, @vineetbansal)
+- `NativeEOS` `equilibrate`: Fixed a bug in which instantiating a solution with pure elements (e.g., `{'Na': '0.5 mol/L'}`)
+  and then calling `equilibrate` could cause that element to be "double counted." In other words, speciation calculations
+  would add `Na[+1]` to the solution but retain `Na` as well. This now works correctly. In addition, elements or species
+  that are missing from PHREEQC's database (e.g. Rh) are handled more robustly. (#282, #352, #355, @vineetbansal, @rkingsbury)
+- `from_file`: Instantiating a `Solution` from a .yaml file now gives slightly more accurate results. Previously, there were
+  slight discrepancies in the volume of the loaded solution, compared to loading from .json or `dict`. (#347, @rkingsbury)
 - `standardize_formula`: Fixed incorrect reduction of dimers. For example, `(CO2)2` was being standardized to `CO2`, which
   could cause incorrect concentrations to be reported. Dimers are no longer reduced. (#309, @vineetbansal)
+- `FormulaDict`: ensured that quantities are always represented by `python` floats and not `np.float64` (#342, @rkingsbury)
 
 ## [1.3.2] - 2025-09-15
 
