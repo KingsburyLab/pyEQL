@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
 - `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
   our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
-  Treatment and Resource Recovery Technologies," available at [https://doi.org/10.21203/rs.3.rs-8743330/]
+  Treatment and Resource Recovery Technologies," available at [https://doi.org/10.21203/rs.3.rs-8743330/v2]
 
 ### Changed
 
