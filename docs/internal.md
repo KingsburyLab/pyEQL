@@ -19,6 +19,13 @@ These internal modules are used by `Solution` but typically are not directly acc
     :members:
 ```
 
+## Engine Benchmarking module
+
+```{eval-rst}
+.. automodule:: pyEQL.benchmark
+    :members:
+```
+
 ## Activity Correction functions
 
 ```{eval-rst}

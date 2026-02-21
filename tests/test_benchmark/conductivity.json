@@ -1,0 +1,3928 @@
+[
+    [
+        {
+            "solutes": {
+                "H[+1]": "1.5 %",
+                "N[-3]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00025 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "3.0 %",
+                "N[-3]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0007 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "6.0 %",
+                "N[-3]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "15.0 %",
+                "N[-3]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0055 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "30.0 %",
+                "N[-3]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.01 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "45.0 %",
+                "N[-3]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0105 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "60.0 %",
+                "N[-3]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.01 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "75.0 %",
+                "N[-3]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.01 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "NH4[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00525 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "NH4[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.020399999999999998 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "NH4[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.08059999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "5.0 %",
+                "NH4[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.47650000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "NH4[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.8 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "1.0 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0037 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "2.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.014199999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "4.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0514 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "10.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.28700000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "20.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.05 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "30.0 %",
+                "SO4[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.205 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "40.0 %",
+                "SO4[-2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.7 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NH4[+1]": "50.0 %",
+                "SO4[-2]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.375 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "0.5 %",
+                "Cl[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00235 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "1.0 %",
+                "Cl[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0091 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "2.0 %",
+                "Cl[-1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0348 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "5.0 %",
+                "Cl[-1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.202 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "10.0 %",
+                "Cl[-1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.767 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "15.0 %",
+                "Cl[-1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.635 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ba[+2]": "20.0 %",
+                "Cl[-1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.74 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "0.5 %",
+                "Cl[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00405 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "1.0 %",
+                "Cl[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0157 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "2.0 %",
+                "Cl[-1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0588 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "5.0 %",
+                "Cl[-1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.335 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "10.0 %",
+                "Cl[-1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.17 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "15.0 %",
+                "Cl[-1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.355 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "20.0 %",
+                "Cl[-1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.54 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "25.0 %",
+                "Cl[-1]": "50.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.575 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "30.0 %",
+                "Cl[-1]": "60.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.16 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ca[+2]": "40.0 %",
+                "Cl[-1]": "80.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.24 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "Cs[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0019 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "Cs[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0074 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "Cs[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.027600000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "5.0 %",
+                "Cs[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1645 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "Cs[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.658 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "15.0 %",
+                "Cs[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.53 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "20.0 %",
+                "Cs[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.84 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "0.5 %",
+                "OH[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0006 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "1.0 %",
+                "OH[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0021000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "2.0 %",
+                "OH[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.006 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "5.0 %",
+                "OH[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0235 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "10.0 %",
+                "OH[-1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.062 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "15.0 %",
+                "OH[-1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.105 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "20.0 %",
+                "OH[-1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.14400000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C[+1]": "25.0 %",
+                "OH[-1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1775 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "0.5 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00145 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "1.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0054 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "2.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.018600000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "5.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.095 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "10.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.322 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cu[+2]": "15.0 %",
+                "SO4[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.6345000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "0.5 %",
+                "H[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0007 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "1.0 %",
+                "H[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0024 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "2.0 %",
+                "H[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.007 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "5.0 %",
+                "H[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.028 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "10.0 %",
+                "H[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.078 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "15.0 %",
+                "H[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.135 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "20.0 %",
+                "H[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.198 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "25.0 %",
+                "H[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.26 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "30.0 %",
+                "H[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.315 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "40.0 %",
+                "H[+1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.396 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO2[-1]": "50.0 %",
+                "H[+1]": "50.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.43 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "H[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.02255 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "H[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.09290000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "H[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.366 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "Li[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00505 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "Li[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.019 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "Li[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0698 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "5.0 %",
+                "Li[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.382 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "Li[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.27 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "15.0 %",
+                "Li[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.325 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "20.0 %",
+                "Li[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.4 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "25.0 %",
+                "Li[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.125 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "30.0 %",
+                "Li[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.38 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "Mg[+2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0043 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "Mg[+2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0166 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "4.0 %",
+                "Mg[+2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0624 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "Mg[+2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.3345 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "20.0 %",
+                "Mg[+2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.08 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "30.0 %",
+                "Mg[+2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.935 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "40.0 %",
+                "Mg[+2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.68 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "50.0 %",
+                "Mg[+2]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.0500000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "60.0 %",
+                "Mg[+2]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.94 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "0.5 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0020499999999999997 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "1.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0076 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "2.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.026600000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "5.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.137 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "10.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.427 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "15.0 %",
+                "SO4[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.8130000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "20.0 %",
+                "SO4[-2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.022 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mg[+2]": "25.0 %",
+                "SO4[-2]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.1025 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "1.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.006200000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "2.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0212 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "5.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.108 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "10.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.34500000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "15.0 %",
+                "SO4[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.6555 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Mn[+2]": "20.0 %",
+                "SO4[-2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.9520000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "0.5 %",
+                "NO3[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.014199999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "1.0 %",
+                "NO3[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.056100000000000004 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "2.0 %",
+                "NO3[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.216 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C2O4[-2]": "0.5 %",
+                "H[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.007 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C2O4[-2]": "1.0 %",
+                "H[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0218 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C2O4[-2]": "2.0 %",
+                "H[+1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0706 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "C2O4[-2]": "5.0 %",
+                "H[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.328 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "1.5 %",
+                "PO4[-3]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00275 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "3.0 %",
+                "PO4[-3]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0101 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "6.0 %",
+                "PO4[-3]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0324 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "15.0 %",
+                "PO4[-3]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1575 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "30.0 %",
+                "PO4[-3]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.594 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "45.0 %",
+                "PO4[-3]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.326 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "60.0 %",
+                "PO4[-3]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.36 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "75.0 %",
+                "PO4[-3]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.65 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "90.0 %",
+                "PO4[-3]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.19 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "120.0 %",
+                "PO4[-3]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "8.36 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "0.5 %",
+                "K[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0026000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "1.0 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.010199999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "2.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.039 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "5.0 %",
+                "K[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.23850000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "10.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.9560000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "15.0 %",
+                "K[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.16 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "20.0 %",
+                "K[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.88 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "0.5 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0035 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "1.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0136 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "2.0 %",
+                "K[+1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0508 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "5.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.29 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "10.0 %",
+                "K[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.09 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "15.0 %",
+                "K[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.2800000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "20.0 %",
+                "K[+1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.7600000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "25.0 %",
+                "K[+1]": "50.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.575 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "K[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0040999999999999995 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0157 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.059000000000000004 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "5.0 %",
+                "K[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.3595 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.43 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "15.0 %",
+                "K[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.12 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "0.5 %",
+                "K[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0015 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "1.0 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.005900000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "2.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.022 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "5.0 %",
+                "K[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.125 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "10.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.446 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "0.5 %",
+                "K[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0023 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "1.0 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0089 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "2.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.034 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "5.0 %",
+                "K[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.194 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "10.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.724 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "15.0 %",
+                "K[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.5150000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "20.0 %",
+                "K[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.56 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "0.5 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0026000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "1.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0099 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "2.0 %",
+                "K[+1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0366 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "5.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.2015 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "0.5 %",
+                "OH[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.01 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "1.0 %",
+                "OH[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0385 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "2.0 %",
+                "OH[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.15 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "5.0 %",
+                "OH[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.89 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "0.5 %",
+                "K[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0019 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "1.0 %",
+                "K[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0075 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "2.0 %",
+                "K[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.028399999999999998 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "5.0 %",
+                "K[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.176 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "10.0 %",
+                "K[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.718 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "15.0 %",
+                "K[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.6500000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "20.0 %",
+                "K[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.7600000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "I[-1]": "25.0 %",
+                "K[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.6000000000000005 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "0.5 %",
+                "NO3[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00275 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "1.0 %",
+                "NO3[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0107 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "2.0 %",
+                "NO3[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.04020000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "5.0 %",
+                "NO3[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.23500000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "10.0 %",
+                "NO3[-1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.873 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "15.0 %",
+                "NO3[-1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.86 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "20.0 %",
+                "NO3[-1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.14 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "25.0 %",
+                "NO3[-1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.55 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "0.5 %",
+                "MnO4[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00175 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "1.0 %",
+                "MnO4[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.006900000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "2.0 %",
+                "MnO4[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.026000000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "5.0 %",
+                "MnO4[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1525 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "1.0 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0029 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "2.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0112 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "4.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.042 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "10.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.24 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "K[+1]": "20.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.886 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "0.5 %",
+                "NO3[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0015500000000000002 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "1.0 %",
+                "NO3[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0060999999999999995 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "2.0 %",
+                "NO3[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.024 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "5.0 %",
+                "NO3[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1335 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "10.0 %",
+                "NO3[-1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.498 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "15.0 %",
+                "NO3[-1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.08 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "20.0 %",
+                "NO3[-1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.856 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "25.0 %",
+                "NO3[-1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.8000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "30.0 %",
+                "NO3[-1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.87 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Ag[+1]": "40.0 %",
+                "NO3[-1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "6.48 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00195 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0076 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.028800000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1545 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "10.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.534 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "15.0 %",
+                "Na[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.9614999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "20.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.3860000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "25.0 %",
+                "Na[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.73 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CH3COO[-1]": "30.0 %",
+                "Na[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.929 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0025 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0097 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0368 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.22 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "10.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.846 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "15.0 %",
+                "Na[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.83 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "20.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.14 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "25.0 %",
+                "Na[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.775 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Br[-1]": "30.0 %",
+                "Na[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "6.48 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "0.5 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0035 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "1.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0131 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "2.0 %",
+                "Na[+1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0466 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "5.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.23500000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "10.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.744 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "CO3[-2]": "15.0 %",
+                "Na[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.329 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0040999999999999995 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.016 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0604 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.35050000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.26 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "15.0 %",
+                "Na[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.565 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "20.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.08 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "25.0 %",
+                "Na[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.55 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0011 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0044 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0182 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.105 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "10.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.332 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "15.0 %",
+                "Na[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.6495 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "20.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.992 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "25.0 %",
+                "Na[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.3275000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "30.0 %",
+                "Na[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.62 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H2PO4[-1]": "40.0 %",
+                "Na[+1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.844 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0021000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.008199999999999999 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.03 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HCO3[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.157 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "0.5 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0023 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "1.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0087 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "2.0 %",
+                "Na[+1]": "4.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0312 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "HPO4[-2]": "5.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.157 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "0.5 %",
+                "OH[-1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.012400000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "1.0 %",
+                "OH[-1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.048600000000000004 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "2.0 %",
+                "OH[-1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.1862 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "5.0 %",
+                "OH[-1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.03 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "0.5 %",
+                "Na[+1]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0027 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "1.0 %",
+                "Na[+1]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0106 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "2.0 %",
+                "Na[+1]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.040799999999999996 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "5.0 %",
+                "Na[+1]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.231 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "10.0 %",
+                "Na[+1]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.8260000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "15.0 %",
+                "Na[+1]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.665 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "20.0 %",
+                "Na[+1]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.68 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "25.0 %",
+                "Na[+1]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.8000000000000003 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "30.0 %",
+                "Na[+1]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.95 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "NO3[-1]": "40.0 %",
+                "Na[+1]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "7.12 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "1.5 %",
+                "PO4[-3]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00365 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "3.0 %",
+                "PO4[-3]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0141 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "6.0 %",
+                "PO4[-3]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0454 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "15.0 %",
+                "PO4[-3]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.2175 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "1.0 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0029500000000000004 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "2.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0112 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "4.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0396 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "10.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.2135 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "20.0 %",
+                "SO4[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.713 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "30.0 %",
+                "SO4[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.3665 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "40.0 %",
+                "SO4[-2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.18 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "1.0 %",
+                "S2O3[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.00285 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "2.0 %",
+                "S2O3[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0107 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "4.0 %",
+                "S2O3[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.039 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "10.0 %",
+                "S2O3[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.2165 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "20.0 %",
+                "S2O3[-2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.767 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "30.0 %",
+                "S2O3[-2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.56 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "40.0 %",
+                "S2O3[-2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "2.46 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "50.0 %",
+                "S2O3[-2]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.35 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "60.0 %",
+                "S2O3[-2]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.08 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Na[+1]": "80.0 %",
+                "S2O3[-2]": "40.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.72 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "1.0 %",
+                "Sr[+2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0029500000000000004 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "2.0 %",
+                "Sr[+2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0114 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "4.0 %",
+                "Sr[+2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.044 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "10.0 %",
+                "Sr[+2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.2455 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "20.0 %",
+                "Sr[+2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.915 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "30.0 %",
+                "Sr[+2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.905 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "40.0 %",
+                "Sr[+2]": "20.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "3.06 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "50.0 %",
+                "Sr[+2]": "25.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "4.2 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "Cl[-1]": "60.0 %",
+                "Sr[+2]": "30.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "5.34 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "1.0 %",
+                "SO4[-2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.012150000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "2.0 %",
+                "SO4[-2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.047799999999999995 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "4.0 %",
+                "SO4[-2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.184 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "H[+1]": "10.0 %",
+                "SO4[-2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "1.055 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "0.5 %",
+                "Zn[+2]": "0.5 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0014 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "1.0 %",
+                "Zn[+2]": "1.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.0054 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "2.0 %",
+                "Zn[+2]": "2.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.02 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "5.0 %",
+                "Zn[+2]": "5.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.10250000000000001 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "10.0 %",
+                "Zn[+2]": "10.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.337 S/m"
+        }
+    ],
+    [
+        {
+            "solutes": {
+                "SO4[-2]": "15.0 %",
+                "Zn[+2]": "15.0 %"
+            },
+            "temperature": "293.15 K"
+        },
+        {},
+        {
+            "conductivity": "0.6495 S/m"
+        }
+    ]
+]
