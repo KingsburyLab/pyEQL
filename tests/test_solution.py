@@ -846,13 +846,13 @@ def test_serialization(s1, s2, tmp_path):
         "excavation",
         "FGD",
         "flotation",
-        # "flue_gas",
+        # "waste_gas", # Issue #335: pH/H+ inconsistency
         "gasification",
         "geothermal",
-        # "leachate",
-        # "mine_drainage",
+        # "leachate",  # Issue #335: pH/H+ inconsistency
+        # "mine_drainage",  # Issue #335: pH/H+ inconsistency
         "mine_tailings",
-        # "plating",
+        # "plating",  # Issue #335: pH/H+ inconsistency
         "pw_conv",
         "pw_unconv",
         "refining",
