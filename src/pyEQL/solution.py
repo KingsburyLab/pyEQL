@@ -2511,7 +2511,7 @@ class Solution(MSONable):
             - 'excavation' - wastewater from excavation in metal ore mining operations [kwptr2026]_
             - 'FGD' - flue gas desulfurization wastewater from SO2 removal from fossil fuel combustion [kwptr2026]_
             - 'flotation' - milling and flotation wastewater from metal ore extraction [kwptr2026]_
-            - 'flue_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
+            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
             - 'gasification' - wastewater from gasification of carbon-based feedstocks to syngas [kwptr2026]_
             - 'geothermal' - geothermal produced water from geothermal power generation [kwptr2026]_
             - 'leachate' - leachate from metal ore mining wastes [kwptr2026]_
