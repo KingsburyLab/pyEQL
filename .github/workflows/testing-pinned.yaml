@@ -42,6 +42,10 @@ jobs:
           pip install -r requirements.txt
           pip install -e ".[testing]"
 
+      - name: Install pourbaix deps
+        if: matrix.python-version != '3.10'
+        run: pip install -e ".[pourbaix]"
+
       - name: Run tests
         run: |
           pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
