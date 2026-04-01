@@ -28,6 +28,7 @@ dependencies = [
         "monty>=2024.12.10",
         "maggma>=0.71.4",
         "phreeqpython>=1.5.2",
+        "mp-api>=0.45.0",
     ]
 
 [project.urls]
@@ -47,9 +48,6 @@ testing = [
     "mypy>1",
     "ruff>0.0.100",
     "tox<4",
-    ]
-pourbaix = [
-    "mp-api>=0.45.0",
     ]
 docs = [
     "sphinx>=3.2.1",
