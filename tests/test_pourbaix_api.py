@@ -3,6 +3,8 @@ import os
 
 import numpy as np
 import pytest
+
+pytest.importorskip("mp_api", reason="mp_api not installed or incompatible with this Python version")
 from mp_api.client import MPRester
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
