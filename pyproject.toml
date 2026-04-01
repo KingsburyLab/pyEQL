@@ -47,7 +47,7 @@ testing = [
     "mypy>1",
     "ruff>0.0.100",
     "tox<4",
-    "mp-api>=0.45.0",
+    "mp-api>=0.41.0",
     ]
 docs = [
     "sphinx>=3.2.1",
