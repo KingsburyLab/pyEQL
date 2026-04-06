@@ -261,7 +261,7 @@ def donnan_eql(solution: Solution, fixed_charge: str):
 
     # solve the function above using one of scipy's nonlinear solvers
 
-    from scipy.optimize import brentq
+    from scipy.optimize import brentq  # noqa: PLC0415
 
     # determine which ion concentration represents the co-ion
     # call a nonlinear solver to adjust the concentrations per the donnan

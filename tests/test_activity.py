@@ -12,7 +12,6 @@ by USGS(PHREEQC)
 """
 
 import logging
-import platform
 from itertools import product
 
 import numpy as np
@@ -23,6 +22,7 @@ import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import engines, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
+from pyEQL.engines import PHREEQPYTHON_AVAILABLE
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
 
@@ -289,7 +289,7 @@ def test_activity_crc_rbcl():
         assert np.isclose(result, expected, rtol=0.05)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_activity_crc_MgCl2():
     """
     calculate the activity coefficient of MgCl2 at each concentration and compare

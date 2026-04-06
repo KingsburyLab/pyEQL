@@ -27,7 +27,7 @@ from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, PhreeqcEOS
+from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -54,7 +54,7 @@ class Solution(MSONable):
         pE: float = 8.5,
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
-        engine: EOS | Literal["native", "ideal", "phreeqc"] = "native",
+        engine: EOS | Literal["native", "ideal", "phreeqc", "phreeqc2026"] = "native",
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -186,7 +186,7 @@ class Solution(MSONable):
         # per-instance cache of get_property and other calls that do not depend
         # on composition
         # see https://rednafi.com/python/lru_cache_on_methods/
-        self.get_property = lru_cache()(self._get_property)
+        self.get_property = lru_cache(maxsize=8192)(self._get_property)
         self.get_molar_conductivity = lru_cache()(self._get_molar_conductivity)
         self.get_mobility = lru_cache()(self._get_mobility)
         self.default_diffusion_coeff = default_diffusion_coeff
@@ -248,6 +248,8 @@ class Solution(MSONable):
             self.engine = NativeEOS()
         elif self._engine == "phreeqc":
             self.engine = PhreeqcEOS()
+        elif self._engine == "phreeqc2026":
+            self.engine = Phreeqc2026EOS()
         else:
             raise ValueError(f'{engine} is not a valid value for the "engine" kwarg!')
 
@@ -493,9 +495,6 @@ class Solution(MSONable):
         r"""
         Returns the dielectric constant of the solution.
 
-        Args:
-            None
-
         Returns:
             Quantity: the dielectric constant of the solution, dimensionless.
 
@@ -651,7 +650,7 @@ class Solution(MSONable):
         a0 = a1 = b0 = b1 = 0
 
         # retrieve the parameters for the delta G equations
-        params = self.get_property(salt.formula, "model_parameters.viscosity_eyring")
+        params = None if salt is None else self.get_property(salt.formula, "model_parameters.viscosity_eyring")
         if params is not None:
             a0 = ureg.Quantity(params["a0"]["value"]).magnitude
             a1 = ureg.Quantity(params["a1"]["value"]).magnitude
@@ -662,11 +661,16 @@ class Solution(MSONable):
             temperature = self.temperature.to("degC").magnitude
             G_123 = a0 + a1 * (temperature) ** 0.75
             G_23 = b0 + b1 * (temperature) ** 0.5
+
+            # calculate the cation mole fraction
+            # x_cat = self.get_amount(cation, "fraction")
+            x_cat = self.get_amount(salt.cation, "fraction").magnitude
         else:
             # TODO - fall back to the Jones-Dole model! There are currently no eyring parameters in the database!
             # proceed with the coefficients equal to zero and log a warning
-            self.logger.warning(f"Viscosity coefficients for {salt.formula} not found. Viscosity will be approximate.")
+            self.logger.warning("Appropriate viscosity coefficients were not found. Viscosity will be approximate.")
             G_123 = G_23 = 0
+            x_cat = 0
 
         # get the kinematic viscosity of water, returned by IAPWS in m2/s
         nu_w = self.water_substance.nu
@@ -677,10 +681,6 @@ class Solution(MSONable):
 
         # get the MW of water
         MW_w = self.get_property(self.solvent, "molecular_weight").magnitude
-
-        # calculate the cation mole fraction
-        # x_cat = self.get_amount(cation, "fraction")
-        x_cat = self.get_amount(salt.cation, "fraction").magnitude
 
         # calculate the kinematic viscosity
         nu = np.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
@@ -1106,13 +1106,31 @@ class Solution(MSONable):
 
         raise ValueError(f"Unsupported unit {units} specified for get_amount")
 
-    def get_components_by_element(self) -> dict[str, list]:
+    def get_components_by_element(
+        self, nested: bool = False
+    ) -> dict[str, list[str]] | dict[str, dict[float | str, list[str]]]:
         """
         Return a list of all species associated with a given element.
 
-        Elements (keys) are suffixed with their oxidation state in parentheses, e.g.,
+        Args:
+            nested : bool
+                Whether to return a nested dictionary of <element>
+                to <valence> => <list of species> mapping. False by default.
 
-        {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
+        Returns:
+            A mapping of element to a list of species in the solution.
+
+            If nested is False (default), elements (keys) are suffixed with
+            their oxidation state in parentheses, e.g.,
+
+            {"Na(1.0)":["Na[+1]", "NaOH(aq)"]}
+
+            If nested is True, the dictionary is nested, e.g.,
+
+            {"Na": [{1:["Na[+1]", "NaOH(aq)"]}]}.
+
+            Note that the valence may be a string, assuming the value "unk"
+            denoting an unknown oxidation state.
 
         Species associated with each element are sorted in descending order of the amount
         present (i.e., the first species listed is the most abundant).
@@ -1131,20 +1149,41 @@ class Solution(MSONable):
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
-                key = f"{el}({oxi_state})"
-                if d.get(key):
-                    d[key].append(s)
+                if d.get(el):
+                    if d[el].get(oxi_state):
+                        d[el][oxi_state].append(s)
+                    else:
+                        d[el][oxi_state] = [s]
                 else:
-                    d[key] = [s]
+                    d[el] = {oxi_state: [s]}
 
-        return d
+        if nested:
+            return d
+        return {f"{el}({val})": species for el, val_dict in d.items() for val, species in val_dict.items()}
 
-    def get_el_amt_dict(self):
+    def get_el_amt_dict(self, nested: bool = False) -> dict[str, float] | dict[str, dict[float | str, float]]:
         """
         Return a dict of Element: amount in mol.
 
-        Elements (keys) are suffixed with their oxidation state in parentheses,
-        e.g. "Fe(2.0)", "Cl(-1.0)".
+        Args:
+            nested : bool
+                Whether to return a nested dictionary of <element>
+                to <valence> => amount mapping. False by default.
+
+        Returns:
+            A mapping of element to its amount in moles in the solution.
+
+            If nested is False (default), elements (keys) are suffixed with
+            their oxidation state in parentheses, e.g.,
+
+            {"Fe(2.0)": 0.354, "Cl(-1.0)": 0.708}
+
+            If nested is True, the dictionary is nested, e.g.,
+
+            {"Fe": {2.0: 0.354}, "Cl": {-1.0: 0.708}}.}
+
+            Note that the valence may be a string, assuming the value "unk"
+            denoting an unknown oxidation state.
         """
         d = {}
         for s, mol in self.components.items():
@@ -1161,13 +1200,17 @@ class Solution(MSONable):
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
                     oxi_state = UNKNOWN_OXI_STATE
-                key = f"{el}({oxi_state})"
-                if d.get(key):
-                    d[key] += stoich * mol
+                if d.get(el):
+                    if d[el].get(oxi_state):
+                        d[el][oxi_state] += stoich * mol
+                    else:
+                        d[el][oxi_state] = stoich * mol
                 else:
-                    d[key] = stoich * mol
+                    d[el] = {oxi_state: stoich * mol}
 
-        return d
+        if nested:
+            return d
+        return {f"{el}({val})": amount for el, val_dict in d.items() for val, amount in val_dict.items()}
 
     def get_total_amount(self, element: str, units: str) -> Quantity:
         """
@@ -1202,7 +1245,7 @@ class Solution(MSONable):
         if "(" in element and UNKNOWN_OXI_STATE not in element:
             ox = float(element.split("(")[-1].split(")")[0])
             key = f"{el}({ox})"
-            species = comp_by_element.get(key)
+            species = comp_by_element.get(key, [])
         else:
             species = []
             for k, v in comp_by_element.items():
@@ -1237,10 +1280,10 @@ class Solution(MSONable):
         """Primary method for adding substances to a pyEQL solution.
 
         Args:
-            formula (str): Chemical formula for the solute. Charged species must contain a + or - and
-            (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
-            amount (str): The amount of substance in the specified unit system. The string should contain
-            both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
+            formula (str): Chemical formula for the solute. Charged species must contain a+ or - and
+               (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
+            amount (str): The amount of substance in the specified unit system. The string should
+               contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
@@ -1636,16 +1679,48 @@ class Solution(MSONable):
 
         return dict(sorted(salt_dict.items(), key=lambda x: x[1]["mol"], reverse=True))
 
-    def equilibrate(self, **kwargs) -> None:
+    def equilibrate(
+        self,
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+        **kwargs,
+    ) -> None:
         """
-        Update the composition of the Solution using the thermodynamic engine.
+        This method follows the equilibrate logic used in the NativeEOS engine, adapted as the default behavior for this class.
 
-        Any kwargs specified are passed through to self.engine.equilibrate()
+        Adjust the speciation of a Solution object to achieve chemical equilibrium.
 
-        Returns:
-            Nothing. The .components attribute of the Solution is updated.
+        Keyword Args:
+            atmosphere:
+                Boolean indicating whether to equilibrate the solution
+                w.r.t atmospheric gases.
+            solids:
+                A list of solids used to achieve liquid-solid equilibrium. Each
+                solid in this list should be present in the Phreeqc database.
+                We assume a target saturation index of 0 and an infinite
+                amount of material.
+            gases:
+                A dictionary of gases used to achieve liquid-gas equilibrium.
+                Each key denotes the gas species, and the corresponding value
+                denotes its concentration, as a log partial pressure value or
+                other interpretable pressure units. For example, the following
+                are equivalent (log10(0.000316) = -3.5)
+                {"CO2": "0.000316 atm"}
+                {"CO2": -3.5}
         """
-        self.engine.equilibrate(self, **kwargs)
+        if self.engine == "native":
+            warnings.warn(
+                'In the next release, the default engine ("native") will '
+                "transition to a new version of the PHREEQC wrapper for "
+                "speciation calculations. No change in your script is "
+                "required, but if you call .equilibrate(), compare results "
+                "carefully between releases.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        self.engine.equilibrate(self, atmosphere=atmosphere, solids=solids, gases=gases, **kwargs)
 
     # Activity-related methods
     def get_activity_coefficient(
@@ -1662,9 +1737,6 @@ class Solution(MSONable):
         Args:
             solute: The solute for which to retrieve the activity coefficient
             scale:  The activity coefficient concentration scale
-            verbose: If True, pyEQL will print a message indicating the parent salt
-                     that is being used for activity calculations. This option is
-                     useful when modeling multicomponent solutions. False by default.
 
         Returns:
             Quantity: the activity coefficient as a dimensionless pint Quantity
@@ -1709,10 +1781,6 @@ class Solution(MSONable):
                 The concentration scale for the returned activity.
                 Valid options are "molal", "molar", and "rational" (i.e., mole fraction).
                 By default, the molal scale activity is returned.
-            verbose:
-                If True, pyEQL will print a message indicating the parent salt
-                that is being used for activity calculations. This option is
-                useful when modeling multicomponent solutions. False by default.
 
         Returns:
             The thermodynamic activity of the solute in question (dimensionless Quantity)
@@ -2380,7 +2448,37 @@ class Solution(MSONable):
 
     @classmethod
     def from_preset(
-        cls, preset: Literal["seawater", "rainwater", "wastewater", "urine", "normal saline", "Ringers lactate"]
+        cls,
+        preset: Literal[
+            "seawater",
+            "rainwater",
+            "wastewater",
+            "urine",
+            "normal saline",
+            "Ringers lactate",
+            "ash",
+            "batt_mfg",
+            "batt_recycling",
+            "coal_washing",
+            "CRL",
+            "drilling",
+            "excavation",
+            "FGD",
+            "flotation",
+            # "flue_gas",
+            "gasification",
+            "geothermal",
+            # "leachate",
+            "mine_drainage",
+            "mine_tailings",
+            # "plating",
+            "pw_conv",
+            "pw_unconv",
+            "refining",
+            "semiconductor",
+            "smelting",
+            "tanning",
+        ],
     ) -> Solution:
         r"""Instantiate a solution from a preset composition.
 
@@ -2404,6 +2502,28 @@ class Solution(MSONable):
             - 'urine' - typical human urine. See Table 3-15 of [me13]_
             - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
             - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
+            - 'ash' - bottom ash transport wastewater from fossil fuel combustion [kwptr2026]_
+            - 'batt_mfg' - wastewater from lead-acid and legacy battery manufacturing processes [kwptr2026]_
+            - 'batt_recycling' - wastewater from lithium ion battery recycling operations [kwptr2026]_
+            - 'coal_washing' - wastewater generated from coal preparation and washing [kwptr2026]_
+            - 'CRL' - combustion residual leachate (CRL) from fossil fuel combustion landfills [kwptr2026]_
+            - 'drilling' - oil and gas drilling wastewater from drilling fluids and cuttings [kwptr2026]_
+            - 'excavation' - wastewater from excavation in metal ore mining operations [kwptr2026]_
+            - 'FGD' - flue gas desulfurization wastewater from SO2 removal from fossil fuel combustion [kwptr2026]_
+            - 'flotation' - milling and flotation wastewater from metal ore extraction [kwptr2026]_
+            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
+            - 'gasification' - wastewater from gasification of carbon-based feedstocks to syngas [kwptr2026]_
+            - 'geothermal' - geothermal produced water from geothermal power generation [kwptr2026]_
+            - 'leachate' - leachate from metal ore mining wastes [kwptr2026]_
+            - 'mine_drainage' - acid mine drainage wastewater from coal and metal ore mining operations [kwptr2026]_
+            - 'mine_tailings' - mine tailings pond water from collective metal ore and mining wastes [kwptr2026]_
+            - 'plating' - typical wastewater from metal electroplating operations [kwptr2026]_
+            - 'pw_conv' - produced water from conventional hydrocarbon production [kwptr2026]_
+            - 'pw_unconv' - produced water from unconventional hydrocarbon production [kwptr2026]_
+            - 'refining' - petroleum refining wastewater from crude oil refineries [kwptr2026]_
+            - 'semiconductor' - semiconductor and electronics manufacturing wastewater  [kwptr2026]_
+            - 'smelting' - wastewater from metal ore smelting and refining from pyrometallurgical slags [kwptr2026]_
+            - 'tanning' - wastewater from leather tanning and finishing operations [kwptr2026]_
 
         References:
             .. [mf08] Millero, Frank J. "The composition of Standard Seawater and the definition of
@@ -2415,6 +2535,8 @@ class Solution(MSONable):
             .. [saline] https://en.wikipedia.org/w/index.php?title=Saline_(medicine)&oldid=1298292693
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
+
+            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://www.researchsquare.com/article/rs-8743330/v2]
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset
@@ -2451,7 +2573,7 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(self, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
@@ -2484,7 +2606,7 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
-            return Solution(**solution_dict)
+            return cls.from_dict(solution_dict)
         return loadfn(filename)
 
     # arithmetic operations

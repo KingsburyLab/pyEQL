@@ -1,0 +1,14 @@
+DATABASE C:\Program Files (x86)\USGS\Phreeqc Interactive 3.7.3-15968\database\phreeqc.dat
+SOLUTION 0
+ temp 25.00
+ pH 7.00
+ pe 4.0
+ Ca 3.0 # total dissolved Ca
+ Na 1.0
+ Alkalinity 3.8 # mmol charge / kgw
+ S 1.0 # total sulfur, mainly sulfate, S(6), at pe = 4
+ N(5) 0.2 # nitrogen in the form of nitrate, N(5)
+ Cl 1.0
+ water 1 # kg water, default = 1 kg
+ density 1
+END

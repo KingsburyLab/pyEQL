@@ -73,14 +73,25 @@ there may be subtle thermodynamic inconsistencies between the activities and the
 concentrations returned by `equilibrate()`.
 ```
 
+## The `'phreeqc2026'` engine
+
+The `phreeqc2026` engine uses [`pyEQL.phreeqc`](https://github.com/KingsburyLab/pyEQL/tree/d323606e022825737c1663ee620dfa6180d2bebb/src/pyEQL/phreeqc)
+for speciation, activity, and volume calculations. The PHREEQC engine
+uses the `phreeqc.dat (v3.8)` PHREEQC database by default, although it is possible to instantiate
+the engine with other databases such as `llnl.dat`, `pitzer.dat`, `vitens.dat`, `wateq4f_PWN.dat`, and `geothermal.dat`. See
+`pyEQL.engine.Phreeqc2026EOS.equilibrate()` in the [module reference](internal.md#speciation-functions)
+for more details.
+Older version provided in `pyEQL.equilibrium.equilibrate_phreeqc` has been removed and absorbed in `NativeEOS`, `Phreeqc2026EOS`, and `PhreeqcEOS`.
+
 ## The `'phreeqc'` engine
 
 The `phreeqc` engine uses [`phreeqpython`](https://github.com/Vitens/phreeqpython)
 for speciation, activity, and volume calculations. The PHREEQC engine
-uses the `phreeqc.dat` PHREEQC database by default, although it is possible to instantiate
-the engine with other databases such as `llnl.dat`, `pitzer.dat`, etc. See
-`pyEQL.equilibrium.eqiulibrate_phreeqc` in the [module reference](internal.md#speciation-functions)
+uses the `phreeqc.dat (v3.7)` PHREEQC database by default, although it is possible to instantiate
+the engine with other databases such as `llnl.dat`, `pitzer.dat`, `vitens.dat`, `wateq4f_PWN.dat`, and `geothermal.dat`. See
+`pyEQL.engine.PhreeqcEOS.equilibrate()` in the [module reference](internal.md#speciation-functions)
 for more details.
+Older version provided in `pyEQL.equilibrium.equilibrate_phreeqc` has been removed and absorbed in `NativeEOS`, `Phreeqc2026EOS`, and `PhreeqcEOS`.
 
 ### Activity and osmotic coefficients
 

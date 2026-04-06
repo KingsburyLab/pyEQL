@@ -1,0 +1,39 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': src
+solutes:
+  H2O(aq): 55.34457593619076 mol
+  HCO3[-1]: 0.001699189965451931 mol
+  Ca[+2]: 0.001479055286261006 mol
+  SO4[-2]: 0.0006939811201660457 mol
+  Cl[-1]: 0.00047931690354411255 mol
+  Mg[+2]: 0.0002950840653503421 mol
+  CO2(aq): 9.102456514851306e-05 mol
+  CaSO4(aq): 7.85419095707373e-05 mol
+  MgSO4(aq): 2.903624727040531e-05 mol
+  CaHCO3[+1]: 2.174688345432767e-05 mol
+  CaCO3(aq): 6.9162323772865716e-06 mol
+  MgHCO3[+1]: 4.310140361000174e-06 mol
+  CO3[-2]: 3.837060036771583e-06 mol
+  MgCO3(aq): 6.383620444784387e-07 mol
+  OH[-1]: 4.1573942894833574e-07 mol
+  CaCl[+1]: 1.0950476837607304e-07 mol
+  MgCl[+1]: 8.156555390191875e-08 mol
+  H[+1]: 2.6967067557932947e-08 mol
+  HSO4[-1]: 1.3719863232842361e-09 mol
+  CaCl2(aq): 5.238511865991103e-11 mol
+  HCl(aq): 2.4848573567392885e-12 mol
+  H2SO4(aq): 2.993616819010069e-20 mol
+  O2(aq): 2.528876703682595e-22 mol
+  ClO[-1]: 5.905230119391984e-30 mol
+  HClO(aq): 5.0647783694537105e-30 mol
+  H2(aq): 4.9845409655381225e-36 mol
+volume: 1.0 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 7.569166276856315
+pE: 8.5
+balance_charge: auto
+solvent: H2O(aq)
+default_diffusion_coeff: 1.6106e-09
+log_level: ERROR

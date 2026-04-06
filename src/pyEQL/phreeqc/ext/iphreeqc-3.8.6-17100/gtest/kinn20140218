@@ -1,0 +1,349 @@
+#
+#*** PhreePlot 1 (Win32) *** 20:14:59 13 Feb 2014
+#    Incorporating the PHREEQC library by DL Parkhurst, SR Charlton (USGS),
+#      & CAJ Appelo (Amsterdam)
+#    Hunt & Track by DG Kinniburgh, and DM Cooper, CEH (NERC)
+#    Fitting by MJD Powell (University of Cambridge)
+#    Postscript plotting by KE Kohler
+#
+#Input filename: C:\PhreePlot\unittests\custom\contouring\As3_logNaVspH.ppi.
+#
+#Calculating... 1
+
+PRINT
+   -selected_output false
+  PHASES
+   Fix_H+
+     H+ = H+
+     log_k 0
+SOLUTION_MASTER_SPECIES
+        [N5]     [N5]O3-         0       14              14
+        Perchlorate Perchlorate- 0       35              35
+SOLUTION_SPECIES
+        [N5]O3- = [N5]O3-
+        log_k 0
+        Perchlorate- = Perchlorate-
+        log_k 0
+SURFACE_MASTER_SPECIES
+        Goe_uni    Goe_uniOH1.5
+        Goe_tri    Goe_triOH0.5
+SURFACE_SPECIES
+        Goe_triOH0.5 = Goe_triOH0.5
+            -cd_music  0 0 0 0 0
+            log_k 0
+        Goe_triOH0.5 = Goe_triO-0.5 + 0.5H+
+            -cd_music  -0.5 0 0 0 0
+            log_k 10
+        Goe_triO-0.5 + H+ = Goe_triOH+0.5
+            -cd_music  1 0 0 0 0
+            log_k     9.20
+        Goe_triO-0.5 + Li+ = Goe_triOLi+0.5
+            -cd_music  0 1 0 0 0
+            log_k     0.10
+        Goe_triO-0.5 + Na+ = Goe_triONa+0.5
+            -cd_music  0 1 0 0 0
+            log_k    -0.60
+        Goe_triO-0.5 + K+ = Goe_triOK+0.5
+            -cd_music  0 1 0 0 0
+            log_k    -1.61
+        Goe_triO-0.5 + H+ + NO3- = Goe_triOHNO3-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    8.52
+        Goe_triO-0.5 + H+ + [N5]O3- = Goe_triOH[N5]O3-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    8.52
+        Goe_triO-0.5 + H+ + Cl- = Goe_triOHCl-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    8.75
+        Goe_uniOH1.5 = Goe_uniOH1.5
+            -cd_music  0 0 0 0 0
+            log_k 0
+        Goe_uniOH1.5 = Goe_uniOH-0.5 + 0.5H+
+            -cd_music  -0.5 0 0 0 0
+            log_k 10
+        Goe_uniOH-0.5 + H+ = Goe_uniOH2+0.5
+            -cd_music  1 0 0 0 0
+            log_k    9.20
+        Goe_uniOH-0.5 + Li+ = Goe_uniOHLi+0.5
+            -cd_music  0 1 0 0 0
+            log_k     0.10
+        Goe_uniOH-0.5 + Na+ = Goe_uniOHNa+0.5
+            -cd_music  0 1 0 0 0
+            log_k    -0.60
+        Goe_uniOH-0.5 + K+ = Goe_uniOHK+0.5
+            -cd_music  0 1 0 0 0
+            log_k    -1.61
+        Goe_uniOH-0.5 + H+ + NO3- = Goe_uniOH2NO3-0.5
+            -cd_music  1 -1 0 0 0
+           log_k    8.52
+        Goe_uniOH-0.5 + H+ + [N5]O3- = Goe_uniOH2[N5]O3-0.5
+            -cd_music  1 -1 0 0 0
+           log_k    8.52
+        Goe_uniOH-0.5 + H+ + Cl- = Goe_uniOH2Cl-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    8.75
+        Goe_uniOH-0.5 + Ca+2 = Goe_uniOHCa+1.5
+            log_k      2.85
+            -cd_music  0.0  2.0  0 0 0
+        Goe_triO-0.5 + Ca+2 = Goe_triOCa+1.5
+            log_k      2.85
+            -cd_music  0.0  2.0  0 0 0
+        Goe_uniOH-0.5 + Ca+2 = Goe_uniOHCa+1.5
+            log_k      3.69
+            -cd_music  0.32  1.68  0 0 0
+        Goe_uniOH-0.5 + Ca+2 + H2O = Goe_uniOHCaOH+0.5 + H+
+            log_k      -9.17
+            -cd_music  0.32  0.68  0 0 0
+        2Goe_uniOH-0.5 + Mg+2 = (Goe_uniOH)2Mg+1
+             log_k      4.89
+             -cd_music  0.71  1.29  0 0 0
+        2Goe_uniOH-0.5 + Mg+2 + H2O = (Goe_uniOH)2MgOH + H+
+             log_k      -6.44
+             -cd_music  0.71  0.29  0 0 0
+        2Goe_uniOH-0.5 + Cu+2 = (Goe_uniOH)2Cu+1
+            log_k      9.18
+            -cd_music  0.84  1.16  0 0 0
+        2Goe_uniOH-0.5 + Cu+2 + H2O = (Goe_uniOH)2CuOH + H+
+            log_k      3.60
+            -cd_music  0.84  0.16  0 0 0
+        2Goe_uniOH-0.5 + 2Cu+2 + 2H2O = (Goe_uniOH)2Cu2(OH)2+1 + 2H+
+            log_k      3.65
+            -cd_music  0.84  1.16  0 0 0
+        2Goe_uniOH-0.5 + 2Cu+2 + 3H2O = (Goe_uniOH)2Cu2(OH)3 + 3H+
+            log_k      -3.10
+            -cd_music  0.84  0.16  0 0 0
+        Goe_uniOH-0.5 + 2H+ + AsO4-3 = Goe_uniOAsO2OH-1.5 + H2O
+            log_k     26.60
+            -cd_music  0.30 -1.30 0 0 0
+        2Goe_uniOH-0.5 + 2H+ + AsO4-3 = (Goe_uniO)2AsO2-2 + 2H2O
+             log_k     29.77
+             -cd_music  0.47  -1.47  0 0 0
+        2Goe_uniOH-0.5 + 3H+ + AsO4-3 = (Goe_uniO)2AsOOH- + 2H2O
+             log_k     33.00
+             -cd_music  0.58 -0.58 0 0 0
+        Goe_uniOH-0.5 + H3AsO3 = Goe_uniOAs(OH)2-0.5 + H2O
+            log_k     4.91
+            -cd_music  0.16  -0.16 0 0 0
+        2Goe_uniOH-0.5 + H3AsO3 = (Goe_uniO)2AsOH-1 + 2H2O
+             log_k     7.26
+             -cd_music  0.34 -0.34 0 0 0
+        Goe_uniOH-0.5 + 2H+ + PO4-3 = Goe_uniOPO2OH-1.5 + H2O
+            log_k       27.65
+            -cd_music  0.28 -1.28 0 0 0
+        2Goe_uniOH-0.5 + 2H+ + PO4-3 = (Goe_uniO)2PO2-2 + 2H2O
+             log_k      29.77
+             -cd_music  0.46  -1.46  0 0 0
+        2Goe_uniOH-0.5 + 2H+ + CO3-2 = (Goe_uniO)2CO- + 2H2O
+             log_k     22.33
+             -cd_music  0.68  -0.68  0 0 0
+         Goe_uniOH-0.5 + H+ + SO4-2 = Goe_uniOSO3-1.5 + H2O
+             log_k     9.37
+             -cd_music  0.5  -1.5  0 0 0
+         Goe_uniOH-0.5 + H+ + SO4-2 = Goe_uniOSO3-1.5 + H2O
+             log_k     11.06
+             -cd_music  1  -1.84  -0.16 0 0
+        2Goe_uniOH-0.5 + H4SiO4 = (Goe_uniO)2Si(OH)2-1 + 2H2O
+             log_k      5.85
+             -cd_music  0.29  -0.29  0 0 0
+        2Goe_uniOH-0.5 + 4H4SiO4 = (Goe_uniO)2SiOHOSi3O2(OH)7-1 + 5H2O
+             log_k      13.98
+             -cd_music  0.29  -0.29  0 0 0
+        2Goe_uniOH-0.5 + 4H4SiO4 = (Goe_uniO)2SiOHOSi3O3(OH)6-2 + 5H2O + H+
+             log_k      7.47
+             -cd_music  0.29  -1.29  0 0 0
+SURFACE_MASTER_SPECIES
+        Fhy_unie   Fhy_unieOH1.5
+        Fhy_unic   Fhy_unicOH1.5
+        Fhy_tri    Fhy_triOH0.5
+SURFACE_SPECIES
+      Fhy_triOH0.5  = Fhy_triOH0.5
+           -cd_music  0 0 0 0 0
+           log_k 0
+      Fhy_triOH0.5  = Fhy_triO-0.5 + 0.5H+
+           -cd_music  -0.5 0 0 0 0
+           log_k 10
+        Fhy_triO-0.5 + H+ = Fhy_triOH+0.5
+             -cd_music  1 0 0 0 0
+             log_k    8.06
+        Fhy_triO-0.5 + Na+ = Fhy_triONa+0.5
+             -cd_music  0 1 0 0 0
+             log_k    -0.60
+        Fhy_triO-0.5 + H+ + NO3- = Fhy_triOHNO3-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.38
+        Fhy_triO-0.5 + H+ + [N5]O3- = Fhy_triOH[N5]O3-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.38
+        Fhy_triO-0.5 + H+ + Cl- = Fhy_triOHCl-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.61
+        Fhy_triO-0.5 + H+ + Perchlorate- = Fhy_triOHPerchlorate-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    6.36
+        Fhy_unieOH1.5 = Fhy_unieOH1.5
+             -cd_music  0 0 0 0 0
+             log_k 0
+        Fhy_unieOH1.5 = Fhy_unieOH-0.5 + 0.5H+
+             -cd_music  -0.5 0 0 0 0
+             log_k 10
+        Fhy_unieOH-0.5 + H+ = Fhy_unieOH2+0.5
+             -cd_music  1 0 0 0 0
+             log_k    8.06
+        Fhy_unieOH-0.5 + Na+ = Fhy_unieOHNa+0.5
+             -cd_music  0 1 0 0 0
+             log_k    -0.60
+        Fhy_unieOH-0.5 + H+ + NO3- = Fhy_unieOH2NO3-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.38
+        Fhy_unieOH-0.5 + H+ + [N5]O3- = Fhy_unieOH2[N5]O3-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.38
+        Fhy_unieOH-0.5 + H+ + Cl- = Fhy_unieOH2Cl-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    7.61
+        Fhy_unieOH-0.5 + H+ + Perchlorate- = Fhy_unieOH2Perchlorate-0.5
+             -cd_music  1 -1 0 0 0
+             log_k    6.36
+      Fhy_unicOH1.5 = Fhy_unicOH1.5
+             -cd_music  0 0 0 0 0
+             log_k 0
+      Fhy_unicOH1.5 = Fhy_unicOH-0.5 + 0.5H+
+             -cd_music  -0.5 0 0 0 0
+             log_k 10
+        Fhy_unicOH-0.5 + H+ = Fhy_unicOH2+0.5
+             -cd_music  1 0 0 0 0
+             log_k    8.06
+        Fhy_unicOH-0.5 + Na+ = Fhy_unicOHNa+0.5
+             -cd_music  0 1 0 0 0
+             log_k    -0.60
+        Fhy_unicOH-0.5 + H+ + NO3- = Fhy_unicOH2NO3-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    7.38
+        Fhy_unicOH-0.5 + H+ + [N5]O3- = Fhy_unicOH2[N5]O3-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    7.38
+        Fhy_unicOH-0.5 + H+ + Cl- = Fhy_unicOH2Cl-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    7.61
+        Fhy_unicOH-0.5 + H+ + Perchlorate- = Fhy_unicOH2Perchlorate-0.5
+            -cd_music  1 -1 0 0 0
+            log_k    6.36
+        2Fhy_unicOH-0.5 + 2H+ + CO3-2 = Fhy_unic2O2CO- + 2H2O
+            -cd_music  0.62  -0.62 0 0 0
+            log_k     21.50
+        2Fhy_unieOH-0.5 + UO2+2 = Fhy_unie2(OH)2UO2+
+            -cd_music  0.9 1.1 0 0 0
+            log_k     9.0
+        2Fhy_unieOH-0.5 + UO2+2 + H2O = Fhy_unie2(OH)2UO2OH + H+
+            -cd_music  0.9 0.1 0 0 0
+            log_k     3.30
+        2Fhy_unieOH-0.5 + UO2+2 + 2H2O = Fhy_unie2(OH)2UO2(OH)2- + 2H+
+            -cd_music  0.9 -0.9 0 0 0
+            log_k     -5.3
+        2Fhy_unieOH-0.5 + UO2+2 + CO3-2 + H2O = Fhy_unie2(OH)2UO2CO3(OH)-2 + H+
+            -cd_music  0.9 -1.9 0 0 0
+            log_k     10.49
+        Fhy_unicOH-0.5 + UO2+2 + 3CO3-2 + H+ = Fhy_unic(OCO2)UO2(CO3)2-3.5 + H2O
+            -cd_music  0.33 -3.33 0 0 0
+            log_k     36.63
+        Fhy_unieOH-0.5 + UO2+2 + 3CO3-2 + H+ = Fhy_unie(OCO2)UO2(CO3)2-3.5 + H2O
+            -cd_music  0.33 -3.33 0 0 0
+            log_k     36.63
+        2Fhy_unieOH-0.5 + 3UO2+2 + 6H2O = Fhy_unie2(OH)2(UO2)3(OH)6- + 6H+
+            -cd_music  0.9 -0.9 0 0 0
+            log_k     -15.8
+        2Fhy_unieOH-0.5 + 3UO2+2 + CO3-2 + 3H2O = Fhy_unie2(OH)2(UO2)3(OH)3CO3 + 3H+
+            -cd_music  0.9 0.1 0 0 0
+            log_k     14.6
+END
+  
+  SOLUTION 1
+    Temp      20
+    pH        3.8
+    units     mol/kgw
+    Na        0.001
+    Cl        0.001
+  EQUILIBRIUM_PHASES 1
+    Fix_H+     -4 NaOH
+      -force_equality true
+    O2(g)      -70
+  SURFACE 1
+    Goe_uniOH1.5  3.5 98 0.1
+    Goe_triOH0.5  2.7
+     -cd_music
+     -sites_units density
+     -cap    0.85  0.75
+  SAVE surface 2
+END
+use surface 2
+SOLUTION 1
+  Temp      20
+  pH        3.8
+  units     mol/kgw
+  Na        0.001
+  Cl        0.001
+REACTION
+Na2HAsO4 1
+0.0001 in 1 step
+PRINT
+   -selected_output true
+SELECTED_OUTPUT
+  -reset false
+  -high_precision false
+USER_PUNCH
+  -headings logNa pH I dissAs
+ 10 IF (TOT("As") > 0) THEN dissas = TOT("As") ELSE dissas = -99999
+ 20 totna = TOT("Na")
+ 30 IF (totna > 0) THEN logna = LOG10(totna) ELSE logna = -99999
+ 40 PUNCH logna, -la("H+"), mu, dissas
+ 50 PRINT "NaT = ", totna
+  EQUILIBRIUM_PHASES 1
+    Fix_H+     -4 NaOH
+      -force_equality true
+    O2(g)      -70
+END
+  SOLUTION 1
+    Temp      20
+    pH        3.8
+    units     mol/kgw
+    Na        0.00215443469
+    Cl        0.00215443469
+  EQUILIBRIUM_PHASES 1
+    Fix_H+     -4 NaOH
+      -force_equality true
+    O2(g)      -70
+  SURFACE 1
+    Goe_uniOH1.5  3.5 98 0.1
+    Goe_triOH0.5  2.7
+     -cd_music
+     -sites_units density
+     -cap    0.85  0.75
+  SAVE surface 2
+END
+use surface 2
+SOLUTION 1
+  Temp      20
+  pH        3.8
+  units     mol/kgw
+  Na        0.00215443469
+  Cl        0.00215443469
+REACTION
+Na2HAsO4 1
+0.0001 in 1 step
+PRINT
+   -selected_output true
+SELECTED_OUTPUT
+  -reset false
+  -high_precision false
+USER_PUNCH
+  -headings logNa pH I dissAs
+ 10 IF (TOT("As") > 0) THEN dissas = TOT("As") ELSE dissas = -99999
+ 20 totna = TOT("Na")
+ 30 IF (totna > 0) THEN logna = LOG10(totna) ELSE logna = -99999
+ 40 PUNCH logna, -la("H+"), mu, dissas
+ 50 PRINT "NaT = ", totna
+  EQUILIBRIUM_PHASES 1
+    Fix_H+     -4 NaOH
+      -force_equality true
+    O2(g)      -70
+END

@@ -1,0 +1,48 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': src
+solutes:
+  H2O(aq): 55.34457593619076 mol
+  Cl[-1]: 0.39827800377258515 mol
+  Mg[+2]: 0.11991859437729356 mol
+  Ca[+2]: 0.07318386292349595 mol
+  Na[+1]: 0.013830313825493734 mol
+  MgSO4(aq): 0.012442426003930328 mol
+  MgCl[+1]: 0.011107909480731511 mol
+  SO4[-2]: 0.007096406193417539 mol
+  SiO2(aq): 0.004655788897244374 mol
+  CaSO4(aq): 0.0032539078855413034 mol
+  CaCl[+1]: 0.0014417759971799026 mol
+  NaCl(aq): 0.0004112690384078372 mol
+  CaCl2(aq): 0.0002869233712210636 mol
+  NaSO4[-1]: 0.00011188728097716941 mol
+  SiHO3[-1]: 2.505247858675295e-06 mol
+  NaSiHO3(aq): 7.408458537541889e-07 mol
+  H[+1]: 3.8775528941969216e-07 mol
+  HSO4[-1]: 5.7215605432329703e-08 mol
+  OH[-1]: 4.666994268553171e-08 mol
+  HCl(aq): 1.7578866017677334e-08 mol
+  CaOH[+1]: 1.2105671447619912e-08 mol
+  Si2H7O8[-1]: 5.931445158068295e-10 mol
+  NaOH(aq): 4.900525799989134e-11 mol
+  Si(HO2)2[-2]: 2.979822800070382e-12 mol
+  SiH3O4[-1]: 7.133804357547938e-17 mol
+  MgOH[+1]: 1.6106432982312546e-17 mol
+  H2SO4(aq): 1.1332371455623922e-17 mol
+  O2(aq): 9.025525792774594e-27 mol
+  HClO(aq): 2.295724196538981e-28 mol
+  ClO[-1]: 2.948738203256158e-29 mol
+  H2(aq): 6.68938690177479e-34 mol
+  ClO2[-1]: 0.0 mol
+  ClO3[-1]: 0.0 mol
+  ClO4[-1]: 0.0 mol
+  HClO2(aq): 0.0 mol
+volume: 1.0 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 6.411442269207158
+pE: 8.5
+balance_charge: auto
+solvent: H2O(aq)
+default_diffusion_coeff: 1.6106e-09
+log_level: ERROR

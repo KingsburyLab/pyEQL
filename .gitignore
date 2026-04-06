@@ -51,3 +51,6 @@ MANIFEST
 # Per-project virtualenvs
 .venv*/
 .conda*/
+
+# setuptools-scm managed version file
+src/pyEQL/_version.py

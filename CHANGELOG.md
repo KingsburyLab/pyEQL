@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-17
+
+### Added
+
+- `Phreeqc2026EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by USGS. This
+  new PHREEQC interface is accessible via the new `phreeqc2026` electrolyte modeling engine, and will be used
+  by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
+- `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
+  our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
+  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2]
+
+### Changed
+
+- `Solution.equilibrate`: Added support for solid-liquid and gas-liquid equilibrium via three new kwargs - `atmopshere`,
+  `solids`, and `gases`. See docstring for details and usage.(#292, #294, #339, @vineetbansal, @YitongPan1, @SuixiongTay)
+- `get_components_by_element`: A new keyword argument `nested` was added to methods `get_components_by_element`
+  and `get_el_amt_dict` of the `Solution` class. It defaults to `False` (no change from prior behavior), but
+  can be set to `True` to return a 2-level dictionary, with the element symbol as the key at the top level, and
+  the valence (float, or "unk" for unknown) as the key at the second level. This should make it easier for future
+  code to calculate the total amount of a given element regardless of its valence. (#284, @vineetbansal)
+- `Solution.get_property`: Changed the `lru_cache` size to greatly enhance performance when creating `Solution` that
+  contain a large number of solutes (@vineetbansal, @SuixiongTay)
+- Docs: `sphinx-material` theme migrated to `sphinx-immaterial` (#272, @ugognw, @rkingsbury)
+- Docs: resolved all the `spinx` build warnings and errors (#338, @vineetbansal)
+- Docs: Added documentation of `phreeqc2026` engine and new `equilibrate` features (#344, #349, @SuixiongTay, @YitongPan1)
+- CI: Various changes to optimize our continuous integration testing workflows. Notably, changes to the docs (only) no
+  longer trigger unit tests of the code (only of the docs), and now test against a specific set of pinned dependencies
+  from `requirements.txt`. (#285, #314, #320, #327, #328, #330, #340, @vineetbansal, @rkingsbury)
+
+### Fixed
+
+- `NativeEOS` `equilibrate`: Fixed a bug in which instantiating a solution with pure elements (e.g., `{'Na': '0.5 mol/L'}`)
+  and then calling `equilibrate` could cause that element to be "double counted." In other words, speciation calculations
+  would add `Na[+1]` to the solution but retain `Na` as well. This now works correctly. In addition, elements or species
+  that are missing from PHREEQC's database (e.g. Rh) are handled more robustly. (#282, #352, #355, @vineetbansal, @rkingsbury)
+- `from_file`: Instantiating a `Solution` from a .yaml file now gives slightly more accurate results. Previously, there were
+  slight discrepancies in the volume of the loaded solution, compared to loading from .json or `dict`. (#347, @rkingsbury)
+- `standardize_formula`: Fixed incorrect reduction of dimers. For example, `(CO2)2` was being standardized to `CO2`, which
+  could cause incorrect concentrations to be reported. Dimers are no longer reduced. (#309, @vineetbansal)
+- `FormulaDict`: ensured that quantities are always represented by `python` floats and not `np.float64` (#342, @rkingsbury)
+
+## [1.3.2] - 2025-09-15
+
+### Fixed
+
+- `Solution.get_viscosity_kinematic()`: A recent change to get_salt_dict (#258) created a problem with `get_viscosity_kinetmatic`
+  in which an empty solution would cause the method to return an error. This has been fixed, and unit tests added for both
+  `get_viscosity_kinematic` and `get_viscosity_dynamic`.
+
 ## [1.3.1] - 2025-08-18
 
 ### Fixed
@@ -63,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `numpy>2.0`
 - Bump `pint` to `0.24.4` for `numpy` `v2.0` compatibility and to mitigate CI issues (#239, @SuixiongTay, @rkingsbury)
 - CI: add `python` `v3.13` to post-merge unit tests
-- Docs: `tox -e docs` command configured to fail on warning (#255, @ugognw)
+- Docs: `tox -e docs` command configured to fail on warning (#255, ugognw)
 - Docs: ReadTheDocs built with Python 3.11 (#255, ugognw)
 - Use `importlib` to locate test files (#241, @SuixiongTay)
 - Support `numpy>2.0`

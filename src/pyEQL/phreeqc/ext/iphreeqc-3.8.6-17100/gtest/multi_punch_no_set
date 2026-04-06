@@ -1,0 +1,102 @@
+SOLUTION 1
+	pH      7 charge
+	Na	1
+	Cl	1
+	Ca	1
+	C	  2
+END
+CALCULATE_VALUES
+TOTAL_C
+-start
+10 save TOT("C")
+-end
+END
+EQUILIBRIUM_PHASES 1
+	CO2(g) -2
+	Dolomite 0
+END
+REACTION 1
+	HCl 1
+	0.1 mmol
+END
+GAS_PHASE
+	-fixed_volume
+	N2(g)	1.2
+END
+KINETICS
+	Calcite
+		-tol    1e-8
+		-m0	 3.e-3
+		-m	3.e-3
+		-parms	50	  0.6
+END
+SOLID_SOLUTION
+Sulfate
+	-comp 	Anhydrite	1.0
+	-comp	Barite		1.0
+END
+RUN_CELLS
+	-cell 1
+SELECTED_OUTPUT 
+	-reset false
+	-sim
+	-state
+	-solution
+	-dist
+	-time
+	-step
+	-pH
+	-pe
+	-reaction
+	-temperature
+	-alkalinity
+	-ionic_strength
+	-water
+	-charge_balance
+	-percent_error
+	-totals			Na	Ca
+	-molalities		Na+	HCO3-
+	-activities		Ca+2	CO3-2
+	-equilibrium_phases	CO2(g)	dolomite
+	-saturation_indices	Halite
+	-gases			N2(g)
+	-kinetics		Calcite
+	-solid_solutions	Anhydrite	Barite
+	-calculate_values       TOTAL_C
+	-inverse                false
+SELECTED_OUTPUT 2
+	-si Halite Calcite
+USER_PUNCH 20
+-heading Dummy
+10 PUNCH "Dummy"
+END
+USER_PUNCH 2
+-heading DUMMY_1 DUMMY_2
+10 PUNCH "Dummy1", "Dummy2"
+RUN_CELLS
+	-cell 1
+SELECTED_OUTPUT 1
+	-active false
+END
+RUN_CELLS
+	-cell 1
+SELECTED_OUTPUT 1
+	-active true
+END
+SOLUTION 2
+	pH 7 charge
+END
+SOLUTION 3
+	pH 7 charge
+	Na	1
+	Cl	1
+END
+INVERSE_MODELING
+	-solution  2 3
+	-phases
+		Halite
+SELECTED_OUTPUT 3
+	-reset false
+END
+RUN_CELLS
+	-cell 1

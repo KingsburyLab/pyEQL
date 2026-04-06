@@ -8,7 +8,6 @@ used by pyEQL's Solution class
 
 import copy
 import logging
-import platform
 from importlib.resources import files
 from itertools import zip_longest
 
@@ -21,7 +20,7 @@ from pint import Quantity
 import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
-from pyEQL.engines import IdealEOS, NativeEOS
+from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
 
@@ -97,7 +96,7 @@ def s6_Ca():
     )
 
 
-def test_empty_solution_3():
+def test_empty_solution():
     # create an empty solution
     s1 = Solution(database=None)
     # It should return type Solution
@@ -118,9 +117,12 @@ def test_empty_solution_3():
     assert np.isclose(s1.pE, 8.5)
     # it should contain H2O, H+, and OH- species
     assert set(s1.components.keys()) == {"H2O(aq)", "OH[-1]", "H[+1]"}
+    assert np.isclose(s1.density.to("kg/m**3").magnitude, 997.0479, atol=0.1)
+    assert np.isclose(s1.viscosity_kinematic.to("mm**2/s").magnitude, 0.8917, atol=1e-3)  # 1 cSt = 1 mm2/s
+    assert np.isclose(s1.viscosity_dynamic, s1.viscosity_kinematic * s1.density, atol=1e-8)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_oxi_state_handling():
     # see https://github.com/KingsburyLab/pyEQL/issues/116
     # and https://github.com/materialsproject/pymatgen/issues/3687
@@ -261,6 +263,7 @@ def test_chempot_energy(s1, s2):
     pass
 
 
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
     assert np.isclose(s3.charge_balance, 0)
     assert np.isclose(s5.charge_balance, 0, atol=1e-5)
@@ -373,6 +376,7 @@ def test_get_el_amt_dict(s6):
     # scale volume to 8L
     s6 *= 8
     d = s6.get_el_amt_dict()
+    d_nested = s6.get_el_amt_dict(nested=True)
     for el, amt in zip(
         ["H(1.0)", "O(-2.0)", "Ca(2.0)", "Mg(2.0)", "Na(1.0)", "Ag(1.0)", "C(4.0)", "S(6.0)", "Br(-1.0)"],
         [water_mol * 2 * 8, (water_mol + 0.018 + 0.24) * 8, 0.008, 0.040, 0.08, 0.08, 0.048, 0.48, 0.16],
@@ -380,10 +384,19 @@ def test_get_el_amt_dict(s6):
     ):
         assert np.isclose(d[el], amt, atol=1e-3)
 
+        el_no_valence = el.split("(")[0]
+        valence = float(el.split("(")[1].split(")")[0])
+        assert np.isclose(d_nested[el_no_valence][valence], amt, atol=1e-3)
+
     s = Solution({"Fe+2": "1 mM", "Fe+3": "5 mM", "FeCl2": "1 mM", "FeCl3": "5 mM"})
     d = s.get_el_amt_dict()
+    d_nested = s.get_el_amt_dict(nested=True)
     for el, amt in zip(["Fe(2.0)", "Fe(3.0)", "Cl(-1.0)"], [0.002, 0.01, 0.002 + 0.015], strict=False):
         assert np.isclose(d[el], amt, atol=1e-3)
+
+        el_no_valence = el.split("(")[0]
+        valence = float(el.split("(")[1].split(")")[0])
+        assert np.isclose(d_nested[el_no_valence][valence], amt, atol=1e-3)
 
 
 def test_p(s2):
@@ -461,8 +474,9 @@ def test_components_by_element(s1, s2):
         "Na(1.0)": ["Na[+1]"],
         "Cl(-1.0)": ["Cl[-1]"],
     }
-    if platform.machine() == "arm64" and platform.system() == "Darwin":
-        pytest.skip(reason="arm64 not supported")
+    if not PHREEQPYTHON_AVAILABLE:
+        pytest.skip(reason="Phreeqpython not available")
+
     s2.equilibrate()
     assert s2.get_components_by_element() == {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
@@ -488,6 +502,76 @@ def test_components_by_element(s1, s2):
     }
 
 
+def test_components_by_element_nested(s1, s2):
+    assert s1.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: ["H2O(aq)", "OH[-1]", "H[+1]"],
+        },
+        "O": {
+            -2.0: ["H2O(aq)", "OH[-1]"],
+        },
+    }
+
+    assert s2.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: ["H2O(aq)", "OH[-1]", "H[+1]"],
+        },
+        "O": {
+            -2.0: ["H2O(aq)", "OH[-1]"],
+        },
+        "Na": {
+            1.0: ["Na[+1]"],
+        },
+        "Cl": {
+            -1.0: ["Cl[-1]"],
+        },
+    }
+
+    if not PHREEQPYTHON_AVAILABLE:
+        pytest.skip(reason="Phreeqpython not available")
+
+    s2.equilibrate()
+
+    assert s2.get_components_by_element(nested=True) == {
+        "H": {
+            1.0: [
+                "H2O(aq)",
+                "OH[-1]",
+                "H[+1]",
+                "HCl(aq)",
+                "NaOH(aq)",
+                "HClO(aq)",
+                "HClO2(aq)",
+            ],
+            0.0: ["H2(aq)"],
+        },
+        "O": {
+            -2.0: [
+                "H2O(aq)",
+                "OH[-1]",
+                "NaOH(aq)",
+                "HClO(aq)",
+                "ClO[-1]",
+                "ClO2[-1]",
+                "ClO3[-1]",
+                "ClO4[-1]",
+                "HClO2(aq)",
+            ],
+            0.0: ["O2(aq)"],
+        },
+        "Na": {
+            1.0: ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
+        },
+        "Cl": {
+            -1.0: ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
+            1.0: ["HClO(aq)", "ClO[-1]"],
+            3.0: ["ClO2[-1]", "HClO2(aq)"],
+            5.0: ["ClO3[-1]"],
+            7.0: ["ClO4[-1]"],
+        },
+    }
+
+
 def test_get_total_amount(s2):
     assert np.isclose(s2.get_total_amount("Na(1)", "g").magnitude, 8 * 58, 44)
     assert np.isclose(s2.get_total_amount("Na", "mol").magnitude, 8)
@@ -499,7 +583,7 @@ def test_get_total_amount(s2):
     assert np.isclose(sox.get_total_amount("Fe", "mol").magnitude, 0.05)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_equilibrate(s1, s2, s5_pH):
     assert "H2(aq)" not in s1.components
     orig_pH = s1.pH
@@ -602,7 +686,7 @@ def test_conductivity(s1, s2):
     assert np.isclose(s_kcl.conductivity.magnitude, 10.862, atol=0.45)
 
 
-@pytest.mark.skipif(platform.machine() == "arm64" and platform.system() == "Darwin", reason="arm64 not supported")
+@pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
 def test_arithmetic_and_copy(s2, s6):
     s6_scale = copy.deepcopy(s6)
     s6_scale *= 1.5
@@ -704,6 +788,7 @@ def test_as_from_dict(s1, s2):
     # assert s2_new.database != s2.database
 
 
+# TODO - this test is redundant with test_as_from_dict, because dumpfn and loadfn just call as_dict and from_dict under the hood (for JSON files). Refactor and consolidate.
 def test_serialization(s1, s2, tmp_path):
     dumpfn(s1, str(tmp_path / "s1.json"))
     s1_new = loadfn(str(tmp_path / "s1.json"))
@@ -748,41 +833,76 @@ def test_serialization(s1, s2, tmp_path):
     # assert s2_new.database != s2.database
 
 
-def test_from_preset(tmp_path):
-    preset_name = "seawater"
-    solution = Solution.from_preset(preset_name)
-    preset_path = files("pyEQL") / "presets" / "seawater.yaml"
+@pytest.mark.parametrize(
+    "preset_name",
+    [
+        "seawater",
+        "ash",
+        "batt_mfg",
+        "batt_recycling",
+        "coal_washing",
+        "CRL",
+        # "drilling", # Issue #335: pH/H+ inconsistency
+        "excavation",
+        # "FGD", # Issue #335: pH/H+ inconsistency
+        "flotation",
+        "waste_gas",
+        # "gasification", # Issue #335: pH/H+ inconsistency
+        # "geothermal", # Issue #335: pH/H+ inconsistency
+        # "leachate",  # Issue #335: pH/H+ inconsistency
+        "mine_drainage",
+        "mine_tailings",
+        "plating",
+        # "pw_conv", # Issue #335: pH/H+ inconsistency
+        # "pw_unconv", # Issue #335: pH/H+ inconsistency
+        # "refining", # Issue #335: pH/H+ inconsistency
+        "semiconductor",
+        "smelting",
+        # "tanning", # Issue #335: pH/H+ inconsistency
+    ],
+)
+def test_from_preset(preset_name, tmp_path):
+    solution_yaml = Solution.from_preset(preset_name)
+    preset_path = files("pyEQL") / "presets" / f"{preset_name}.yaml"
 
     with open(str(preset_path)) as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
-    assert isinstance(solution, Solution)
-    assert solution.temperature.to("degC") == ureg.Quantity(data["temperature"])
-    assert solution.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution.pH, data["pH"], atol=0.01)
-    for solute in solution._solutes:
-        assert solute in data["solutes"]
+    assert isinstance(solution_yaml, Solution)
+    assert solution_yaml.temperature.to("degC") == ureg.Quantity(data["temperature"])
+    assert solution_yaml.pressure == ureg.Quantity(data["pressure"])
+    assert set(solution_yaml.components) == set(data["solutes"])
+    # solvent mass and pH are set on __init__, but get overwritten with the values
+    # from the file. Check that this happens correctly.
+    assert np.isclose(solution_yaml.pH, data["pH"], atol=0.0001)
+    assert np.isclose(solution_yaml.components["H2O(aq)"], float(data["solutes"]["H2O(aq)"].split(" ")[0]), atol=1e-7)
+    assert np.isclose(solution_yaml.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
     # test invalid preset
     with pytest.raises(FileNotFoundError):
         Solution.from_preset("nonexistent_preset")
     # test json as preset
     json_preset = tmp_path / "test.json"
-    dumpfn(solution, json_preset)
+    dumpfn(solution_yaml, json_preset)
     solution_json = Solution.from_preset(tmp_path / "test")
     assert isinstance(solution_json, Solution)
     assert solution_json.temperature.to("degC") == ureg.Quantity(data["temperature"])
     assert solution_json.pressure == ureg.Quantity(data["pressure"])
-    assert np.isclose(solution_json.pH, data["pH"], atol=0.01)
+    assert np.isclose(solution_json.volume.magnitude, ureg.Quantity(data["volume"]).magnitude)
+    assert np.isclose(solution_json.pH, data["pH"], atol=0.0001)
 
 
 def test_to_from_file(tmp_path):
-    s1 = Solution(volume="2 L", pH=5)
+    s1 = Solution({"Mg+2": "0.1 mol/L", "Cl-": "0.2 mol/L"}, volume="2 L", pH=5)
+    s1.equilibrate()
     for f in ["test.json", "test.yaml"]:
         filename = tmp_path / f
         s1.to_file(filename)
         assert filename.exists()
         loaded_s1 = Solution.from_file(filename)
         assert isinstance(loaded_s1, Solution)
-        assert pytest.approx(loaded_s1.volume.to("L").magnitude) == s1.volume.to("L").magnitude
+        assert np.isclose(loaded_s1.volume.to("L").magnitude, s1.volume.to("L").magnitude)
+        assert np.isclose(loaded_s1.pH, s1.pH, atol=0.0001)
+        assert np.isclose(loaded_s1.solvent_mass.magnitude, s1.solvent_mass.magnitude)
+        assert set(loaded_s1.components) == set(s1.components)
     # test invalid extension raises error
     filename = tmp_path / "test_solution.txt"
     with pytest.raises(ValueError, match=r"File extension must be .json or .yaml"):
@@ -894,6 +1014,77 @@ class TestSolutionAdd:
     @staticmethod
     def test_should_preserve_solution_database(solution: Solution, solution_sum: Solution) -> None:
         assert solution.database == solution_sum.database
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
+    def test_should_replace_monatomic_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution without specifying the charge on the ion,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # defined in the phreeqc database.
+        solution = Solution({"Na": "1 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Na(aq)" in solution.components
+        assert "Na[+1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Na", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        assert "amounts of species ['Na(aq)'] were not modified by PHREEQC" in caplog.text
+        assert "Na[+1]" in solution.components  # correct charge assignment
+        assert "Na(aq)" not in solution.components
+        new_el_amount = solution.get_total_amount("Na", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
+    def test_should_replace_diatomic_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution by specifying the charge on the ion
+        # that is different from the one determined by phreeqc,
+        # `.equilibrate()` should replace the ion with the ion with the charge
+        # determined by phreeqc.
+        solution = Solution({"ReO4-2": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "ReO4[-2]" in solution.components
+        assert "ReO4[-1]" not in solution.components
+        orig_el_amount = solution.get_total_amount("Re", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        # [ReO4-2] is not in phreeqc, but the element Re[+7] is, so it comes
+        # up with ReO4[-1] as the species and replaces our incorrect ReO4[-2].
+        assert "amounts of species ['ReO4[-2]'] were not modified by PHREEQC" in caplog.text
+        assert "ReO4[-1]" in solution.components
+        assert "ReO4[-2]" not in solution.components
+        new_el_amount = solution.get_total_amount("Re", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
+
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native"])
+    @pytest.mark.skipif(not PHREEQPYTHON_AVAILABLE, reason="Phreeqpython not available")
+    def test_should_not_discard_missing_species_from_engine(engine, caplog) -> None:
+        # When initializing a solution by specifying a species with an element
+        # that is not found in phreeqc, the species should not be discarded.
+        solution = Solution({"Rh+3": "0.001 mg/L", "Rh2O3": "0.001 mg/L"}, balance_charge="auto", engine=engine)
+        assert "Rh[+3]" in solution.components
+        assert "Rh2O3(aq)" in solution.components
+        orig_el_amount = solution.get_total_amount("Rh", "mol")
+
+        with caplog.at_level(logging.INFO, "pyEQL"):
+            solution.equilibrate()
+
+        assert "amounts of species ['Rh2O3(aq)', 'Rh[+3]'] were not modified by PHREEQC" in caplog.text
+        assert (
+            "PHREEQC discarded element Rh during equilibration. Adding all components for this element." in caplog.text
+        )
+        assert "Rh[+3]" in solution.components  # still there
+        assert "Rh2O3(aq)" in solution.components  # still there
+        new_el_amount = solution.get_total_amount("Rh", "mol")
+
+        assert np.isclose(new_el_amount, orig_el_amount)
 
 
 class TestZeroSoluteVolume:

@@ -1,17 +1,17 @@
 # Requirements file for ReadTheDocs, check .readthedocs.yml.
 # To build the module reference correctly, make sure every external package
 # under `install_requires` in `setup.cfg` is also listed here!
-pint>=0.19
-numpy
-scipy
-pymatgen>=2024.9.10
-iapws
-monty
-maggma
-phreeqpython
+pint>=0.24.4
+numpy>1.26
+scipy>=1.12
+pymatgen>=2025.1.9
+iapws>=1.5.3
+monty>=2024.12.10
+maggma>=0.71.4
+phreeqpython>=1.5.2
 sphinx>=3.2.1
 nbsphinx
 sphinx-rtd-theme
 ipython>=9.3.0
 myst-parser[linkify]
-git+https://github.com/bashtage/sphinx-material.git # Material theme
+sphinx-immaterial # Material theme

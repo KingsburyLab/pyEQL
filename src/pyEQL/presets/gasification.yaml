@@ -1,0 +1,36 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': src
+solutes:
+  H2O(aq): 55.34457593619076 mol
+  Na[+1]: 0.05695672588470538 mol
+  SO4[-2]: 0.03015234149462882 mol
+  NH4[+1]: 0.02753015353731408 mol
+  Cl[-1]: 0.020192038163333367 mol
+  NH3(aq): 0.007395222574376156 mol
+  NaSO4[-1]: 0.003812079835936366 mol
+  B(OH)3(aq): 0.00038467084240574584 mol
+  BO2[-1]: 0.00017010767348125686 mol
+  NaCl(aq): 0.00011653938465996468 mol
+  NaB(OH)4(aq): 1.1262088307950394e-05 mol
+  OH[-1]: 7.970561181640454e-06 mol
+  NaOH(aq): 4.570241812344529e-08 mol
+  HSO4[-1]: 2.108247762439199e-09 mol
+  H[+1]: 1.9079103574317806e-09 mol
+  HCl(aq): 5.387204276068828e-12 mol
+  NH4SO4[-1]: 1.3482785505317781e-12 mol
+  B2H5O6[-1]: 2.521005895369727e-17 mol
+  O2(aq): 1.5470179642169147e-17 mol
+  H2SO4(aq): 2.4178705848802665e-21 mol
+  ClO[-1]: 6.103544594020827e-26 mol
+  HClO(aq): 2.751507603067096e-27 mol
+  H2(aq): 1.9332868153285241e-38 mol
+volume: 1.0 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 8.719442034342245
+pE: 8.5
+balance_charge: auto
+solvent: H2O(aq)
+default_diffusion_coeff: 1.6106e-09
+log_level: ERROR

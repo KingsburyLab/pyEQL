@@ -7,6 +7,7 @@ pyEQL utilities
 """
 
 import logging
+import re
 from collections import UserDict
 from functools import lru_cache
 from typing import Any
@@ -75,6 +76,12 @@ def standardize_formula(formula: str):
     # replace different types of dashes with a minus sign
     for char in [r"‑", r"‐", r"‒", r"–", r"—", r"−"]:  # noqa: RUF001
         formula = formula.replace(char, "-")
+
+    # Do not modify any dimers etc (Phreeqc reports a small amount of
+    # "(CO2)2" in a water solution with C(4), for example.
+    _POLYMER_RE = re.compile(r"^\([A-Za-z0-9+-]+\)\d+$")
+    if _POLYMER_RE.match(formula):
+        return formula
 
     sform = Ion.from_formula(formula).reduced_formula
 
@@ -217,7 +224,9 @@ class FormulaDict(UserDict):
         return super().__getitem__(standardize_formula(key))
 
     def __setitem__(self, key, value) -> None:
-        super().__setitem__(standardize_formula(key), value)
+        # ensure that all values are stored as python floats, not numpy types
+        # see https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
+        super().__setitem__(standardize_formula(key), float(value))
         # sort contents anytime an item is set
         self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
 

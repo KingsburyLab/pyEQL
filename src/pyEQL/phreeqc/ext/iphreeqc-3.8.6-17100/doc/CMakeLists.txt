@@ -1,0 +1,35 @@
+if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+  if (NOT EXISTS ${CMAKE_SOURCE_DIR}/doc/html)
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/html)
+  endif()
+
+  if (NOT EXISTS ${CMAKE_SOURCE_DIR}/doc/NOTICE)
+    file(COPY ${CMAKE_SOURCE_DIR}/phreeqc3-doc/NOTICE.TXT
+         DESTINATION ${CMAKE_SOURCE_DIR}/doc)
+    file(RENAME ${CMAKE_SOURCE_DIR}/doc/NOTICE.TXT ${CMAKE_SOURCE_DIR}/doc/NOTICE)
+  endif()
+
+  if (NOT EXISTS ${CMAKE_SOURCE_DIR}/doc/README)
+    file(COPY ${CMAKE_SOURCE_DIR}/phreeqc3-doc/README.IPhreeqc.TXT
+         DESTINATION ${CMAKE_SOURCE_DIR}/doc)
+    file(RENAME ${CMAKE_SOURCE_DIR}/doc/README.IPhreeqc.TXT ${CMAKE_SOURCE_DIR}/doc/README)
+  endif()
+
+  if (NOT EXISTS ${CMAKE_SOURCE_DIR}/doc/RELEASE)
+    file(COPY ${CMAKE_SOURCE_DIR}/phreeqc3-doc/RELEASE.TXT
+         DESTINATION ${CMAKE_SOURCE_DIR}/doc)
+    file(RENAME ${CMAKE_SOURCE_DIR}/doc/RELEASE.TXT ${CMAKE_SOURCE_DIR}/doc/RELEASE)
+  endif()
+endif()
+
+SET(IPhreeqc_Docs
+IPhreeqc.pdf
+NOTICE
+Phreeqc_2_1999_manual.pdf
+Phreeqc_3_2013_manual.pdf
+README
+RELEASE
+)
+
+install(FILES ${IPhreeqc_Docs} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(DIRECTORY html/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/html)

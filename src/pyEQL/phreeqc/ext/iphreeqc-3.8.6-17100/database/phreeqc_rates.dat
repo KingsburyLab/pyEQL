@@ -1,0 +1,3158 @@
+# phreeqc_rates.dat for calculating temperature and pressure dependence of reactions, and the specific conductance and viscosity of the solution. Augmented with kinetic rates for minerals from compilations. Based on:
+#   diffusion coefficients and molal volumina of aqueous species, solubility and volume of minerals, and critical temperatures and pressures of gases in Peng-Robinson's EOS.
+# Details are given at the end of this file.
+
+SOLUTION_MASTER_SPECIES
+#
+#element  species	 alk	gfw_formula	element_gfw
+#
+H           H+      -1  H               1.008
+H(0)        H2      0   H
+H(1)        H+      -1  H
+E           e-      1   0               0
+O           H2O     0   O               16
+O(0)        O2      0   O
+O(-2)       H2O     0   0
+Ca          Ca+2    0   Ca              40.08
+Mg          Mg+2    0   Mg              24.312
+Na          Na+     0   Na              22.9898
+K           K+      0   K               39.102
+Fe          Fe+2    0   Fe              55.847
+Fe(+2)      Fe+2    0   Fe
+Fe(+3)      Fe+3    -2  Fe
+Mn          Mn+2    0   Mn              54.938
+Mn(+2)      Mn+2    0   Mn
+Mn(+3)      Mn+3    0   Mn
+Al          Al+3    0   Al              26.9815
+Ba          Ba+2    0   Ba              137.34
+Sr          Sr+2    0   Sr              87.62
+Si          H4SiO4  0   SiO2            28.0843
+Cl          Cl-     0   Cl              35.453
+C           CO3-2   2   HCO3            12.0111
+C(+4)       CO3-2   2   HCO3
+C(-4)       CH4     0   CH4
+Alkalinity  CO3-2   1   Ca0.5(CO3)0.5   50.05
+S           SO4-2   0   SO4             32.064
+S(6)        SO4-2   0   SO4
+S(-2)       HS-     1   S
+N           NO3-    0   N               14.0067
+N(+5)       NO3-    0   N
+N(+3)       NO2-    0   N
+N(0)        N2      0   N
+N(-3)       NH4+    0   N               14.0067
+#Amm         AmmH+   0   AmmH           17.031
+B           H3BO3   0   B               10.81
+P           PO4-3   2   P               30.9738
+F           F-      0   F               18.9984
+Li          Li+     0   Li              6.939
+Br          Br-     0   Br              79.904
+Zn          Zn+2    0   Zn              65.37
+Cd          Cd+2    0   Cd              112.4
+Pb          Pb+2    0   Pb              207.19
+Cu          Cu+2    0   Cu              63.546
+Cu(+2)      Cu+2    0   Cu
+Cu(+1)      Cu+1    0   Cu
+#   redox-uncoupled gases
+Hdg         Hdg     0   Hdg             2.016   #   H2  gas
+Oxg         Oxg     0   Oxg             32      #   O2  gas
+Mtg         Mtg     0   Mtg             16.032  #   CH4 gas
+Sg          H2Sg    0   H2Sg            32.064  #   H2S gas
+Ntg         Ntg     0   Ntg             28.0134 #   N2  gas
+
+SOLUTION_SPECIES
+H+ = H+
+	-gamma 9 0
+	-viscosity 9.35e-2 -8.31e-2 2.487e-2 4.49e-4 2.01e-2 1.57 # for viscosity parameters see ref. 4
+	-dw 9.31e-9 838 6.96 -2.285 0.206 24.01 0
+#	   Dw(25 C) dw_T a    a2    visc  a3    a_v_dif
+# Dw(TK) = 9.31e-9 * exp(838 / TK - 838 / 298.15) * viscos_0_25 / viscos_0_tc
+# a = DH ion size, a2 = exponent, visc = viscosity exponent, a3(H+) = 24.01 = new dw calculation from A.D. 2024, a_v_dif = exponent in (viscos_0_tc / viscos)^a_v_dif for tracer diffusion.
+
+# For SC, Dw(TK) *=  (viscos_0_tc / viscos)^visc (visc = 0.206 for H+)
+# a3 > 5 or a3 = 0 or not defined ? ka = DH_B * a * (1 + (vm - v0))^a2 * mu^0.5, in Onsager-Falkenhagen eqn. (For H+, the reference ion, vm = v0 = 0, a *= (1 + mu)^a2.)
+# a3 = -10 ? ka = DH_B * a * mu^a2  (Define a3 = -10, not used in this database.) (a3 = 24.01 for H+, a flag.)
+# -3 < a3 < 4 ? ka = DH_B * a2 * mu^0.5 / (1 + mu^a3), Appelo, 2017: Dw(I) = Dw(TK) * exp(-a * DH_A * z * sqrt_mu / (1 + ka)) (Sr+2 in this database)
+
+# If a_v_dif <> 0, Dw(TK) *= (viscos_0_tc / viscos)^a_v_dif in TRANSPORT.
+e- = e-
+H2O = H2O
+	-dw 2.299e-9 -254
+# H2O + 0.01e- = H2O-0.01; -log_k -9 # aids convergence
+Li+ = Li+
+	-gamma 6 0 # The apparent volume parameters are defined in ref. 1 & 2
+	-Vm -0.419 -0.069 13.16 -2.78 0.416 0 0.296 -12.4 -2.74e-3 1.26 # ref. 2 and Ellis, 1968, J. Chem. Soc. A, 1138
+	-viscosity 0.162 -2.45e-2 3.73e-2 9.7e-4 8.1e-4 2.087 # < 10 M LiCl
+	-dw 1.03e-9 -14 4.03 0.8341 1.679
+Na+ = Na+
+	-gamma 4 0.075
+	-gamma 4.08 0.082 # halite solubility
+	-Vm 2.28 -4.38 -4.1 -0.586 0.09 4 0.3 52 -3.33e-3 0.566
+	# -Vm   2.28  -4.38  -4.1  -0.586  0.09  4  0.3  52  -3.33e-3  0.45 # for densities (rho) when I > 3.
+	-viscosity 0.1387 -8.66e-2 1.25e-2 1.45e-2 7.5e-3 1.062
+	-dw 1.33e-9 75 3.627 0 0.7037
+K+ = K+
+	-gamma 3.5 0.015
+	-Vm 3.322 -1.473 6.534 -2.712 9.06e-2 3.5 0 29.7 0 1
+	-viscosity 0.116 -0.191 1.52e-2 1.4e-2 2.59e-2 0.9028
+	-dw 1.96e-9 254 3.484 0 0.1964
+Mg+2 = Mg+2
+	-gamma 5.5 0.2
+	-Vm -1.41 -8.6 11.13 -2.39 1.332 5.5 1.29 -32.9 -5.86e-3 1
+	-viscosity 0.426 0 0 1.66e-3 4.32e-3 2.461
+	-dw 0.705e-9 -4 5.569 0 1.047
+Ca+2 = Ca+2
+	-gamma 5 0.165
+	-Vm -0.3456 -7.252 6.149 -2.479 1.239 5 1.6 -57.1 -6.12e-3 1
+	-viscosity 0.359 -0.158 4.2e-2 1.5e-3 8.04e-3 2.3 # ref. 4, CaCl2 < 6 M
+	-dw 0.792e-9 34 5.411 0 1.046
+Sr+2 = Sr+2
+	-gamma 5.26 0.121
+	-Vm -1.57e-2 -10.15 10.18 -2.36 0.86 5.26 0.859 -27 -4.1e-3 1.97
+	-viscosity 0.472 -0.252 5.51e-3 3.67e-3 0 1.876
+	-dw 0.794e-9 149 0.805 1.961 1e-9 0.7876
+Ba+2 = Ba+2
+	-gamma 5 0
+	-gamma 4 0.153 # Barite solubility
+	-Vm 2.063 -10.06 1.9534 -2.36 0.4218 5 1.58 -12.03 -8.35e-3 1
+	-viscosity 0.338 -0.227 1.39e-2 3.07e-2 0 0.768
+	-dw 0.848e-9 174 10.53 0 3
+Fe+2 = Fe+2
+	-gamma 6 0
+	-Vm -0.3255 -9.687 1.536 -2.379 0.3033 6 -4.21e-2 39.7 0 1
+	-dw 0.719e-9
+Mn+2 = Mn+2
+	-gamma 6 0
+	-Vm -1.1 -8.03 4.08 -2.45 1.4 6 8.07 0 -1.51e-2 0.118
+	-dw 0.688e-9
+Al+3 = Al+3
+	-gamma 9 0
+	-Vm -2.28 -17.1 10.9 -2.07 2.87 9 0 0 5.5e-3 1 # ref. 2 and Barta and Hepler, 1986, Can. J.C. 64, 353
+	-dw 0.559e-9
+H4SiO4 = H4SiO4
+	-Vm 10.5 1.7 20 -2.7 0.1291 # supcrt  2*H2O in a1
+	-dw 1.1e-9
+Cl- = Cl-
+	-gamma 3.5 0.015
+	-gamma 3.63 0.017 # cf. pitzer.dat
+	-Vm 4.465 4.801 4.325 -2.847 1.748 0 -0.331 20.16 0 1
+	-viscosity 0 0 0 0 0 0 1 # the reference solute
+	-dw 2.033e-9 216 3.16 0.2071 0.7432
+CO3-2 = CO3-2
+	-gamma 5.4 0
+	-Vm 6.09 -2.78 -0.405 -5.3 5.02 0 0.169 101 -1.38e-2 0.9316
+	-viscosity -0.5 0.6521 5.44e-3 1.06e-3 -2.18e-2 1.208 -2.147
+	-dw 0.955e-9 -103 2.246 7.13e-2 0.3686
+SO4-2 = SO4-2
+	-gamma 5 -0.04
+	-Vm -7.77 43.17 176 -51.45 3.794 0 42.99 -541 -0.145 0.45 # with analytical_expressions for log K of NaSO4-, KSO4- & MgSO4, 0 - 200 oC
+	-viscosity -0.3 0.501 2.57e-3 0.195 3.14e-2 2.015 0.605
+	-dw 1.07e-9 -114 17 6.02e-2 4.94e-2
+NO3- = NO3-
+	-gamma 3 0
+	-Vm 6.32 6.78 0 -3.06 0.346 0 0.93 0 -0.012 1
+	-viscosity 8.37e-2 -0.458 1.54e-2 0.34 1.79e-2 5.02e-2 0.7381
+	-dw 1.9e-9 104 1.11
+# AmmH+ = AmmH+
+	# -gamma 2.50
+	# -Vm 5.35 2.345 3.72 -2.88 1.55 2.5 -4.54 217 2.344e-2 0.569
+	# -viscosity 9.9e-2 -0.159 1.36e-2 6.51e-3 3.21e-2 0.972
+	# -dw 1.98e-9 203 1.47 2.644 6.81e-2
+H3BO3 = H3BO3
+	-Vm 7.0643 8.8547 3.5844 -3.1451 -0.2 # supcrt
+	-dw 1.1e-9
+PO4-3 = PO4-3
+	-gamma 4 0
+	-Vm 1.24 -9.07 9.31 -2.4 5.61 0 0 0 -1.41e-2 1
+	-dw 0.612e-9
+F- = F-
+	-gamma 3.5 0
+	-Vm 0.928 1.36 6.27 -2.84 1.84 0 0 -0.318 0 1
+	-viscosity 0 2.85e-2 1.35e-2 6.11e-2 4.38e-3 1.384 0.586
+	-dw 1.46e-9 -36 4.352
+Br- = Br-
+	-gamma 3 0
+	-Vm 6.72 2.85 4.21 -3.14 1.38 0 -9.56e-2 7.08 -1.56e-3 1
+	-viscosity -6.98e-2 -0.141 1.78e-2 0.159 7.76e-3 6.25e-2 0.859
+	-dw 2.09e-9 208 3.5 0 0.5737
+Zn+2 = Zn+2
+	-gamma 5 0
+	-Vm -1.96 -10.4 14.3 -2.35 1.46 5 -1.43 24 1.67e-2 1.11
+	-dw 0.715e-9
+Cd+2 = Cd+2
+	-Vm 1.63 -10.7 1.01 -2.34 1.47 5 0 0 0 1
+	-dw 0.717e-9
+Pb+2 = Pb+2
+	-Vm -0.0051 -7.7939 8.8134 -2.4568 1.0788 4.5 # supcrt
+	-dw 0.945e-9
+Cu+2 = Cu+2
+	-gamma 6 0
+	-Vm -1.13 -10.5 7.29 -2.35 1.61 6 9.78e-2 0 3.42e-3 1
+	-dw 0.733e-9
+# redox-uncoupled gases
+Hdg = Hdg # H2
+	-Vm 6.52 0.78 0.12 # supcrt
+	-dw 5.13e-9
+Oxg = Oxg # O2
+	-Vm 5.7889 6.3536 3.2528 -3.0417 -0.3943 # supcrt
+	-dw 2.35e-9
+Mtg = Mtg # CH4
+	-Vm 9.01 -1.11 0 -1.85 -1.5 # Hnedkovsky et al., 1996, JCT 28, 125
+	-dw 1.85e-9
+Ntg = Ntg # N2
+	-Vm 7 # Pray et al., 1952, IEC 44, 1146
+	-dw 1.96e-9 -90 # Cadogan et al. 2014, JCED 59, 519
+H2Sg = H2Sg # H2S
+	-Vm 1.39 28.3 0 -7.22 -0.59 # Hnedkovsky et al., 1996, JCT 28, 125
+	-dw 2.1e-9
+# aqueous species
+H2O = OH- + H+
+	-analytic 293.29227 0.1360833 -10576.913 -123.73158 0 -6.996455e-5
+	-gamma 3.5 0
+	-Vm -9.66 28.5 80 -22.9 1.89 0 1.09 0 0 1
+	-viscosity -2.26e-2 0.106 2.184e-2  -3.2e-3 0 0.4082 -1.634 # < 5 M Li,Na,KOH
+	-dw 5.27e-9 478 0.8695
+2 H2O = O2 + 4 H+ + 4 e-
+	-log_k -86.08
+	-delta_h 134.79 kcal
+	-Vm 5.7889 6.3536 3.2528 -3.0417 -0.3943 # supcrt
+	-dw 2.35e-9
+2 H+ + 2 e- = H2
+	-log_k -3.15
+	-delta_h -1.759 kcal
+	-Vm 6.52 0.78 0.12 # supcrt
+	-dw 5.13e-9
+H+ + Cl- = HCl
+	-log_k -0.5
+	-analytical_expression 0.334 -2.684e-3 1.015 # from Pitzer.dat, up to 15 M HCl, 0 - 50°C
+	-gamma 0 0.4256
+	-viscosity 0.921 -0.765 8.32e-3 8.25e-4 2.53e-3 4.223
+CO3-2 + H+ = HCO3-
+	-log_k 10.329;  -delta_h -3.561 kcal
+	-analytic 107.8871 0.03252849 -5151.79 -38.92561 563713.9
+	-gamma 5.4 0
+	-Vm 10.26 -2.92 -12.58 -0.241 2.23 0 -5.49 320 2.83e-2 1.144
+	-viscosity -0.6 1.366 -1.216e-2 0e-2 3.139e-2 -1.135 1.253
+	-dw 1.18e-9 -190 11.386
+CO3-2 + 2 H+ = CO2 + H2O
+	-log_k 16.681
+	-delta_h -5.738 kcal
+	-analytic 464.1965 0.09344813 -26986.16 -165.75951 2248628.9
+	-Vm 7.29 0.92 2.07 -1.23 -1.6 # McBride et al. 2015, JCED 60, 171
+	-gamma 0 0.066 # Rumpf et al. 1994, J. Sol. Chem. 23, 431
+	-viscosity 6.8e-3 9.03e-2 3.27e-2 0 0 0 0.18
+	-dw 1.92e-9 -120 # TK dependence from Cadogan et al. 2014, , JCED 59, 519
+2 CO2 = (CO2)2 # activity correction for CO2 solubility at high P, T
+	-log_k -1.8
+	-analytical_expression 8.68 -0.0103 -2190
+	-Vm 14.58 1.84 4.14 -2.46 -3.2
+	-viscosity 1.36e-2 0.1806 3.27e-2 0 0 0 0.36
+	-dw 1.92e-9 -120 # TK dependence from Cadogan et al. 2014, , JCED 59, 519
+CO3-2 + 10 H+ + 8 e- = CH4 + 3 H2O
+	-log_k 41.071
+	-delta_h -61.039 kcal
+	-Vm 9.01 -1.11 0 -1.85 -1.5 # Hnedkovsky et al., 1996, JCT 28, 125
+	-dw 1.85e-9
+SO4-2 + H+ = HSO4-
+	-log_k 1.988;  -delta_h 3.85 kcal
+	-analytic -56.889 0.006473 2307.9 19.8858
+	-Vm 8.2 9.259 2.1108 -3.1618 1.1748 0 -0.3 15 0 1
+	-viscosity 0.5 -6.97e-2 6.07e-2 1e-5 -0.1333 0.4865 0.7987
+	-dw 1.22e-9 1000 15 2.861
+HS- = S-2 + H+
+	-log_k -12.918
+	-delta_h 12.1 kcal
+	-gamma 5 0
+	-dw 0.731e-9
+SO4-2 + 9 H+ + 8 e- = HS- + 4 H2O
+	-log_k 33.65
+	-delta_h -60.14 kcal
+	-gamma 3.5 0
+	-Vm 5.0119 4.9799 3.4765 -2.9849 1.441 # supcrt
+	-dw 1.73e-9
+HS- + H+ = H2S
+	-log_k 6.994; -delta_h -5.3 kcal
+	-analytical -11.17 0.02386 3279
+	-Vm 1.39 28.3 0 -7.22 -0.59 # Hnedkovsky et al., 1996, JCT 28, 125
+	-dw 2.1e-9
+2 H2S = (H2S)2 # activity correction for H2S solubility at high P, T
+	-analytical_expression 10.227 -0.01384 -2200
+	-Vm 36.41 -71.95 0 0 2.58
+	-dw 2.1e-9
+H2Sg = HSg- + H+
+	-log_k -6.994; -delta_h 5.3 kcal
+	-analytical_expression 11.17 -0.02386 -3279
+	-gamma 3.5 0
+	-Vm 5.0119 4.9799 3.4765 -2.9849 1.441 # supcrt
+	-dw 1.73e-9
+2 H2Sg = (H2Sg)2 # activity correction for H2S solubility at high P, T
+	-analytical_expression 10.227 -0.01384 -2200
+	-Vm 36.41 -71.95 0 0 2.58
+	-dw 2.1e-9
+NO3- + 2 H+ + 2 e- = NO2- + H2O
+	-log_k 28.57
+	-delta_h -43.76 kcal
+	-gamma 3 0
+	-Vm 5.5864 5.859 3.4472 -3.0212 1.1847 # supcrt
+	-dw 1.91e-9
+2 NO3- + 12 H+ + 10 e- = N2 + 6 H2O
+	-log_k 207.08
+	-delta_h -312.13 kcal
+	-Vm 7 # Pray et al., 1952, IEC 44 1146
+	-dw 1.96e-9 -90 # Cadogan et al. 2014, JCED 59, 519
+NO3- + 10 H+ + 8 e- = NH4+ + 3 H2O
+	-log_k 119.077
+	-delta_h -187.055 kcal
+	-gamma 2.5 0
+	-Vm 5.35 2.345 3.72 -2.88 1.55 2.5 -4.54 217 2.344e-2 0.569
+	-viscosity 9.9e-2 -0.159 1.36e-2 6.51e-3 3.21e-2 0.972
+	-dw 1.98e-9 203 1.47 2.644 6.81e-2
+#AmmH+ = Amm + H+
+NH4+ = NH3 + H+
+	-log_k -9.252
+	-delta_h 12.48 kcal
+	-analytic 0.6322 -0.001225 -2835.76
+	-Vm 6.69 2.8 3.58 -2.88 1.43
+	-viscosity 0.08 0 0 7.82e-3 -0.134 -0.986
+	-dw 2.28e-9
+#AmmH+ + SO4-2 = AmmHSO4-
+NH4+ + SO4-2 = NH4SO4-
+	-gamma 2.08 -0.0416
+	-log_k	1.211; -delta_h 8.56 kJ
+	-Vm -8.78 0 -36.09 0 -8.60 0 87.62 0 -0.3123 0.1172
+	-viscosity 0 0.116 -8.6e-3 0.159 -9.3e-3 0.522 0.627
+	-dw 0.9e-9 100 2.1 2 0
+H3BO3 = H2BO3- + H+
+	-log_k -9.24
+	-delta_h 3.224 kcal
+H3BO3 + F- = BF(OH)3-
+	-log_k -0.4
+	-delta_h 1.85 kcal
+H3BO3 + 2 F- + H+ = BF2(OH)2- + H2O
+	-log_k 7.63
+	-delta_h 1.618 kcal
+H3BO3 + 2 H+ + 3 F- = BF3OH- + 2 H2O
+	-log_k 13.67
+	-delta_h -1.614 kcal
+H3BO3 + 3 H+ + 4 F- = BF4- + 3 H2O
+	-log_k 20.28
+	-delta_h -1.846 kcal
+PO4-3 + H+ = HPO4-2
+	-log_k 12.346
+	-delta_h -3.53 kcal
+	-gamma 5 0
+	-dw 0.69e-9
+	-Vm 3.52 1.09 8.39 -2.82 3.34 0 0 0 0 1
+PO4-3 + 2 H+ = H2PO4-
+	-log_k 19.553
+	-delta_h -4.52 kcal
+	-gamma 5.4 0
+	-Vm 5.58 8.06 12.2 -3.11 1.3 0 0 0 1.62e-2 1
+	-dw 0.846e-9
+PO4-3 + 3 H+ = H3PO4
+	log_k 21.721 # log_k and delta_h from minteq.v4.dat, NIST46.3
+	delta_h -10.1 kJ
+	-Vm 7.47 12.4 6.29 -3.29 0
+H+ + F- = HF
+	-log_k 3.18
+	-delta_h 3.18 kcal
+	-analytic -2.033 0.012645 429.01
+	-Vm 3.4753 .7042 5.4732 -2.8081 -.0007 # supcrt
+H+ + 2 F- = HF2-
+	-log_k 3.76
+	-delta_h 4.55 kcal
+	-Vm 5.2263 4.9797 3.7928 -2.9849 1.2934 # supcrt
+Ca+2 + H2O = CaOH+ + H+
+	-log_k -12.78
+Ca+2 + CO3-2 = CaCO3
+	-log_k 3.224; -delta_h 3.545 kcal
+	-analytic -1228.732 -0.29944 35512.75 485.818
+	-dw 4.46e-10 # complexes: calc'd with the Pikal formula
+	-Vm -.243 -8.3748 9.0417 -2.4328 -.03 # supcrt
+Ca+2 + CO3-2 + H+ = CaHCO3+
+	-log_k 10.91; -delta_h 4.38 kcal
+	-analytic -6.009 3.377e-2 2044
+	-gamma 6 0
+	-Vm 30.19 .01 5.75 -2.78 .308 5.4
+	-dw 5.06e-10
+Ca+2 + SO4-2 = CaSO4
+	-log_k 2.25
+	-delta_h 1.325 kcal
+	-dw 4.71e-10
+	-Vm 2.791 -.9666 6.13 -2.739 -.001 # supcrt
+Ca+2 + HSO4- = CaHSO4+
+	-log_k 1.08
+Ca+2 + PO4-3 = CaPO4-
+	-log_k 6.459
+	-delta_h 3.1 kcal
+	-gamma 5.4 0
+Ca+2 + HPO4-2 = CaHPO4
+	-log_k 2.739
+	-delta_h 3.3 kcal
+Ca+2 + H2PO4- = CaH2PO4+
+	-log_k 1.408
+	-delta_h 3.4 kcal
+	-gamma 5.4 0
+# Ca+2 + F- = CaF+
+	# -log_k	0.94
+	# -delta_h 4.120	kcal
+	# -gamma	5.5  0.0
+	# -Vm   .9846  -5.3773  7.8635  -2.5567  .6911 5.5 # supcrt
+Mg+2 + H2O = MgOH+ + H+
+	-log_k -11.44
+	-delta_h 15.952 kcal
+	-gamma 6.5 0
+Mg+2 + CO3-2 = MgCO3
+	-log_k 2.98
+	-delta_h 2.713 kcal
+	-analytic 0.991 0.00667
+	-Vm -0.5837 -9.2067 9.3687 -2.3984 -.03 # supcrt
+	-dw 4.21e-10
+Mg+2 + H+ + CO3-2 = MgHCO3+
+	-log_k 11.399
+	-delta_h -2.771 kcal
+	-analytic 48.6721 0.03252849 -2614.335 -18.00263 563713.9
+	-gamma 4 0
+	-Vm 2.7171 -1.1469 6.2008 -2.7316 .5985 4 # supcrt
+	-dw 4.78e-10
+Mg+2 + SO4-2 = MgSO4
+	-gamma 0 0.2
+	-log_k 2.42; -delta_h 19 kJ
+	-analytical_expression 0 9.64e-3 -136 # mean salt gamma from Pitzer.dat and epsomite/hexahydrite/kieserite solubilities, 0 - 200 oC
+	-Vm 8.65 -10.21 29.58 -18.6 1.061
+	-viscosity 0.318 -5.4e-4 -3.42e-2 0.708 3.7e-3 0.696
+	-dw 4.45e-10
+SO4-2 + MgSO4 = Mg(SO4)2-2
+	-gamma 7 0.047
+	-log_k 0.52; -delta_h -13.6 kJ
+	-analytical_expression 0 -1.51e-3 0 0 8.604e4 # mean salt gamma from Pitzer.dat and epsomite/hexahydrite/kieserite solubilities, 0 - 200 oC
+	-Vm -8.14 -62.2 -15.96 3.29 -3.01 0 150 0 0.153 3.79e-2
+	-viscosity -0.169 5e-4 -5.69e-2 0.11 2.03e-3 2.027 -1e-3
+	-dw 0.845e-9 -200 8 0 0.965
+Mg+2 + PO4-3 = MgPO4-
+	-log_k 6.589
+	-delta_h 3.1 kcal
+	-gamma 5.4 0
+Mg+2 + HPO4-2 = MgHPO4
+	-log_k 2.87
+	-delta_h 3.3 kcal
+Mg+2 + H2PO4- = MgH2PO4+
+	-log_k 1.513
+	-delta_h 3.4 kcal
+	-gamma 5.4 0
+Mg+2 + F- = MgF+
+	-log_k 1.82
+	-delta_h 3.2 kcal
+	-gamma 4.5 0
+	-Vm .6494 -6.1958 8.1852 -2.5229 .9706 4.5 # supcrt
+# Na+ + OH- = NaOH
+	# -log_k -14.7 # remove this complex
+Na+ + HCO3- = NaHCO3
+	-log_k -0.06; -delta_h 21 kJ
+	-gamma 0 0.2
+	-Vm 7.95 0 0 0 0.609
+	-viscosity -4e-2 -2.717 1.67e-5
+	-dw 6.73e-10
+Na+ + SO4-2 = NaSO4-
+	-gamma 5.5 0
+	-log_k 0.6; -delta_h -14.4 kJ
+	-analytical_expression 255.903 0.10057 0 -1.11138e2 -8.5983e5 # mirabilite/thenardite solubilities, 0 - 200 oC
+	-Vm 1.99 -10.78 21.88 -12.7 1.601 5 32.38 501 1.565e-2 0.2325
+	-viscosity 0.2 -5.93e-2 -4e-4 8.46e-3 1.78e-3 2.308 -0.208
+	-dw 1.13e-9 -23 8.5 0.392 0.521
+Na+ + HPO4-2 = NaHPO4-
+	-log_k 0.29
+	-gamma 5.4 0
+	-Vm 5.2 8.1 13 -3 0.9 0 0 1.62e-2 1
+Na+ + F- = NaF
+	-log_k -0.24
+	-Vm 2.7483 -1.0708 6.1709 -2.7347 -.03 # supcrt
+K+ + HCO3- = KHCO3
+	-log_k -0.35;  -delta_h 12 kJ
+	-gamma 0 9.4e-3
+	-Vm 9.48 0 0 0 -0.542
+	-viscosity 0.7 -1.289 9e-2
+K+ + SO4-2 = KSO4-
+	-gamma 5.4 0.19
+	-log_k 0.6; -delta_h -10.4 kJ
+	-analytical_expression -3.0246 9.986e-3 0 0 1.093e5 # arcanite solubility, 0 - 200 oC
+	-Vm 13.48 -18.03 61.74 -19.6 2.046 5.4 -17.32 0 0.1522 1.919
+	-viscosity -1 1.06 1e-4 -0.464 3.78e-2 0.539 -0.69
+	-dw 0.9e-9 63 8.48 0 1.8
+K+ + HPO4-2 = KHPO4-
+	-log_k 0.29
+	-gamma 5.4 0
+	-Vm 5.4 8.1 19 -3.1 0.7 0 0 0 1.62e-2 1
+Fe+2 + H2O = FeOH+ + H+
+	-log_k -9.5
+	-delta_h 13.2 kcal
+	-gamma 5 0
+Fe+2 + 3 H2O = Fe(OH)3- + 3 H+
+	-log_k -31
+	-delta_h 30.3 kcal
+	-gamma 5 0
+Fe+2 + Cl- = FeCl+
+	-log_k 0.14
+Fe+2 + CO3-2 = FeCO3
+	-log_k 4.38
+Fe+2 + HCO3- = FeHCO3+
+	-log_k 2
+Fe+2 + SO4-2 = FeSO4
+	-log_k 2.25
+	-delta_h 3.23 kcal
+	-Vm -13 0 123
+Fe+2 + HSO4- = FeHSO4+
+	-log_k 1.08
+Fe+2 + 2 HS- = Fe(HS)2
+	-log_k 8.95
+Fe+2 + 3 HS- = Fe(HS)3-
+	-log_k 10.987
+Fe+2 + HPO4-2 = FeHPO4
+	-log_k 3.6
+Fe+2 + H2PO4- = FeH2PO4+
+	-log_k 2.7
+	-gamma 5.4 0
+Fe+2 + F- = FeF+
+	-log_k 1
+Fe+2 = Fe+3 + e-
+	-log_k -13.02
+	-delta_h 9.68 kcal
+	-gamma 9 0
+Fe+3 + H2O = FeOH+2 + H+
+	-log_k -2.19
+	-delta_h 10.4 kcal
+	-gamma 5 0
+Fe+3 + 2 H2O = Fe(OH)2+ + 2 H+
+	-log_k -5.67
+	-delta_h 17.1 kcal
+	-gamma 5.4 0
+Fe+3 + 3 H2O = Fe(OH)3 + 3 H+
+	-log_k -12.56
+	-delta_h 24.8 kcal
+Fe+3 + 4 H2O = Fe(OH)4- + 4 H+
+	-log_k -21.6
+	-delta_h 31.9 kcal
+	-gamma 5.4 0
+Fe+2 + 2 H2O = Fe(OH)2 + 2 H+
+	-log_k -20.57
+	-delta_h 28.565 kcal
+2 Fe+3 + 2 H2O = Fe2(OH)2+4 + 2 H+
+	-log_k -2.95
+	-delta_h 13.5 kcal
+3 Fe+3 + 4 H2O = Fe3(OH)4+5 + 4 H+
+	-log_k -6.3
+	-delta_h 14.3 kcal
+Fe+3 + Cl- = FeCl+2
+	-log_k 1.48
+	-delta_h 5.6 kcal
+	-gamma 5 0
+Fe+3 + 2 Cl- = FeCl2+
+	-log_k 2.13
+	-gamma 5 0
+Fe+3 + 3 Cl- = FeCl3
+	-log_k 1.13
+Fe+3 + SO4-2 = FeSO4+
+	-log_k 4.04
+	-delta_h 3.91 kcal
+	-gamma 5 0
+Fe+3 + HSO4- = FeHSO4+2
+	-log_k 2.48
+Fe+3 + 2 SO4-2 = Fe(SO4)2-
+	-log_k 5.38
+	-delta_h 4.6 kcal
+Fe+3 + HPO4-2 = FeHPO4+
+	-log_k 5.43
+	-delta_h 5.76 kcal
+	-gamma 5 0
+Fe+3 + H2PO4- = FeH2PO4+2
+	-log_k 5.43
+	-gamma 5.4 0
+Fe+3 + F- = FeF+2
+	-log_k 6.2
+	-delta_h 2.7 kcal
+	-gamma 5 0
+Fe+3 + 2 F- = FeF2+
+	-log_k 10.8
+	-delta_h 4.8 kcal
+	-gamma 5 0
+Fe+3 + 3 F- = FeF3
+	-log_k 14
+	-delta_h 5.4 kcal
+Mn+2 + H2O = MnOH+ + H+
+	-log_k -10.59
+	-delta_h 14.4 kcal
+	-gamma 5 0
+Mn+2 + 3 H2O = Mn(OH)3- + 3 H+
+	-log_k -34.8
+	-gamma 5 0
+Mn+2 + Cl- = MnCl+
+	-log_k 0.61
+	-gamma 5 0
+	-Vm 7.25 -1.08 -25.8 -2.73 3.99 5 0 0 0 1
+Mn+2 + 2 Cl- = MnCl2
+	-log_k 0.25
+	-Vm 1e-5 0 144
+Mn+2 + 3 Cl- = MnCl3-
+	-log_k -0.31
+	-gamma 5 0
+	-Vm 11.8 0 0 0 2.4 0 0 0 3.6e-2 1
+Mn+2 + CO3-2 = MnCO3
+	-log_k 4.9
+Mn+2 + HCO3- = MnHCO3+
+	-log_k 1.95
+	-gamma 5 0
+Mn+2 + SO4-2 = MnSO4
+	-log_k 2.25
+	-delta_h 3.37 kcal
+	-Vm -1.31 -1.83 62.3 -2.7
+Mn+2 + 2 NO3- = Mn(NO3)2
+	-log_k 0.6
+	-delta_h -0.396 kcal
+	-Vm 6.16 0 29.4 0 0.9
+Mn+2 + F- = MnF+
+	-log_k 0.84
+	-gamma 5 0
+Mn+2 = Mn+3 + e-
+	-log_k -25.51
+	-delta_h 25.8 kcal
+	-gamma 9 0
+Al+3 + H2O = AlOH+2 + H+
+	-log_k -5
+	-delta_h 11.49 kcal
+	-analytic -38.253 0 -656.27 14.327
+	-gamma 5.4 0
+	-Vm -1.46 -11.4 10.2 -2.31 1.67 5.4 0 0 0 1 # Barta and Hepler, 1986, Can. J. Chem. 64, 353
+Al+3 + 2 H2O = Al(OH)2+ + 2 H+
+	-log_k -10.1
+	-delta_h 26.9 kcal
+	-gamma 5.4 0
+	-analytic 88.5 0 -9391.6 -27.121
+Al+3 + 3 H2O = Al(OH)3 + 3 H+
+	-log_k -16.9
+	-delta_h 39.89 kcal
+	-analytic 226.374 0 -18247.8 -73.597
+Al+3 + 4 H2O = Al(OH)4- + 4 H+
+	-log_k -22.7
+	-delta_h 42.3 kcal
+	-analytic 51.578 0 -11168.9 -14.865
+	-gamma 4.5 0
+	-dw 1.04e-9 # Mackin & Aller, 1983, GCA 47, 959
+Al+3 + SO4-2 = AlSO4+
+	-log_k 3.5
+	-delta_h 2.29 kcal
+	-gamma 4.5 0
+Al+3 + 2 SO4-2 = Al(SO4)2-
+	-log_k 5
+	-delta_h 3.11 kcal
+	-gamma 4.5 0
+Al+3 + HSO4- = AlHSO4+2
+	-log_k 0.46
+Al+3 + F- = AlF+2
+	-log_k 7
+	-delta_h 1.06 kcal
+	-gamma 5.4 0
+Al+3 + 2 F- = AlF2+
+	-log_k 12.7
+	-delta_h 1.98 kcal
+	-gamma 5.4 0
+Al+3 + 3 F- = AlF3
+	-log_k 16.8
+	-delta_h 2.16 kcal
+Al+3 + 4 F- = AlF4-
+	-log_k 19.4
+	-delta_h 2.2 kcal
+	-gamma 4.5 0
+# Al+3 + 5 F- = AlF5-2
+	# log_k 20.6
+	# delta_h 1.840 kcal
+# Al+3 + 6 F- = AlF6-3
+	# log_k 20.6
+	# delta_h -1.670	kcal
+H4SiO4 = H3SiO4- + H+
+	-log_k -9.83
+	-delta_h 6.12 kcal
+	-analytic -302.3724 -0.050698 15669.69 108.18466 -1119669
+	-gamma 4 0
+	-Vm 7.94 1.0881 5.3224 -2.824 1.4767 # supcrt  H2O in a1
+H4SiO4 = H2SiO4-2 + 2 H+
+	-log_k -23
+	-delta_h 17.6 kcal
+	-analytic -294.0184 -0.07265 11204.49 108.18466 -1119669
+	-gamma 5.4 0
+H4SiO4 + 4 H+ + 6 F- = SiF6-2 + 4 H2O
+	-log_k 30.18
+	-delta_h -16.26 kcal
+	-gamma 5 0
+	-Vm 8.5311 13.0492 .6211 -3.3185 2.7716 # supcrt
+Ba+2 + H2O = BaOH+ + H+
+	-log_k -13.47
+	-gamma 5 0
+Ba+2 + CO3-2 = BaCO3
+	-log_k 2.71
+	-delta_h 3.55 kcal
+	-analytic 0.113 0.008721
+	-Vm .2907 -7.0717 8.5295 -2.4867 -.03 # supcrt
+Ba+2 + HCO3- = BaHCO3+
+	-log_k 0.982
+	-delta_h 5.56 kcal
+	-analytic -3.0938 0.013669
+Ba+2 + SO4-2 = BaSO4
+	-log_k 2.7
+Sr+2 + H2O = SrOH+ + H+
+	-log_k -13.29
+	-gamma 5 0
+Sr+2 + CO3-2 + H+ = SrHCO3+
+	-log_k 11.509
+	-delta_h 2.489 kcal
+	-analytic 104.6391 0.04739549 -5151.79 -38.92561 563713.9
+	-gamma 5.4 0
+Sr+2 + CO3-2 = SrCO3
+	-log_k 2.81
+	-delta_h 5.22 kcal
+	-analytic -1.019 0.012826
+	-Vm -.1787 -8.2177 8.9799 -2.4393 -.03 # supcrt
+Sr+2 + SO4-2 = SrSO4
+	-log_k 2.29
+	-delta_h 2.08 kcal
+	-Vm 6.791 -.9666 6.13 -2.739 -.001 # celestite solubility
+Li+ + SO4-2 = LiSO4-
+	-log_k 0.64
+	-gamma 5 0
+Cu+2 + e- = Cu+
+	-log_k 2.72
+	-delta_h 1.65 kcal
+	-gamma 2.5 0
+Cu+ + 2 Cl- = CuCl2-
+	-log_k 5.5
+	-delta_h -0.42 kcal
+	-gamma 4 0
+Cu+ + 3 Cl- = CuCl3-2
+	-log_k 5.7
+	-delta_h 0.26 kcal
+	-gamma 5 0
+Cu+2 + CO3-2 = CuCO3
+	-log_k 6.73
+Cu+2 + 2 CO3-2 = Cu(CO3)2-2
+	-log_k 9.83
+Cu+2 + HCO3- = CuHCO3+
+	-log_k 2.7
+Cu+2 + Cl- = CuCl+
+	-log_k 0.43
+	-delta_h 8.65 kcal
+	-gamma 4 0
+	-Vm -4.19 0 30.4 0 0 4 0 0 1.94e-2 1
+Cu+2 + 2 Cl- = CuCl2
+	-log_k 0.16
+	-delta_h 10.56 kcal
+	-Vm 26.8 0 -136
+Cu+2 + 3 Cl- = CuCl3-
+	-log_k -2.29
+	-delta_h 13.69 kcal
+	-gamma 4 0
+Cu+2 + 4 Cl- = CuCl4-2
+	-log_k -4.59
+	-delta_h 17.78 kcal
+	-gamma 5 0
+Cu+2 + F- = CuF+
+	-log_k 1.26
+	-delta_h 1.62 kcal
+Cu+2 + H2O = CuOH+ + H+
+	-log_k -8
+	-gamma 4 0
+Cu+2 + 2 H2O = Cu(OH)2 + 2 H+
+	-log_k -13.68
+Cu+2 + 3 H2O = Cu(OH)3- + 3 H+
+	-log_k -26.9
+Cu+2 + 4 H2O = Cu(OH)4-2 + 4 H+
+	-log_k -39.6
+2 Cu+2 + 2 H2O = Cu2(OH)2+2 + 2 H+
+	-log_k -10.359
+	-delta_h 17.539 kcal
+	-analytical 2.497 0 -3833
+Cu+2 + SO4-2 = CuSO4
+	-log_k 2.31
+	-delta_h 1.22 kcal
+	-Vm 5.21 0 -14.6
+Cu+2 + 3 HS- = Cu(HS)3-
+	-log_k 25.9
+Zn+2 + H2O = ZnOH+ + H+
+	-log_k -8.96
+	-delta_h 13.4 kcal
+Zn+2 + 2 H2O = Zn(OH)2 + 2 H+
+	-log_k -16.9
+Zn+2 + 3 H2O = Zn(OH)3- + 3 H+
+	-log_k -28.4
+Zn+2 + 4 H2O = Zn(OH)4-2 + 4 H+
+	-log_k -41.2
+Zn+2 + Cl- = ZnCl+
+	-log_k 0.43
+	-delta_h 7.79 kcal
+	-gamma 4 0
+	-Vm 14.8 -3.91 -105.7 -2.62 0.203 4 0 0 -5.05e-2 1
+Zn+2 + 2 Cl- = ZnCl2
+	-log_k 0.45
+	-delta_h 8.5 kcal
+	-Vm -10.1 4.57 241 -2.97 -1e-3
+Zn+2 + 3 Cl- = ZnCl3-
+	-log_k 0.5
+	-delta_h 9.56 kcal
+	-gamma 4 0
+	-Vm 0.772 15.5 -0.349 -3.42 1.25 0 -7.77 0 0 1
+Zn+2 + 4 Cl- = ZnCl4-2
+	-log_k 0.2
+	-delta_h 10.96 kcal
+	-gamma 5 0
+	-Vm 28.42 28 -5.26 -3.94 2.67 0 0 0 4.62e-2 1
+Zn+2 + H2O + Cl- = ZnOHCl + H+
+	-log_k -7.48
+Zn+2 + 2 HS- = Zn(HS)2
+	-log_k 14.94
+Zn+2 + 3 HS- = Zn(HS)3-
+	-log_k 16.1
+Zn+2 + CO3-2 = ZnCO3
+	-log_k 5.3
+Zn+2 + 2 CO3-2 = Zn(CO3)2-2
+	-log_k 9.63
+Zn+2 + HCO3- = ZnHCO3+
+	-log_k 2.1
+Zn+2 + SO4-2 = ZnSO4
+	-log_k 2.37
+	-delta_h 1.36 kcal
+	-Vm 2.51 0 18.8
+Zn+2 + 2 SO4-2 = Zn(SO4)2-2
+	-log_k 3.28
+	-Vm 10.9 0 -98.7 0 0 0 24 0 -0.236 1
+Zn+2 + Br- = ZnBr+
+	-log_k -0.58
+Zn+2 + 2 Br- = ZnBr2
+	-log_k -0.98
+Zn+2 + F- = ZnF+
+	-log_k 1.15
+	-delta_h 2.22 kcal
+Cd+2 + H2O = CdOH+ + H+
+	-log_k -10.08
+	-delta_h 13.1 kcal
+Cd+2 + 2 H2O = Cd(OH)2 + 2 H+
+	-log_k -20.35
+Cd+2 + 3 H2O = Cd(OH)3- + 3 H+
+	-log_k -33.3
+Cd+2 + 4 H2O = Cd(OH)4-2 + 4 H+
+	-log_k -47.35
+2 Cd+2 + H2O = Cd2OH+3 + H+
+	-log_k -9.39
+	-delta_h 10.9 kcal
+Cd+2 + H2O + Cl- = CdOHCl + H+
+	-log_k -7.404
+	-delta_h 4.355 kcal
+Cd+2 + NO3- = CdNO3+
+	-log_k 0.4
+	-delta_h -5.2 kcal
+	-Vm 5.95 0 -1.11 0 2.67 7 0 0 1.53e-2 1
+Cd+2 + Cl- = CdCl+
+	-log_k 1.98
+	-delta_h 0.59 kcal
+	-Vm 5.69 0 -30.2 0 0 6 0 0 0.112 1
+Cd+2 + 2 Cl- = CdCl2
+	-log_k 2.6
+	-delta_h 1.24 kcal
+	-Vm 5.53
+Cd+2 + 3 Cl- = CdCl3-
+	-log_k 2.4
+	-delta_h 3.9 kcal
+	-Vm 4.6 0 83.9 0 0 0 0 0 0 1
+Cd+2 + CO3-2 = CdCO3
+	-log_k 2.9
+Cd+2 + 2 CO3-2 = Cd(CO3)2-2
+	-log_k 6.4
+Cd+2 + HCO3- = CdHCO3+
+	-log_k 1.5
+Cd+2 + SO4-2 = CdSO4
+	-log_k 2.46
+	-delta_h 1.08 kcal
+	-Vm 10.4 0 57.9
+Cd+2 + 2 SO4-2 = Cd(SO4)2-2
+	-log_k 3.5
+	-Vm -6.29 0 -93 0 9.5 7 0 0 0 1
+Cd+2 + Br- = CdBr+
+	-log_k 2.17
+	-delta_h -0.81 kcal
+Cd+2 + 2 Br- = CdBr2
+	-log_k 2.9
+Cd+2 + F- = CdF+
+	-log_k 1.1
+Cd+2 + 2 F- = CdF2
+	-log_k 1.5
+Cd+2 + HS- = CdHS+
+	-log_k 10.17
+Cd+2 + 2 HS- = Cd(HS)2
+	-log_k 16.53
+Cd+2 + 3 HS- = Cd(HS)3-
+	-log_k 18.71
+Cd+2 + 4 HS- = Cd(HS)4-2
+	-log_k 20.9
+Pb+2 + H2O = PbOH+ + H+
+	-log_k -7.71
+Pb+2 + 2 H2O = Pb(OH)2 + 2 H+
+	-log_k -17.12
+Pb+2 + 3 H2O = Pb(OH)3- + 3 H+
+	-log_k -28.06
+Pb+2 + 4 H2O = Pb(OH)4-2 + 4 H+
+	-log_k -39.7
+2 Pb+2 + H2O = Pb2OH+3 + H+
+	-log_k -6.36
+Pb+2 + Cl- = PbCl+
+	-log_k 1.6
+	-delta_h 4.38 kcal
+	-Vm 2.8934 -.7165 6.0316 -2.7494 .1281 6 # supcrt
+Pb+2 + 2 Cl- = PbCl2
+	-log_k 1.8
+	-delta_h 1.08 kcal
+	-Vm 6.5402 8.1879 2.5318 -3.1175 -.03 # supcrt
+Pb+2 + 3 Cl- = PbCl3-
+	-log_k 1.7
+	-delta_h 2.17 kcal
+	-Vm 11.0396 19.1743 -1.7863 -3.5717 .7356 # supcrt
+Pb+2 + 4 Cl- = PbCl4-2
+	-log_k 1.38
+	-delta_h 3.53 kcal
+	-Vm 16.415 32.2997 -6.9452 -4.1143 2.3118 # supcrt
+Pb+2 + CO3-2 = PbCO3
+	-log_k 7.24
+Pb+2 + 2 CO3-2 = Pb(CO3)2-2
+	-log_k 10.64
+Pb+2 + HCO3- = PbHCO3+
+	-log_k 2.9
+Pb+2 + SO4-2 = PbSO4
+	-log_k 2.75
+Pb+2 + 2 SO4-2 = Pb(SO4)2-2
+	-log_k 3.47
+Pb+2 + 2 HS- = Pb(HS)2
+	-log_k 15.27
+Pb+2 + 3 HS- = Pb(HS)3-
+	-log_k 16.57
+3 Pb+2 + 4 H2O = Pb3(OH)4+2 + 4 H+
+	-log_k -23.88
+	-delta_h 26.5 kcal
+Pb+2 + NO3- = PbNO3+
+	-log_k 1.17
+Pb+2 + Br- = PbBr+
+	-log_k 1.77
+	-delta_h 2.88 kcal
+Pb+2 + 2 Br- = PbBr2
+	-log_k 1.44
+Pb+2 + F- = PbF+
+	-log_k 1.25
+Pb+2 + 2 F- = PbF2
+	-log_k 2.56
+Pb+2 + 3 F- = PbF3-
+	-log_k 3.42
+Pb+2 + 4 F- = PbF4-2
+	-log_k 3.1
+
+PHASES
+Calcite
+	CaCO3 = CO3-2 + Ca+2
+	-log_k -8.48
+	-delta_h -2.297 kcal
+	-analytic 17.118 -0.046528 -3496 # 0 - 250°C, Ellis, 1959, Plummer and Busenberg, 1982
+	-Vm 36.9 cm3/mol # MW (100.09 g/mol) / rho (2.71 g/cm3)
+Aragonite
+	CaCO3 = CO3-2 + Ca+2
+	-log_k -8.336
+	-delta_h -2.589 kcal
+	-analytic -171.9773 -0.077993 2903.293 71.595
+	-Vm 34.04
+Dolomite
+	CaMg(CO3)2 = Ca+2 + Mg+2 + 2 CO3-2
+	-log_k -17.09
+	-delta_h -9.436 kcal
+	-analytic 31.283 -0.0898 -6438 # 25°C: Hemingway and Robie, 1994; 50–175°C: Bénézeth et al., 2018, GCA 224, 262-275
+	-Vm 64.5
+Siderite
+	FeCO3 = Fe+2 + CO3-2
+	-log_k -10.89
+	-delta_h -2.48 kcal
+	-Vm 29.2
+Rhodochrosite
+	MnCO3 = Mn+2 + CO3-2
+	-log_k -11.13
+	-delta_h -1.43 kcal
+	-Vm 31.1
+Strontianite
+	SrCO3 = Sr+2 + CO3-2
+	-log_k -9.271
+	-delta_h -0.4 kcal
+	-analytic 155.0305 0 -7239.594 -56.58638
+	-Vm 39.69
+Witherite
+	BaCO3 = Ba+2 + CO3-2
+	-log_k -8.562
+	-delta_h 0.703 kcal
+	-analytic 607.642 0.121098 -20011.25 -236.4948
+	-Vm 46
+Gypsum
+	CaSO4:2H2O = Ca+2 + SO4-2 + 2 H2O
+	-log_k -4.58
+	-delta_h -0.109 kcal
+	-analytic 68.2401 0 -3221.51 -25.0627
+	-analytical_expression 93.7 5.99E-3 -4e3 -35.019 # better fits the appendix data of Appelo, 2015, AG 55, 62
+	-Vm 73.9 # 172.18 / 2.33 (Vm H2O = 13.9 cm3/mol)
+Anhydrite
+	CaSO4 = Ca+2 + SO4-2
+	-log_k -4.36
+	-delta_h -1.71 kcal
+	-analytic 84.9 0 -3135.12 -31.79 # 50 - 160oC, 1 - 1e3 atm, anhydrite dissolution, Blount and Dickson, 1973, Am. Mineral. 58, 323
+	-Vm 46.1 # 136.14 / 2.95
+Celestite
+	SrSO4 = Sr+2 + SO4-2
+	-log_k -6.63
+	-delta_h -4.037 kcal
+#	  -analytic	  -14805.9622	-2.4660924	 756968.533	 5436.3588	  -40553604.0
+	-analytic -7.14 6.11e-3 75 0 0 -1.79e-5 # Howell et al., 1992, JCED 37, 464
+	-Vm 46.4
+Barite
+	BaSO4 = Ba+2 + SO4-2
+	-log_k -9.97
+	-delta_h 6.35 kcal
+	-analytical_expression -282.43 -8.972e-2 5822 113.08 # Blount 1977; Templeton, 1960
+	-Vm 52.9
+Arcanite
+	K2SO4 = SO4-2 + 2 K+
+	log_k -1.776; -delta_h 5 kcal
+	-analytical_expression 674.142 0.30423 -18037 -280.236 0 -1.44055e-4 # ref. 3
+	# Note, the Linke and Seidell data may give subsaturation in other xpt's, SI = -0.06
+	-Vm 65.5
+Mirabilite
+	Na2SO4:10H2O = SO4-2 + 2 Na+ + 10 H2O
+	-analytical_expression -301.9326 -0.16232 0 141.078 # ref. 3
+	Vm 216
+Thenardite
+	Na2SO4 = 2 Na+ + SO4-2
+	-analytical_expression 57.185 8.6024e-2 0 -30.8341 0 -7.6905e-5 # ref. 3
+	-Vm 52.9
+Epsomite
+	MgSO4:7H2O = Mg+2 + SO4-2 + 7 H2O
+	log_k -1.74; -delta_h 10.57 kJ
+	-analytical_expression -3.59 6.21e-3
+	Vm 147
+Hexahydrite
+	MgSO4:6H2O = Mg+2 + SO4-2 + 6 H2O
+	log_k -1.57; -delta_h 2.35 kJ
+	-analytical_expression -1.978 1.38e-3
+	Vm 132
+Kieserite
+	MgSO4:H2O = Mg+2 + SO4-2 + H2O
+	log_k -1.16; -delta_h 9.22 kJ
+	-analytical_expression 29.485 -5.07e-2 0 -2.662 -7.95e5
+	Vm 53.8
+Hydroxyapatite
+	Ca5(PO4)3OH + 4 H+ = H2O + 3 HPO4-2 + 5 Ca+2
+	-log_k -3.421
+	-delta_h -36.155 kcal
+	-Vm 128.9
+Fluorite
+	CaF2 = Ca+2 + 2 F-
+	-log_k -10.6
+	-delta_h 4.69 kcal
+	-analytic 66.348 0 -4298.2 -25.271
+	-Vm 15.7
+SiO2(a)
+	SiO2 + 2 H2O = H4SiO4
+	-log_k -2.71
+	-delta_h 3.34 kcal
+	-analytic -0.26 0 -731
+Chalcedony
+	SiO2 + 2 H2O = H4SiO4
+	-log_k -3.55
+	-delta_h 4.72 kcal
+	-analytic -0.09 0 -1032
+	-Vm 23.1
+Quartz
+	SiO2 + 2 H2O = H4SiO4
+	-log_k -3.98
+	-delta_h 5.99 kcal
+	-analytic 0.41 0 -1309
+	-Vm 22.67
+Gibbsite
+	Al(OH)3 + 3 H+ = Al+3 + 3 H2O
+	-log_k 8.11
+	-delta_h -22.8 kcal
+	-Vm 32.22
+Al(OH)3(a)
+	Al(OH)3 + 3 H+ = Al+3 + 3 H2O
+	-log_k 10.8
+	-delta_h -26.5 kcal
+Kaolinite
+	Al2Si2O5(OH)4 + 6 H+ = H2O + 2 H4SiO4 + 2 Al+3
+	-log_k 7.435
+	-delta_h -35.3 kcal
+	-Vm 99.35
+Albite
+	NaAlSi3O8 + 8 H2O = Na+ + Al(OH)4- + 3 H4SiO4
+	-log_k -18.002
+	-delta_h 25.896 kcal
+	-Vm 101.31
+Anorthite
+	CaAl2Si2O8 + 8 H2O = Ca+2 + 2 Al(OH)4- + 2 H4SiO4
+	-log_k -19.714
+	-delta_h 11.58 kcal
+	-Vm 105.05
+K-feldspar
+	KAlSi3O8 + 8 H2O = K+ + Al(OH)4- + 3 H4SiO4
+	-log_k -20.573
+	-delta_h 30.82 kcal
+	-Vm 108.15
+K-mica
+	KAl3Si3O10(OH)2 + 10 H+ = K+ + 3 Al+3 + 3 H4SiO4
+	-log_k 12.703
+	-delta_h -59.376 kcal
+Chlorite(14A)
+	Mg5Al2Si3O10(OH)8 + 16 H+ = 5 Mg+2 + 2 Al+3 + 3 H4SiO4 + 6 H2O
+	-log_k 68.38
+	-delta_h -151.494 kcal
+Ca-Montmorillonite
+	Ca0.165Al2.33Si3.67O10(OH)2 + 12 H2O = 0.165 Ca+2 + 2.33 Al(OH)4- + 3.67 H4SiO4 + 2 H+
+	-log_k -45.027
+	-delta_h 58.373 kcal
+	-Vm 156.16
+Talc
+	Mg3Si4O10(OH)2 + 4 H2O + 6 H+ = 3 Mg+2 + 4 H4SiO4
+	-log_k 21.399
+	-delta_h -46.352 kcal
+	-Vm 68.34
+Illite
+	K0.6Mg0.25Al2.3Si3.5O10(OH)2 + 11.2 H2O = 0.6 K+ + 0.25 Mg+2 + 2.3 Al(OH)4- + 3.5 H4SiO4 + 1.2 H+
+	-log_k -40.267
+	-delta_h 54.684 kcal
+	-Vm 141.48
+Chrysotile
+	Mg3Si2O5(OH)4 + 6 H+ = H2O + 2 H4SiO4 + 3 Mg+2
+	-log_k 32.2
+	-delta_h -46.8 kcal
+	-analytic 13.248 0 10217.1 -6.1894
+	-Vm 106.5808 # 277.11/2.60
+Sepiolite
+	Mg2Si3O7.5OH:3H2O + 4 H+ + 0.5 H2O = 2 Mg+2 + 3 H4SiO4
+	-log_k 15.76
+	-delta_h -10.7 kcal
+	-Vm 143.765
+Sepiolite(d)
+	Mg2Si3O7.5OH:3H2O + 4 H+ + 0.5 H2O = 2 Mg+2 + 3 H4SiO4
+	-log_k 18.66
+Hematite
+	Fe2O3 + 6 H+ = 2 Fe+3 + 3 H2O
+	-log_k -4.008
+	-delta_h -30.845 kcal
+	-Vm 30.39
+Goethite
+	FeOOH + 3 H+ = Fe+3 + 2 H2O
+	-log_k -1
+	-delta_h -14.48 kcal
+	-Vm 20.84
+Fe(OH)3(a)
+	Fe(OH)3 + 3 H+ = Fe+3 + 3 H2O
+	-log_k 4.891
+Pyrite
+	FeS2 + 2 H+ + 2 e- = Fe+2 + 2 HS-
+	-log_k -18.479
+	-delta_h 11.3 kcal
+	-Vm 23.48
+FeS(ppt)
+	FeS + H+ = Fe+2 + HS-
+	-log_k -3.915
+Mackinawite
+	FeS + H+ = Fe+2 + HS-
+	-log_k -4.648
+	-Vm 20.45
+Sulfur
+	S + 2 H+ + 2 e- = H2S
+	-log_k 4.882
+	-delta_h -9.5 kcal
+Vivianite
+	Fe3(PO4)2:8H2O = 3 Fe+2 + 2 PO4-3 + 8 H2O
+	-log_k -36
+Pyrolusite # H2O added for surface calc's
+	MnO2:H2O + 4 H+ + 2 e- = Mn+2 + 3 H2O
+	-log_k 41.38
+	-delta_h -65.11 kcal
+Hausmannite
+	Mn3O4 + 8 H+ + 2 e- = 3 Mn+2 + 4 H2O
+	-log_k 61.03
+	-delta_h -100.64 kcal
+Manganite
+	MnOOH + 3 H+ + e- = Mn+2 + 2 H2O
+	-log_k 25.34
+Pyrochroite
+	Mn(OH)2 + 2 H+ = Mn+2 + 2 H2O
+	-log_k 15.2
+Halite
+	NaCl = Cl- + Na+
+	log_k 1.57
+	-delta_h 1.37
+	#-analytic -713.4616   -.1201241   37302.21    262.4583    -2106915.
+	-Vm 27.1
+Sylvite
+	KCl = K+ + Cl-
+	log_k 0.9
+	-delta_h 8.5
+	# -analytic	3.984	0.0   -919.55
+	Vm 37.5
+# Gases...
+CO2(g)
+	CO2 = CO2
+	-log_k -1.468
+	-delta_h -4.776 kcal
+	-analytic 10.5624 -2.3547e-2 -3972.8 0 5.8746e5 1.9194e-5
+	-T_c 304.2 # critical T, K
+	-P_c 72.86 # critical P, atm
+	-Omega 0.225 # acentric factor
+H2O(g)
+	H2O = H2O
+	-log_k 1.506; delta_h -44.03 kJ
+	-T_c 647.3; -P_c 217.6; -Omega 0.344
+	-analytic -16.5066 -2.0013E-3 2710.7 3.7646 0 2.24E-6
+O2(g)
+	O2 = O2
+	-log_k -2.8983
+	-analytic -7.5001 7.8981e-3 0 0 2.0027e5
+	-T_c 154.6; -P_c 49.8; -Omega 0.021
+H2(g)
+	H2 = H2
+	-log_k -3.105
+	-delta_h -4.184 kJ
+	-analytic -9.3114 4.6473e-3 -49.335 1.4341 1.2815e5
+	-T_c 33.2; -P_c 12.8; -Omega -0.225
+N2(g)
+	N2 = N2
+	-log_k -3.1864
+	-analytic -58.453 1.818e-3 3199 17.909 -27460
+	-T_c 126.2; -P_c 33.5; -Omega 0.039
+H2S(g)
+	H2S = H+ + HS-
+	log_k -7.93
+	-delta_h 9.1
+	-analytic -45.07 -0.02418 0 17.9205 # H2S solubilities, 0 - 300°C, 1 - 987 atm, Jiang et al., 2020, CG 555, 119816
+	-T_c 373.2; -P_c 88.2; -Omega 0.1
+CH4(g)
+	CH4 = CH4
+	-log_k -2.8
+	-analytic 10.44 -7.65e-3 -6669 0 1.014e6 # CH4 solubilities 25 - 100°C
+	-T_c 190.6; -P_c 45.4; -Omega 0.008
+#Amm(g)
+#	Amm = Amm
+NH3(g)
+	NH3 = NH3
+	-log_k 1.7966
+	-analytic -18.758 3.367e-4 2.5113e3 4.8619 39.192
+	-T_c 405.6; -P_c 111.3; -Omega 0.25
+# redox-uncoupled gases
+Oxg(g)
+	Oxg = Oxg
+	-analytic -7.5001 7.8981e-3 0 0 2.0027e5
+	-T_c 154.6; -P_c 49.8; -Omega 0.021
+Hdg(g)
+	Hdg = Hdg
+	-analytic -9.3114 4.6473e-3 -49.335 1.4341 1.2815e5
+	-T_c 33.2; -P_c 12.8; -Omega -0.225
+Ntg(g)
+	Ntg = Ntg
+	-analytic -58.453 1.818e-3 3199 17.909 -27460
+	T_c 126.2; -P_c 33.5; -Omega 0.039
+Mtg(g)
+	Mtg = Mtg
+	-log_k -2.8
+	-analytic 10.44 -7.65e-3 -6669 0 1.014e6 # CH4 solubilities 25 - 100°C
+	-T_c 190.6; -P_c 45.4; -Omega 0.008
+H2Sg(g)
+	H2Sg = H+ + HSg-
+	log_k -7.93
+	-delta_h 9.1
+	-analytic -45.07 -0.02418 0 17.9205 # H2S solubilities, 0 - 300°C, 1 - 987 atm, Jiang et al., 2020, CG 555, 119816
+	-T_c 373.2; -P_c 88.2; -Omega 0.1
+Melanterite
+	FeSO4:7H2O = 7 H2O + Fe+2 + SO4-2
+	-log_k -2.209
+	-delta_h 4.91 kcal
+	-analytic 1.447 -0.004153 0 0 -214949
+Alunite
+	KAl3(SO4)2(OH)6 + 6 H+ = K+ + 3 Al+3 + 2 SO4-2 + 6 H2O
+	-log_k -1.4
+	-delta_h -50.25 kcal
+Jarosite-K
+	KFe3(SO4)2(OH)6 + 6 H+ = 3 Fe+3 + 6 H2O + K+ + 2 SO4-2
+	-log_k -9.21
+	-delta_h -31.28 kcal
+Zn(OH)2(e)
+	Zn(OH)2 + 2 H+ = Zn+2 + 2 H2O
+	-log_k 11.5
+Smithsonite
+	ZnCO3 = Zn+2 + CO3-2
+	-log_k -10
+	-delta_h -4.36 kcal
+Sphalerite
+	ZnS + H+ = Zn+2 + HS-
+	-log_k -11.618
+	-delta_h 8.25 kcal
+Willemite 289
+	Zn2SiO4 + 4 H+ = 2 Zn+2 + H4SiO4
+	-log_k 15.33
+	-delta_h -33.37 kcal
+Cd(OH)2
+	Cd(OH)2 + 2 H+ = Cd+2 + 2 H2O
+	-log_k 13.65
+Otavite 315
+	CdCO3 = Cd+2 + CO3-2
+	-log_k -12.1
+	-delta_h -0.019 kcal
+CdSiO3 328
+	CdSiO3 + H2O + 2 H+ = Cd+2 + H4SiO4
+	-log_k 9.06
+	-delta_h -16.63 kcal
+CdSO4 329
+	CdSO4 = Cd+2 + SO4-2
+	-log_k -0.1
+	-delta_h -14.74 kcal
+Cerussite 365
+	PbCO3 = Pb+2 + CO3-2
+	-log_k -13.13
+	-delta_h 4.86 kcal
+Anglesite 384
+	PbSO4 = Pb+2 + SO4-2
+	-log_k -7.79
+	-delta_h 2.15 kcal
+Pb(OH)2 389
+	Pb(OH)2 + 2 H+ = Pb+2 + 2 H2O
+	-log_k 8.15
+	-delta_h -13.99 kcal
+GAS_BINARY_PARAMETERS
+H2O(g)  CO2(g)           0.19
+H2O(g)  H2S(g)           0.19
+H2O(g)  H2Sg(g)          0.19
+H2O(g)  CH4(g)           0.49
+H2O(g)  Mtg(g)           0.49
+H2O(g)  Methane(g)       0.49
+H2O(g)  N2(g)            0.49
+H2O(g)  Ntg(g)           0.49
+H2O(g)  Ethane(g)        0.49
+H2O(g)  Propane(g)       0.55
+EXCHANGE_MASTER_SPECIES
+	X X-
+EXCHANGE_SPECIES
+	X- = X-
+	-log_k 0
+
+	Na+ + X- = NaX
+	-log_k 0
+	-gamma 4.08 0.082
+
+	K+ + X- = KX
+	-log_k 0.7
+	-gamma 3.5 0.015
+	-delta_h -4.3 # Jardine & Sparks, 1984
+
+	Li+ + X- = LiX
+	-log_k -0.08
+	-gamma 6 0
+	-delta_h 1.4 # Merriam & Thomas, 1956
+
+# !!!!!
+#	  H+ + X- = HX
+#	  -log_k  1.0
+#	  -gamma  9.0	0
+
+#	AmmH+ + X- = AmmHX
+	NH4+ + X- = NH4X
+	-log_k 0.6
+	-gamma 2.5 0
+	-delta_h -2.4 # Laudelout et al., 1968
+
+	Ca+2 + 2 X- = CaX2
+	-log_k 0.8
+	-gamma 5 0.165
+	-delta_h 7.2 # Van Bladel & Gheyl, 1980
+
+	Mg+2 + 2 X- = MgX2
+	-log_k 0.6
+	-gamma 5.5 0.2
+	-delta_h 7.4 # Laudelout et al., 1968
+
+	Sr+2 + 2 X- = SrX2
+	-log_k 0.91
+	-gamma 5.26 0.121
+	-delta_h 5.5 # Laudelout et al., 1968
+
+	Ba+2 + 2 X- = BaX2
+	-log_k 0.91
+	-gamma 4 0.153
+	-delta_h 4.5 # Laudelout et al., 1968
+
+	Mn+2 + 2 X- = MnX2
+	-log_k 0.52
+	-gamma 6 0
+
+	Fe+2 + 2 X- = FeX2
+	-log_k 0.44
+	-gamma 6 0
+
+	Cu+2 + 2 X- = CuX2
+	-log_k 0.6
+	-gamma 6 0
+
+	Zn+2 + 2 X- = ZnX2
+	-log_k 0.8
+	-gamma 5 0
+
+	Cd+2 + 2 X- = CdX2
+	-log_k 0.8
+	-gamma 0 0
+
+	Pb+2 + 2 X- = PbX2
+	-log_k 1.05
+	-gamma 0 0
+
+	Al+3 + 3 X- = AlX3
+	-log_k 0.41
+	-gamma 9 0
+
+	AlOH+2 + 2 X- = AlOHX2
+	-log_k 0.89
+	-gamma 0 0
+
+SURFACE_MASTER_SPECIES
+	Hfo_s Hfo_sOH
+	Hfo_w Hfo_wOH
+SURFACE_SPECIES
+# All surface data from
+# Dzombak and Morel, 1990
+#
+#
+# Acid-base data from table 5.7
+#
+# strong binding site--Hfo_s,
+
+	Hfo_sOH = Hfo_sOH
+	-log_k 0
+
+	Hfo_sOH + H+ = Hfo_sOH2+
+	-log_k 7.29 # = pKa1,int
+
+	Hfo_sOH = Hfo_sO- + H+
+	-log_k -8.93 # = -pKa2,int
+
+# weak binding site--Hfo_w
+
+	Hfo_wOH = Hfo_wOH
+	-log_k 0
+
+	Hfo_wOH + H+ = Hfo_wOH2+
+	-log_k 7.29 # = pKa1,int
+
+	Hfo_wOH = Hfo_wO- + H+
+	-log_k -8.93 # = -pKa2,int
+###############################################
+# CATIONS #
+###############################################
+#
+# Cations from table 10.1 or 10.5
+#
+# Calcium
+	Hfo_sOH + Ca+2 = Hfo_sOHCa+2
+	-log_k 4.97
+
+	Hfo_wOH + Ca+2 = Hfo_wOCa+ + H+
+	-log_k -5.85
+# Strontium
+	Hfo_sOH + Sr+2 = Hfo_sOHSr+2
+	-log_k 5.01
+
+	Hfo_wOH + Sr+2 = Hfo_wOSr+ + H+
+	-log_k -6.58
+
+	Hfo_wOH + Sr+2 + H2O = Hfo_wOSrOH + 2 H+
+	-log_k -17.6
+# Barium
+	Hfo_sOH + Ba+2 = Hfo_sOHBa+2
+	-log_k 5.46
+
+	Hfo_wOH + Ba+2 = Hfo_wOBa+ + H+
+	-log_k -7.2 # table 10.5
+#
+# Cations from table 10.2
+#
+# Cadmium
+	Hfo_sOH + Cd+2 = Hfo_sOCd+ + H+
+	-log_k 0.47
+
+	Hfo_wOH + Cd+2 = Hfo_wOCd+ + H+
+	-log_k -2.91
+# Zinc
+	Hfo_sOH + Zn+2 = Hfo_sOZn+ + H+
+	-log_k 0.99
+
+	Hfo_wOH + Zn+2 = Hfo_wOZn+ + H+
+	-log_k -1.99
+# Copper
+	Hfo_sOH + Cu+2 = Hfo_sOCu+ + H+
+	-log_k 2.89
+
+	Hfo_wOH + Cu+2 = Hfo_wOCu+ + H+
+	-log_k 0.6 # table 10.5
+# Lead
+	Hfo_sOH + Pb+2 = Hfo_sOPb+ + H+
+	-log_k 4.65
+
+	Hfo_wOH + Pb+2 = Hfo_wOPb+ + H+
+	-log_k 0.3 # table 10.5
+#
+# Derived constants table 10.5
+#
+# Magnesium
+	Hfo_wOH + Mg+2 = Hfo_wOMg+ + H+
+	-log_k -4.6
+# Manganese
+	Hfo_sOH + Mn+2 = Hfo_sOMn+ + H+
+	-log_k -0.4 # table 10.5
+
+	Hfo_wOH + Mn+2 = Hfo_wOMn+ + H+
+	-log_k -3.5 # table 10.5
+# Iron, strong site: Appelo, Van der Weiden, Tournassat & Charlet, EST 36, 3096
+	Hfo_sOH + Fe+2 = Hfo_sOFe+ + H+
+	-log_k -0.95
+# Iron, weak site: Liger et al., GCA 63, 2939, re-optimized for D&M
+	Hfo_wOH + Fe+2 = Hfo_wOFe+ + H+
+	-log_k -2.98
+
+	Hfo_wOH + Fe+2 + H2O = Hfo_wOFeOH + 2 H+
+	-log_k -11.55
+###############################################
+# ANIONS #
+###############################################
+#
+# Anions from table 10.6
+#
+# Phosphate
+	Hfo_wOH + PO4-3 + 3 H+ = Hfo_wH2PO4 + H2O
+	-log_k 31.29
+
+	Hfo_wOH + PO4-3 + 2 H+ = Hfo_wHPO4- + H2O
+	-log_k 25.39
+
+	Hfo_wOH + PO4-3 + H+ = Hfo_wPO4-2 + H2O
+	-log_k 17.72
+#
+# Anions from table 10.7
+#
+# Borate
+	Hfo_wOH + H3BO3 = Hfo_wH2BO3 + H2O
+	-log_k 0.62
+#
+# Anions from table 10.8
+#
+# Sulfate
+	Hfo_wOH + SO4-2 + H+ = Hfo_wSO4- + H2O
+	-log_k 7.78
+
+	Hfo_wOH + SO4-2 = Hfo_wOHSO4-2
+	-log_k 0.79
+#
+# Derived constants table 10.10
+#
+	Hfo_wOH + F- + H+ = Hfo_wF + H2O
+	-log_k 8.7
+
+	Hfo_wOH + F- = Hfo_wOHF-
+	-log_k 1.6
+#
+# Carbonate: Van Geen et al., 1994 reoptimized for D&M model
+#
+	Hfo_wOH + CO3-2 + H+ = Hfo_wCO3- + H2O
+	-log_k 12.56
+
+	Hfo_wOH + CO3-2 + 2 H+ = Hfo_wHCO3 + H2O
+	-log_k 20.62
+#
+# Silicate: Swedlund, P.J. and Webster, J.G., 1999. Water Research 33, 3413-3422.
+#
+	Hfo_wOH + H4SiO4 = Hfo_wH3SiO4 + H2O	; log_K 4.28
+	Hfo_wOH + H4SiO4 = Hfo_wH2SiO4- + H+ + H2O; log_K -3.22
+	Hfo_wOH + H4SiO4 = Hfo_wHSiO4-2 + 2 H+ + H2O; log_K -11.69
+
+MEAN_GAMMAS
+CaCl2    Ca+2  1  Cl-    2
+CaSO4    Ca+2  1  SO4-2  1
+CaCO3    Ca+2  1  CO3-2  1
+Ca(OH)2  Ca+2  1  OH-    2
+MgCl2    Mg+2  1  Cl-    2
+MgSO4    Mg+2  1  SO4-2  1
+MgCO3    Mg+2  1  CO3-2  1
+Mg(OH)2  Mg+2  1  OH-    2
+NaCl     Na+   1  Cl-    1
+Na2SO4   Na+   2  SO4-2  1
+NaHCO3   Na+   1  HCO3-  1
+Na2CO3   Na+   2  CO3-2  1
+NaOH     Na+   1  OH-    1
+KCl      K+    1  Cl-    1
+K2SO4    K+    2  SO4-2  1
+HCO3     K+    1  HCO3-  1
+K2CO3    K+    2  CO3-2  1
+KOH      K+    1  OH-    1
+HCl      H+    1  Cl-    1
+H2SO4    H+    2  SO4-2  1
+HBr      H+    1  Br-    1
+
+RATES
+
+###########
+#Quartz
+###########
+#
+#######
+# Example of quartz kinetic rates block:
+#	  KINETICS
+#	  Quartz
+#		  -m0  158.8	 # 90 % Qu
+#		  -parms 0.146  1.5
+#		  -step 3.1536e8 in 10
+#		  -tol 1e-12
+
+Quartz
+  -start
+1 REM Specific rate k from Rimstidt and Barnes, 1980, GCA 44,1683
+2 REM k = 10^-13.7 mol/m2/s (25 C), Ea = 90 kJ/mol
+3 REM sp. rate * parm(2) due to salts (Dove and Rimstidt, MSA Rev. 29, 259)
+4 REM PARM(1) = Specific area of Quartz, m^2/mol Quartz
+5 REM PARM(2) = salt correction: (1 + 1.5 * c_Na (mM)), < 35
+
+10 dif_temp = 1/TK - 1/298
+20 pk_w = 13.7 + 4700.4 * dif_temp
+40 moles = PARM(1) * M0 * PARM(2) * (M/M0)^0.67 * 10^-pk_w * (1 - SR("Quartz"))
+#			  Integrate...
+50 SAVE moles * TIME
+  -end
+
+###########
+#K-feldspar
+###########
+#
+# Sverdrup and Warfvinge, 1995, Estimating field weathering rates
+# using laboratory kinetics: Reviews in mineralogy and geochemistry,
+# vol. 31, p. 485-541.
+#
+# As described in:
+# Appelo and Postma, 2005, Geochemistry, groundwater
+# and pollution, 2nd Edition: A.A. Balkema Publishers,
+# p. 162-163 and 395-399.
+#
+# Assume soil is 10% K-feldspar by mass in 1 mm spheres (radius 0.05 mm)
+# Assume density of rock and Kspar is 2600 kg/m^3 = 2.6 kg/L
+# GFW Kspar 0.278 kg/mol
+#
+# Moles of Kspar per liter pore space calculation:
+#   Mass of rock per liter pore space = 0.7*2.6/0.3	  = 6.07	kg rock/L pore space
+#   Mass of Kspar per liter pore space 6.07x0.1	   = 0.607    kg Kspar/L pore space
+#   Moles of Kspar per liter pore space 0.607/0.278	  = 2.18	mol Kspar/L pore space
+#
+# Specific area calculation:
+#   Volume of sphere 4/3 x pi x r^3			  = 5.24e-13 m^3 Kspar/sphere
+#   Mass of sphere 2600 x 5.24e-13			= 1.36e-9  kg Kspar/sphere
+#   Moles of Kspar in sphere 1.36e-9/0.278		= 4.90e-9  mol Kspar/sphere
+#   Surface area of one sphere 4 x pi x r^2		  = 3.14e-8  m^2/sphere
+#   Specific area of K-feldspar in sphere 3.14e-8/4.90e-9 = 6.41 m^2/mol Kspar
+#
+#
+# Example of KINETICS data block for K-feldspar rate:
+#	  KINETICS 1
+#	  K-feldspar
+#		  -m0 2.18	    # 10% Kspar, 0.1 mm cubes
+#		  -m  2.18	    # Moles per L pore space
+#		  -parms 6.41  0.1    # m^2/mol Kspar, fraction adjusts lab rate to field rate
+#		  -time 1.5 year in 40
+
+K-feldspar
+ -start
+1 REM Sverdrup and Warfvinge, 1995, mol m^-2 s^-1
+2 REM PARM(1) = Specific area of Kspar m^2/mol Kspar
+3 REM PARM(2) = Adjusts lab rate to field rate
+4 REM temp corr: from A&P, p. 162: E (kJ/mol) / R / 2.303 = H in H*(1/T-1/281)
+5 REM K-Feldspar parameters
+10 DATA 11.7, 0.5, 4e-6, 0.4, 500e-6, 0.15, 14.5, 0.14, 0.15, 13.1, 0.3
+20 RESTORE 10
+30 READ pK_H, n_H, lim_Al, x_Al, lim_BC, x_BC, pK_H2O, z_Al, z_BC, pK_OH, o_OH
+40 DATA 3500, 2000, 2500, 2000
+50 RESTORE 40
+60 READ e_H, e_H2O, e_OH, e_CO2
+70 pk_CO2 = 13
+80 n_CO2 = 0.6
+100 REM Generic rate follows
+110 dif_temp = 1/TK - 1/281
+120 BC = ACT("Na+") + ACT("K+") + ACT("Mg+2") + ACT("Ca+2")
+130 REM rate by H+
+140 pk_H = pk_H + e_H * dif_temp
+150 rate_H = 10^-pk_H * ACT("H+")^n_H / ((1 + ACT("Al+3") / lim_Al)^x_Al * (1 + BC / lim_BC)^x_BC)
+160 REM rate by hydrolysis
+170 pk_H2O = pk_H2O + e_H2O * dif_temp
+180 rate_H2O = 10^-pk_H2O / ((1 + ACT("Al+3") / lim_Al)^z_Al * (1 + BC / lim_BC)^z_BC)
+190 REM rate by OH-
+200 pk_OH = pk_OH + e_OH * dif_temp
+210 rate_OH = 10^-pk_OH * ACT("OH-")^o_OH
+220 REM rate by CO2
+230 pk_CO2 = pk_CO2 + e_CO2 * dif_temp
+240 rate_CO2 = 10^-pk_CO2 * (SR("CO2(g)"))^n_CO2
+250 rate = rate_H + rate_H2O + rate_OH + rate_CO2
+260 area = PARM(1) * M0 *(M/M0)^0.67
+270 rate = PARM(2) * area * rate * (1-SR("K-feldspar"))
+280 moles = rate * TIME
+290 SAVE moles
+ -end
+
+
+###########
+#Albite
+###########
+#
+# Sverdrup and Warfvinge, 1995, Estimating field weathering rates
+# using laboratory kinetics: Reviews in mineralogy and geochemistry,
+# vol. 31, p. 485-541.
+#
+# As described in:
+# Appelo and Postma, 2005, Geochemistry, groundwater
+# and pollution, 2nd Edition: A.A. Balkema Publishers,
+# p. 162-163 and 395-399.
+#
+# Example of KINETICS data block for Albite rate:
+#	  KINETICS 1
+#	  Albite
+#		  -m0 0.46	    # 2% Albite, 0.1 mm cubes
+#		  -m  0.46	    # Moles per L pore space
+#		  -parms 6.04  0.1    # m^2/mol Albite, fraction adjusts lab rate to field rate
+#		  -time 1.5 year in 40
+#
+# Assume soil is 2% Albite by mass in 1 mm spheres (radius 0.05 mm)
+# Assume density of rock and Albite is 2600 kg/m^3 = 2.6 kg/L
+# GFW Albite 0.262 kg/mol
+#
+# Moles of Albite per liter pore space calculation:
+#   Mass of rock per liter pore space = 0.7*2.6/0.3	  = 6.07	kg rock/L pore space
+#   Mass of Albite per liter pore space 6.07x0.02	 = 0.121    kg Albite/L pore space
+#   Moles of Albite per liter pore space 0.607/0.262	 = 0.46	mol Albite/L pore space
+#
+# Specific area calculation:
+#   Volume of sphere 4/3 x pi x r^3			  = 5.24e-13 m^3 Albite/sphere
+#   Mass of sphere 2600 x 5.24e-13			= 1.36e-9  kg Albite/sphere
+#   Moles of Albite in sphere 1.36e-9/0.262		  = 5.20e-9  mol Albite/sphere
+#   Surface area of one sphere 4 x pi x r^2		  = 3.14e-8  m^2/sphere
+#   Specific area of Albite in sphere 3.14e-8/5.20e-9	= 6.04 m^2/mol Albite
+
+Albite
+ -start
+1 REM Sverdrup and Warfvinge, 1995, mol m^-2 s^-1
+2 REM PARM(1) = Specific area of Albite m^2/mol Albite
+3 REM PARM(2) = Adjusts lab rate to field rate
+4 REM temp corr: from A&P, p. 162 E (kJ/mol) / R / 2.303 = H in H*(1/T-1/281)
+5 REM Albite parameters
+10 DATA 11.5, 0.5, 4e-6, 0.4, 500e-6, 0.2, 13.7, 0.14, 0.15, 11.8, 0.3
+20 RESTORE 10
+30 READ pK_H, n_H, lim_Al, x_Al, lim_BC, x_BC, pK_H2O, z_Al, z_BC, pK_OH, o_OH
+40 DATA 3500, 2000, 2500, 2000
+50 RESTORE 40
+60 READ e_H, e_H2O, e_OH, e_CO2
+70 pk_CO2 = 13
+80 n_CO2 = 0.6
+100 REM Generic rate follows
+110 dif_temp = 1/TK - 1/281
+120 BC = ACT("Na+") + ACT("K+") + ACT("Mg+2") + ACT("Ca+2")
+130 REM rate by H+
+140 pk_H = pk_H + e_H * dif_temp
+150 rate_H = 10^-pk_H * ACT("H+")^n_H / ((1 + ACT("Al+3") / lim_Al)^x_Al * (1 + BC / lim_BC)^x_BC)
+160 REM rate by hydrolysis
+170 pk_H2O = pk_H2O + e_H2O * dif_temp
+180 rate_H2O = 10^-pk_H2O / ((1 + ACT("Al+3") / lim_Al)^z_Al * (1 + BC / lim_BC)^z_BC)
+190 REM rate by OH-
+200 pk_OH = pk_OH + e_OH * dif_temp
+210 rate_OH = 10^-pk_OH * ACT("OH-")^o_OH
+220 REM rate by CO2
+230 pk_CO2 = pk_CO2 + e_CO2 * dif_temp
+240 rate_CO2 = 10^-pk_CO2 * (SR("CO2(g)"))^n_CO2
+250 rate = rate_H + rate_H2O + rate_OH + rate_CO2
+260 area = PARM(1) * M0 *(M/M0)^0.67
+270 rate = PARM(2) * area * rate * (1-SR("Albite"))
+280 moles = rate * TIME
+290 SAVE moles
+ -end
+
+########
+#Calcite
+########
+# Example of KINETICS data block for calcite rate,
+#   in mmol/cm2/s, Plummer et al., 1978, AJS 278, 179; Appelo et al., AG 13, 257
+# KINETICS 1
+# Calcite
+# -tol   1e-8
+# -m0    3.e-3
+# -m	3.e-3
+# -parms 1.67e5   0.6  # cm^2/mol calcite, exp factor
+# -time  1 day
+
+Calcite
+   -start
+1 REM PARM(1) = specific surface area of calcite, cm^2/mol calcite
+2 REM PARM(2) = exponent for M/M0
+
+10 si_cc = SI("Calcite")
+20 IF (M <= 0 and si_cc < 0) THEN GOTO 200
+30 k1 = 10^(0.198 - 444 / TK )
+40 k2 = 10^(2.84 - 2177 /TK )
+50 IF TC <= 25 THEN k3 = 10^(-5.86 - 317 / TK)
+60 IF TC > 25 THEN k3 = 10^(-1.1 - 1737 / TK )
+80 IF M0 > 0 THEN area = PARM(1)*M0*(M/M0)^PARM(2) ELSE area = PARM(1)*M
+110 rate = area * (k1 * ACT("H+") + k2 * ACT("CO2") + k3 * ACT("H2O"))
+120 rate = rate * (1 - 10^(2/3*si_cc))
+130 moles = rate * 0.001 * TIME # convert from mmol to mol
+200 SAVE moles
+   -end
+
+#######
+#Pyrite
+#######
+#
+# Williamson, M.A. and Rimstidt, J.D., 1994,
+# Geochimica et Cosmochimica Acta, v. 58, p. 5443-5454,
+# rate equation is mol m^-2 s^-1.
+#
+# Example of KINETICS data block for pyrite rate:
+#	  KINETICS 1
+#	  Pyrite
+#		  -tol    1e-8
+#		  -m0	5.e-4
+#		  -m	 5.e-4
+#		  -parms  0.3	0.67	.5	 -0.11
+#		  -time 1 day in 10
+Pyrite
+  -start
+1 REM Williamson and Rimstidt, 1994
+2 REM PARM(1) = log10(specific area), log10(m^2 per mole pyrite)
+3 REM PARM(2) = exp for (M/M0)
+4 REM PARM(3) = exp for O2
+5 REM PARM(4) = exp for H+
+
+10 REM Dissolution in presence of DO
+20 if (M <= 0) THEN GOTO 200
+30 if (SI("Pyrite") >= 0) THEN GOTO 200
+40 log_rate = -8.19 + PARM(3)*LM("O2") + PARM(4)*LM("H+")
+50 log_area = PARM(1) + LOG10(M0) + PARM(2)*LOG10(M/M0)
+60 moles = 10^(log_area + log_rate) * TIME
+200 SAVE moles
+  -end
+
+##########
+#Organic_C
+##########
+#
+# Example of KINETICS data block for SOC (sediment organic carbon):
+#	  KINETICS 1
+#	  Organic_C
+#		  -formula C
+#		  -tol    1e-8
+#		  -m	 5e-3   # SOC in mol
+#		  -time 30 year in 15
+Organic_C
+ -start
+1 REM Additive Monod kinetics for SOC (sediment organic carbon)
+2 REM Electron acceptors: O2, NO3, and SO4
+
+10 if (M <= 0) THEN GOTO 200
+20 mO2 = MOL("O2")
+30 mNO3 = TOT("N(5)")
+40 mSO4 = TOT("S(6)")
+50 k_O2 = 1.57e-9 # 1/sec
+60 k_NO3 = 1.67e-11 # 1/sec
+70 k_SO4 = 1.e-13 # 1/sec
+80 rate = k_O2 * mO2/(2.94e-4 + mO2)
+90 rate = rate + k_NO3 * mNO3/(1.55e-4 + mNO3)
+100 rate = rate + k_SO4 * mSO4/(1.e-4 + mSO4)
+110 moles = rate * M * (M/M0) * TIME
+200 SAVE moles
+ -end
+
+###########
+#Pyrolusite
+###########
+#
+# Postma, D. and Appelo, C.A.J., 2000, GCA, vol. 64, pp. 1237-1247.
+# Rate equation given as mol L^-1 s^-1
+#
+# Example of KINETICS data block for Pyrolusite
+#	  KINETICS 1-12
+#	  Pyrolusite
+#		  -tol    1.e-7
+#		  -m0	0.1
+#		  -m	 0.1
+#		  -time 0.5 day in 10
+Pyrolusite
+  -start
+10 if (M <= 0) THEN GOTO 200
+20 sr_pl = SR("Pyrolusite")
+30 if (sr_pl > 1) THEN GOTO 100
+40 REM sr_pl <= 1, undersaturated
+50 Fe_t = TOT("Fe(2)")
+60 if Fe_t < 1e-8 then goto 200
+70 moles = 6.98e-5 * Fe_t * (M/M0)^0.67 * TIME * (1 - sr_pl)
+80 GOTO 200
+100 REM sr_pl > 1, supersaturated
+110 moles = 2e-3 * 6.98e-5 * (1 - sr_pl) * TIME
+200 SAVE moles * SOLN_VOL
+  -end
+
+#
+#  Additional definition of PHASES, RATE parameters, and RATES examples
+#
+#  RATE_PARAMETERS_PK has parameters from Palandri and Kharaka (2004). A compilation of rate parameters of water-mineral interaction kinetics for application to geochemical modeling. USGS Open-File Report 2004-1068.
+#
+#  RATE_PARAMETERS_SVD has two examples from Sverdrup, Oelkers, Lampa, Belyazid, Kurz, and Akselsson (2019). Reviews and Syntheses: weathering of silicate minerals in soils and watersheds: parameterization of the weathering kinetics module in the PROFILE and ForSAFE models. Biogeosciences Discuss. 1-58.
+#
+#  RATE_PARAMETERS_HERMANSKA has parameters from Hermanska, Voigt, Marieni, Declercq, and Oelkers (2022, 2023). A comprehensive and internally consistent mineral dissolution rate database: Part I: Primary silicate minerals and glasses. Chemical Geology, 597, p.120807, Part II: Secondary silicate minerals. Chemical Geology, p.121632.
+
+#
+#  Example RATES definitions and input files with KINETICS show the application in
+#  Albite_PK # Palandri and Kharaka
+#  Albite_Svd # Sverdrup
+#  Albite_Hermanska
+#  Calcite_PK # Palandri and Kharaka
+#  Calcite # Plummer, Wigley, Parkhurst 1978, AJS 278, 179-216.
+#  Quartz_PK # Palandri and Kharaka
+#  Quartz_Svd # Sverdrup
+#  Quartz_Hermanska #
+#  Quartz_Rimstidt_Barnes
+#  Montmorillonite # Na, K, Mg, Ca exchange, Hermanska rate for the TOT layer
+#
+PHASES # defined for formulas and affinities of kinetic (mostly) dissolving minerals
+#        Unless noted otherwise, data from ThermoddemV1.10_15Dec2020.dat,
+#           tidied with lsp.exe from https://phreeplot.org/lsp/lsp.html
+
+Actinolite # Hornblende, Ferroactinolite
+Ca2(Mg2.25Fe2.5Al0.25)(Si7.75Al0.25)O22(OH)2 + 15 H+ + 7 H2O = 0.5 Al+3 + 2 Ca+2 + 2.5 Fe+2 + 2.25 Mg+2 + 7.75 H4SiO4
+	log_k 7.128
+	delta_h -181.662 #kJ/mol #19bla/lac
+	-analytic -5.0954182E3 -6.949504E-1 3.0825312E5 1.8133351E3 -1.8767155E7
+
+Almandine # (alpha)
+Fe3Al2Si3O12 + 12 H+ = 2 Al+3 + 3 Fe+2 + 3 H4SiO4
+	log_k 42.18
+	delta_h -458.683 #kJ/mol #95rob/hem
+	-analytic -3.0848427E3 -4.4981168E-1 1.9672956E5 1.0990475E3 -1.0509115E7
+
+Analcime
+Na0.99Al0.99Si2.01O6:H2O + 3.96 H+ + 1.04 H2O = 0.99 Al+3 + 0.99 Na+ + 2.01 H4SiO4
+	log_k 6.654
+	delta_h -98 #kJ/mol #04neu/hov
+	-analytic -1.3403358E3 -1.8135021E-1 8.3684586E4 4.7527556E2 -4.9476886E6
+
+Andalusite
+Al2SiO5 + 6 H+ = 2 Al+3 + H4SiO4 + H2O
+	log_k 16.206
+	delta_h -244.61 #kJ/mol #Internal calculation
+	-analytic -1.339469E3 -2.048042E-1 8.5279067E4 4.7661954E2 -4.3249835E6
+
+Andesine # defined for elemental release
+Na0.6Ca0.4Si2.6Al1.4O8 + 8 H2O = 0.6 Na+ + 0.4 Ca+2 + 2.6 H4SiO4 + 1.4 Al(OH)4-
+
+Andradite
+Ca3Fe2Si3O12 + 12 H+ = 3 Ca+2 + 2 Fe+3 + 3 H4SiO4
+	log_k 33.787
+	delta_h -327.864 #kJ/mol #Internal calculation
+	-analytic -2.9077837E3 -4.2372897E-1 1.7981493E5 1.040602E3 -9.7870213E6
+
+Anglesite
+PbSO4 = Pb+2 + SO4-2
+	log_k -7.848
+	delta_h 11.55 #kJ/mol #89cox/wag
+	-analytic -1.6531905E3 -2.6395706E-1 9.1051907E4 5.9877724E2 -5.5987833E6
+
+Annite
+KFe3(AlSi3)O10(OH)2 + 10 H+ = Al+3 + 3 Fe+2 + K+ + 3 H4SiO4
+	log_k 32.771
+	delta_h -306.153 #kJ/mol #92cir/nav
+	-analytic -2.6382558E3 -3.7460641E-1 1.6621477E5 9.4111433E2 -9.2002058E6
+
+Anorthite
+Ca(Al2Si2)O8 + 8 H+ = 2 Al+3 + Ca+2 + 2 H4SiO4
+	log_k 24.235
+	delta_h -303.522 #kJ/mol #95rob/hem
+	-analytic -1.9788284E3 -2.9190197E-1 1.2612201E5 7.0425974E2 -6.7173266E6
+
+Anthophyllite
+Mg7Si8O22(OH)2 + 14 H+ + 8 H2O = 7 Mg+2 + 8 H4SiO4
+	log_k 73.783
+	delta_h -583.247 #kJ/mol #95rob/hem
+	-analytic -5.2321622E3 -7.0079895E-1 3.3845592E5 1.8579984E3 -1.9360477E7
+
+Antigorite
+Mg48Si34O85(OH)62 + 96 H+ = 48 Mg+2 + 34 H4SiO4 + 11 H2O
+	log_k 500.08
+	delta_h -3743.421 #kJ/mol #98hol/pow
+	-analytic -2.9383249E4 -4.0195982 1.8738549E6 1.0481455E4 -1.0123582E8
+
+# As2S3  # Orpiment # no As in phreeqc.dat
+# As2S3 + 6H2O = 2H2AsO3- + 3HS- + 5H+
+# log_k -65.110
+# delta_h 334.975 #kJ/mol        #Internal calculation
+# -analytic -2.5599772E+3 -4.2267991E-1 1.1988784E+5 9.3328822E+2 -8.0517057E+6
+
+Augite # Pyroxene(CaAl)
+CaAl(AlSi)O6 + 8 H+ = 2 Al+3 + Ca+2 + H4SiO4 + 2 H2O
+	log_k 36.234
+	delta_h -370.792 #kJ/mol #Internal calculation
+	-analytic -1.5908243E3 -2.4603865E-1 1.0453251E5 5.681931E2 -4.9909659E6
+
+Biotite # defined for elemental release
+KFe3(AlSi3)O10(OH)2 + 10 H+ = Al+3 + K+ + 3 Fe+2 + 3 H4SiO4
+
+Bronzite # defined for elemental release
+Mg0.8Fe0.2SiO3 + 2 H+ + H2O = 0.8 Mg+2 + 0.2 Fe+2 + H4SiO4
+
+Brucite
+Mg(OH)2 + 2 H+ = Mg+2 + 2 H2O
+	log_k 17.112
+	delta_h -114.518 #kJ/mol #08bla
+	-analytic -3.5641635E2 -5.3167189E-2 2.4317829E4 1.2873122E2 -9.5286882E5
+
+Bytownite # defined for elemental release
+Na0.2Ca0.8Si2.2Al1.8O8 + 8 H2O = 0.2 Na+ + 0.8 Ca+2 + 2.2 H4SiO4 + 1.8 Al(OH)4-
+
+Chabazite
+Ca(Al2Si4)O12:6H2O + 8 H+ = 2 Al+3 + Ca+2 + 4 H4SiO4 + 2 H2O
+	log_k 11.541
+	delta_h -200.464 #kJ/mol #08bla
+	-analytic -2.5875779E3 -3.5298441E-1 1.6180839E5 9.1700928E2 -9.5494778E6
+
+Chamosite(Daphnite)
+Fe5Al(AlSi3)O10(OH)8 + 16 H+ = 2 Al+3 + 5 Fe+2 + 3 H4SiO4 + 6 H2O
+	log_k 47.603
+	delta_h -497.518 #kJ/mol #01vid/par
+	-analytic -3.7422355E3 -5.4789298E-1 2.3185338E5 1.338448E3 -1.2120616E7
+
+Chrysotile
+Mg3Si2O5(OH)4 + 6 H+ = 3 Mg+2 + 2 H4SiO4 + H2O
+	log_k 33.182
+	delta_h -244.552 #kJ/mol #04eva
+	-analytic -1.8039877E3 -2.4743291E-1 1.1552931E5 6.4375706E2 -6.1763163E6
+
+Clinochlore
+Mg5Al(AlSi3)O10(OH)8 + 16 H+ = 2 Al+3 + 5 Mg+2 + 3 H4SiO4 + 6 H2O
+	log_k 61.706
+	delta_h -593.773 #kJ/mol #05vid/par
+	-analytic -3.933293E3 -5.6860144E-1 2.4698841E5 1.4055516E3 -1.2607E7
+
+Clinoptilolite(Ca)
+Ca0.55(Si4.9Al1.1)O12:3.9H2O + 4.4 H+ + 3.7 H2O = 1.1 Al+3 + 0.55 Ca+2 + 4.9 H4SiO4
+	log_k -2.085
+	delta_h -58.407 #kJ/mol #09bla
+	-analytic -2.3815518E3 -3.0085981E-1 1.4942318E5 8.390927E2 -9.6254008E6
+
+Clinoptilolite(K)
+K1.1(Si4.9Al1.1)O12:2.7H2O + 4.4 H+ + 4.9 H2O = 1.1 Al+3 + 1.1 K+ + 4.9 H4SiO4
+	log_k -1.142
+	delta_h -49.035 #kJ/mol #09bla
+	-analytic -2.3148616E3 -2.905299E-1 1.4612903E5 8.1530832E2 -9.5298429E6
+
+Clinoptilolite(Na)
+Na1.1(Si4.9Al1.1)O12:3.5H2O + 4.4 H+ + 4.1 H2O = 1.1 Al+3 + 1.1 Na+ + 4.9 H4SiO4
+	log_k -0.113
+	delta_h -50.769 #kJ/mol #09bla
+	-analytic -2.3846087E3 -2.9645291E-1 1.4988094E5 8.401942E2 -9.6738611E6
+
+Cordierite
+Mg2Al3(AlSi5)O18 + 16 H+ + 2 H2O = 4 Al+3 + 2 Mg+2 + 5 H4SiO4
+	log_k 49.433
+	delta_h -648.745 #kJ/mol #95rob/hem
+	-analytic -4.3696636E3 -6.2958321E-1 2.8022776E5 1.5507866E3 -1.5147654E7
+
+Cristobalite # (alpha)
+SiO2 + 2 H2O = H4SiO4
+	log_k -3.158
+	delta_h 18.829 #kJ/mol #04fab/sax
+	-analytic -3.544017E2 -4.1702635E-2 2.2114271E4 1.2427357E2 -1.6001472E6
+
+# Cristobalite(beta)
+# SiO2 + 2H2O = 1H4SiO4
+# log_k -3.096
+# #delta_h   0     #kJ/mol
+# -analytic -3.6088361E+2 -4.1957223E-2 2.2873339E+4 1.2628239E+2 -1.6799304E+6
+
+Dawsonite
+NaAlCO3(OH)2 + 3 H+ = Al+3 + HCO3- + Na+ + 2 H2O
+	log_k 4.327
+	delta_h -76.33 #kJ/mol #76fer/stu
+	-analytic -1.21599E3 -1.9110794E-1 6.8919359E4 4.3970018E2 -3.7220307E6
+
+Diaspore
+AlO(OH) + 3 H+ = Al+3 + 2 H2O
+	log_k 6.866
+	delta_h -108.76 #kJ/mol #95rob/hem
+	-analytic -4.8201662E2 -7.7930965E-2 2.9964822E4 1.7237439E2 -1.3257386E6
+
+Diopside
+CaMg(SiO3)2 + 4 H+ + 2 H2O = Ca+2 + Mg+2 + 2 H4SiO4
+	log_k 21.743
+	delta_h -153.574 #kJ/mol #Internal calculation
+	-analytic -1.332806E3 -1.8198553E-1 8.603858E4 4.749095E2 -4.8802351E6
+
+Dolomite(disordered)
+CaMg(CO3)2 + 2 H+ = 2 HCO3- + Ca+2 + Mg+2
+	log_k 4.299
+	delta_h -73.162 #kJ/mol #78hel/del,92ajoh
+	-analytic -1.7814432E3 -2.8852695E-1 9.9263747E4 6.4714027E2 -5.5533944E6
+
+Edenite # (alpha)
+Na(Ca2Mg5)(AlSi7)O22(OH)2 + 18 H+ + 4 H2O = Al+3 + 2 Ca+2 + 5 Mg+2 + Na+ + 7 H4SiO4
+	log_k 81.946
+	delta_h -679.296 #kJ/mol #97got
+	-analytic -5.4623009E3 -7.5241996E-1 3.5051336E5 1.9444511E3 -1.942E7
+
+Enstatite # (alpha)
+MgSiO3 + 2 H+ + H2O = Mg+2 + H4SiO4
+	log_k 11.844
+	delta_h -93.265 #kJ/mol #78hel/del
+	-analytic -7.0139177E2 -9.4618096E-2 4.5846726E4 2.4912172E2 -2.5565294E6
+
+Epidote
+Ca2FeAl2Si3O12(OH) + 13 H+ = 2 Al+3 + 2 Ca+2 + Fe+3 + 3 H4SiO4 + H2O
+	log_k 32.23
+	delta_h -411.613 #kJ/mol #04got
+	-analytic -3.1567388E3 -4.6487997E-1 1.9676775E5 1.1260692E3 -1.0558252E7
+
+Fayalite
+Fe2SiO4 + 4 H+ = 2 Fe+2 + H4SiO4
+	log_k 19.03
+	delta_h -157.157 #kJ/mol #Internal calculation
+	-analytic -1.0258478E3 -1.4618015E-1 6.6129821E4 3.6618221E2 -3.5053712E6
+
+Ferroactinolite # = Ferrotremolite
+(Ca2Fe5)Si8O22(OH)2 + 14 H+ + 8 H2O = 2 Ca+2 + 5 Fe+2 + 8 H4SiO4
+	log_k 53.699
+	delta_h -412.225 #kJ/mol #Internal calculation
+	-analytic -4.942592E3 -6.6976495E-1 3.1400258E5 1.7585882E3 -1.8552107E7
+
+Fluorapatite # (Natur)
+Ca5(PO4)3F + 6 H+ = 5 Ca+2 + F- + 3 H2PO4-
+	log_k -0.91
+	delta_h -115.601 #kJ/mol #Internal calculation
+	-analytic -3.7675938E3 -6.2227437E-1 2.0719593E5 1.369906E3 -1.1775417E7
+
+Forsterite
+Mg2SiO4 + 4 H+ = 2 Mg+2 + H4SiO4
+	log_k 28.609
+	delta_h -217.115 #kJ/mol #Internal calculation
+	-analytic -1.0983766E3 -1.5385695E-1 7.321503E4 3.91599E2 -3.7061609E6
+
+Glauconite
+(K0.75Mg0.25Fe1.5Al0.25)(Al0.25Si3.75)O10(OH)2 + 7 H+ + 3 H2O = 0.5 Al+3 + 1.25 Fe+3 + 0.75 K+ + 0.25 Mg+2 + 3.75 H4SiO4 + 0.25 Fe+2
+	log_k 1.873
+	delta_h -120.903 #kJ/mol #15bla/vie
+	-analytic -2.3976207E3 -3.2091227E-1 1.4807364E5 8.4865741E2 -9.0151175E6
+
+Glaucophane
+Na2(Mg3Al2)Si8O22(OH)2 + 14 H+ + 8 H2O = 2 Al+3 + 3 Mg+2 + 2 Na+ + 8 H4SiO4
+	log_k 37.026
+	delta_h -378.727 #kJ/mol #95rob/hem
+	-analytic -5.095188E3 -6.8518568E-1 3.2040873E5 1.8087612E3 -1.9006796E7
+
+Grossular
+Ca3Al2Si3O12 + 12 H+ = 2 Al+3 + 3 Ca+2 + 3 H4SiO4
+	log_k 49.372
+	delta_h -442.383 #kJ/mol #95rob/hem
+	-analytic -2.9566754E3 -4.3410622E-1 1.8868769E5 1.057027E3 -1.0038715E7
+# Hornblende # see Actinolite, Edenite, Pargasite, Ferroactinolite
+
+Heulandite(Ca)
+Ca1.07Al2.14Si6.86O18:6.17H2O + 8.56 H+ + 3.27 H2O = 2.14 Al+3 + 1.07 Ca+2 + 6.86 H4SiO4
+	log_k 2.457
+	delta_h -139.108 #kJ/mol #09bla
+	-analytic -3.7607701E3 -5.0483789E-1 2.3083824E5 1.3337643E3 -1.4294418E7
+
+# Ilmenite # Ti not in phreeqc.dat
+# FeTiO3 + 2H+ + 1H2O = 1Fe+2 + 1Ti(OH)4
+# log_k 1.816
+# delta_h -87.445 #kJ/mol        #Internal calculation
+# -analytic -7.7719505E+2 -8.1479565E-2 4.34898E+4 2.7302259E+2 -1.612373E+6
+
+Heulandite(Na)
+Na2.14Al2.14Si6.86O18:6.17H2O + 8.56 H+ + 3.27 H2O = 2.14 Al+3 + 2.14 Na+ + 6.86 H4SiO4
+	log_k 2.797
+	delta_h -126.775 #kJ/mol #09bla
+	-analytic -3.7890714E3 -4.9720069E-1 2.3269508E5 1.3423841E3 -1.4400431E7
+
+Jadeite
+NaAl(SiO3)2 + 4 H+ + 2 H2O = Al+3 + Na+ + 2 H4SiO4
+	log_k 7.561
+	delta_h -95.502 #kJ/mol #95rob/hem
+	-analytic -1.3237509E3 -1.8118316E-1 8.2628986E4 4.7016122E2 -4.9060741E6
+
+Kyanite
+Al2SiO5 + 6 H+ = 2 Al+3 + H4SiO4 + H2O
+	log_k 15.936
+	delta_h -240.322 #kJ/mol #Internal calculation
+	-analytic -1.3447799E3 -2.0581745E-1 8.5324148E4 4.7877192E2 -4.3369481E6
+
+Labradorite # defined for elemental release
+Na0.4Ca0.6Si2.4Al1.6O8 + 8 H2O = 0.4 Na+ + 0.6 Ca+2 + 2.4 H4SiO4 + 1.6 Al(OH)4-
+
+Larnite(alpha)
+Ca2SiO4 + 4 H+ = 2 Ca+2 + H4SiO4
+	log_k 39.044
+	delta_h -238.161 #kJ/mol #95rob/hem
+	-analytic -8.9908942E2 -1.301379E-1 6.3335055E4 3.2296168E2 -3.0793446E6
+
+Larnite(beta)
+Ca2SiO4 + 4 H+ = 2 Ca+2 + H4SiO4
+	log_k 39.322
+#delta_h 0 #kJ/mol
+	-analytic -9.0365527E2 -1.3027777E-1 6.4015139E4 3.243254E2 -3.1477489E6
+
+Larnite(gamma)
+Ca2SiO4 + 4 H+ = 2 Ca+2 + H4SiO4
+	log_k 41.444
+#delta_h 0 #kJ/mol
+	-analytic -8.7896206E2 -1.2907359E-1 6.3430487E4 3.1585123E2 -3.1477489E6
+
+Laumontite
+Ca(Al2Si4)O12:4H2O + 8 H+ = 2 Al+3 + Ca+2 + 4 H4SiO4
+	log_k 11.695
+	delta_h -204.244 #kJ/mol #96kis/nav
+	-analytic -2.6447429E3 -3.6684244E-1 1.6419074E5 9.3900001E2 -9.6343473E6
+
+Leonhardtite
+MgSO4:4H2O = Mg+2 + SO4-2 + 4 H2O
+	log_k -0.886
+	delta_h -24.03 #kJ/mol #74nau/ryz
+	-analytic -1.8009396E3 -2.6450971E-1 9.9216758E4 6.5010323E2 -5.5554353E6
+
+Leucite # minteq.dat
+KAlSi2O6 + 2 H2O + 4 H+ = 2 H4SiO4 + Al+3 + K+
+	log_k 6.423
+	delta_h -22.085 kcal
+
+Lizardite
+Mg3Si2O5(OH)4 + 6 H+ = 3 Mg+2 + 2 H4SiO4 + H2O
+	log_k 33.093
+	delta_h -242.552 #kJ/mol #04eva
+	-analytic -1.8045338E3 -2.475614E-1 1.1546724E5 6.4405193E2 -6.1786442E6
+
+Magnetite
+Fe3O4 + 8 H+ = 2 Fe+3 + Fe+2 + 4 H2O
+	log_k 10.362
+	delta_h -215.594 #kJ/mol #90hem
+	-analytic -1.3520774E3 -2.1498134E-1 8.0017747E4 4.8502632E2 -3.7344997E6
+
+Microcline
+K(AlSi3)O8 + 4 H+ + 4 H2O = Al+3 + K+ + 3 H4SiO4
+	log_k 0.015
+	delta_h -49.203 #kJ/mol #95rob/hem
+	-analytic -1.6018728E3 -2.1339241E-1 9.9207574E4 5.6723025E2 -6.2943433E6
+
+Montmorillonite(HcCa)
+Ca0.3Mg0.6Al1.4Si4O10(OH)2 + 6 H+ + 4 H2O = 1.4 Al+3 + 0.3 Ca+2 + 0.6 Mg+2 + 4 H4SiO4
+	log_k 6.903
+	delta_h -154.564 #kJ/mol #15bla/vie
+	-analytic -2.3616529E3 -3.1379357E-1 1.4899818E5 8.3431323E2 -9.0744862E6
+
+Montmorillonite(HcK)
+K0.6Mg0.6Al1.4Si4O10(OH)2 + 6 H+ + 4 H2O = 1.4 Al+3 + 0.6 K+ + 0.6 Mg+2 + 4 H4SiO4
+	log_k 4.449
+	delta_h -119.628 #kJ/mol #15bla/vie
+	-analytic -2.3324885E3 -3.0832834E-1 1.4605682E5 8.2462838E2 -9.022722E6
+
+Montmorillonite(HcMg)
+Mg0.3Mg0.6Al1.4Si4O10(OH)2 + 6 H+ + 4 H2O = 1.4 Al+3 + 0.9 Mg+2 + 4 H4SiO4
+	log_k 5.996
+	delta_h -156.964 #kJ/mol #15bla/vie
+	-analytic -2.3909331E3 -3.1726069E-1 1.5070041E5 8.4429278E2 -9.163021E6
+
+Montmorillonite(HcNa)
+Na0.6Mg0.6Al1.4Si4O10(OH)2 + 6 H+ + 4 H2O = 1.4 Al+3 + 0.6 Mg+2 + 0.6 Na+ + 4 H4SiO4
+	log_k 5.472
+	delta_h -135.658 #kJ/mol #15bla/vie
+	-analytic -2.3671642E3 -3.1193536E-1 1.486659E5 8.3634354E2 -9.1085654E6
+
+Montmorillonite(MgCa)
+Ca0.17Mg0.34Al1.66Si4O10(OH)2 + 6 H+ + 4 H2O = 1.66 Al+3 + 0.17 Ca+2 + 0.34 Mg+2 + 4 H4SiO4
+	log_k 4.222
+	delta_h -146.668 #kJ/mol #15bla/vie
+	-analytic -2.3648299E3 -3.1580182E-1 1.4861699E5 8.3532612E2 -9.0862785E6
+
+Montmorillonite(MgK)
+K0.34Mg0.34Al1.66Si4O10(OH)2 + 6 H+ + 4 H2O = 1.66 Al+3 + 0.34 K+ + 0.34 Mg+2 + 4 H4SiO4
+	log_k 2.83
+	delta_h -126.865 #kJ/mol #15bla/vie
+	-analytic -2.3483045E3 -3.1270489E-1 1.4694997E5 8.2983827E2 -9.056946E6
+
+Montmorillonite(MgMg)
+Mg0.17Mg0.34Al1.66Si4O10(OH)2 + 6 H+ + 4 H2O = 1.66 Al+3 + 0.51 Mg+2 + 4 H4SiO4
+	log_k 3.708
+	delta_h -148.028 #kJ/mol #15bla/vie
+	-analytic -2.3814282E3 -3.1776702E-1 1.4958186E5 8.4098328E2 -9.1364559E6
+
+Montmorillonite(MgNa)
+Na0.34Mg0.34Al1.66Si4O10(OH)2 + 6 H+ + 4 H2O = 1.66 Al+3 + 0.34 Mg+2 + 0.34 Na+ + 4 H4SiO4
+	log_k 3.411
+	delta_h -135.953 #kJ/mol #15bla/vie
+	-analytic -2.3679565E3 -3.1474933E-1 1.4842879E5 8.3647775E2 -9.1055977E6
+
+MordeniteB # (Ca)
+Ca0.515Al1.03Si4.97O12:3.1H2O + 4.12 H+ + 4.78 H2O = 1.03 Al+3 + 0.515 Ca+2 + 4.97 H4SiO4
+	log_k -2.898
+	delta_h -56.278 #kJ/mol #09bla
+	-analytic -2.3577543E3 -2.9682032E-1 1.4847577E5 8.2993876E2 -9.6241393E6
+
+MordeniteJ
+Ca0.289Na0.362Al0.94Si5.06O12:3.468H2O + 3.76 H+ + 4.772 H2O = 0.94 Al+3 + 0.289 Ca+2 + 0.362 Na+ + 5.06 H4SiO4
+	log_k -4.16
+	delta_h -29.442 #kJ/mol #92joh/tas
+	-analytic -2.3112502E3 -2.9430315E-1 1.4403365E5 8.1541676E2 -9.418252E6
+
+Muscovite # (ordered)
+KAl2(AlSi3)O10(OH)2 + 10 H+ = 3 Al+3 + K+ + 3 H4SiO4
+	log_k 11.353
+	delta_h -253.923 #kJ/mol #06bla/pia
+	-analytic -2.5862792E3 -3.7607072E-1 1.5907562E5 9.2024545E2 -8.9668534E6
+
+Natrolite
+Na2(Al2Si3)O10:2H2O + 8 H+ = 2 Al+3 + 2 Na+ + 3 H4SiO4
+	log_k 19.326
+	delta_h -215.463 #kJ/mol #83joh/flo
+	-analytic -2.303612E3 -3.1993458E-1 1.4352482E5 8.1980235E2 -8.1431211E6
+
+Nepheline
+Na(AlSi)O4 + 4 H+ = Al+3 + Na+ + H4SiO4
+	log_k 14.077
+	delta_h -144.506 #kJ/mol #Internal calculation
+	-analytic -9.7409139E2 -1.3955693E-1 6.2423687E4 3.467383E2 -3.3400695E6
+
+Oligoclase # defined for elemental release
+Na0.8Ca0.2Si2.8Al1.2O8 + 8 H2O = 0.8 Na+ + 0.2 Ca+2 + 2.8 H4SiO4 + 1.2 Al(OH)4-
+
+Palygorskite # defined for elemental release
+Mg2Al2Si8O20(OH)2:8H2O + 10 H+ + 2 H2O = 2 Mg+2 + 2 Al+3 + 8 H4SiO4
+
+Paragonite
+NaAl2(AlSi3)O10(OH)2 + 10 H+ = 3 Al+3 + Na+ + 3 H4SiO4
+	log_k 16.804
+	delta_h -294.623 #kJ/mol #96rou/hov
+	-analytic -2.6452559E3 -3.8247258E-1 1.64246E5 9.4070011E2 -9.1107641E6
+
+Pargasite # Hornblende
+Na(Ca2Mg4Al)(Al2Si6)O22(OH)2 + 22 H+ = 3 Al+3 + 2 Ca+2 + 4 Mg+2 + Na+ + 6 H4SiO4
+	log_k 104.557
+	delta_h -940.614 #kJ/mol #Internal calculation
+	-analytic -5.7962939E3 -8.2700886E-1 3.7555969E5 2.0652064E3 -1.9772394E7
+
+Phlogopite
+KMg3(AlSi3)O10(OH)2 + 10 H+ = Al+3 + K+ + 3 Mg+2 + 3 H4SiO4
+	log_k 41.098
+	delta_h -353.123 #kJ/mol #92cir/nav
+	-analytic -2.7194067E3 -3.8106546E-1 1.7318081E5 9.69566E2 -9.4102646E6
+
+Prehnite
+Ca2Al2Si3O10(OH)2 + 10 H+ = 2 Al+3 + 2 Ca+2 + 3 H4SiO4
+	log_k 32.596
+	delta_h -339.617 #kJ/mol #98cha/kru
+	-analytic -2.6255465E3 -3.8041883E-1 1.6586587E5 9.3642007E2 -9.0549681E6
+
+Pyrophyllite
+Al2Si4O10(OH)2 + 6 H+ + 4 H2O = 2 Al+3 + 4 H4SiO4
+	log_k -0.418
+	delta_h -128.924 #kJ/mol #95rob/hem
+	-analytic -2.3595061E3 -3.237303E-1 1.4585394E5 8.3524091E2 -8.9193526E6
+
+Pyrrhotite(Hx) # Pyrrhotite
+FeS + H+ = Fe+2 + HS-
+	log_k -3.679
+	delta_h -10.009 #kJ/mol #05wal/pel
+	-analytic -1.1321823E3 -1.8235764E-1 6.1304821E4 4.1103628E2 -3.5403537E6
+
+Pyrrhotite(Mc) # Pyrrhotite
+FeS + H+ = Fe+2 + HS-
+	log_k -3.679
+	delta_h -10.009 #kJ/mol #05wal/pel
+	-analytic -1.1321823E3 -1.8235764E-1 6.1304821E4 4.1103628E2 -3.5403537E6
+
+Rhyolite # a mixture of minerals, defined for elemental release...
+Na0.078K0.046Al0.26Si1.23O2.912 + 3.048 H2O = 0.136 H+ + 0.078 Na+ + 0.046 K+ + 0.26 Al(OH)4- + 1.23 H4SiO4
+
+Riebeckite
+Na2(Fe3Fe2)Si8O22(OH)2 + 14 H+ + 8 H2O = 3 Fe+2 + 2 Na+ + 8 H4SiO4 + 2 Fe+3
+	log_k 9.199
+	delta_h -197.377 #kJ/mol #98hol/pow
+	-analytic -5.0079102E3 -6.7170777E-1 3.0608951E5 1.7785742E3 -1.8686839E7
+
+Saponite(Ca)
+Ca0.17Mg3Al0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + 0.17 Ca+2 + 3 Mg+2 + 3.66 H4SiO4
+	log_k 29.355
+	delta_h -262.766 #kJ/mol #15bla/vie
+	-analytic -2.5667428E3 -3.4039957E-1 1.6475488E5 9.099285E2 -9.472597E6
+
+Saponite(FeCa)
+Ca0.17Mg2FeAl0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + 0.17 Ca+2 + Fe+2 + 2 Mg+2 + 3.66 H4SiO4
+	log_k 26.569
+	delta_h -250.636 #kJ/mol #15bla/vie
+	-analytic -2.5356344E3 -3.373844E-1 1.6236385E5 8.9871835E2 -9.386812E6
+
+Saponite(FeK)
+K0.34Mg2FeAl0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + Fe+2 + 0.34 K+ + 2 Mg+2 + 3.66 H4SiO4
+	log_k 25.398
+	delta_h -232.093 #kJ/mol #15bla/vie
+	-analytic -2.515955E3 -3.3384661E-1 1.6058454E5 8.9209651E2 -9.3470003E6
+
+Saponite(FeMg)
+Mg0.17Mg2FeAl0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + Fe+2 + 2.17 Mg+2 + 3.66 H4SiO4
+	log_k 26.022
+	delta_h -251.806 #kJ/mol #15bla/vie
+	-analytic -2.5507675E3 -3.3914471E-1 1.6323608E5 9.0384868E2 -9.4321235E6
+
+Saponite(FeNa)
+Na0.34Mg2FeAl0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + Fe+2 + 2 Mg+2 + 0.34 Na+ + 3.66 H4SiO4
+	log_k 25.896
+	delta_h -240.711 #kJ/mol #15bla/vie
+	-analytic -2.5368817E3 -3.3606965E-1 1.6211086E5 8.9919435E2 -9.3999007E6
+
+Saponite(K)
+K0.33Mg3Al0.33Si3.67O10(OH)2 + 7.32 H+ + 2.68 H2O = 0.33 Al+3 + 0.33 K+ + 3 Mg+2 + 3.67 H4SiO4
+	log_k 27.43
+	delta_h -239.483 #kJ/mol #15bla/vie
+	-analytic -2.544416E3 -3.3629993E-1 1.6263915E5 9.0231366E2 -9.4312976E6
+
+Saponite(Mg)
+Mg0.17Mg3Al0.34Si3.66O10(OH)2 + 7.36 H+ + 2.64 H2O = 0.34 Al+3 + 3.17 Mg+2 + 3.66 H4SiO4
+	log_k 28.81
+	delta_h -263.946 #kJ/mol #15bla/vie
+	-analytic -2.5818719E3 -3.4215988E-1 1.6562747E5 9.1505763E2 -9.5179085E6
+
+Saponite(Na)
+Na0.33Mg3Al0.33Si3.67O10(OH)2 + 7.32 H+ + 2.68 H2O = 0.33 Al+3 + 3 Mg+2 + 0.33 Na+ + 3.67 H4SiO4
+	log_k 27.971
+	delta_h -248.219 #kJ/mol #15bla/vie
+	-analytic -2.5647603E3 -3.3846001E-1 1.6414122E5 9.0921188E2 -9.482682E6
+
+Saponite(SapCa)
+(Na0.394K0.021Ca0.038)(Si3.569Al0.397)(Mg2.949Fe0.055)O10(OH)2 + 7.724 H+ + 2.276 H2O = 0.397 Al+3 + 0.038 Ca+2 + 0.034 Fe+3 + 0.021 K+ + 2.949 Mg+2 + 0.394 Na+ + 3.569 H4SiO4 + 0.021 Fe+2
+	log_k 31.473
+	delta_h -277.172 #kJ/mol #13gai/bla
+	-analytic -2.5790231E3 -3.508959E-1 1.6429225E5 9.168404E2 -9.2969386E6
+
+Scolecite
+CaAl2Si3O10:3H2O + 8 H+ = 2 Al+3 + Ca+2 + 3 H4SiO4 + H2O
+	log_k 16.647
+	delta_h -233.213 #kJ/mol #83joh/flo
+	-analytic -2.3692738E3 -3.4026162E-1 1.4623007E5 8.4431312E2 -8.2035956E6
+
+Smectite # (MX80)
+Na0.409K0.024Ca0.009(Si3.738Al0.262)(Al1.598Mg0.214Fe0.208)O10(OH)2 + 7.048 H+ + 2.952 H2O = 1.86 Al+3 + 0.009 Ca+2 + 0.173 Fe+3 + 0.024 K+ + 0.214 Mg+2 + 0.409 Na+ + 3.738 H4SiO4 + 0.035 Fe+2
+	log_k 5.278
+	delta_h -175.308 #kJ/mol #12gai/bla
+	-analytic -2.4267042E3 -3.3712249E-1 1.5038583E5 8.6021197E2 -8.9284687E6
+
+Smectite(MX80:3.989H2O)
+Na0.409K0.024Ca0.009(Si3.738Al0.262)(Al1.598Mg0.214Fe0.208)O10(OH)2:3.989H2O + 7.048 H+ = 1.86 Al+3 + 0.009 Ca+2 + 0.173 Fe+3 + 0.024 K+ + 0.214 Mg+2 + 0.409 Na+ + 3.738 H4SiO4 + 0.035 Fe+2 + 1.037 H2O
+	log_k 1.774
+	delta_h -148.524 #kJ/mol #12gai/bla
+	-analytic -2.3838609E3 -3.2232449E-1 1.4844358E5 8.4261556E2 -8.9910004E6
+
+Smectite(MX80:5.189H2O)
+Na0.409K0.024Ca0.009(Si3.738Al0.262)(Al1.598Mg0.214Fe0.208)O10(OH)2:5.189H2O + 7.048 H+ = 1.86 Al+3 + 0.009 Ca+2 + 0.173 Fe+3 + 0.024 K+ + 0.214 Mg+2 + 0.409 Na+ + 3.738 H4SiO4 + 0.035 Fe+2 + 2.237 H2O
+	log_k 1.435
+	delta_h -140.43 #kJ/mol #12gai/bla
+	-analytic -2.3706061E3 -3.2008903E-1 1.4737914E5 8.3812012E2 -8.9524821E6
+
+Spodumene # from core10.dat
+LiAlSi2O6 + 4 H+ + 2 H2O = Al+3 + Li+ + 2 H4SiO4
+	log_k 6.9972
+	delta_h -89.1817
+	-analytic -9.8111 2.1191e-3 9.692e3 -3.0484 -7.8822e5
+	-Vm 58.37
+
+Staurolite
+Fe2Al9Si4O23(OH) + 31 H+ = 9 Al+3 + 2 Fe+2 + 4 H4SiO4 + 8 H2O
+	log_k 216.34
+	delta_h -1956.484 #kJ/mol #87woo/gar
+	-analytic -6.5297334E3 -1.0061427 4.5225123E5 2.3281295E3 -2.0588442E7
+
+Stilbite
+NaCa2(Al5Si13)O36:16H2O + 20 H+ = 5 Al+3 + 2 Ca+2 + Na+ + 13 H4SiO4
+	log_k 23.044
+	delta_h -403.823 #kJ/mol #01fri/neu
+	-analytic -7.4700792E3 -1.0099722 4.6170528E5 2.6510812E3 -2.7934606E7
+
+Thomsonite # defined for elemental release
+Na0.5CaAl2.5Si2.5O10:3H2O + 10 H+ = 2.5 Al+3 + 0.5 Na+ + Ca+2 + 2.5 H4SiO4 + 3 H2O
+
+Tourmaline # defined for elemental release
+NaFe1.5Mg1.5Al6B3Si6O27(OH)4 + 26 H2O + H+ = Na+ + 1.5 Fe+2 + 1.5 Mg+2 + 6 Al(OH)4- + 3 H3BO3 + 6 H4SiO4
+
+Tremolite
+(Ca2Mg5)Si8O22(OH)2 + 14 H+ + 8 H2O = 2 Ca+2 + 5 Mg+2 + 8 H4SiO4
+	log_k 67.281
+	delta_h -502.247 #kJ/mol #95rob/hem
+	-analytic -5.0977019E3 -6.8545317E-1 3.2680746E5 1.8129659E3 -1.8919407E7
+
+# Uraninite
+#        UO2 + 4 H+ = U+4 + 2 H2O
+#        log_k          -3.490
+#        delta_h        -18.630 kcal
+
+Wollastonite
+CaSiO3 + 2 H+ + H2O = Ca+2 + H4SiO4
+	log_k 14.047
+	delta_h -85.986 #kJ/mol #78hel/del,92ajoh
+	-analytic -6.3184784E2 -8.6944016E-2 4.1722732E4 2.2563038E2 -2.3494013E6
+
+Zoisite
+Ca2Al3Si3O12(OH) + 13 H+ = 3 Al+3 + 2 Ca+2 + 3 H4SiO4 + H2O
+	log_k 43.848
+	delta_h -485.113 #kJ/mol #01sme/fra
+	-analytic -3.1722373E3 -4.6912132E-1 2.0150433E5 1.1315082E3 -1.0643978E7
+
+RATE_PARAMETERS_PK
+#               Acid                    Neutral         Base
+#               log K   E       n(H+)   log K   E       log K   E       n(OH-)
+#               ================================================================
+Quartz          -30     0       0       -13.4   90.9    -30     0       0       # Table 4
+#
+SiO2(a)         -30     0       0       -12.31  76      -30     0       0       # Table 6
+Cristobalite    -30     0       0       -12.31  65      -30     0       0
+#
+Albite          -10.16  65      0.317   -12.56  65      -15.6   66.5    -0.471  # Table 1
+Oligoclase      -9.67   65      0.457   -11.84  69.8    -30     0       0       # Table 13
+Andesine        -8.88   53.5    0.541   -11.47  57.4    -30     0       0
+Labradorite     -7.87   42.1    0.626   -10.91  45.2    -30     0       0
+Bytownite       -5.85   29.3    1.018   -9.82   31.5    -30     0       0
+Anorthite       -3.5    16.6    1.411   -9.12   17.8    -30     0       0
+#
+K-feldspar      -10.06  51.7    0.5     -12.41  38      -21.2   94.1    -0.823  # Table 15
+#
+Nepheline       -2.73   62.9    1.13    -8.56   65.4    -10.76  37.8    -0.2    # Table 18
+Leucite         -6      132.2   0.7     -9.2    75.5    -10.66  56.6    -0.2
+#
+Forsterite      -6.85   67.2    0.47    -10.64  79      -30     0       0       # Table 23
+Fayalite        -4.8    94.4    0       -12.8   94.4    -30     0       0
+Almandine       -5.2    94.4    1       -10.7   103.8   -13.71  37.8    -0.35
+Grossular       -5.1    85      1       -10.7   103.8   -30     0       0
+Andradite       -5.2    94.4    1       -10.7   103.8   -30     0       0
+Kyanite         -10.17  -53.9   1.268   -17.44  53.9    -30     0       0
+Staurolite      -6.9    18.9    1       -12.2   56.6    -14.9   47.2    -0.3
+Epidote         -10.6   71.1    0.338   -11.99  70.7    -17.33  79.1    -0.556
+Zoisite         -7.5    66.1    0.5     -11.2   66.1    -30     0       0
+#
+Cordierite      -3.8    113.3   1       -11.2   28.3    -30     0       0       # Table 25
+Tourmaline      -6.5    75.5    1       -11.2   85      -30     0       0
+#
+augite          -6.82   78      0.7     -11.97  78      -30     0       0       # Table 26
+bronzite        -8.3    47.2    0.65    -11.7   66.1    -30     0       0
+diopside        -6.36   96.1    0.71    -11.11  40.6    -30     0       0
+enstatite       -9.02   80      0.6     -12.72  80      -30     0       0
+jadeite         -6      132.2   0.7     -9.5    94.4    -30     0       0
+spodumene       -4.6    94.4    0.7     -9.3    66.1    -30     0       0
+wollastonite    -5.37   54.7    0.4     -8.88   54.7    -30     0       0
+#
+anthophyllite   -11.94  51      0.44    -14.24  51      -30     0       0       # Table 27
+glaucophane     -5.6    85      0.7     -10.1   94.4    -30     0       0
+hornblende      -7      75.5    0.6     -10.3   94.4    -30     0       0
+riebeckite      -7.7    56.6    0.7     -12.2   47.2    -30     0       0
+tremolite       -8.4    18.9    0.7     -10.6   94.4    -30     0       0
+#
+biotite         -9.84   22      0.525   -12.55  22      -30     0       0       # Table 28
+glauconite      -4.8    85      0.7     -9.1    85      -30     0       0
+muscovite       -11.85  22      0.37    -13.55  22      -14.55  22      -0.22
+muscovite       -30     0       0       -13     22      -30     0       0
+paragonite      -30     0       0       -13     22      -30     0       0
+phlogopite      -30     0       0       -12.4   29      -30     0       0
+pyrophyllite    -30     0       0       -12.4   29      -30     0       0
+#
+kaolinite       -11.31  65.9    0.777   -13.18  22.2    -17.05  17.9    -0.472  # Table 29
+montmorillonite -12.71  48      0.22    -14.41  48      -14.41  48      -0.13   # Montmorillonite, K0.318(Si3.975Al0.025)(Al1.509Fe0.205Mg0.283)(OH)2. 
+smectite        -10.98  23.6    0.34    -12.78  35      -16.52  58.9    -0.4    # Smectite, K0.04Ca0.5(Al2.8Fe0.53Mg0.7)(Si7.65Al0.35)O20(OH)4. 
+#
+lizardite       -5.7    75.5    0.8     -12.4   56.6    -30     0       0       # Table 30
+chrysotile      -30     0       0       -12     73.5    -13.58  73.5    -0.23
+chlorite(14A)   -11.11  88      0.5     -12.52  88      -30     0       0
+talc            -30     0       0       -12     42      -30     0       0
+prehnite        -10.66  80.5    0.256   -13.16  93.4    -14.86  93.4    -0.2
+#
+goethite        -30     0       0       -7.94   86.5    -30     0       0       # Table 31
+hematite        -9.39   66.2    1       -14.6   66.2    -30     0       0
+magnetite       -8.59   18.6    0.279   -10.78  18.6    -30     0       0
+ilmenite        -8.35   37.9    0.421   -11.16  37.9    -30     0       0
+uraninite       -30     0       0       -7.98   32      -30     0       0
+#
+brucite         -4.73   59      0.5     -8.24   42      -30     0       0       # Table 32
+gibbsite        -7.65   47.5    0.992   -11.5   61.2    -16.65  80.1    -0.784
+diaspore        -30     0       0       -13.33  47.5    -23.6   47.5    -1.503
+#
+anglesite       -5.58   31.3    0.298   -6.5    31.3    -30     0       0       # Table 34
+anhydrite       -30     0       0       -3.19   14.3    -30     0       0
+gypsum          -30     0       0       -2.79   0       -30     0       0
+barite          -6.9    30.8    0.22    -7.9    30.8    -30     0       0
+celestite       -5.66   23.8    0.109   -30     0       -30     0       0
+#
+hydroxyapatite  -4.29   250     0.171   -6      250     -30     0       0       # Table 36
+fluorapatite    -3.73   250     0.613   -8      250     -30     0       0
+#
+halite          -30     0       0       -0.21   7.4     -30     0       0       # Table 37
+fluorite        -7.14   73      1       -13.79  73      -30     0       0
+#
+#               Acid                    Neutral         P_CO2
+#               log K   E       n(H+)   log K   E       log K   E       n(P_CO2)        Table
+#               ================================================================================
+calcite         -0.3    14.4    1       -5.81   23.5    -3.48   35.4    1               33      # specify Table number for P_CO2^n(P_CO2)
+dawsonite       -30     0       0       -7      62.8    -30     0       0               33
+dolomite(d)     -3.19   36.1    0.5     -7.53   52.2    -5.11   34.8    0.5             33
+dolomite        -3.76   56.7    0.5     -8.6    95.3    -5.37   45.7    0.5             33
+magnesite       -6.38   14.4    1       -9.34   23.5    -5.22   62.8    1               33
+#
+#               Acid and Fe+3                           Neutral and O2                  Base
+#               log K   E       n(H+)   n(Fe+3) log K   E       n(O2)   log K   E       n(OH-)  Table
+#               =========================================================================================
+pyrite          -7.52   56.9    -0.5    0.5     -4.55   56.9    0.5     -30     0       0       35      # specify Table number for Fe+3 and O2
+pyrrhotite(Mc)  -8.04   50.8    -0.597  0.355   -30     0       0       -30     0       0       35
+pyrrhotite(Hx)  -6.79   63      -0.09   0.356   -30     0       0       -30     0       0       35
+As2S3(a)        -30     0       0       0       -9.83   8.7     0.18    -17.39  8.7     -1.208  35
+
+RATE_PARAMETERS_SVD
+#               Table 4: E's                                    Table 3: H+-reaction                            H2O-reaction                                            CO2-reaction    Organic_acids           OH--reaction                                                            Table 5
+#               H+      H2O     CO2     Organic acids   OH-     pkH     nH      yAl     CAl     xBC     CBC     pkH2O   yAl     CAl     xBC     CBC     zSi     CSi     pkCO2   nCO2    pkOrg   nOrg    COrg    pkOH-   wOH-    yAl     CAl     xBC     CBC     zSi     CSi     #       Num     Mineral Formula
+#               =================================================================================================================================================================================================================================================================================================
+Albite          3350    2500    1680    1200            3100    14.6    0.5     0.4     0.4     0.4     0.5     16.8    0.15    4       0.15    200     3       900     16.05   0.6     14.7    0.5     5       15.4    0.3     0.1     12      0.5     5       3       900     #       1.6     Albite  NaAlSi3O8
+Quartz          3890    0       2200    2000            3320    18.4    0.3     0.3     5       0       500     17.8    0       5       0       5000    4       900     18      0.5     16.3    0.5     5       14.1    0.3     0.4     200     0       5000    1       900     #       8.3     Quartz  SiO2
+
+
+RATE_PARAMETERS_HERMANSKA
+#               Acid mechanism                          Neutral mechanism       Basic mechanism
+#               logk25  Aa              Eaa     n(H+)   logk25  Ab              Eab     logk25  Ac              Eac     n(OH)   #       Formula
+#               ================================================================================================================================
+# Amphiboles
+Anthophyllite   -12.4   5.70E-04        52      0.4     -13.7   5.00E-06        48      0       0               0       0
+Ferroactinolite -11.3   3.00E-03        50      0.2     -13.1   2.00E-05        48      0       0               0       0
+Riebeckite      -11.3   3.00E-03        50      0.2     -13.1   2.00E-05        48      0       0               0       0
+Tremolite       -11.3   3.00E-03        50      0.2     -13.1   2.00E-05        48      0       0               0       0
+Glaucophane     -6.1    2.20E+02        50      0.7     0       0               0       -12.8   1.00E-04        48      -0.1    #       Na0.14K0.09Ca2Fe1.78Mg2Al2Si7O22(OH)2
+Hornblende      -10.7   5.00E-03        50      0.2     0       0               0       -13.4   2.10E-05        48      -0.1    #       Ca2Mg4Al0.75Fe0.25(Si7AlO22)(OH)2
+# Feldspars
+Albite          -10.32  0.7             58      0.3     -11.19  0.21            60      -13.58  1.50E-05        50      -0.3
+Andesine        -7.99   147             58      0.7     -11.23  0.19            60      -13.58  1.50E-05        50      -0.3
+Anorthite       -5.17   9.80E+04        58      1.2     -11.34  0.15            60      -13.58  1.50E-05        50      -0.3
+Bytownite       -5.88   1.90E+04        58      1.1     -11.28  0.17            60      -13.58  1.50E-05        50      -0.3
+K-feldspar      -10.36  5.00E-02        51.7    0.5     -12.48  1.10E-02        60      -20.78  1.20E-10        62      -0.8    #       or Microcline
+Labradorite     -6.39   5.90E+03        58      1       -11.28  0.17            60      -13.58  1.50E-05        50      -0.3
+Oligoclase      -9.33   6.8             58      0.4     -11.21  0.2             60      -13.58  1.50E-05        50      -0.3
+# Glass
+Rhyolite        -9.1    1.60E-03        36      0.5     0       0               0       -16.27  7.00E-08        52      -0.6
+# Mica                                                                                                                          #       Also valid for
+Annite          -9.42   5.90E-07        18.2    0.5     -12.2   5.00E-09        22      -13.9   4.00E-10        25.5    -0.2    #       Biotite, Phlogopite
+Muscovite       -11.1   1.26E-04        41.3    0.4     -12.1   6.31E-06        39      -14.5   3.16E-05        57      -0.2
+# Olivines
+Fayalite        -6.26   1.20E+06        70.4    0.4     0       0               0       -7.39   1.91E+03        60.9    0.2
+Forsterite      -7.16   1.48E+05        70.4    0.4     0       0               0       -8.33   2.20E+02        60.9    0.2
+Larnite         -3.61   5.25E+08        70.4    0.4     0       0               0       -4.75   8.25E+05        60.9    0.2
+# Pyroxenes
+Augite          -8.2    1.52E+06        81.8    0.7     -12.8   350             83      0       0               0       0
+Bronzite        -9.8    9.50E-04        38.5    0.6     -11.7   7.60E-01        66.1    0       0               0       0
+Diopside        -9.8    8.55E-05        32.7    0.3     -11.01  4.30E-05        43.9    0       0               0       0
+Enstatite       -8.3    0.574           46.1    0.5     -11.9   6.30E+03        89.5    0       0               0       0
+# SiO2  polymorphs
+Quartz          -11.4   4.03E-04        45.6    0.3     0       0               0       -15     0.105           80      -0.4    #       Cristobalite
+SiO2(a)         -10.6   4.56E-04        41.6    0.3     0       0               0       -14.2   3.53E-02        73      -0.4
+
+# 2023, Table 1                                                                                                                         Also valid for
+Almandine       -5.21   2.00E+05        60      1       -11.2   2.31E-04        43.2    -14.6   6.00E-08        42.3    -0.4    #       Grossular
+Analcime        -3.3    5.00E+07        63      1       -11.3   1.00E-01        58.5    -14.3   7.50E-05        58      -0.4    #       Nepheline
+Andalusite      -10.57  3.90E-01        60      0.15    -12.61  8.00E-03        43.2    -22.82  8.80E-15        42.3    -1.2
+Andradite       -5.1    2.60E+05        60      1       -11.1   3.20E-04        43.2    0       0               0       0
+Antigorite      -10.3   2.80E-06        27      0.25    -12.4   2.00E-08        27      0       0               0       0       #       Chrysotile, Lizardite
+Chabazite       -6.56   2.21E-01        33.7    0.82    -11.55  1.56E-04        44.2    -12.05  4.94E-05        44.2    -0.2    #       Laumontite, Leonhardite
+Clinochlore     -9.08   1.50E-04        30      0.74    -13     4.70E-11        15      -14.3   2.00E-12        15      -0.2    #       Chamosite, Daphnite
+Clinoptilolite  -7.51   2.48E-02        33.7    0.82    -12.6   1.39E-05        44.2    -13.2   3.50E-06        44.2    -0.2    #       Heulandite, Mordenite, Stilbite
+Epidote         -10.47  1.09            60      0.3     -11.9   5.13E-05        43.2    -16.3   1.40E-09        42.3    -0.4    #       Zoisite
+Glauconite      -11.68  9.55E-07        32.3    0.37    -13.53  1.10E-07        37.5    0       0               0       0
+Illite          -11.9   7.30E-04        50      0.55    -14.68  3.84E-03        70      -20.19  6.00E-08        74      -0.6
+Jadeite         -6.68   25              46.1    0.5     -10.26  2.70E+05        89.5    0       0               0       0
+Kaolinite       -12.3   2.85            73      0.45    -14.1   4.15E-03        67      -21.3   2.40E-11        61      -0.76
+Kyanite         -11.1   1.15E-01        60      0.15    -13.5   1.00E-03        43.2    -21.6   1.50E-13        50      -1
+Mesolite        -5.61   1.97E+00        33.7    0.82    -10.7   1.11E-03        44.2    -11     5.54E-04        44.2    -0.2    #       Natrolite, Scolecite, Thomsonite
+Montmorillonite -11.7   1.66E-03        50.8    0.55    -14.3   9.00E-10        30      -17.2   1.50E-09        48      -0.3    #       Saponite, Smectite
+Paragonite      -11.9   7.30E-04        50      0.55    -14.68  3.84E-03        70      -20.19  6.00E-08        74      -0.6
+Prehnite        -10.4   1.30E+03        77      0.35    -14     1               80      -12.8   15              80      -0.075
+Pyrophyllite    -8.6    1.60E+04        73      0.7     -12.6   1.50E-01        67      -18.4   2.00E-08        61      -0.7
+Sepiolite       -11     5.89E-03        50.2    0.25    -13.2   8.00E-07        40.7    0       0               0       0       #       Palygorskite
+Spodumene       -5.38   4.90E+02        46.1    0.5     -8.95   5.40E+06        89.5    0       0               0       0
+Talc            -11.1   4.42E-03        50.2    0.36    -12.9   1.56E-06        40.7    0       0               0       0
+Wollastonite    -6.97   700             56      0.4     0       0               0       -7.81   200             52      0.15
+
+# # Example input files with RATES for KINETICS calculations
+# #
+# # compare Albite kinetics using rates from the compilations
+ # # for the PARMS, see https://www.hydrochemistry.eu/exmpls/kin_silicates.html
+# # =========================================================
+#
+# RATES
+# Albite_PK # Palandri and Kharaka, 2004
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Albite") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_PK("Albite")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# KINETICS 1
+# Albite_PK
+# -formula NaAlSi3O8; -parms 0 1 1 0.67
+# -m0 1; -time 1 # default
+# END
+
+# SOLUTION 1
+# PHASES
+  # Fix_pH; H+ = H+
+  # LiBr; LiBr = Li+ + Br-; -log_k -20 # (very) unsoluble phase with base cation and acid anion, permits to use HBr or LiOH as reactant
+# SELECTED_OUTPUT 1
+        # -file kinetic_rates_pH.inc
+        # -reset false
+# USER_PUNCH 1    # write out the pH's to equilibrate...
+        # 10 FOR i = 0 to 14 STEP 0.5
+        # 20      punch EOL$ + 'USE solution 1'
+        # 30      punch EOL$ + 'EQUILIBRIUM_PHASES 1'
+        # 40      punch EOL$ + ' LiBr'
+        # 50      punch EOL$ + ' Fix_pH ' + TRIM(STR$(-i)) + ' LiOH 10' # ...or HBr as reactant
+        # 60      punch EOL$ + 'USE kinetics 1'
+        # 70      punch EOL$ + 'END'
+        # 80 NEXT i
+# END
+
+# PRINT; -reset false
+# SELECTED_OUTPUT 1; -active false
+# USER_GRAPH 1; -headings pH Palandri
+# -axis_titles  pH "log10(initial rate / (mol / m2 / s))"
+# -axis_scale x_axis 0 14
+# 10 graph_x -la("H+")
+# 20 graph_sy log10(tot("Al"))
+# INCLUDE$ kinetic_rates_pH.inc
+# END
+
+# RATES
+# Albite_Svd # Sverdrup, 2019
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Albite") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_SVD("Albite")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# KINETICS 1
+# Albite_Svd
+# -formula NaAlSi3O8; -parms 0 1 20 0.67 # roughness = 20
+# USER_GRAPH 1; -headings pH Sverdup*20
+# INCLUDE$ kinetic_rates_pH.inc
+# END
+
+# KINETICS 1
+# Albite # from Sverdrup and Warfvinge, 1995
+# -formula NaAlSi3O8; -parms 1 20 # roughness = 20
+# USER_GRAPH 1; -headings pH Sverdup`95*20
+# INCLUDE$ kinetic_rates_pH.inc
+# END
+
+# RATES
+# Albite_Hermanska # 2022
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Albite") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_HERMANSKA("Albite")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# KINETICS 1
+# Albite_Hermanska
+# -formula NaAlSi3O8; -parms 0 1 1 0.67
+# USER_GRAPH 1; -headings pH Hermanska
+# INCLUDE$ kinetic_rates_pH.inc
+# END
+
+# USE solution 1
+# REACTION_TEMPERATURE 1; 25 25 in 21
+# USER_GRAPH 1; -headings Albite_data
+# 10 data 1.1, 2.05, 2.45, 2.9, 3, 3.5, 4.1, 5.1, 5.35, 5.47, 5.63, 5.63, 5.73, 7.73, 9.95, 9.95, 9.95, 10.6, 11.2, 11.55, 12.3
+# 20 data -10.25, -10.55, -10.82, -11.25, -11.1, -11.4, -11.47, -11.82, -11.75, -11.65, -11.83, -11.92, -11.92, -11.83, -10.97, -11.05, -11.13, -10.95, -10.55, -10.6, -10.38 # Chou, L., Wollast, R., 1985. Steady-state kinetics and dissolution mechanisms of albite. Am. J. Sci. 285, 963–993.
+# 30 restore 10 : dim ph(21) : for i = 1 to step_no : read ph(i) : next i
+# 40 restore 20 : dim lk(21) : for i = 1 to step_no : read lk(i) : next i
+# 50 i = step_no : plot_xy ph(i), lk(i), line_width = 0, color = Black, y_axis = 2, symbol_size = 10, symbol = Circle
+# END
+
+# # compare rates for calcite dissolution
+# #   of Palandri and Kharaka, 2004 and Plummer, Wigley and Parkhurst, 1978
+# #   at different initial CO2 concentrations.
+# # =====================================
+
+# USER_GRAPH 1; -active false
+
+# RATES
+# Calcite_PK # Palandri and Kharaka, 2004
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("calcite") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_PK("calcite")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# SOLUTION 1
+# pH 7 charge; C(4) 1 CO2(g) -2.5
+# KINETICS 1
+# calcite_PK
+# -formula CaCO3; -parms 0 1e-2 1 0.67
+# -time 0.1 10*1 hour
+# INCREMENTAL_REACTIONS true
+# USER_GRAPH 2; -headings h Palandri_SI(CO2_g).=.-2.5
+# -axis_titles "time / hours" "Calcite dissolved / (mmol/kgw)"
+# 10 graph_x total_time / 3600 : graph_sy tot("Ca") * 1e3
+# END
+
+# USE solution 1
+# KINETICS 1
+# Calcite
+# -parms  1e2  0.67  # cm^2/mol calcite, exp factor
+# -time  0.1 10*1 hour
+# USER_GRAPH 2; -headings h Plummer.Wigley.Parkhurst
+# END
+
+# SOLUTION 1
+# pH 7 charge; C(4) 1 CO2(g) -1.5
+# KINETICS 1
+# calcite_PK
+# -formula CaCO3
+# -parms  0  1e-2  1  0.67
+# -time 0.1 10*1 hour
+# USER_GRAPH 2; -headings h Palandri_SI(CO2_g).=.-1.5
+# END
+
+# USE solution 1
+# KINETICS 1
+# Calcite
+# -parms  1e2  0.67
+# -time  0.1 10*1 hour
+# USER_GRAPH 2; -headings h Plummer.Wigley.Parkhurst
+# END
+
+# # compare rates for quartz dissolution
+# #   and the effect of NaCl
+# # =====================================
+
+# USER_GRAPH 2; -active false
+
+# RATES
+# Quartz_PK # Palandri and Kharaka, 2004
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Quartz") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_PK("Quartz")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# SOLUTION 1
+# pH 7 charge
+# KINETICS 1
+# Quartz_PK
+# -formula SiO2
+# -parms  0  6  1  0.67
+# -time 0.1 10*1 year
+# INCREMENTAL_REACTIONS true
+# USER_GRAPH 3; -headings h Palandri
+# -axis_titles "time / years" "Quartz dissolved / (mmol/kgw)"
+# 10 graph_x total_time / 3.15e7 : graph_sy tot("Si") * 1e3
+# END
+
+# RATES
+# Quartz_Hermanska #
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Quartz") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_HERMANSKA("Quartz")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# USE solution 1
+# KINETICS 1
+# Quartz_Hermanska
+# -formula SiO2
+# -parms  0  6  1  0.67
+# -time 0.1 10*1 year
+# USER_GRAPH 3
+# -headings H Hermanska
+# END
+
+# RATES
+# Quartz_Svd # Sverdrup, 2019
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Quartz") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = RATE_SVD("Quartz")
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# USE solution 1
+# KINETICS 1
+# Quartz_Svd
+# -formula SiO2
+# -parms  0  6  1  0.67
+# -time 0.1 10*1 year
+# USER_GRAPH 3
+# -headings H Sverdup
+# END
+
+# RATES
+# Quartz_Rimstidt
+# #1 rem Specific rate k = 10^-13.34 mol/m2/s (25 C), Ea = 74 kJ/mol, Rimstidt, 2015, GCA 167, 195
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Quartz") : if affinity < parm(1) then SAVE 0 : END
+# 20 rate = 10^-(13.3 + 4700 * (1 / 298 - 1 / TK)) * (1 + 1500*tot("Na")) # salt correction, Dove and Rimstidt, 1994, MSA Rev. 29, 259
+# 20 rate = 10^-(13.3 + 4700 * (1 / 298 - 1 / TK)) + 11.2e3 * act("Na+")^0.33 * act("OH-")^0.44 * exp(-71.6/(8.314e-3 * TK)) # salt correction,  Rimstidt, 2015, GCA 167, 195
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# USE solution 1
+# KINETICS 1
+# Quartz_Rimstidt
+# -formula SiO2
+# -parms  0  6  1  0.67
+# -time 0.1 10*1 year
+# USER_GRAPH 3
+# -headings H Rimstidt
+# END
+
+# SOLUTION 1
+# pH 7 charge; Na 1; Cl 1
+# KINETICS 1
+# Quartz_Rimstidt
+# -formula SiO2
+# -parms  0  6  1  0.67
+# -time 0.1 10*1 year
+# USER_GRAPH 3
+# -headings H Rimstidt_1.mM.NaCl
+# END
+
+# # Example input file for calculating kinetic dissolution of Montmorillonite,
+# # a solid solution with exchangeable cations reacting fast;
+# # their ratios are related to the changing solution composition,
+# # and their amounts are connected to the kinetic reacting TOT layer.
+# #
+# # The affinity is related to a solid solution member, given by the fraction of the
+# # exchangeable cation (here Na+ or Ca+2). For the Gapon exchange formula,
+# # the exchange species and their log_k`s are from the solid solution members in ThermoddemV1
+# # For the Gaines Thomas formula, the Mg+2 and Ca+2 species are redefined.
+# # It also shows how the default X exchanger can be invkoed.
+# # # ==============================================================
+
+# USER_GRAPH 3; -active false
+
+# RATES
+# Montmorillonite
+# 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# # Gapon and Gaines-Tomas exchange formulas
+# 7  f_Na = (mol("Na0.34X_montm_mg") / tot("X_montm_mg"))
+# 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Montmorillonite(MgNa)") / f_Na
+# 20 rate = RATE_HERMANSKA("Montmorillonite") / f_Na
+
+# # #  Gapon, with Ca as exchange species...
+# # 7  f_Ca = (mol("Ca0.17X_montm_mg") / tot("X_montm_mg"))
+# # #  use SR("Montmorillonite(Mgca)")
+# # 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Montmorillonite(MgCa)") / f_Ca
+# # 20 rate = RATE_HERMANSKA("Montmorillonite") / f_Ca
+
+# # #  Gaines-Thomas exchange formula, with Ca as exchange species, uncomment the Gaines-Thomas EXCHANGE_SPECIES
+# # 7  f_Ca = (mol("Ca0.34X_montm_mg2") / 2 / tot("X_montm_mg")) : ex = 0.5
+# # 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Montmorillonite(MgCa)") / f_Ca^ex
+# # 20 rate = RATE_HERMANSKA("Montmorillonite") / f_Ca^ex
+
+# 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# 40 SAVE area * rate * affinity * TIME
+# -end
+
+# EXCHANGE_MASTER_SPECIES
+# X_montm_mg   X_montm_mg-0.34
+# EXCHANGE_SPECIES
+# # The Gapon formulation is easiest, with constants from Montmorillonite(Mg..) in PHASES
+              # X_montm_mg-0.34 =  X_montm_mg-0.34
+# 0.34 Na+  +   X_montm_mg-0.34 = Na0.34X_montm_mg; log_k -3.411 # 0 #
+# 0.34 K+   +   X_montm_mg-0.34 =  K0.34X_montm_mg; log_k -2.83 # 0.581 #
+# 0.17 Mg+2 +   X_montm_mg-0.34 = Mg0.17X_montm_mg; log_k -3.708 # -0.297 #
+# 0.17 Ca+2 +   X_montm_mg-0.34 = Ca0.17X_montm_mg; log_k -4.222 # -0.811 #
+
+# # # The divalent cations have rather low log_k, cf. A&P, p.254, log_k Ca0.5X ~ log_k KX
+# # # uncomment the following lines to see the effect...
+# # 0.17 Mg+2 +   X_montm_mg-0.34 = Mg0.17X_montm_mg; log_k -2.86
+# # 0.17 Ca+2 +   X_montm_mg-0.34 = Ca0.17X_montm_mg; log_k -2.83
+# # # also adapt the log_k`s of the solids...
+# # PHASES
+# # Montmorillonite(MgMg)
+# # Mg0.17Mg0.34Al1.66Si4O10(OH)2 + 6H+ + 4H2O = 1.660Al+3 + 0.510Mg+2 + 4H4SiO4
+     # # log_k     2.86
+# # Montmorillonite(MgCa)
+# # Ca0.17Mg0.34Al1.66Si4O10(OH)2 + 6H+ + 4H2O = 1.660Al+3 + 0.170Ca+2 + 0.340Mg+2 + 4H4SiO4
+     # # log_k     2.83
+
+# # # The divalent cations can be defined with the Gaines-Thomas convention...
+# # EXCHANGE_SPECIES
+# # # undefine the previous set...
+# # 0.17 Mg+2 +   X_montm_mg-0.34 = Mg0.17X_montm_mg; log_k -3.708e10
+# # 0.17 Ca+2 +   X_montm_mg-0.34 = Ca0.17X_montm_mg; log_k -4.222e10
+# # # write the Gaines-Thomas formulas...
+# # 0.34 Mg+2 + 2  X_montm_mg-0.34 = Mg0.34X_montm_mg2 ; log_k -7.416 # -0.297 # 
+# # 0.34 Ca+2 + 2  X_montm_mg-0.34 = Ca0.34X_montm_mg2 ; log_k -8.444 # -0.811 # 
+
+# # # The default exchanger X can be used, uncomment the following lines
+# # # redefine f_Na in the rate...
+# # RATES
+# # Montmorillonite
+# # 5  REM PARMS: 1 affinity, 2 m^2/mol, 3 roughness, 4 exponent
+# # 7  f_Na = (mol("NaX") / tot("X")) # when running with the default X exchange
+# # 10 if parm(1) = 1 then affinity = 1 else affinity = 1 - SR("Montmorillonite(MgNa)") / f_Na
+# # 20 rate = RATE_HERMANSKA("Montmorillonite") / f_Na
+# # 30 IF M > 0 THEN area = M * parm(2) * parm(3) * (M/M0)^parm(4) ELSE area = 0
+# # 40 SAVE area * rate * affinity * TIME
+# # -end 
+# # # adapt log_k`s of the solids with default exchanger X:
+# # PHASES
+# # Montmorillonite(MgK)
+# # K0.34Mg0.34Al1.66Si4O10(OH)2 + 6H+ + 4H2O = 1.660Al+3 + 0.340K+ + 0.340Mg+2 + 4H4SiO4
+     # # log_k   2.6 # 3.41 - 0.7 * 0.34 = 3.17 expected, but is fraction-dependent, A&P, problems p. 305
+# # Montmorillonite(MgMg)
+# # Mg0.34(Mg0.34Al1.66Si4O10(OH)2)2 + 12 H+ + 8 H2O = 3.32 Al+3 + 1.02 Mg+2 + 8 H4SiO4
+     # # log_k   6.27 # 3.41 * 2 - 0.6 * 0.34 = 6.62
+# # Montmorillonite(MgCa)
+# # Ca0.34(Mg0.34Al1.66Si4O10(OH)2)2 + 12 H+ + 8 H2O = 3.32 Al+3 + 0.68 Mg+2 + 8 H4SiO4 + 0.34 Ca+2
+     # # log_k   6.2 #  3.41 * 2 - 0.8 * 0.34 = 6.55
+# # # in EXCHANGE 1, comment X_montm_mg, uncomment X...
+# END
+
+# SOLUTION 1
+# pH 7 charge
+# Na 1e-5
+# K  1e-5
+# Mg 1e-5
+# Ca 1e-5
+# END
+
+# # Give the solution composition for calculating the ininitial exchanger
+# SOLUTION 99
+# pH 7 charge
+# EQUILIBRIUM_PHASES 1
+# # solid solution of the end-members, SI = log10(fraction = 0.25)
+# Montmorillonite(MgNa)  -0.602  1e-2
+# Montmorillonite(MgCa)  -0.602  1e-2
+# Montmorillonite(MgK)   -0.602  1e-2
+# Montmorillonite(MgMg)  -0.602  1e-2
+# Kaolinite 0 0
+# SAVE solution 99
+# END
+
+# # # with Gapon only, initial exchanger can be defined explicitly
+# EXCHANGE 1
+# Na0.34X_montm_mg  1e-2
+# Ca0.17X_montm_mg  1e-2
+# K0.34X_montm_mg   1e-2
+# Mg0.17X_montm_mg  1e-2
+# END
+
+# USE solution 1
+# EQUILIBRIUM_PHASES 1
+# Kaolinite 0 0
+# # USE EXCHANGE 1 # with Gapon only, uncomment in KINETICS: # X_montm_mg -1
+# EXCHANGE 1
+# X_montm_mg Montmorillonite kin 1; -equil 99 # comment in KINETICS: # X_montm_mg -1
+# # X Montmorillonite kin 0.34; -equil 99 # default exchanger X, comment in KINETICS: # X_montm_mg -1
+# KINETICS 1
+# Montmorillonite
+# -formula Mg0.34Al1.66Si4O10(OH)2 1 # X_montm_mg -1
+# -m  4e-2
+# -parms 0  2.5e5 1 0.67
+# -step 30 100 1e3 1e4 2e4 2e4 3e4 3e4 3e4 3e4 1e5 1e5 1e5 3e5 6e5 1e6 3e6
+# -cvode true
+# INCREMENTAL_REACTIONS true
+# USER_GRAPH 4
+    # -headings               time Na K Mg Ca mm_diss
+    # -axis_titles            "Time / days" "Molality" "Montmorillonite dissolved / (mmol/kgw)"
+    # -axis_scale x_axis      auto auto auto auto log
+    # -axis_scale y_axis      auto auto auto auto log
+# 1  t = TOTAL_TIME / (3600 * 24) : put(t, 1)
+# 10 GRAPH_X t
+# 12 mg = tot("Mg") : if mg < 1e-24 then mg = 1e-24
+# 14 ca = tot("Ca") : if ca < 1e-24 then ca = 1e-24
+# 20 GRAPH_Y TOT("Na"), TOT("K"), mg, ca
+# 30 GRAPH_SY (4e-2 - kin("Montmorillonite")) * 1e3
+# END
+# USE solution 99; REACTION
+# USER_GRAPH 4; -connect_simulations false; -headings Solution_99
+# 1 t = get(1)
+# 10 plot_xy t, tot("Na"), symbol = Circle , symbol_size = 15, color = Red
+# 20 plot_xy t, tot("K"),  symbol = Circle , symbol_size = 15, color = Green
+# 30 plot_xy t, tot("Mg"), symbol = Circle , symbol_size = 15, color = Blue
+# 40 plot_xy t, tot("Ca"), symbol = Circle , symbol_size = 15, color = Orange
+
+# =============================================================================================
+#(a) means amorphous. (d) means disordered, or less crystalline.
+#(14A) refers to 14 angstrom spacing of clay planes. FeS(ppt),
+#precipitated, indicates an initial precipitate that is less crystalline.
+#Zn(OH)2(e) indicates a specific crystal form, epsilon.
+# =============================================================================================
+# For the reaction aA + bB = cC + dD,
+#   with delta_v = c*Vm(C) + d*Vm(D) - a*Vm(A) - b*Vm(B),
+# PHREEQC adds the pressure term to log_k: -= delta_v * (P - 1) / (2.3RT).
+#   Vm(A) is volume of A, cm3/mol, P is pressure, atm, R is the gas constant, T is Kelvin.
+# Gas-pressures and fugacity coefficients are calculated with Peng-Robinson's EOS.
+#   These binary interaction coefficients from Soreide and Whitson, 1992, FPE 77, 217 are
+#    hard-coded in calc_PR():
+#    kij    CH4    CO2    H2S    N2
+#    H2O    0.49   0.19   0.19   0.49
+#    but are overwritten by the data block GAS_BINARY_PARAMETERS of this file.
+# =============================================================================================
+# The molar volumes of solids are entered with
+#			 -Vm vm cm3/mol
+#    vm is the molar volume, cm3/mol (default), but dm3/mol and m3/mol are permitted.
+# Data for minerals' vm (= MW (g/mol) / rho (g/cm3)) are defined using rho from
+#   Deer, Howie and Zussman, The rock-forming minerals, Longman.
+#			   --------------------
+# Temperature- and pressure-dependent volumina of aqueous species are calculated with a Redlich-
+#   type equation (cf. Redlich and Meyer, Chem. Rev. 64, 221), from parameters entered with
+#			-Vm a1 a2 a3 a4 W a0 i1 i2 i3 i4
+# The volume (cm3/mol) is
+#    Vm(T, pb, I) = 41.84 * (a1 * 0.1 + a2 * 100 / (2600 + pb)  + a3 / (T - 228) +
+#			    a4 * 1e4 / (2600 + pb) / (T - 228) - W * QBrn)
+#		   + z^2 / 2 * Av * f(I^0.5)
+#		   + (i1 + i2 / (T - 228) + i3 * (T - 228)) * I^i4
+#   Volumina at I = 0 are obtained using supcrt92 formulas (Johnson et al., 1992, CG 18, 899).
+#   41.84 transforms cal/bar/mol into cm3/mol.
+#   pb is pressure in bar.
+#   W * QBrn is the energy of solvation, calculated from W and the pressure dependence of the Born equation,
+#	W is fitted on measured solution densities.
+#   z is charge of the solute species.
+#   Av is the Debye-Hückel limiting slope (DH_AV in PHREEQC basic).
+#   a0 is the ion-size parameter in the extended Debye-Hückel equation:
+#	f(I^0.5) = I^0.5 / (1 + a0 * DH_B * I^0.5),
+#	a0 = -gamma	  x for cations, = 0 for anions.
+# For details, consult ref. 1.
+# =============================================================================================
+# The viscosity is calculated with a (modified) Jones-Dole equation:
+#    viscos / viscos_0 = 1 + A * Sum(0.5 z_i m_i) + fan * Sum(B_i m_i + D_i m_i n_i)
+# Parameters are for calculating the B and D terms:
+#    -viscosity 9.35e-2 -8.31e-2 2.487e-2 4.49e-4 2.01e-2 1.570    0
+#    #	   b0	  b1	  b2	 d1	  d2	 d3	tan
+#    z_i is absolute charge number, m_i is molality of i
+#    B_i = b0 + b1 exp(-b2 * tc)
+#    fan = (2 - tan V_i / V_Cl-), corrects for the volume of anions
+#    D_i = d1 * exp(-d2 tc)
+#    n_i = (I^d3 * (1 + fI) + ((z_i^2 + z_i) / 2 · m_i)^d3) / (2 + fI), fI is an ionic strength term.
+# For details, consult ref. 4.
+#
+# ref. 1: Appelo, Parkhurst and Post, 2014. Geochim. Cosmochim. Acta 125, 49–67.
+# ref. 2: Procedures from ref. 1 using data compiled by Laliberté, 2009, J. Chem. Eng. Data 54, 1725.
+# ref. 3: Appelo, 2017, Cem. Concr. Res. 101, 102-113.
+# ref. 4: Appelo and Parkhurst in prep., for details see subroutine viscosity in transport.cpp
+#
+# =============================================================================================
+# It remains the responsibility of the user to check the calculated results, for example with
+#   measured solubilities as a function of (P, T).
