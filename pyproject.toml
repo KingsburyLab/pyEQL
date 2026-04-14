@@ -46,7 +46,7 @@ testing = [
     "black",
     "mypy>1",
     "ruff>0.0.100",
-    "tox<4",
+    "tox<5",
     ]
 docs = [
     "sphinx>=3.2.1",
