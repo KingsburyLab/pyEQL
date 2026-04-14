@@ -1,10 +1,25 @@
 version: 2
 updates:
+  # Maintain core dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "wednesday"
+      time: "02:00"
+      timezone: "America/New_York"
+    groups:
+      dependencies: # this name can be anything, it's just an identifier for the group
+        patterns:
+          - "*"
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+      day: "wednesday"
+      time: "02:00"
+      timezone: "America/New_York"
     groups:
       actions:
         patterns:
