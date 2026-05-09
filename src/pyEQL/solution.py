@@ -37,6 +37,20 @@ EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 UNKNOWN_OXI_STATE = "unk"
 K_W = 1e-14  # ion product of water at 25 degC
 
+# the following properties will be pre-cached for all solutes in the solution, to speed up property retrieval during calculations.
+CORE_PROPERTIES = [
+    "formula",
+    "name",
+    "charge",
+    "molecular_weight",
+    "size.molar_volume",
+    "oxi_state_guesses",
+    "elements",
+    "pmg_ion",
+    "model_parameters",
+    "transport.diffusion_coefficient",
+]
+
 
 class Solution(MSONable):
     """
@@ -267,37 +281,42 @@ class Solution(MSONable):
         moles = self.volume.magnitude / 55.55  # molarity of pure water
         self.components["H2O"] = moles
 
-        # set the pH with H+ and OH-
-        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
-        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
-
-        # populate the other solutes
-        self._solutes = solutes
-        if self._solutes is None:
-            self._solutes = {}
-
-        if isinstance(self._solutes, dict):
-            for k, v in self._solutes.items():
-                self.add_solute(k, v)
-                # if user has specified H+ in solutes, check consistency with pH kwarg
-                if standardize_formula(k) == "H[+1]":
-                    # if user has not specified pH (default value), override the pH argument
-                    if self._pH == 7:
-                        self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
-                    # if user specifies non-default pH that does not match the supplied H+, raise an error
-                    elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                        raise ValueError(
-                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
-                        )
-        elif isinstance(self._solutes, list):
+        # store the provided solutes as a dict
+        if isinstance(solutes, dict):
+            self._solutes = solutes
+        elif isinstance(solutes, list):
             msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
                 '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
             self.logger.warning(msg)
             warnings.warn(msg, DeprecationWarning)
-            for item in self._solutes:
-                self.add_solute(*item)
+            self._solutes = {item[0]: item[1] for item in solutes}
+        elif solutes is None:
+            self._solutes = {}
+
+        # # pre-cache all the relevant properties of the solutes provided by the user
+        self._solute_data = list(
+            self.database.query({"formula": {"$in": list(self._solutes.keys())}}, properties=CORE_PROPERTIES)
+        )
+
+        # set the pH with H+ and OH-
+        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
+        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
+
+        # populate remaining solutes
+        for k, v in self._solutes.items():
+            self.add_solute(k, v)
+            # if user has specified H+ in solutes, check consistency with pH kwarg
+            if standardize_formula(k) == "H[+1]":
+                # if user has not specified pH (default value), override the pH argument
+                if self._pH == 7:
+                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+                # if user specifies non-default pH that does not match the supplied H+, raise an error
+                elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                    raise ValueError(
+                        "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                    )
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -1976,26 +1995,30 @@ class Solution(MSONable):
 
         # query the database using the standardized formula
         rform = standardize_formula(solute)
-        # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
-        # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
-        # also $exists:True does not properly return dot notated fields.
-        # for now, just set properties=[] to return everything
-        # data = list(self.database.query({"formula": rform, name: {"$ne": None}}, properties=["formula", name]))
-        data = list(self.database.query({"formula": rform, name: {"$ne": None}}))
+
+        # TODO - add molar volume of water to database?
+        if name == "size.molar_volume" and rform == "H2O(aq)":
+            # calculate the partial molar volume for water since it isn't in the database
+            vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (
+                ureg.Quantity(self.water_substance.rho, "g/L")
+            )
+
+            return vol.to("cm **3 / mol")
+
+        # update the cached data if necessary (only if solute is not already present)
+        keys = [d["formula"] for d in self._solute_data]
+        if name in CORE_PROPERTIES or rform not in keys:
+            self._solute_data.extend(list(self.database.query({"formula": rform, name: {"$exists": True}})))
+        data = [d for d in self._solute_data if d["formula"] == rform]
+
         # formulas should always be unique in the database. len==0 indicates no
         # data. len>1 indicates duplicate data.
-        if len(data) > 1:
+
+        if len(data) == 1:
+            pass
+        elif len(data) > 1:
             self.logger.warning(f"Duplicate database entries for solute {solute} found!")
-        if len(data) == 0:
-            # TODO - add molar volume of water to database?
-            if name == "size.molar_volume" and rform == "H2O(aq)":
-                # calculate the partial molar volume for water since it isn't in the database
-                vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (
-                    ureg.Quantity(self.water_substance.rho, "g/L")
-                )
-
-                return vol.to("cm **3 / mol")
-
+        elif len(data) == 0:
             # try to determine basic properties using pymatgen
             doc = Solute.from_formula(rform).as_dict()
             data = [doc]
