@@ -2059,6 +2059,9 @@ class Solution(MSONable):
                 return None
 
             if name == "molecular_weight":
+                # if the unit is g/mol, we can speed up the Quantity instantiation by about 10x by using built in multiplication instead of parsing the string
+                if doc.get(name).split(" ")[-1] == "g/mol":
+                    return float(doc.get(name).split(" ")[0]) * ureg("g/mol")
                 return ureg.Quantity(doc.get(name))
 
             if name == "elements":
