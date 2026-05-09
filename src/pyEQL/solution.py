@@ -1305,10 +1305,11 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should
                contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
+        Q = ureg.Quantity(amount)
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
+        if Q.dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1316,9 +1317,8 @@ class Solution(MSONable):
             orig_volume = self.volume
 
             # add the new solute
-            quantity = ureg.Quantity(amount)
             mw = self.get_property(formula, "molecular_weight")  # returns a quantity
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+            target_mol = Q.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
             self.components[formula] = target_mol.to("moles").magnitude
 
             # calculate the volume occupied by all the solutes
@@ -1336,13 +1336,15 @@ class Solution(MSONable):
                 raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
             target_mol = target_mass.to("g") / mw.to("g/mol")
             self.components[self.solvent] = target_mol.magnitude
-
         else:
-            # add the new solute
-            quantity = ureg.Quantity(amount)
-            mw = ureg.Quantity(self.get_property(formula, "molecular_weight"))
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
-            self.components[formula] = target_mol.to("moles").magnitude
+            if Q.dimensionality == "[substance]":
+                # add the new solute directly
+                self.components[formula] = Q.to("moles").magnitude
+            else:
+                # add the new solute after converting to moles
+                mw = self.get_property(formula, "molecular_weight")  # returns a quantity
+                target_mol = Q.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+                self.components[formula] = target_mol.to("moles").magnitude
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
