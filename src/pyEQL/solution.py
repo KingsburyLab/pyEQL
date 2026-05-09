@@ -2013,7 +2013,7 @@ class Solution(MSONable):
 
         # update the cached data if necessary (only if solute is not already present)
         keys = [d["formula"] for d in self._solute_data]
-        if name in CORE_PROPERTIES or rform not in keys:
+        if name not in CORE_PROPERTIES or rform not in keys:
             self._solute_data.extend(list(self.database.query({"formula": rform, name: {"$exists": True}})))
         data = [d for d in self._solute_data if d["formula"] == rform]
 
