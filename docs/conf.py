@@ -180,6 +180,12 @@ html_theme_options = {
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
+    "nav_links": 
+    [{
+            "title": "Releases",
+            "url": "https://github.com/KingsburyLab/pyEQL/releases",
+            "internal": False,
+    },],
     "toc_title": "pyEQL: a python interface for water chemistry",
     "palette": { "primary": "blue", "accent": "light-blue" },
     "globaltoc_collapse": True,
