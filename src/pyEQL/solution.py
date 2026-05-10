@@ -775,11 +775,11 @@ class Solution(MSONable):
     @property
     def charge_balance(self) -> float:
         r"""
-        Return the charge balance of the solution.
+        Return the signed charge balance of the solution, positive or negative.
 
-        Return the charge balance of the solution. The charge balance represents the net electric charge
-        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-        have a small nonzero value. It is calculated according to:
+        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge 
+        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value. 
+        Positive values indicate excess cationic charge, while negative values indivate excess anionic charge. It is calculated according to:
 
         .. math:: CB = \sum_i C_i z_i
 
@@ -787,7 +787,7 @@ class Solution(MSONable):
 
         Returns:
             float :
-                The charge balance of the solution, in equivalents (mol of charge) per L.
+                The signed charge balance of the solution, in equivalents (mol of charge) per L.
 
         """
         charge_balance = 0
@@ -1708,6 +1708,10 @@ class Solution(MSONable):
                 are equivalent (log10(0.000316) = -3.5)
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
+            **kwargs:
+                Additional engine-specific options passed to the underlying equilbrium
+                solver. These may include solver tolerances, or other advanced configuration
+                parameters introduced in v1.4.0.
         """
         if self.engine == "native":
             warnings.warn(
