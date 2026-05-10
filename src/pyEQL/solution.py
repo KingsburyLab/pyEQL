@@ -27,7 +27,7 @@ from pymatgen.core.ion import Ion
 
 from pyEQL import IonDB, ureg
 from pyEQL.activity_correction import _debye_parameter_activity, _debye_parameter_B
-from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
+#from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
 from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
@@ -327,6 +327,9 @@ class Solution(MSONable):
 
         # adjust charge balance, if necessary
         self._adjust_charge_balance()
+
+        # validate water stability, if necessary
+        self._check_water_stability()
 
     @property
     def mass(self) -> Quantity:
@@ -2390,6 +2393,34 @@ class Solution(MSONable):
                     f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
                 )
                 return
+    
+    def _check_water_stability(self, tol=1e-6) -> None:
+        """Helper method to adjust the thermodynamic stability of the Solution."""
+        Temp = self.temperature.to("K").magnitude
+        F = 96485.33212  # C/mol
+        R = 8.314462618  # J/mol/K
+        E0_O2 = 1.229    # V
+
+        lower_limit = -self.pH
+        upper_limit = (F * E0_O2) / (2.303 * R * Temp) - self.pH
+
+        if self.pE < lower_limit - tol:
+            msg = (
+                f"Water is thermodynamically unstable under reducing conditions: "
+                f"pH={self.pH:.2f}, pE={self.pE:.2f}. "
+                f"Hydrogen evolution may occur."
+            )
+            self.logger.warning(msg)
+            warnings.warn(msg)
+
+        elif self.pE > upper_limit + tol:
+            msg = (
+                f"Water is thermodynamically unstable under oxidizing conditions: "
+                f"pH={self.pH:.2f}, pE={self.pE:.2f}. "
+                f"Oxygen evolution may occur."
+            )
+            self.logger.warning(msg)
+            warnings.warn(msg)
 
     def _update_volume(self):
         """Recalculate the solution volume based on composition."""
