@@ -176,6 +176,7 @@ html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
     "site_url": "https://pyeql.readthedocs.io/en/latest/",
+    "site_name": "pyEQL documentation",
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
