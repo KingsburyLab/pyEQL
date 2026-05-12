@@ -11,8 +11,9 @@ Virtually all of the user-facing functions in `pyEQL` are accessed through the
 ## Creating a Solution Object
 
 ```{warning}
-By default, pyEQL does **not** perform charge balancing or chemical equilibrium.
-If required, explicitly call `Solution.adjust_charge_balance()` or `Solution.equilibrate()`.
+By default, pyEQL does **not** perform charge balancing or chemical speciation.
+For automatic charge balancing, set the `balance_charge` keyword argument to a non-default value such as `auto`.
+For automatic speciation, set `auto_eq=True` or `call Solution.equilibrate()`.
 
 Create a Solution object by invoking the Solution class:
 
