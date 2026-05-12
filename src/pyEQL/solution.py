@@ -1708,14 +1708,6 @@ class Solution(MSONable):
                 are equivalent (log10(0.000316) = -3.5)
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
-            engine options:
-                ideal: Ideal solution model
-                phreeqc: Uses phreeqpython with phreeqc.dat
-                phreeqc2026: Uses pyEQL.phreeqc with phreeqc.dat (v3.8)
-                native: Uses built-in Pitzer activity model (when available); falls back to other models if not
-            database options:
-                Default: phreeqc.dat
-                Additional: vitens.dat, wateq4f_PWN.dat, pitzer.dat, llnl.dat, geothermal.dat
             **kwargs:
                 Additional engine-specific options passed to the underlying equilbrium
                 solver. These may include solver tolerances, or other advanced configuration
