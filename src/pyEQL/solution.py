@@ -1693,13 +1693,16 @@ class Solution(MSONable):
 
         Keyword Args:
             atmosphere:
-                Boolean indicating whether to equilibrate the solution
-                w.r.t atmospheric gases.
+                Boolean indicating whether to equilibrate the solution w.r.t
+                atmospheric gases. By default, this considers equilibrium with
+                atmospheric CO2 (420 ppm) and O2 (0.21 atm). N2 is
+                typically not considered due to its low solubility and limited
+                impact on aqueous speciation.
             solids:
-                A list of solids used to achieve liquid-solid equilibrium. Each
-                solid in this list should be present in the Phreeqc database.
-                We assume a target saturation index of 0 and an infinite
-                amount of material.
+                A list of solids used to achieve liquid–solid equilibrium. Each
+                solid in this list should be the name of a mineral phase present
+                in the Phreeqc database (e.g. "Calcite"). We assume a target
+                saturation index of 0 and an infinite amount of material.
             gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
                 Each key denotes the gas species, and the corresponding value
