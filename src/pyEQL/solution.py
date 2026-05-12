@@ -775,11 +775,11 @@ class Solution(MSONable):
     @property
     def charge_balance(self) -> float:
         r"""
-        Return the charge balance of the solution.
+        Return the signed charge balance of the solution, positive or negative.
 
-        Return the charge balance of the solution. The charge balance represents the net electric charge
-        on the solution and SHOULD equal zero at all times, but due to numerical errors will usually
-        have a small nonzero value. It is calculated according to:
+        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge 
+        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value. 
+        Positive values indicate excess cationic charge, while negative values indivate excess anionic charge. It is calculated according to:
 
         .. math:: CB = \sum_i C_i z_i
 
@@ -787,7 +787,7 @@ class Solution(MSONable):
 
         Returns:
             float :
-                The charge balance of the solution, in equivalents (mol of charge) per L.
+                The signed charge balance of the solution, in equivalents (mol of charge) per L.
 
         """
         charge_balance = 0
@@ -1693,13 +1693,16 @@ class Solution(MSONable):
 
         Keyword Args:
             atmosphere:
-                Boolean indicating whether to equilibrate the solution
-                w.r.t atmospheric gases.
+                Boolean indicating whether to equilibrate the solution w.r.t
+                atmospheric gases. By default, this considers equilibrium with
+                atmospheric CO2 (420 ppm) and O2 (0.21 atm). N2 is
+                typically not considered due to its low solubility and limited
+                impact on aqueous speciation.
             solids:
-                A list of solids used to achieve liquid-solid equilibrium. Each
-                solid in this list should be present in the Phreeqc database.
-                We assume a target saturation index of 0 and an infinite
-                amount of material.
+                A list of solids used to achieve liquid–solid equilibrium. Each
+                solid in this list should be the name of a mineral phase present
+                in the Phreeqc database (e.g. "Calcite"). We assume a target
+                saturation index of 0 and an infinite amount of material.
             gases:
                 A dictionary of gases used to achieve liquid-gas equilibrium.
                 Each key denotes the gas species, and the corresponding value
@@ -1708,6 +1711,10 @@ class Solution(MSONable):
                 are equivalent (log10(0.000316) = -3.5)
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
+            **kwargs:
+                Additional engine-specific options passed to the underlying equilbrium
+                solver. These may include solver tolerances, or other advanced configuration
+                parameters introduced in v1.4.0.
         """
         if self.engine == "native":
             warnings.warn(
