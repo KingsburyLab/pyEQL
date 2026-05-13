@@ -866,20 +866,42 @@ class Solution(MSONable):
             "NO3[-1]",
             "ClO4[-1]",
             "ClO3[-1]",
+        }
+
+        # Definition 1: Alternative definition of alkalinity
+        alternative_species = base_cations.union(acid_anions)
+        alternative_def = any(item in alternative_species for item in self.components)
+
+        weak_species = {
             "HCO3[-1]",
             "CO3[-2]",
+            "H2PO4[-1]",
+            "HPO4[-2]",
+            "PO4[-3]",
             "HS[-1]",
             "S[-2]",
             "H3SiO4[-1]",
-            "HPO4[-2]",
-            "PO4[-3]",
+            "H2SiO4[-2]",
             "B(OH)4[-1]",
-        }
+            "NH3(aq)",
+            "OH[-1]",
+            "H[+1]",
+        }  # Note that organics are excluded
 
-        for item in self.components:
-            if item in base_cations.union(acid_anions):
-                z = self.get_property(item, "charge")
-                alkalinity += self.get_amount(item, "mol/L") * z
+        # Definition 2: Weak acid/base definition of alkalinity
+        weak_def = any(item in weak_species for item in self.components)
+
+        if alternative_def:  # Def 1
+            for item in self.components:
+                if item in alternative_species:
+                    z = self.get_property(item, "charge")
+                    alkalinity += self.get_amount(item, "mol/L") * z
+
+        elif weak_def:  # Def 2
+            for item in self.components:
+                if item in weak_species:
+                    z = self.get_property(item, "charge")
+                    alkalinity += self.get_amount(item, "mol/L") * z
 
         # convert the alkalinity to mg/L as CaCO3
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
