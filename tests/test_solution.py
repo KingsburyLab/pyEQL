@@ -1198,7 +1198,7 @@ class TestLinearCombinationSoluteVolume:
                 "OH-", "size.molar_volume"
             )
         assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
-
+        
 
 class TestSaturationIndex:
     @staticmethod
@@ -1207,6 +1207,51 @@ class TestSaturationIndex:
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
         si = solution.get_saturation_index()
-        assert si["Halite"] > 0
+        assert si["Halite"] > 0.01
         si_plot = solution.get_saturation_index(get_plot=True)
         assert isinstance(si_plot, dict)
+
+    def test_halite_si_under(self, monkeypatch):
+        solution = Solution({"Na+": "0.001 mol/L", "Cl-": "0.001 mol/L"}, engine="phreeqc")
+        si = solution.get_saturation_index()
+        assert si["Halite"] < -0.01
+
+    def test_saturation_index_sorted(self, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine="native")
+        si = solution.get_saturation_index(get_plot=True)
+        values = list(si.values())
+        assert values == sorted(values, reverse=True)
+
+    def test_halite_si_trend(self, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        solution_low = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine="native")
+        solution_high = Solution({"Na+": "10 mol/L", "Cl-": "10 mol/L"}, engine="native")
+        si_low = solution_low.get_saturation_index()
+        si_high = solution_high.get_saturation_index()
+        assert si_high["Halite"] > si_low["Halite"]
+
+    def test_halite_si_matches_phreeqc(self, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        composition = {"Na+": "10 mol/L", "K+": "10 mol/L","Cl-": "10 mol/L"}
+        native_solution = Solution(composition, engine="native")
+        phreeqc_solution = Solution(composition, engine="phreeqc")
+        native_si = native_solution.get_saturation_index()
+        phreeqc_si = phreeqc_solution.get_saturation_index()
+        assert pytest.approx(native_si["Halite"],rel=1e-3,abs=1e-3) == phreeqc_si["Halite"]
+
+    def test_calcite_si_matches_phreeqc(self, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        composition = {"Ca2+": "2 mmol/L","CO3-2": "2 mmol/L","H+": "7.0 pH"}
+        native = Solution(composition, engine="native").get_saturation_index()
+        phreeqc = Solution(composition, engine="phreeqc").get_saturation_index()
+        assert pytest.approx(native["Calcite"],rel=1e-3,abs=1e-3) == phreeqc["Calcite"]
+    
+    def test_multi_mineral_si(self, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mmol/L", "Cl-": "10 mol/L"}, engine="native")
+        si = solution.get_saturation_index()
+        assert isinstance(si, dict)
+        assert "Halite" in si
+        assert "Calcite" in si
+        assert len(si) >= 2
