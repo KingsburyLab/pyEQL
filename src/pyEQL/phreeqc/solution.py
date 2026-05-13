@@ -55,6 +55,11 @@ class PHRQSol:
     def si(self, eq_species) -> float:
         return self._get_calculated_prop("SI", eq_species=eq_species)
 
+    @property
+    def phases(self) -> dict[str, float]:
+        eq_species = self._get_calculated_prop("eq_species") or {}
+        return {phase: props["SI"] for phase, props in eq_species.items()}
+
     """
     The following properties are somewhat redundant, but included in here
     so we can act as a drop-in replacement for PhreeqPython as far as its

@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+import pandas as pd
+import plotly.express as px
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
@@ -777,8 +779,8 @@ class Solution(MSONable):
         r"""
         Return the signed charge balance of the solution, positive or negative.
 
-        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge 
-        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value. 
+        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge
+        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value.
         Positive values indicate excess cationic charge, while negative values indivate excess anionic charge. It is calculated according to:
 
         .. math:: CB = \sum_i C_i z_i
@@ -1699,7 +1701,7 @@ class Solution(MSONable):
                 typically not considered due to its low solubility and limited
                 impact on aqueous speciation.
             solids:
-                A list of solids used to achieve liquid–solid equilibrium. Each
+                A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be the name of a mineral phase present
                 in the Phreeqc database (e.g. "Calcite"). We assume a target
                 saturation index of 0 and an infinite amount of material.
@@ -2784,3 +2786,49 @@ class Solution(MSONable):
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
+
+    def get_saturation_index(self, phases=None, get_plot=None) -> float:
+        """
+        Calculate the saturation index of a solute in the solution.
+        """
+
+        engine = self.engine
+
+        if not hasattr(engine, "ppsol"):
+            raise NotImplementedError(f"Engine {type(engine).__name__} does not support saturation index calculations.")
+
+        # caching method from Phrqsol
+        if (engine.ppsol is None) or (self.components != engine._stored_comp):
+            engine._destroy_ppsol()
+            engine._setup_ppsol(self)
+
+        ppsol = engine.ppsol
+
+        phases = list(ppsol.phases.keys())
+        eq_species_dict = {phase: ppsol.si(phase) for phase in phases}
+
+        sorted_eq_species_dict = dict(sorted(eq_species_dict.items(), key=lambda item: item[1], reverse=True))
+
+        if get_plot:
+            df = pd.DataFrame(
+                {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
+            )
+
+            fig = px.bar(
+                df,
+                x="species",
+                y="si",
+                labels={"species": "Mineral Phase", "si": "Saturation Index"},
+                color="si",
+                color_continuous_scale="Mint",
+            )
+
+            fig.update_layout(
+                xaxis_tickangle=-45,
+                template="plotly_white",
+                height=500,
+            )
+
+            fig.show()
+
+        return sorted_eq_species_dict

@@ -1155,3 +1155,12 @@ class TestLinearCombinationSoluteVolume:
                 "OH-", "size.molar_volume"
             )
         assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
+
+
+class TestSaturationIndex:
+    @staticmethod
+    @pytest.mark.parametrize("engine", ["native", "phreeqc", "phreeqc2026"])
+    def test_halite_si_positive(engine):
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
+        si = solution.get_saturation_index()
+        assert si["Halite"] > 0
