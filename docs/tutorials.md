@@ -50,3 +50,7 @@ examples/pyeql_tutorial_database
 :maxdepth: 2
 examples/pyeql_tutorial_carbonate
 ```
+
+## Charge Balancing Strategies
+
+[View Notebook on GitHub](https://github.com/KingsburyLab/pyEQL/blob/main/docs/examples/pyeql_tutorial_charge_balancing.ipynb) | Try Interactive Notebook on Binder [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KingsburyLab/pyEQL/main?labpath=docs%2Fexamples%2Fpyeql_charge_balancing.ipynb)
