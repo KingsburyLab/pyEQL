@@ -368,24 +368,22 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
 
     with pytest.raises(ValueError, match=r"Charge balancing species Zr\[\+4\] was not found"):
         s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="Zr[+4]")
-
+        
 
 def test_water_stability_oxidizing(s7, caplog):
-    caplog.set_level(logging.WARNING)
-    s7._check_water_stability()
+    with caplog.at_level(logging.WARNING, logger=s7.logger.name):
+        s7._check_water_stability()
 
-    assert caplog.records
     assert any(
-        "Oxygen evolution may occur" in r.message
-        for r in caplog.records
+        "Oxygen evolution may occur" in message
+        for message in caplog.messages
     )
 
 
 def test_water_stability_reducing(s8, caplog):
-    caplog.set_level(logging.WARNING)
-    s8._check_water_stability()
+    with caplog.at_level(logging.WARNING, logger=s8.logger.name):
+        s8._check_water_stability()
 
-    assert caplog.records
     assert any(
         "Hydrogen evolution may occur" in r.message
         for r in caplog.records
