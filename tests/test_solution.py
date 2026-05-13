@@ -70,8 +70,8 @@ def s6():
             ["Ag+1", "10 mM"],  # no contribution to alk or hardness
             ["CO3-2", "6 mM"],  # no contribution to alk or hardness
             ["SO4-2", "60 mM"],  # -120 meq/L
-            ["Br-", "20 mM"],
-        ],  # -20 meq/L
+            ["Br-", "20 mM"],  # -20 meq/L
+        ],
         volume="1 L",
     )
 
@@ -89,10 +89,38 @@ def s6_Ca():
             ["Ag+1", "10 mM"],  # no contribution to alk or hardness
             ["CO3-2", "6 mM"],  # no contribution to alk or hardness
             ["SO4-2", "60 mM"],  # -120 meq/L
-            ["Br-", "20 mM"],
-        ],  # -20 meq/L
+            ["Br-", "20 mM"],  # -20 meq/L
+        ],  
         volume="1 L",
         balance_charge="Ca+2",
+    )
+
+
+@pytest.fixture
+def s7():
+    # unstability solution in specific redox and pH combinations
+    return Solution(
+        [
+            ["Na+", "100 mM"],  # 100 meq/L
+            ["Cl-", "100 mM"],  # -100 meq/L
+        ],
+        volume="1 L",
+        pH = 20,
+        pE = 1,
+    )
+
+
+@pytest.fixture
+def s8():
+    # unstability solution in specific redox and pH combinations
+    return Solution(
+        [
+            ["Na+", "100 mM"],  # 100 meq/L
+            ["Cl-", "100 mM"],  # -100 meq/L
+        ],
+        volume="1 L",
+        pH = 0,
+        pE = -10,
     )
 
 
@@ -340,6 +368,26 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
 
     with pytest.raises(ValueError, match=r"Charge balancing species Zr\[\+4\] was not found"):
         s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="Zr[+4]")
+        
+
+def test_water_stability_oxidizing(s7, caplog):
+    with caplog.at_level(logging.WARNING, logger=s7.logger.name):
+        s7._check_water_stability()
+
+    assert any(
+        "Oxygen evolution may occur" in message
+        for message in caplog.messages
+    )
+
+
+def test_water_stability_reducing(s8, caplog):
+    with caplog.at_level(logging.WARNING, logger=s8.logger.name):
+        s8._check_water_stability()
+
+    assert any(
+        "Hydrogen evolution may occur" in r.message
+        for r in caplog.records
+    )
 
 
 def test_alkalinity_hardness(s3, s5, s6):
