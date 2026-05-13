@@ -372,7 +372,7 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
 
 def test_water_stability_oxidizing(s7, caplog):
     caplog.set_level(logging.WARNING)
-    s7()._check_water_stability()
+    s7._check_water_stability()
 
     assert caplog.records
     assert any(
@@ -383,7 +383,7 @@ def test_water_stability_oxidizing(s7, caplog):
 
 def test_water_stability_reducing(s8, caplog):
     caplog.set_level(logging.WARNING)
-    s8()._check_water_stability()
+    s8._check_water_stability()
 
     assert caplog.records
     assert any(
