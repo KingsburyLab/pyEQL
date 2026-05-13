@@ -328,6 +328,9 @@ class Solution(MSONable):
         # adjust charge balance, if necessary
         self._adjust_charge_balance()
 
+        # validate water stability, if necessary
+        self._check_water_stability()
+
     @property
     def mass(self) -> Quantity:
         """
@@ -2397,6 +2400,30 @@ class Solution(MSONable):
                     f"There is not enough {self._cb_species} present to balance the charge. Try a different species."
                 )
                 return
+
+    def _check_water_stability(self, tol=1e-6) -> None:
+        """Helper method to adjust the thermodynamic stability of the Solution."""     
+        temp = self.temperature.to("K")
+        E0_O2 = 1.229 * ureg.V
+
+        lower_limit = -float(self.pH)
+        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(self.pH)
+
+        if self.pE < lower_limit - tol:
+            msg = (
+                f"Water is thermodynamically unstable under reducing conditions: "
+                f"pH={self.pH:.2f}, pE={self.pE:.2f}. "
+                f"Hydrogen evolution may occur."
+            )
+            self.logger.warning(msg)
+
+        elif self.pE > upper_limit + tol:
+            msg = (
+                f"Water is thermodynamically unstable under oxidizing conditions: "
+                f"pH={self.pH:.2f}, pE={self.pE:.2f}. "
+                f"Oxygen evolution may occur."
+            )
+            self.logger.warning(msg)
 
     def _update_volume(self):
         """Recalculate the solution volume based on composition."""
