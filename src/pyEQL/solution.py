@@ -37,6 +37,20 @@ EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 UNKNOWN_OXI_STATE = "unk"
 K_W = 1e-14  # ion product of water at 25 degC
 
+# the following properties will be pre-cached for all solutes in the solution, to speed up property retrieval during calculations.
+CORE_PROPERTIES = [
+    "formula",
+    "name",
+    "charge",
+    "molecular_weight",
+    "size.molar_volume",
+    "oxi_state_guesses",
+    "elements",
+    "pmg_ion",
+    "model_parameters",
+    "transport.diffusion_coefficient",
+]
+
 
 class Solution(MSONable):
     """
@@ -201,7 +215,7 @@ class Solution(MSONable):
             self._volume = ureg.Quantity(volume).to("L")
         else:
             # volume_set = False
-            self._volume = ureg.Quantity(1, "L")
+            self._volume = 1 * ureg.L
         # store the initial conditions as private variables in case they are
         # changed later
         self._temperature = ureg.Quantity(temperature)
@@ -267,37 +281,42 @@ class Solution(MSONable):
         moles = self.volume.magnitude / 55.55  # molarity of pure water
         self.components["H2O"] = moles
 
-        # set the pH with H+ and OH-
-        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
-        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
-
-        # populate the other solutes
-        self._solutes = solutes
-        if self._solutes is None:
-            self._solutes = {}
-
-        if isinstance(self._solutes, dict):
-            for k, v in self._solutes.items():
-                self.add_solute(k, v)
-                # if user has specified H+ in solutes, check consistency with pH kwarg
-                if standardize_formula(k) == "H[+1]":
-                    # if user has not specified pH (default value), override the pH argument
-                    if self._pH == 7:
-                        self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
-                    # if user specifies non-default pH that does not match the supplied H+, raise an error
-                    elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                        raise ValueError(
-                            "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
-                        )
-        elif isinstance(self._solutes, list):
+        # store the provided solutes as a dict
+        if isinstance(solutes, dict):
+            self._solutes = solutes
+        elif isinstance(solutes, list):
             msg = (
                 'List input of solutes (e.g., [["Na+", "0.5 mol/L]]) is deprecated! Use dictionary formatted input '
                 '(e.g., {"Na+":"0.5 mol/L"} instead.)'
             )
             self.logger.warning(msg)
             warnings.warn(msg, DeprecationWarning)
-            for item in self._solutes:
-                self.add_solute(*item)
+            self._solutes = {item[0]: item[1] for item in solutes}
+        elif solutes is None:
+            self._solutes = {}
+
+        # # pre-cache all the relevant properties of the solutes provided by the user
+        self._solute_data = list(
+            self.database.query({"formula": {"$in": list(self._solutes.keys())}}, properties=CORE_PROPERTIES)
+        )
+
+        # set the pH with H+ and OH-
+        self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
+        self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
+
+        # populate remaining solutes
+        for k, v in self._solutes.items():
+            self.add_solute(k, v)
+            # if user has specified H+ in solutes, check consistency with pH kwarg
+            if standardize_formula(k) == "H[+1]":
+                # if user has not specified pH (default value), override the pH argument
+                if self._pH == 7:
+                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+                # if user specifies non-default pH that does not match the supplied H+, raise an error
+                elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                    raise ValueError(
+                        "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                    )
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -342,7 +361,7 @@ class Solution(MSONable):
 
         """
         mass = np.sum([self.get_amount(item, "kg").magnitude for item in self.components])
-        return ureg.Quantity(mass, "kg")
+        return mass * ureg.kg
 
     @property
     def solvent_mass(self) -> Quantity:
@@ -532,7 +551,7 @@ class Solution(MSONable):
                 #     self.logger.warning("No dielectric parameters found for species %s." % item)
                 # continue
 
-        return ureg.Quantity(di_water / denominator, "dimensionless")
+        return ureg.Quantity(di_water / denominator)
 
     @property
     def chemical_system(self) -> str:
@@ -688,7 +707,7 @@ class Solution(MSONable):
         # calculate the kinematic viscosity
         nu = np.log(nu_w * MW_w / MW) + 15 * x_cat**2 + x_cat**3 * G_123 + 3 * x_cat * G_23 * (1 - 0.05 * x_cat)
 
-        return ureg.Quantity(np.exp(nu), "m**2 / s")
+        return np.exp(nu) * ureg.m**2 / ureg.s
 
     @property
     def conductivity(self) -> Quantity:
@@ -723,14 +742,15 @@ class Solution(MSONable):
             :py:meth:`get_diffusion_coefficient`
             :py:meth:`get_molar_conductivity`
         """
-        EC = ureg.Quantity(
+        EC = (
             np.asarray(
                 [
                     self.get_molar_conductivity(i).to("S*L/mol/m").magnitude * self.get_amount(i, "mol/L").magnitude
                     for i in self.components
                 ]
-            ),
-            "S/m",
+            )
+            * ureg.S
+            / ureg.m
         )
         return np.sum(EC)
 
@@ -773,7 +793,7 @@ class Solution(MSONable):
         )
         ionic_strength /= self.solvent_mass.to("kg").magnitude  # convert to mol/kg
         ionic_strength *= 0.5
-        return ureg.Quantity(ionic_strength, "mol/kg")
+        return ionic_strength * ureg.mol / ureg.kg
 
     @property
     def charge_balance(self) -> float:
@@ -822,7 +842,7 @@ class Solution(MSONable):
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = ureg.Quantity(0, "mol/L")
+        alkalinity = 0 * ureg.mol / ureg.L
 
         base_cations = {
             "Li[+1]",
@@ -864,7 +884,7 @@ class Solution(MSONable):
                 The hardness of the solution in mg/L as CaCO3
 
         """
-        hardness = ureg.Quantity(0, "mol/L")
+        hardness = 0 * ureg.mol / ureg.L
 
         for item in self.components:
             z = self.get_property(item, "charge")
@@ -882,7 +902,7 @@ class Solution(MSONable):
         The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent),
         except for H[+1] and OH[-1]].
         """
-        tds = ureg.Quantity(0, "mg/L")
+        tds = 0 * ureg.mg / ureg.L
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
             if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
@@ -923,7 +943,7 @@ class Solution(MSONable):
 
         """
         # to preserve dimensionality, convert the ionic strength into mol/L units
-        ionic_strength = ureg.Quantity(self.ionic_strength.magnitude, "mol/L")
+        ionic_strength = self.ionic_strength.magnitude * ureg.mol / ureg.L
         dielectric_constant = self.dielectric_constant
 
         debye_length = (
@@ -1070,7 +1090,7 @@ class Solution(MSONable):
 
         # retrieve the number of moles of solute and its molecular weight
         try:
-            moles = ureg.Quantity(self.components[solute], "mol")
+            moles = self.components[solute] * ureg.mol
         # if the solute is not present in the solution, we'll get a KeyError
         # In that case, the amount is zero
         except KeyError:
@@ -1080,7 +1100,7 @@ class Solution(MSONable):
                 self.logger.error(
                     f"Unsupported unit {units} specified for zero-concentration solute {solute}. Returned 0."
                 )
-                return ureg.Quantity(0, "dimensionless")
+                return ureg.Quantity(0)
 
         # with pint unit conversions enabled, we just pass the unit to pint
         # the logic tests here ensure that only the required arguments are
@@ -1288,10 +1308,11 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should
                contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
+        Q = ureg.Quantity(amount)
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
+        if Q.dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1299,9 +1320,8 @@ class Solution(MSONable):
             orig_volume = self.volume
 
             # add the new solute
-            quantity = ureg.Quantity(amount)
             mw = self.get_property(formula, "molecular_weight")  # returns a quantity
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+            target_mol = Q.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
             self.components[formula] = target_mol.to("moles").magnitude
 
             # calculate the volume occupied by all the solutes
@@ -1312,24 +1332,26 @@ class Solution(MSONable):
 
             # adjust the amount of solvent
             # density is returned in kg/m3 = g/L
-            target_mass = target_vol * ureg.Quantity(self.water_substance.rho, "g/L")
+            target_mass = target_vol * self.water_substance.rho * ureg.g / ureg.L
             # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
                 raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
             target_mol = target_mass.to("g") / mw.to("g/mol")
             self.components[self.solvent] = target_mol.magnitude
-
         else:
-            # add the new solute
-            quantity = ureg.Quantity(amount)
-            mw = ureg.Quantity(self.get_property(formula, "molecular_weight"))
-            target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
-            self.components[formula] = target_mol.to("moles").magnitude
+            if Q.dimensionality == "[substance]":
+                # add the new solute directly
+                self.components[formula] = Q.to("moles").magnitude
+            else:
+                # add the new solute after converting to moles
+                mw = self.get_property(formula, "molecular_weight")  # returns a quantity
+                target_mol = Q.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
+                self.components[formula] = target_mol.to("moles").magnitude
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity(0, "kg"):
+            if self.solvent_mass.magnitude <= 0:
                 self.logger.error("All solvent has been depleted from the solution")
                 return
             # set the volume recalculation flag
@@ -1418,7 +1440,7 @@ class Solution(MSONable):
             target_vol = orig_volume - solute_vol
 
             # adjust the amount of solvent
-            target_mass = target_vol * ureg.Quantity(self.water_substance.rho, "g/L")
+            target_mass = target_vol * self.water_substance.rho * ureg.g / ureg.L
             mw = self.get_property(self.solvent, "molecular_weight")
             target_mol = target_mass / mw
             self.components[self.solvent] = target_mol.to("mol").magnitude
@@ -1439,7 +1461,7 @@ class Solution(MSONable):
 
             # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
-            if self.solvent_mass <= ureg.Quantity(0, "kg"):
+            if self.solvent_mass.magnitude <= 0:
                 self.logger.critical("All solvent has been depleted from the solution")
                 return
 
@@ -1451,7 +1473,7 @@ class Solution(MSONable):
         for item in self.components:
             if item != self.solvent:
                 tot_mol += self.components[item]
-        return ureg.Quantity(tot_mol, "mol")
+        return tot_mol * ureg.mol
 
     def get_moles_solvent(self) -> Quantity:
         """
@@ -1753,14 +1775,16 @@ class Solution(MSONable):
         """
         # return unit activity coefficient if the concentration of the solute is zero
         if self.get_amount(solute, "mol").magnitude == 0:
-            return ureg.Quantity(1, "dimensionless")
+            # return ureg.Quantity(1, "dimensionless")
+            return ureg.Quantity(1)
 
         try:
             # get the molal-scale activity coefficient from the EOS engine
             molal = self.engine.get_activity_coefficient(solution=self, solute=solute)
         except (ValueError, ZeroDivisionError):
             self.logger.error("Calculation unsuccessful. Returning unit activity coefficient.", exc_info=True)
-            return ureg.Quantity(1, "dimensionless")
+            # return ureg.Quantity(1, "dimensionless")
+            return ureg.Quantity(1)
 
         # if necessary, convert the activity coefficient to another scale, and return the result
         if scale == "molal":
@@ -1768,11 +1792,11 @@ class Solution(MSONable):
         if scale == "molar":
             total_molality = self.get_total_moles_solute() / self.solvent_mass
             total_molarity = self.get_total_moles_solute() / self.volume
-            return (molal * ureg.Quantity(self.water_substance.rho, "g/L") * total_molality / total_molarity).to(
+            return (molal * self.water_substance.rho * ureg.g / ureg.L * total_molality / total_molarity).to(
                 "dimensionless"
             )
         if scale == "rational":
-            return molal * (1 + ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass)
+            return molal * 1 + 0.018015 * ureg.kg / ureg.mol * self.get_total_moles_solute() / self.solvent_mass
 
         raise ValueError("Invalid scale argument. Pass 'molal', 'molar', or 'rational'.")
 
@@ -1827,7 +1851,7 @@ class Solution(MSONable):
             activity = (self.get_activity_coefficient(solute, scale=scale) * self.get_amount(solute, units)).magnitude
             self.logger.debug(f"Calculated {scale} scale activity of solute {solute} as {activity}")
 
-        return ureg.Quantity(activity, "dimensionless")
+        return ureg.Quantity(activity)
 
     # TODO - engine method
     def get_osmotic_coefficient(self, scale: Literal["molal", "molar", "rational"] = "molal") -> Quantity:
@@ -1844,17 +1868,18 @@ class Solution(MSONable):
         if scale == "rational":
             return (
                 -molal_phi
-                * ureg.Quantity(0.018015, "kg/mol")
+                * 0.018015
+                * ureg.kg
+                / ureg.mol
                 * self.get_total_moles_solute()
                 / self.solvent_mass
                 / np.log(self.get_amount(self.solvent, "fraction"))
             )
         if scale == "fugacity":
             return np.exp(
-                -molal_phi * ureg.Quantity(0.018015, "kg/mol") * self.get_total_moles_solute() / self.solvent_mass
+                -molal_phi * 0.018015 * ureg.kg / ureg.mol * self.get_total_moles_solute() / self.solvent_mass
                 - np.log(self.get_amount(self.solvent, "fraction"))
-            ) * ureg.Quantity(1, "dimensionless")
-
+            ) * ureg.Quantity(1)
         raise ValueError("Invalid scale argument. Pass 'molal', 'rational', or 'fugacity'.")
 
     def get_water_activity(self) -> Quantity:
@@ -1901,7 +1926,7 @@ class Solution(MSONable):
 
         self.logger.debug("Calculated water activity using osmotic coefficient")
 
-        return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum), "dimensionless")
+        return ureg.Quantity(np.exp(-osmotic_coefficient * 0.018015 * concentration_sum))
 
     def get_chemical_potential_energy(self, activity_correction: bool = True) -> Quantity:
         r"""
@@ -1940,7 +1965,7 @@ class Solution(MSONable):
             .. [koga] Koga, Yoshikata, 2007. *Solution Thermodynamics and its Application to Aqueous Solutions:*
                *A differential approach.* Elsevier, 2007, pp. 23-37.
         """
-        E = ureg.Quantity(0, "J")
+        E = 0 * ureg.J
 
         # loop through all the components and add their potential energy
         for item in self.components:
@@ -1981,31 +2006,35 @@ class Solution(MSONable):
             Quantity: The desired parameter or None if not found
 
         """
-        base_temperature = ureg.Quantity(25, "degC")
+        base_temperature = 25 * ureg.degC
         # base_pressure = ureg.Quantity("1 atm")
 
         # query the database using the standardized formula
         rform = standardize_formula(solute)
-        # TODO - there seems to be a bug in mongomock / JSONStore wherein properties does
-        # not properly return dot-notation fields, e.g. size.molar_volume will not be returned.
-        # also $exists:True does not properly return dot notated fields.
-        # for now, just set properties=[] to return everything
-        # data = list(self.database.query({"formula": rform, name: {"$ne": None}}, properties=["formula", name]))
-        data = list(self.database.query({"formula": rform, name: {"$ne": None}}))
+
+        # TODO - add molar volume of water to database?
+        if name == "size.molar_volume" and rform == "H2O(aq)":
+            # calculate the partial molar volume for water since it isn't in the database
+            vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (
+                self.water_substance.rho * ureg.g / ureg.L
+            )
+
+            return vol.to("cm **3 / mol")
+
+        # update the cached data if necessary (only if solute is not already present)
+        keys = [d["formula"] for d in self._solute_data]
+        if name not in CORE_PROPERTIES or rform not in keys:
+            self._solute_data.extend(list(self.database.query({"formula": rform, name: {"$exists": True}})))
+        data = [d for d in self._solute_data if d["formula"] == rform]
+
         # formulas should always be unique in the database. len==0 indicates no
         # data. len>1 indicates duplicate data.
-        if len(data) > 1:
+
+        if len(data) == 1:
+            pass
+        elif len(data) > 1:
             self.logger.warning(f"Duplicate database entries for solute {solute} found!")
-        if len(data) == 0:
-            # TODO - add molar volume of water to database?
-            if name == "size.molar_volume" and rform == "H2O(aq)":
-                # calculate the partial molar volume for water since it isn't in the database
-                vol = ureg.Quantity(self.get_property("H2O", "molecular_weight")) / (
-                    ureg.Quantity(self.water_substance.rho, "g/L")
-                )
-
-                return vol.to("cm **3 / mol")
-
+        elif len(data) == 0:
             # try to determine basic properties using pymatgen
             doc = Solute.from_formula(rform).as_dict()
             data = [doc]
@@ -2046,6 +2075,9 @@ class Solution(MSONable):
                 return None
 
             if name == "molecular_weight":
+                # if the unit is g/mol, we can speed up the Quantity instantiation by about 10x by using built in multiplication instead of parsing the string
+                if doc.get(name).split(" ")[-1] == "g/mol":
+                    return float(doc.get(name).split(" ")[0]) * ureg("g/mol")
                 return ureg.Quantity(doc.get(name))
 
             if name == "elements":
@@ -2142,7 +2174,7 @@ class Solution(MSONable):
 
             denominator += term
 
-        return ureg.Quantity(numerator / denominator, "dimensionless")
+        return ureg.Quantity(numerator / denominator)
 
     def _get_molar_conductivity(self, solute: str) -> Quantity:
         r"""
@@ -2188,7 +2220,8 @@ class Solution(MSONable):
                 D * (ureg.e * ureg.N_A) ** 2 * self.get_property(solute, "charge") ** 2 / (ureg.R * self.temperature)
             )
         else:
-            molar_cond = ureg.Quantity(0, "mS / cm / (mol/L)")
+            # molar_cond = ureg.Quantity(0, "mS / cm / (mol/L)")
+            molar_cond = 0 * ureg.mS / ureg.cm / (ureg.mol / ureg.L)
 
         self.logger.debug(f"Calculated molar conductivity as {molar_cond} from D = {D!s} at T={self.temperature}")
 
@@ -2246,7 +2279,7 @@ class Solution(MSONable):
                 f"Diffusion coefficient not found for species {rform}. Using default value of "
                 f"{self.default_diffusion_coeff} m**2/s."
             )
-            D = ureg.Quantity(self.default_diffusion_coeff, "m**2/s")
+            D = self.default_diffusion_coeff * ureg.m**2 / ureg.s
 
         # assume reference temperature is 298.15 K (this is the case for all current DB entries)
         T_ref = 298.15
@@ -2432,7 +2465,7 @@ class Solution(MSONable):
     def _get_solvent_volume(self):
         """Return the volume of the pure solvent."""
         # calculate the volume of the pure solvent
-        solvent_vol = self.solvent_mass / ureg.Quantity(self.water_substance.rho, "g/L")
+        solvent_vol = self.solvent_mass / (self.water_substance.rho * ureg.g / ureg.L)
 
         return solvent_vol.to("L")
 
