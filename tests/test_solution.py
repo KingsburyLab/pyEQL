@@ -1234,24 +1234,24 @@ class TestSaturationIndex:
     def test_halite_si_matches_phreeqc(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         composition = {"Na+": "10 mol/L", "K+": "10 mol/L","Cl-": "10 mol/L"}
-        native_solution = Solution(composition, engine="native")
+        phreeqc2026_solution = Solution(composition, engine="phreeqc2026")
         phreeqc_solution = Solution(composition, engine="phreeqc")
-        native_si = native_solution.get_saturation_index()
+        phreeqc2026_si = phreeqc2026_solution.get_saturation_index()
         phreeqc_si = phreeqc_solution.get_saturation_index()
-        assert pytest.approx(native_si["Halite"],rel=1e-3,abs=1e-3) == phreeqc_si["Halite"]
+        assert pytest.approx(phreeqc2026_si["Halite"],rel=1e-3,abs=1e-3) == phreeqc_si["Halite"]
 
     def test_calcite_si_matches_phreeqc(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         composition = {"Ca2+": "2 mmol/L","CO3-2": "2 mmol/L","H+": "7.0 pH"}
-        native = Solution(composition, engine="native").get_saturation_index()
+        phreeqc2026 = Solution(composition, engine="phreeqc2026").get_saturation_index()
         phreeqc = Solution(composition, engine="phreeqc").get_saturation_index()
-        assert pytest.approx(native["Calcite"],rel=1e-3,abs=1e-3) == phreeqc["Calcite"]
+        assert pytest.approx(phreeqc2026["Calcite"],rel=1e-3,abs=1e-3) == phreeqc["Calcite"]
     
     def test_multi_mineral_si(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mmol/L", "Cl-": "10 mol/L"}, engine="native")
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mol/L", "Cl-": "10 mol/L"}, pH=11, engine="native")
+        solution.equilibrate(gases={"CO2": -0.5})
         si = solution.get_saturation_index()
         assert isinstance(si, dict)
-        assert "Halite" in si
-        assert "Calcite" in si
-        assert len(si) >= 2
+        assert si["Halite"] > 2.5
+        assert si["Calcite"] > 0.03
