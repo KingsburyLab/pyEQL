@@ -1242,10 +1242,10 @@ class TestSaturationIndex:
 
     def test_calcite_si_matches_phreeqc(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        composition = {"Ca2+": "2 mmol/L","CO3-2": "2 mmol/L","H+": "7.0 pH"}
-        phreeqc2026 = Solution(composition, engine="phreeqc2026").get_saturation_index()
-        phreeqc = Solution(composition, engine="phreeqc").get_saturation_index()
-        assert pytest.approx(phreeqc2026["Calcite"],rel=1e-3,abs=1e-3) == phreeqc["Calcite"]
+        composition = {"Ca2+": "2 mmol/L","CO3-2": "2 mmol/L","H+": "10**(-10.3) mol/L"}
+        phreeqc2026_si = Solution(composition, engine="phreeqc2026").get_saturation_index()
+        phreeqc_si = Solution(composition, engine="phreeqc").get_saturation_index()
+        assert pytest.approx(phreeqc2026_si["Calcite"],rel=1e-3,abs=1e-3) == phreeqc_si["Calcite"]
     
     def test_multi_mineral_si(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
