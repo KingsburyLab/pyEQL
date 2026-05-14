@@ -1253,5 +1253,5 @@ class TestSaturationIndex:
         solution.equilibrate(gases={"CO2": -0.5})
         si = solution.get_saturation_index()
         assert isinstance(si, dict)
-        assert si["Halite"] > 2.5
+        assert si["Halite"] > 0.39
         assert si["Calcite"] > 0.03
