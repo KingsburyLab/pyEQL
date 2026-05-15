@@ -844,6 +844,14 @@ class Solution(MSONable):
         """
         alkalinity = 0 * ureg.mol / ureg.L
 
+        def _alkalinity_calc(def_set):
+            total = 0 * ureg.mol / ureg.L
+            for item in self.components:
+                if item in def_set:
+                    z = self.get_property(item, "charge")
+                    total += self.get_amount(item, "mol/L") * z
+            return total
+
         base_cations = {
             "Li[+1]",
             "Na[+1]",
@@ -892,16 +900,10 @@ class Solution(MSONable):
         weak_def = any(item in weak_species for item in self.components)
 
         if alternative_def:  # Def 1
-            for item in self.components:
-                if item in alternative_species:
-                    z = self.get_property(item, "charge")
-                    alkalinity += self.get_amount(item, "mol/L") * z
+            alkalinity += _alkalinity_calc(alternative_species)
 
         elif weak_def:  # Def 2
-            for item in self.components:
-                if item in weak_species:
-                    z = self.get_property(item, "charge")
-                    alkalinity += self.get_amount(item, "mol/L") * z
+            alkalinity += _alkalinity_calc(weak_species)
 
         # convert the alkalinity to mg/L as CaCO3
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
