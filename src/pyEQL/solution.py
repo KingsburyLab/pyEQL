@@ -800,8 +800,8 @@ class Solution(MSONable):
         r"""
         Return the signed charge balance of the solution, positive or negative.
 
-        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge 
-        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value. 
+        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge
+        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value.
         Positive values indicate excess cationic charge, while negative values indivate excess anionic charge. It is calculated according to:
 
         .. math:: CB = \sum_i C_i z_i
@@ -1724,7 +1724,7 @@ class Solution(MSONable):
                 typically not considered due to its low solubility and limited
                 impact on aqueous speciation.
             solids:
-                A list of solids used to achieve liquid–solid equilibrium. Each
+                A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be the name of a mineral phase present
                 in the Phreeqc database (e.g. "Calcite"). We assume a target
                 saturation index of 0 and an infinite amount of material.
@@ -2435,12 +2435,14 @@ class Solution(MSONable):
                 return
 
     def _check_water_stability(self, tol=1e-6) -> None:
-        """Helper method to adjust the thermodynamic stability of the Solution."""     
+        """Helper method to adjust the thermodynamic stability of the Solution."""
         temp = self.temperature.to("K")
         E0_O2 = 1.229 * ureg.V
 
         lower_limit = -float(self.pH)
-        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(self.pH)
+        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(
+            self.pH
+        )
 
         if self.pE < lower_limit - tol:
             msg = (
@@ -2499,15 +2501,19 @@ class Solution(MSONable):
         orig_volume = ureg.Quantity(d["volume"])
         # then instantiate a new one
         decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
+        # remove H2O(aq) conc so that it is preserved instead of being renormalized as a solute
+        h2o_amount = decoded["solutes"].pop("H2O(aq)")
+        # convert all solute from mol to mol/L
+        for solute, amount in decoded["solutes"].items():
+            qty = ureg.Quantity(amount)
+            # check the dimension is in mol
+            if qty.dimensionality == ureg.mol.dimensionality:
+                # normalize to mol/L using the original volume
+                converted = qty / orig_volume
+                decoded["solutes"][solute] = f"{converted.magnitude:.6e} {converted.units}"
         new_sol = cls(**decoded)
-        # now determine how different the new solution volume is from the original
-        scale_factor = (orig_volume / new_sol.volume).magnitude
-        # reset the new solution volume to that of the original. In the process of
-        # doing this, all the solute amounts are scaled by new_sol.volume / volume
-        new_sol.volume = str(orig_volume)
-        # undo the scaling by diving by that scale factor
-        for sol in new_sol.components:
-            new_sol.components[sol] /= scale_factor
+        # add original H2O(aq) conc
+        new_sol.components["H2O(aq)"] = ureg.Quantity(h2o_amount).magnitude
         # ensure that another volume update won't be triggered by these changes
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
@@ -2532,13 +2538,13 @@ class Solution(MSONable):
             "excavation",
             "FGD",
             "flotation",
-            # "flue_gas",
+            "flue_gas",
             "gasification",
             "geothermal",
-            # "leachate",
+            "leachate",
             "mine_drainage",
             "mine_tailings",
-            # "plating",
+            "plating",
             "pw_conv",
             "pw_unconv",
             "refining",

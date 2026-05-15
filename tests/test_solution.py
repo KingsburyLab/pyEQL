@@ -90,7 +90,7 @@ def s6_Ca():
             ["CO3-2", "6 mM"],  # no contribution to alk or hardness
             ["SO4-2", "60 mM"],  # -120 meq/L
             ["Br-", "20 mM"],  # -20 meq/L
-        ],  
+        ],
         volume="1 L",
         balance_charge="Ca+2",
     )
@@ -98,29 +98,29 @@ def s6_Ca():
 
 @pytest.fixture
 def s7():
-    # unstability solution in specific redox and pH combinations
+    # instability solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
             ["Cl-", "100 mM"],  # -100 meq/L
         ],
         volume="1 L",
-        pH = 20,
-        pE = 1,
+        pH=20,
+        pE=1,
     )
 
 
 @pytest.fixture
 def s8():
-    # unstability solution in specific redox and pH combinations
+    # instability solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
             ["Cl-", "100 mM"],  # -100 meq/L
         ],
         volume="1 L",
-        pH = 0,
-        pE = -10,
+        pH=0,
+        pE=-10,
     )
 
 
@@ -368,26 +368,20 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
 
     with pytest.raises(ValueError, match=r"Charge balancing species Zr\[\+4\] was not found"):
         s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="Zr[+4]")
-        
+
 
 def test_water_stability_oxidizing(s7, caplog):
     with caplog.at_level(logging.WARNING, logger=s7.logger.name):
         s7._check_water_stability()
 
-    assert any(
-        "Oxygen evolution may occur" in message
-        for message in caplog.messages
-    )
+    assert any("Oxygen evolution may occur" in message for message in caplog.messages)
 
 
 def test_water_stability_reducing(s8, caplog):
     with caplog.at_level(logging.WARNING, logger=s8.logger.name):
         s8._check_water_stability()
 
-    assert any(
-        "Hydrogen evolution may occur" in r.message
-        for r in caplog.records
-    )
+    assert any("Hydrogen evolution may occur" in r.message for r in caplog.records)
 
 
 def test_alkalinity_hardness(s3, s5, s6):
@@ -890,23 +884,23 @@ def test_serialization(s1, s2, tmp_path):
         "batt_recycling",
         "coal_washing",
         "CRL",
-        # "drilling", # Issue #335: pH/H+ inconsistency
+        "drilling",  # Issue #335: pH/H+ inconsistency
         "excavation",
-        # "FGD", # Issue #335: pH/H+ inconsistency
+        "FGD",  # Issue #335: pH/H+ inconsistency
         "flotation",
         "waste_gas",
-        # "gasification", # Issue #335: pH/H+ inconsistency
-        # "geothermal", # Issue #335: pH/H+ inconsistency
-        # "leachate",  # Issue #335: pH/H+ inconsistency
+        "gasification",  # Issue #335: pH/H+ inconsistency
+        "geothermal",  # Issue #335: pH/H+ inconsistency
+        "leachate",  # Issue #335: pH/H+ inconsistency
         "mine_drainage",
         "mine_tailings",
         "plating",
-        # "pw_conv", # Issue #335: pH/H+ inconsistency
-        # "pw_unconv", # Issue #335: pH/H+ inconsistency
-        # "refining", # Issue #335: pH/H+ inconsistency
+        "pw_conv",  # Issue #335: pH/H+ inconsistency
+        "pw_unconv",  # Issue #335: pH/H+ inconsistency
+        "refining",  # Issue #335: pH/H+ inconsistency
         "semiconductor",
         "smelting",
-        # "tanning", # Issue #335: pH/H+ inconsistency
+        "tanning",  # Issue #335: pH/H+ inconsistency
     ],
 )
 def test_from_preset(preset_name, tmp_path):
