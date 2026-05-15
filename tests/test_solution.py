@@ -1198,11 +1198,11 @@ class TestLinearCombinationSoluteVolume:
                 "OH-", "size.molar_volume"
             )
         assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
-        
 
+
+@pytest.mark.parametrize("engine", ["native", "phreeqc", "phreeqc2026"])
 class TestSaturationIndex:
     @staticmethod
-    @pytest.mark.parametrize("engine", ["native", "phreeqc", "phreeqc2026"])
     def test_halite_si(engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
@@ -1211,45 +1211,47 @@ class TestSaturationIndex:
         si_plot = solution.get_saturation_index(get_plot=True)
         assert isinstance(si_plot, dict)
 
-    def test_halite_si_under(self, monkeypatch):
-        solution = Solution({"Na+": "0.001 mol/L", "Cl-": "0.001 mol/L"}, engine="phreeqc")
+    def test_halite_si_under(self, engine, monkeypatch):
+        solution = Solution({"Na+": "0.001 mol/L", "Cl-": "0.001 mol/L"}, engine=engine)
         si = solution.get_saturation_index()
         assert si["Halite"] < -0.01
 
-    def test_saturation_index_sorted(self, monkeypatch):
+    def test_saturation_index_sorted(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine="native")
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
         si = solution.get_saturation_index(get_plot=True)
         values = list(si.values())
         assert values == sorted(values, reverse=True)
 
-    def test_halite_si_trend(self, monkeypatch):
+    def test_halite_si_trend(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        solution_low = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine="native")
-        solution_high = Solution({"Na+": "10 mol/L", "Cl-": "10 mol/L"}, engine="native")
+        solution_low = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=engine)
+        solution_high = Solution({"Na+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
         si_low = solution_low.get_saturation_index()
         si_high = solution_high.get_saturation_index()
         assert si_high["Halite"] > si_low["Halite"]
 
     def test_halite_si_matches_phreeqc(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        composition = {"Na+": "10 mol/L", "K+": "10 mol/L","Cl-": "10 mol/L"}
+        composition = {"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}
         phreeqc2026_solution = Solution(composition, engine="phreeqc2026")
         phreeqc_solution = Solution(composition, engine="phreeqc")
         phreeqc2026_si = phreeqc2026_solution.get_saturation_index()
         phreeqc_si = phreeqc_solution.get_saturation_index()
-        assert pytest.approx(phreeqc2026_si["Halite"],rel=1e-3,abs=1e-3) == phreeqc_si["Halite"]
+        assert pytest.approx(phreeqc2026_si["Halite"], rel=1e-3, abs=1e-3) == phreeqc_si["Halite"]
 
     def test_calcite_si_matches_phreeqc(self, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        composition = {"Ca2+": "2 mmol/L","CO3-2": "2 mmol/L","H+": "10**(-10.3) mol/L"}
+        composition = {"Ca2+": "2 mmol/L", "CO3-2": "2 mmol/L", "H+": "10**(-10.3) mol/L"}
         phreeqc2026_si = Solution(composition, engine="phreeqc2026").get_saturation_index()
         phreeqc_si = Solution(composition, engine="phreeqc").get_saturation_index()
-        assert pytest.approx(phreeqc2026_si["Calcite"],rel=1e-3,abs=1e-3) == phreeqc_si["Calcite"]
-    
-    def test_multi_mineral_si(self, monkeypatch):
+        assert pytest.approx(phreeqc2026_si["Calcite"], rel=1e-3, abs=1e-3) == phreeqc_si["Calcite"]
+
+    def test_multi_mineral_si(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
-        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mol/L", "Cl-": "10 mol/L"}, pH=11, engine="native")
+        solution = Solution(
+            {"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mol/L", "Cl-": "10 mol/L"}, pH=11, engine=engine
+        )
         solution.equilibrate(gases={"CO2": -0.5})
         si = solution.get_saturation_index()
         assert isinstance(si, dict)
