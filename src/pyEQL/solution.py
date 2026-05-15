@@ -826,10 +826,10 @@ class Solution(MSONable):
         Return the alkalinity or acid neutralizing capacity of a solution.
 
         Returns:
-            Quantity: The alkalinity of the solution in mg/L as CaCO3
+            Quantity: The alkalinity of the solution in mg/L either as 1) CaCO3 or 2) sum of all weak acid and base species.
 
         Notes:
-            The alkalinity is calculated according to [stm]_
+            Definition 1: The alkalinity is calculated according to [stm]_
 
             .. math::   Alk = \sum_{i} z_{i} C_{B} + \sum_{i} z_{i} C_{A}
 
@@ -837,6 +837,12 @@ class Solution(MSONable):
             (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
             In this method, the set of conservative cations is all Group I and Group II cations, and the
             conservative anions are all the anions of strong acids.
+
+            Definition 2: The alkalinity for weak acid and base species is calculated according to [stm]_
+
+            .. math:: Alk = -\sum_{i} z_{i} C_{i}
+
+            Where :math:`C_i` is the molar concentration of species i, and :math:`z_i` is its charge. In this method, the summation extends over all weak inorganic species that can participate in acid-base reactions, including the weak acid and bases as defined in `weak_species` and excluding organics.
 
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
