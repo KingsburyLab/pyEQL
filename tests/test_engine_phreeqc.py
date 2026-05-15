@@ -373,7 +373,6 @@ def test_equilibrate_logC_pH_carbonate_13():
     assert np.isclose(solution.get_amount("CO3-2", "mol/kg").magnitude, 9.979e-4, atol=1e-5)
 
 
-@pytest.mark.xfail(strict=True, reason="alkalinity discrepancy needs to be investigated")
 def test_alkalinity():
     solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc")
     solution.equilibrate()

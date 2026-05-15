@@ -842,16 +842,6 @@ class Solution(MSONable):
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        alkalinity = 0 * ureg.mol / ureg.L
-
-        def _alkalinity_calc(def_set):
-            total = 0 * ureg.mol / ureg.L
-            for item in self.components:
-                if item in def_set:
-                    z = self.get_property(item, "charge")
-                    total += self.get_amount(item, "mol/L") * z
-            return total
-
         base_cations = {
             "Li[+1]",
             "Na[+1]",
@@ -900,13 +890,27 @@ class Solution(MSONable):
         weak_def = any(item in weak_species for item in self.components)
 
         if alternative_def:  # Def 1
-            alkalinity += _alkalinity_calc(alternative_species)
+            alkalinity = 0 * ureg.mol / ureg.L
+            for item in self.components:
+                if item in alternative_species:
+                    z = self.get_property(item, "charge")
+                    alkalinity += self.get_amount(item, "mol/L") * z
+            # convert the alkalinity to mg/L as CaCO3
+            alkalinity = (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
         elif weak_def:  # Def 2
-            alkalinity += _alkalinity_calc(weak_species)
+            alkalinity = 0 * ureg.mg / ureg.L
+            for item in self.components:
+                if item in weak_species:
+                    z = self.get_property(item, "charge")
+                    mol_L = self.get_amount(item, "mol/L")
+                    mw = self.get_property(item, "molecular_weight")
+                    mg_L = (mol_L * mw).to("mg/L")
+                    alkalinity += mg_L * (-z)
+            # # no conversion
+            alkalinity = alkalinity.to("mg/L")
 
-        # convert the alkalinity to mg/L as CaCO3
-        return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+        return alkalinity
 
     @property
     def hardness(self) -> Quantity:
