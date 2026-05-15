@@ -17,8 +17,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
-import plotly.express as px
 from maggma.stores import JSONStore, Store
 from monty.dev import deprecated
 from monty.json import MontyDecoder, MSONable
@@ -2437,12 +2435,14 @@ class Solution(MSONable):
                 return
 
     def _check_water_stability(self, tol=1e-6) -> None:
-        """Helper method to adjust the thermodynamic stability of the Solution."""     
+        """Helper method to adjust the thermodynamic stability of the Solution."""
         temp = self.temperature.to("K")
         E0_O2 = 1.229 * ureg.V
 
         lower_limit = -float(self.pH)
-        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(self.pH)
+        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(
+            self.pH
+        )
 
         if self.pE < lower_limit - tol:
             msg = (
@@ -2847,9 +2847,15 @@ class Solution(MSONable):
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
 
-    def get_saturation_index(self, phases=None, get_plot=None) -> float:
+    def get_saturation_index(self, get_plot=None) -> dict:
         """
-        Calculate the saturation index of a solute in the solution.
+        Calculate the saturation index of a solute in the solution based on the current engine.
+        Args:
+            get_plot (bool, optional):
+                If True, displays an interactive bar plot of saturation indices sorted from most oversaturated to least. Defaults to None (no plot).
+        Returns:
+            dict:
+                A dictionary with mineral phase names as keys and their saturation index values as values, sorted in descending order (most oversaturated to least oversaturated).
         """
 
         engine = self.engine
@@ -2870,6 +2876,9 @@ class Solution(MSONable):
         sorted_eq_species_dict = dict(sorted(eq_species_dict.items(), key=lambda item: item[1], reverse=True))
 
         if get_plot:
+            import pandas as pd  # noqa: PLC0415
+            import plotly.express as px  # noqa: PLC0415
+
             df = pd.DataFrame(
                 {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
             )
