@@ -1243,9 +1243,8 @@ class TestSaturationIndex:
         phreeqc_si = Solution(composition, engine="phreeqc").get_saturation_index()
         assert pytest.approx(phreeqc2026_si["Calcite"], rel=1e-3, abs=1e-3) == phreeqc_si["Calcite"]
 
-    @pytest.mark.parametrize("engine", ["native"])
-    def test_saturation_index_ideal_not_supported(self, monkeypatch):
-        solution = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine="ideal",)
+    def test_saturation_index_ideal_not_supported(self, engine, monkeypatch):
+        solution = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine="ideal")
         with pytest.raises(NotImplementedError):
             solution.get_saturation_index()
 
