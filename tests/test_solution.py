@@ -1249,7 +1249,7 @@ class TestSaturationIndex:
             solution.get_saturation_index()
 
     @pytest.mark.skip(reason="temporarily disabled")
-    def test_multi_mineral_si(self, monkeypatch):
+    def test_multi_mineral_si(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mmol/L", "Cl-": "10 mol/L"}, engine="native")
         si = solution.get_saturation_index()
