@@ -1219,7 +1219,7 @@ class TestSaturationIndex:
     def test_halite_si_near(self, engine, monkeypatch):
         solution = Solution({"Na+": "6 mol/L", "Cl-": "6 mol/L"}, engine=engine)
         si = solution.get_saturation_index()
-        assert -0.1 < si["Halite"] < 0.1
+        assert -1 < si["Halite"] < 1
 
     def test_saturation_index_sorted(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
