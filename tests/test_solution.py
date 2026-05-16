@@ -1236,7 +1236,7 @@ class TestSaturationIndex:
         si_high = solution_high.get_saturation_index()
         assert si_high["Halite"] > si_low["Halite"]
 
-    def test_calcite_si_matches_phreeqc(self, monkeypatch):
+    def test_calcite_si_matches_phreeqc(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         composition = {"Ca2+": "2 mmol/L", "CO3-2": "2 mmol/L", "H+": "10**(-10.3) mol/L"}
         phreeqc2026_si = Solution(composition, engine="phreeqc2026").get_saturation_index()
