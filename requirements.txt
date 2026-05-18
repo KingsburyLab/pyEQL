@@ -60,7 +60,7 @@ orjson==3.11.6
 packaging==25.0
 palettable==3.3.3
 pandas==2.3.3
-paramiko==4.0.0
+paramiko==5.0.0
 pathspec==1.0.3
 periodictable==2.0.2
 phreeqpython==1.5.7
@@ -123,5 +123,5 @@ typing_extensions==4.15.0
 tzdata==2025.3
 uc-micro-py==1.0.3
 uncertainties==3.2.4
-urllib3==2.6.3
+urllib3==2.7.0
 virtualenv==20.36.1
