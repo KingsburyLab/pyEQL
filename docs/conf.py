@@ -176,14 +176,14 @@ html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
     "site_url": "https://pyeql.readthedocs.io/en/latest/",
-    "site_name": "pyEQL documentation",
+    "nav_title": "pyEQL documentation",
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
     "nav_links": 
     [{
             "title": "Releases",
-            "url": "https://github.com/KingsburyLab/pyEQL/releases",
+            "href": "https://github.com/KingsburyLab/pyEQL/releases",
             "internal": False,
     },],
     "toc_title": "pyEQL: a python interface for water chemistry",
