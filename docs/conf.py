@@ -176,7 +176,6 @@ html_theme_options = {
     # "sidebar_width": "300px",
     # "page_width": "1200px",
     "site_url": "https://pyeql.readthedocs.io/en/latest/",
-    "html_title": "pyEQL documentation",
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
@@ -196,7 +195,7 @@ html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "se
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-# html_title = None
+html_title = "pyEQL: a python interface for water chemistry"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
