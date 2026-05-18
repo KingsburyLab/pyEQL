@@ -1249,7 +1249,7 @@ class TestSaturationIndex:
             solution.get_saturation_index()
 
     @pytest.mark.skip(reason="temporarily disabled")
-    def test_multi_mineral_si(self, engine, monkeypatch):
+    def test_multi_equilibrate_si(self, engine, monkeypatch):
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "2 mmol/L", "Cl-": "10 mol/L"}, engine="native")
         si = solution.get_saturation_index()
@@ -1257,3 +1257,6 @@ class TestSaturationIndex:
         assert "Halite" in si
         assert "Calcite" in si
         assert len(si) >= 2
+        solution.equilibrate()
+        assert -1 < si["Halite"] < 1
+        assert -1 < si["Calcite"] < 1
