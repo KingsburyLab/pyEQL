@@ -225,10 +225,8 @@ pygments==2.20.0
     # via
     #   pytest
     #   sphinx
-pymatgen==2026.5.4
-    # via pyeql (pyproject.toml)
 pymatgen-core==2026.5.18
-    # via pymatgen
+    # via pyeql (pyproject.toml)
 pymongo==4.10.1
     # via maggma
 pynacl==1.6.2
