@@ -43,14 +43,14 @@ jobs:
 
       - name: Run tests
         run: |
-          if [[ "${{ matrix.python-version }}" == "3.12" ]]; then
+          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
             pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
           else
             pytest -n auto --dist=loadscope
           fi
 
       - uses: codecov/codecov-action@v6
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.13'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
