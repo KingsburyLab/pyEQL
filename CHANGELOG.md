@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependcy count.
 
-### Added
 
 ## [1.4.0] - 2026-02-17
 
