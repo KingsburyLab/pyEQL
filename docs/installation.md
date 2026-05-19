@@ -14,7 +14,7 @@ After installing `conda` / `mamba`, follow their instructions to create an envir
 
 1. Open your terminal (or "Anaconda prompt" or "Miniforge prompt" on Windows)
 2. Pick a name for your environment (note: you can create many environments if you want)
-3. type `conda create -n <name-you-picked> python=3.10` (if you install miniforge) or `mamba create -n <name-you-picked> python=3.10` (if you installed mambaforge) and press enter
+3. type `conda create -n <name-you-picked> python=3.13` (if you install miniforge) or `mamba create -n <name-you-picked> python=3.13` (if you installed mambaforge) and press enter
 4. After the environment is installed, type `conda activate <name-you-picked>` / `mamba activate <name-you-picked>` and press enter
 
 ## pip install
