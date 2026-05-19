@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - CHANGELOG.md
       - AUTHORS.md
+      - README.md
       - docs/**
 
 jobs:
