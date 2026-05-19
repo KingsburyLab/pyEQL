@@ -4,7 +4,7 @@
 pint>=0.24.4
 numpy>1.26
 scipy>=1.12
-pymatgen>=2025.1.9
+pymatgen-core>=2026.5.18
 iapws>=1.5.3
 monty>=2024.12.10
 maggma>=0.71.4
