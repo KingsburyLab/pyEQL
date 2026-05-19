@@ -126,7 +126,7 @@ monty==2026.5.18
     #   pyeql (pyproject.toml)
     #   maggma
     #   pymatgen-core
-mpmath==1.3.0
+mpmath==1.4.1
     # via sympy
 msgpack==1.1.2
     # via maggma
@@ -176,7 +176,7 @@ pandas==3.0.3
     # via
     #   maggma
     #   pymatgen-core
-paramiko==3.5.1
+paramiko==5.0.0
     # via
     #   maggma
     #   sshtunnel
@@ -229,7 +229,7 @@ pymatgen==2026.5.4
     # via pyeql (pyproject.toml)
 pymatgen-core==2026.5.18
     # via pymatgen
-pymongo==4.10.1
+pymongo==4.17.0
     # via maggma
 pynacl==1.6.2
     # via paramiko
@@ -334,7 +334,7 @@ sympy==1.14.0
     # via pymatgen-core
 tabulate==0.10.0
     # via pymatgen-core
-tox==3.28.0
+tox==4.54.0
     # via pyeql (pyproject.toml)
 tqdm==4.67.3
     # via

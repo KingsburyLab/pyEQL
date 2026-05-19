@@ -12,6 +12,6 @@ phreeqpython>=1.5.2
 sphinx>=3.2.1
 nbsphinx
 sphinx-rtd-theme
-ipython>=9.3.0
+ipython>=9.13.0
 myst-parser[linkify]
 sphinx-immaterial # Material theme
