@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `python` 3.14 support
 
+### Changed
+
+- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependcy count.
+
 ## Removed
 
 - Dropped `python` 3.10 support
