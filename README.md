@@ -69,7 +69,7 @@ Detailed documentation is available at [https://pyeql.readthedocs.io/](https://p
   [NEP 29](https://numpy.org/neps/nep-0029-deprecation_policy.html) deprecation policy
   for older version of Python.
 - [pint](https://github.com/hgrecco/pint) - for units-aware calculations
-- [pymatgen](https://github.com/materialsproject/pymatgen) - periodic table and chemical formula information
+- [pymatgen-core](https://github.com/materialsproject/pymatgen-core) - periodic table and chemical formula information
 - [phreeqpython](https://github.com/Vitens/phreeqpython) - for PHREEQC-based speciation calculations
 - [iapws](https://github.com/jjgomera/iapws/) - equations of state for water
 - [monty](https://github.com/materialsvirtuallab/monty) - serialization and deserialization utilities
