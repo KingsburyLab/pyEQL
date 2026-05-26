@@ -320,8 +320,8 @@ class Solution(MSONable):
                 self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
             # if user specifies non-default pH that does not match the supplied H+, raise an error
             elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                raise ValueError(
-                    "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                warnings.warn(
+                    f"After initialization, the calculated solution pH of {self.pH:.3f} does not match the specified pH of {self._pH:.3f}. This might be a result of erroneous input, or it can during from_dict / from_preset if you use a different engine than the one which generated the original dict."
                 )
 
         # determine the species that will be used for charge balancing, when needed.
