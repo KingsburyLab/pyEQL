@@ -13,10 +13,9 @@ import os
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
 from phreeqpython import PhreeqPython
-from typing_extensions import Self
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
@@ -403,7 +402,6 @@ class Phreeqc2026EOS(EOS):
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
-
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
