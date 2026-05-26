@@ -179,6 +179,11 @@ html_theme_options = {
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
+    "social": [{
+            "icon": "fontawesome/brands/github",
+            "link": "https://github.com/KingsburyLab/pyEQL/releases",
+            "name": "Releases",
+    }],
     "toc_title": "pyEQL: a python interface for water chemistry",
     "palette": { "primary": "blue", "accent": "light-blue" },
     "globaltoc_collapse": True,
@@ -190,7 +195,7 @@ html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "se
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-# html_title = None
+html_title = "pyEQL: a python interface for water chemistry"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
