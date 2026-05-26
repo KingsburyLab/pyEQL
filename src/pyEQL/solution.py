@@ -209,12 +209,10 @@ class Solution(MSONable):
         # initialize the volume recalculation flag
         self.volume_update_required = False
 
-        # initialize the volume with a flag to distinguish user-specified volume
+        # initialize the volume
         if volume is not None:
-            # volume_set = True
             self._volume = ureg.Quantity(volume).to("L")
         else:
-            # volume_set = False
             self._volume = 1 * ureg.L
         # store the initial conditions as private variables in case they are
         # changed later
@@ -277,9 +275,10 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) on the density and the solution volume
-        moles = self.volume.magnitude / 55.55  # molarity of pure water
-        self.components["H2O"] = moles
+        # calculate the moles of solvent (water) based on the density and solution volume
+        self.components["H2O"] = (
+            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+        )  # moles = density / molar mass * volume
 
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
@@ -800,8 +799,8 @@ class Solution(MSONable):
         r"""
         Return the signed charge balance of the solution, positive or negative.
 
-        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge 
-        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value. 
+        Return the signed charge balance of the solution, positive or negative. The charge balance represents the net electric charge
+        of the solution and SHOULD equal zero at all times, but due to numerical errors will usually have a small nonzero value.
         Positive values indicate excess cationic charge, while negative values indivate excess anionic charge. It is calculated according to:
 
         .. math:: CB = \sum_i C_i z_i
@@ -1333,7 +1332,6 @@ class Solution(MSONable):
             # adjust the amount of solvent
             # density is returned in kg/m3 = g/L
             target_mass = target_vol * self.water_substance.rho * ureg.g / ureg.L
-            # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
                 raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
@@ -1724,7 +1722,7 @@ class Solution(MSONable):
                 typically not considered due to its low solubility and limited
                 impact on aqueous speciation.
             solids:
-                A list of solids used to achieve liquid–solid equilibrium. Each
+                A list of solids used to achieve liquid-solid equilibrium. Each
                 solid in this list should be the name of a mineral phase present
                 in the Phreeqc database (e.g. "Calcite"). We assume a target
                 saturation index of 0 and an infinite amount of material.
@@ -2435,12 +2433,14 @@ class Solution(MSONable):
                 return
 
     def _check_water_stability(self, tol=1e-6) -> None:
-        """Helper method to adjust the thermodynamic stability of the Solution."""     
+        """Helper method to adjust the thermodynamic stability of the Solution."""
         temp = self.temperature.to("K")
         E0_O2 = 1.229 * ureg.V
 
         lower_limit = -float(self.pH)
-        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(self.pH)
+        upper_limit = (ureg.faraday_constant * E0_O2 / (2.303 * ureg.R * temp)).to_base_units().magnitude - float(
+            self.pH
+        )
 
         if self.pE < lower_limit - tol:
             msg = (
