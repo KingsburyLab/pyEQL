@@ -935,23 +935,23 @@ def test_serialization(s1, s2, tmp_path):
         "batt_recycling",
         "coal_washing",
         "CRL",
-        # "drilling", # Issue #335: pH/H+ inconsistency
+        "drilling",
         "excavation",
-        # "FGD", # Issue #335: pH/H+ inconsistency
+        "FGD",
         "flotation",
         "waste_gas",
-        # "gasification", # Issue #335: pH/H+ inconsistency
-        # "geothermal", # Issue #335: pH/H+ inconsistency
-        # "leachate",  # Issue #335: pH/H+ inconsistency
+        "gasification",
+        "geothermal",
+        "leachate",
         "mine_drainage",
         "mine_tailings",
         "plating",
-        # "pw_conv", # Issue #335: pH/H+ inconsistency
-        # "pw_unconv", # Issue #335: pH/H+ inconsistency
-        # "refining", # Issue #335: pH/H+ inconsistency
+        "pw_conv",
+        "pw_unconv",
+        "refining",
         "semiconductor",
         "smelting",
-        # "tanning", # Issue #335: pH/H+ inconsistency
+        "tanning",
     ],
 )
 def test_from_preset(preset_name, tmp_path):
