@@ -275,11 +275,6 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) based on the density and solution volume
-        self.components["H2O"] = (
-            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
-        )  # moles = density / molar mass * volume
-
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
             self._solutes = solutes
@@ -299,23 +294,35 @@ class Solution(MSONable):
             self.database.query({"formula": {"$in": list(self._solutes.keys())}}, properties=CORE_PROPERTIES)
         )
 
+        if "H2O(aq)" in self._solutes:
+            self.components["H2O"] = ureg.Quantity(self._solutes["H2O(aq)"]).to("mol").magnitude
+        else:
+            # calculate the moles of solvent (water) based on the density and solution volume
+            self.components["H2O"] = (
+                self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+            )  # moles = density / molar mass * volume
+
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
         self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
 
         # populate remaining solutes
+        CHECK_H = False
         for k, v in self._solutes.items():
             self.add_solute(k, v)
             # if user has specified H+ in solutes, check consistency with pH kwarg
             if standardize_formula(k) == "H[+1]":
-                # if user has not specified pH (default value), override the pH argument
-                if self._pH == 7:
-                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
-                # if user specifies non-default pH that does not match the supplied H+, raise an error
-                elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                    raise ValueError(
-                        "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
-                    )
+                CHECK_H = True
+
+        if CHECK_H:
+            # if user has not specified pH (default value), override the pH argument
+            if self._pH == 7:
+                self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+            # if user specifies non-default pH that does not match the supplied H+, raise an error
+            elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                raise ValueError(
+                    "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
+                )
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -2542,13 +2549,13 @@ class Solution(MSONable):
             "excavation",
             "FGD",
             "flotation",
-            # "flue_gas",
+            "flue_gas",
             "gasification",
             "geothermal",
-            # "leachate",
+            "leachate",
             "mine_drainage",
             "mine_tailings",
-            # "plating",
+            "plating",
             "pw_conv",
             "pw_unconv",
             "refining",
