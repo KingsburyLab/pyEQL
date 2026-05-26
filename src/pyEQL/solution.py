@@ -1332,7 +1332,6 @@ class Solution(MSONable):
             # adjust the amount of solvent
             # density is returned in kg/m3 = g/L
             target_mass = target_vol * self.water_substance.rho * ureg.g / ureg.L
-            # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
                 raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
