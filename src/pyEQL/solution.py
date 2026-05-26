@@ -2509,6 +2509,8 @@ class Solution(MSONable):
         # undo the scaling by diving by that scale factor
         for sol in new_sol.components:
             new_sol.components[sol] /= scale_factor
+        if orig_moles is not None:
+            new_sol.components["H2O(aq)"] = orig_moles
         # ensure that another volume update won't be triggered by these changes
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
