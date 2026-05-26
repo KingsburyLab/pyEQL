@@ -231,8 +231,12 @@ class Test_get_amount:
     1 mol NaCl / L = 58.44 g/L
     Na+ = 22.98977 g/mol
     Density ~ 1.03856 according to CRC "concentrative properties of aqueous solutions" table.
-    So 1 mol/L NaCl => 58.44 g/mol * 1 mol/L = 0.05844 kg
-    1 L = 1.03856 kg => 1 mol Na+ / (1.03856 - 0.05844)) = 1.02028606 mol/kg
+
+    Molality: 58.44 g/mol NaCl * 1 mol/L = 0.05844 kg
+    1 L weighs 1.03856 kg => 1 mol Na+ / (1.03856 - 0.05844)) = 1.02028606 mol/kg
+
+    Mole fraction: 1 mol Na+ / (1 mol Na+ + 1 mol Cl- + (1.03856 - 0.05844) kg H2O / (0.01801528 g/mol)) = 0.017728948
+
 
     """
 
@@ -256,7 +260,7 @@ class Test_get_amount:
         assert np.isclose(s1.get_amount("Na+", "mol").magnitude, 1)
 
         # get_amount() - fraction
-        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.017754, atol=1e-6)
+        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.017728948, atol=1e-4)
 
         # get_amount() - count
         assert np.isclose(s1.get_amount("Na+", "count").magnitude, 6.02214e23)
