@@ -13,10 +13,9 @@ import os
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
 from phreeqpython import PhreeqPython
-from typing_extensions import Self
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
