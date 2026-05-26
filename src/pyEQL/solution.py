@@ -209,12 +209,10 @@ class Solution(MSONable):
         # initialize the volume recalculation flag
         self.volume_update_required = False
 
-        # initialize the volume with a flag to distinguish user-specified volume
+        # initialize the volume
         if volume is not None:
-            # volume_set = True
             self._volume = ureg.Quantity(volume).to("L")
         else:
-            # volume_set = False
             self._volume = 1 * ureg.L
         # store the initial conditions as private variables in case they are
         # changed later
