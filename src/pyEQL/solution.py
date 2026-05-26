@@ -275,9 +275,10 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) on the density and the solution volume
-        moles = self.volume.magnitude / 55.55  # molarity of pure water
-        self.components["H2O"] = moles
+        # calculate the moles of solvent (water) based on the density and solution volume
+        self.components["H2O"] = (
+            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+        )  # moles = density / molar mass * volume
 
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
