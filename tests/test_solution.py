@@ -98,7 +98,7 @@ def s6_Ca():
 
 @pytest.fixture
 def s7():
-    # instability solution in specific redox and pH combinations
+    # unstable solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
@@ -112,7 +112,7 @@ def s7():
 
 @pytest.fixture
 def s8():
-    # instability solution in specific redox and pH combinations
+    # unstable solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
