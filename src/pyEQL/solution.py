@@ -826,28 +826,35 @@ class Solution(MSONable):
         Return the alkalinity or acid neutralizing capacity of a solution.
 
         Returns:
-            Quantity: The alkalinity of the solution in mg/L either as 1) CaCO3 or 2) sum of all weak acid and base species.
+            Quantity: The alkalinity of the solution in mg/L as CaCO3
 
         Notes:
-            Definition 1: The alkalinity is calculated according to [stm]_
+            The alkalinity is calculated according to [stm]_
 
             .. math::   Alk = \sum_{i} z_{i} C_{B} + \sum_{i} z_{i} C_{A}
 
             Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and anions, respectively
             (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
-            In this method, the set of conservative cations is all Group I and Group II cations, and the
-            conservative anions are all the anions of strong acids.
+            When conservative cations (Group I and II cations) or strong base anions are present, the alkalinity is calculated according to[stm]_
 
-            Definition 2: The alkalinity for weak acid and base species is calculated according to [stm]_
+            .. math::   Alk = \sum_{i} z_{i} C_{B} + \sum_{i} z_{i} C_{A}
+
+            Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and strong base anions, respectively  (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
+
+            Alternatively, if those species are not present, then alkalinity is calculated based on the concentrations of weak acid and base species is according to [stm]_
 
             .. math:: Alk = -\sum_{i} z_{i} C_{i}
 
-            Where :math:`C_i` is the molar concentration of species i, and :math:`z_i` is its charge. In this method, the summation extends over all weak inorganic species that can participate in acid-base reactions, including the weak acid and bases as defined in `weak_species` and excluding organics.
+            Where :math:`C_i` is the molar concentration of species i, and :math:`z_i` is its charge.
+
+            The summation should extend over all weak inorganic species that can participate in acid-base reactions. In this method, we consider HCO3[-1], CO3[-2], H2PO4[-1], HPO4[-2], PO4[-3], HS[-1], S[-2], H3SiO4[-1], H2SiO4[-2], B(OH)4[-1], NH3(aq), OH[-1], and H[+1] as the relevant weak acid/base species, while organics are excluded.
 
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
+        alkalinity = 0 * ureg.mol / ureg.L
+
         base_cations = {
             "Li[+1]",
             "Na[+1]",
@@ -872,10 +879,6 @@ class Solution(MSONable):
             "ClO3[-1]",
         }
 
-        # Definition 1: Alternative definition of alkalinity
-        alternative_species = base_cations.union(acid_anions)
-        alternative_def = any(item in alternative_species for item in self.components)
-
         weak_species = {
             "HCO3[-1]",
             "CO3[-2]",
@@ -892,31 +895,19 @@ class Solution(MSONable):
             "H[+1]",
         }  # Note that organics are excluded
 
-        # Definition 2: Weak acid/base definition of alkalinity
-        weak_def = any(item in weak_species for item in self.components)
+        alternative_species = base_cations.union(acid_anions)
+        # check presence of conservative cations or strong base anions
+        alternative_def = any(item in alternative_species for item in self.components)
 
-        if alternative_def:  # Def 1
-            alkalinity = 0 * ureg.mol / ureg.L
-            for item in self.components:
-                if item in alternative_species:
-                    z = self.get_property(item, "charge")
-                    alkalinity += self.get_amount(item, "mol/L") * z
-            # convert the alkalinity to mg/L as CaCO3
-            alkalinity = (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+        for item in self.components:
+            if item in alternative_species:
+                # Conservative cations and strong base anions
+                alkalinity += self.get_amount(item, "eq/L")
+            elif item in weak_species and not alternative_def:
+                # Weak acid/base species, exclude organics
+                alkalinity += self.get_amount(item, "eq/L") * (-1)
 
-        elif weak_def:  # Def 2
-            alkalinity = 0 * ureg.mg / ureg.L
-            for item in self.components:
-                if item in weak_species:
-                    z = self.get_property(item, "charge")
-                    mol_L = self.get_amount(item, "mol/L")
-                    mw = self.get_property(item, "molecular_weight")
-                    mg_L = (mol_L * mw).to("mg/L")
-                    alkalinity += mg_L * (-z)
-            # # no conversion
-            alkalinity = alkalinity.to("mg/L")
-
-        return alkalinity
+        return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
     @property
     def hardness(self) -> Quantity:

@@ -90,7 +90,7 @@ def s6_Ca():
             ["CO3-2", "6 mM"],  # no contribution to alk or hardness
             ["SO4-2", "60 mM"],  # -120 meq/L
             ["Br-", "20 mM"],  # -20 meq/L
-        ],  
+        ],
         volume="1 L",
         balance_charge="Ca+2",
     )
@@ -98,29 +98,59 @@ def s6_Ca():
 
 @pytest.fixture
 def s7():
-    # unstability solution in specific redox and pH combinations
+    # instability solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
             ["Cl-", "100 mM"],  # -100 meq/L
         ],
         volume="1 L",
-        pH = 20,
-        pE = 1,
+        pH=20,
+        pE=1,
     )
 
 
 @pytest.fixture
 def s8():
-    # unstability solution in specific redox and pH combinations
+    # instability solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
             ["Cl-", "100 mM"],  # -100 meq/L
         ],
         volume="1 L",
-        pH = 0,
-        pE = -10,
+        pH=0,
+        pE=-10,
+    )
+
+
+@pytest.fixture
+def s9():
+    # weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["H3PO4(aq)", "1 mM"],  # no contribution to alk or hardness
+            ["H2PO4-", "1 mM"],  # -1 meq/L
+            ["HPO4-2", "1 mM"],  # -2 meq/L
+        ],
+        volume="1 L",
+        pH=3,
+    )
+
+
+@pytest.fixture
+def s10():
+    # both conservative cation and weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Na+", "1 mM"],  # 1 meq/L
+            ["H3SiO4-", "1 mM"],  # -1 meq/L
+            ["H2SiO4-2", "1 mM"],  # -2 meq/L
+            ["SiO2(aq)", "1 mM"],  # no contribution to alk or hardness
+        ],
+        volume="1 L",
+        pH=4,
     )
 
 
@@ -368,29 +398,23 @@ def test_charge_balance(s3, s5, s5_pH, s6, s6_Ca):
 
     with pytest.raises(ValueError, match=r"Charge balancing species Zr\[\+4\] was not found"):
         s = Solution({"Na+": "2 mM", "Cl-": "2 mM"}, balance_charge="Zr[+4]")
-        
+
 
 def test_water_stability_oxidizing(s7, caplog):
     with caplog.at_level(logging.WARNING, logger=s7.logger.name):
         s7._check_water_stability()
 
-    assert any(
-        "Oxygen evolution may occur" in message
-        for message in caplog.messages
-    )
+    assert any("Oxygen evolution may occur" in message for message in caplog.messages)
 
 
 def test_water_stability_reducing(s8, caplog):
     with caplog.at_level(logging.WARNING, logger=s8.logger.name):
         s8._check_water_stability()
 
-    assert any(
-        "Hydrogen evolution may occur" in r.message
-        for r in caplog.records
-    )
+    assert any("Hydrogen evolution may occur" in r.message for r in caplog.records)
 
 
-def test_alkalinity_hardness(s3, s5, s6):
+def test_alkalinity_hardness(s3, s5, s6, s9, s10):
     assert np.isclose(s3.hardness, 0)
     assert np.isclose(s3.alkalinity, 0)
 
@@ -399,6 +423,12 @@ def test_alkalinity_hardness(s3, s5, s6):
 
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
+
+    assert np.isclose(s9.alkalinity.magnitude, 100.09, rtol=0.005)
+    assert np.isclose(s9.hardness.magnitude, 0, rtol=0.005)
+
+    assert np.isclose(s10.alkalinity.magnitude, 150.135, rtol=0.005)
+    assert np.isclose(s10.hardness.magnitude, 100.09, rtol=0.005)
 
 
 def test_pressure_temperature(s5):
