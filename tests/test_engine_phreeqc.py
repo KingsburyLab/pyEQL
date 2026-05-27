@@ -377,14 +377,18 @@ def test_alkalinity():
     solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc")
     solution.equilibrate()
 
-    HCO3 = solution.get_amount("HCO3-", "mg/L").magnitude
-    CO3 = solution.get_amount("CO3-2", "mg/L").magnitude
-    OH = solution.get_amount("OH-", "mg/L").magnitude
-    H = solution.get_amount("H+", "mg/L").magnitude
+    HCO3 = solution.get_amount("HCO3-", "mol/L").magnitude
+    CO3 = solution.get_amount("CO3-2", "mol/L").magnitude
+    OH = solution.get_amount("OH-", "mol/L").magnitude
+    H = solution.get_amount("H+", "mol/L").magnitude
 
     # Alkalinity calculated from the excess of negative charges from weak acids
     calculated_alk = HCO3 + 2 * CO3 + OH - H
-    assert solution.alkalinity.to("mg/L").magnitude == pytest.approx(calculated_alk, abs=0.001)
+    # Convert alkalinity from mol/L to mg/L as CaCO3
+    EQUIV_WT_CACO3 = 100.09 / 2  # g/mol
+    calculated_alk_mg_L = calculated_alk * EQUIV_WT_CACO3 * 1000
+
+    assert solution.alkalinity.magnitude == pytest.approx(calculated_alk_mg_L, abs=1e-8)
 
 
 def test_equilibrate_2L():
