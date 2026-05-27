@@ -13,10 +13,9 @@ import os
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
 from phreeqpython import PhreeqPython
-from typing_extensions import Self
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
@@ -111,7 +110,13 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def equilibrate(self, solution: "solution.Solution") -> None:
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
         """
         Adjust the speciation and pH of a Solution object to achieve chemical equilibrium.
 
@@ -149,7 +154,13 @@ class IdealEOS(EOS):
         """Return the volume of the solutes."""
         return ureg.Quantity(0, "L")
 
-    def equilibrate(self, solution: "solution.Solution") -> None:
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         warnings.warn("equilibrate() has no effect in IdealEOS!")
         return
@@ -177,7 +188,6 @@ class Phreeqc2026EOS(EOS):
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
         """
-
         from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
 
         if not IS_AVAILABLE:
@@ -403,7 +413,6 @@ class Phreeqc2026EOS(EOS):
         # re-adjust charge balance for any missing species
         # note that if balance_charge is set, it will have been passed to PHREEQC, so the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
-
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """

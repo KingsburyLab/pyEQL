@@ -823,92 +823,46 @@ def test_arithmetic_and_copy(s2, s6):
         s2 + s_bad
 
 
-def test_as_from_dict(s1, s2):
-    assert isinstance(s1.as_dict(), dict)
-    s1_new = Solution.from_dict(s1.as_dict())
-    assert s1_new.volume.magnitude == 2
-    assert s1_new._solutes["H[+1]"] == "2e-07 mol"
-    assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
-    assert s1_new.components == s1.components
-    assert np.isclose(s1_new.pH, s1.pH)
-    assert np.isclose(s1_new._pH, s1._pH)
-    assert np.isclose(s1_new.pE, s1.pE)
-    assert np.isclose(s1_new._pE, s1._pE)
-    assert s1_new.temperature == s1.temperature
-    assert s1_new.pressure == s1.pressure
-    assert s1_new.solvent == s1.solvent
-    assert s1_new._engine == s1._engine
-    # the solutions should point to different EOS instances
-    assert s1_new.engine != s1.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s1_new.database != s1.database
-
-    s2_new = Solution.from_dict(s2.as_dict())
-    assert s2_new.volume == s2.volume
-    # components concentrations should be the same
-    assert s2_new.components == s2.components
-    # but not point to the same instances
-    assert s2_new.components is not s2.components
-    assert s2_new.get_total_moles_solute() == s2.get_total_moles_solute()
-    assert np.isclose(s2_new.pH, s2.pH)
-    assert np.isclose(s2_new._pH, s2._pH)
-    assert np.isclose(s2_new.pE, s2.pE)
-    assert np.isclose(s2_new._pE, s2._pE)
-    assert s2_new.temperature == s2.temperature
-    assert s2_new.pressure == s2.pressure
-    assert s2_new.solvent == s2.solvent
-    assert s2_new._engine == s2._engine
-    # the solutions should point to different EOS instances
-    assert s2_new.engine != s2.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s2_new.database != s2.database
-
-
-# TODO - this test is redundant with test_as_from_dict, because dumpfn and loadfn just call as_dict and from_dict under the hood (for JSON files). Refactor and consolidate.
 def test_serialization(s1, s2, tmp_path):
-    dumpfn(s1, str(tmp_path / "s1.json"))
-    s1_new = loadfn(str(tmp_path / "s1.json"))
-    assert s1_new.volume.magnitude == 2
-    assert s1_new._solutes["H[+1]"] == "2e-07 mol"
-    assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
-    assert s1_new.components == s1.components
-    assert np.isclose(s1_new.pH, s1.pH)
-    assert np.isclose(s1_new._pH, s1._pH)
-    assert np.isclose(s1_new.pE, s1.pE)
-    assert np.isclose(s1_new._pE, s1._pE)
-    assert s1_new.temperature == s1.temperature
-    assert s1_new.pressure == s1.pressure
-    assert s1_new.solvent == s1.solvent
-    assert s1_new._engine == s1._engine
-    # the solutions should point to different EOS instances
-    assert s1_new.engine != s1.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s1_new.database != s1.database
+    """Test that Solutions survive a round-trip through as_dict/from_dict and dumpfn/loadfn.
 
+    dumpfn/loadfn delegate to as_dict/from_dict for JSON files, so a single
+    helper that checks both paths avoids duplicating every assertion.
+    """
+
+    def assert_roundtrip(original, restored):
+        assert restored.volume == original.volume
+        assert restored.components == original.components
+        assert restored.components is not original.components
+        assert restored.get_total_moles_solute() == original.get_total_moles_solute()
+        assert np.isclose(restored.pH, original.pH)
+        assert np.isclose(restored._pH, original._pH)
+        assert np.isclose(restored.pE, original.pE)
+        assert np.isclose(restored._pE, original._pE)
+        assert restored.temperature == original.temperature
+        assert restored.pressure == original.pressure
+        assert restored.solvent == original.solvent
+        assert restored._engine == original._engine
+        # the solutions should point to different EOS instances
+        assert restored.engine != original.engine
+        # also should point to different Store instances
+        # TODO currently this test will fail due to a bug in maggma's __eq__
+        # assert restored.database != original.database
+
+    # as_dict / from_dict
+    assert isinstance(s1.as_dict(), dict)
+    assert_roundtrip(s1, Solution.from_dict(s1.as_dict()))
+    # s1-specific fields that aren't present on every Solution
+    s1_dict_restored = Solution.from_dict(s1.as_dict())
+    assert s1_dict_restored.volume.magnitude == 2
+    assert s1_dict_restored._solutes["H[+1]"] == "2e-07 mol"
+    assert_roundtrip(s2, Solution.from_dict(s2.as_dict()))
+
+    # dumpfn / loadfn (exercises the same code path via monty serialization)
+    dumpfn(s1, str(tmp_path / "s1.json"))
+    assert_roundtrip(s1, loadfn(str(tmp_path / "s1.json")))
     dumpfn(s2, str(tmp_path / "s2.json"))
-    s2_new = loadfn(str(tmp_path / "s2.json"))
-    assert s2_new.volume == s2.volume
-    # components concentrations should be the same
-    assert s2_new.components == s2.components
-    # but not point to the same instances
-    assert s2_new.components is not s2.components
-    assert s2_new.get_total_moles_solute() == s2.get_total_moles_solute()
-    assert np.isclose(s2_new.pH, s2.pH)
-    assert np.isclose(s2_new._pH, s2._pH)
-    assert np.isclose(s2_new.pE, s2.pE)
-    assert np.isclose(s2_new._pE, s2._pE)
-    assert s2_new.temperature == s2.temperature
-    assert s2_new.pressure == s2.pressure
-    assert s2_new.solvent == s2.solvent
-    assert s2_new._engine == s2._engine
-    # the solutions should point to different EOS instances
-    assert s2_new.engine != s2.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s2_new.database != s2.database
+    assert_roundtrip(s2, loadfn(str(tmp_path / "s2.json")))
 
 
 @pytest.mark.parametrize(

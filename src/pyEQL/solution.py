@@ -209,12 +209,10 @@ class Solution(MSONable):
         # initialize the volume recalculation flag
         self.volume_update_required = False
 
-        # initialize the volume with a flag to distinguish user-specified volume
+        # initialize the volume
         if volume is not None:
-            # volume_set = True
             self._volume = ureg.Quantity(volume).to("L")
         else:
-            # volume_set = False
             self._volume = 1 * ureg.L
         # store the initial conditions as private variables in case they are
         # changed later
@@ -277,9 +275,10 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) on the density and the solution volume
-        moles = self.volume.magnitude / 55.55  # molarity of pure water
-        self.components["H2O"] = moles
+        # calculate the moles of solvent (water) based on the density and solution volume
+        self.components["H2O"] = (
+            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+        )  # moles = density / molar mass * volume
 
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
@@ -1374,7 +1373,6 @@ class Solution(MSONable):
             # adjust the amount of solvent
             # density is returned in kg/m3 = g/L
             target_mass = target_vol * self.water_substance.rho * ureg.g / ureg.L
-            # mw = ureg.Quantity(self.get_property(self.solvent_name, "molecular_weight"))
             mw = self.get_property(self.solvent, "molecular_weight")
             if mw is None:
                 raise ValueError(f"Molecular weight for solvent {self.solvent} not found in database. Cannot proceed.")
