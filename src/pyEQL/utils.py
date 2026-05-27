@@ -110,11 +110,13 @@ def standardize_formula(formula: str):
     # thiocyanate
     elif "CSN" in sform:
         sform = sform.replace("CSN", "SCN")
-    # triiodide, nitride, an phosphide
+    # triiodide, trinitride, tribromide and phosphide
     elif sform == "I[-0.33333333]":
         sform = "I3[-1]"
     elif sform == "N[-0.33333333]":
         sform = "N3[-1]"
+    elif sform == "Br[-0.33333333]":
+        sform = "Br3[-1]"
     elif sform == "P[-0.33333333]":
         sform = "P3[-1]"
     # formate
