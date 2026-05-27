@@ -110,7 +110,13 @@ class EOS(ABC):
         """
 
     @abstractmethod
-    def equilibrate(self, solution: "solution.Solution") -> None:
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
         """
         Adjust the speciation and pH of a Solution object to achieve chemical equilibrium.
 
@@ -148,7 +154,13 @@ class IdealEOS(EOS):
         """Return the volume of the solutes."""
         return ureg.Quantity(0, "L")
 
-    def equilibrate(self, solution: "solution.Solution") -> None:
+    def equilibrate(
+        self,
+        solution: "solution.Solution",
+        atmosphere: bool = False,
+        solids: list[str] | None = None,
+        gases: dict[str, str | float] | None = None,
+    ) -> None:
         """Adjust the speciation of a Solution object to achieve chemical equilibrium."""
         warnings.warn("equilibrate() has no effect in IdealEOS!")
         return
@@ -176,7 +188,6 @@ class Phreeqc2026EOS(EOS):
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
         """
-
         from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
 
         if not IS_AVAILABLE:
