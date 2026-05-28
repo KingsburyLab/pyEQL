@@ -1307,7 +1307,7 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should
                contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
-        Q = ureg.Quantity(amount)
+        Q = ureg.Quantity(*self.__split_pint_quantity__(amount))
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
@@ -1377,7 +1377,7 @@ class Solution(MSONable):
         current_amt = self.get_amount(solute, amount.split(" ")[1])
         if current_amt.magnitude == 0:
             self.logger.warning(f"Add new solute {solute} to the solution")
-        new_amt = ureg.Quantity(amount) + current_amt
+        new_amt = ureg.Quantity(*self.__split_pint_quantity__(amount)) + current_amt
         self.set_amount(solute, new_amt)
 
     def set_amount(self, solute: str, amount: str):
@@ -2783,6 +2783,17 @@ class Solution(MSONable):
         """
         self.volume /= factor
         return self
+
+    def __split_pint_quantity__(self, amount: str):
+        """
+        Helper method to split a pint quantity string into magnitude and units.
+        """
+        import re  # noqa: PLC0415
+
+        match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+        _value, _unit = match.groups()
+        unit = interpret_units(_unit)
+        return (float(_value), unit)
 
     # informational methods
 
