@@ -840,7 +840,7 @@ class Solution(MSONable):
 
             Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and strong base anions, respectively  (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
 
-            Alternatively, if those species are not present, then alkalinity is calculated based on the concentrations of weak acid and base species is according to [stm]_
+            Alternatively, if those species are not present, then alkalinity is calculated based on the concentrations of weak acid and base species according to [stm]_
 
             .. math:: Alk = -\sum_{i} z_{i} C_{i}
 
@@ -894,15 +894,15 @@ class Solution(MSONable):
             "H[+1]",
         }  # Note that organics are excluded
 
-        alternative_species = base_cations.union(acid_anions)
+        conservative_species = base_cations.union(acid_anions)
         # check presence of conservative cations or strong base anions
-        alternative_def = any(item in alternative_species for item in self.components)
+        conservative_def = any(item in conservative_species for item in self.components)
 
         for item in self.components:
-            if item in alternative_species:
+            if item in conservative_species:
                 # Conservative cations and strong base anions
                 alkalinity += self.get_amount(item, "eq/L")
-            elif item in weak_species and not alternative_def:
+            elif item in weak_species and not conservative_def:
                 # Weak acid/base species, exclude organics
                 alkalinity += self.get_amount(item, "eq/L") * (-1)
 

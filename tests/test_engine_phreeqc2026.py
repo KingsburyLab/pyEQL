@@ -390,7 +390,7 @@ def test_alkalinity():
     # Alkalinity calculated from the excess of negative charges from weak acids
     calculated_alk = HCO3 + 2 * CO3 + OH - H
     # Convert alkalinity from mol/L to mg/L as CaCO3
-    EQUIV_WT_CACO3 = 100.09 / 2  # g/mol
+    EQUIV_WT_CACO3 = 100.09 / 2  # g/eq
     calculated_alk_mg_L = calculated_alk * EQUIV_WT_CACO3 * 1000
 
     assert solution.alkalinity.magnitude == pytest.approx(calculated_alk_mg_L, abs=1e-8)
