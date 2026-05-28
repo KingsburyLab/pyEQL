@@ -275,11 +275,6 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) based on the density and solution volume
-        self.components["H2O"] = (
-            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
-        )  # moles = density / molar mass * volume
-
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
             self._solutes = solutes
@@ -299,23 +294,38 @@ class Solution(MSONable):
             self.database.query({"formula": {"$in": list(self._solutes.keys())}}, properties=CORE_PROPERTIES)
         )
 
+        if "H2O(aq)" in self._solutes:
+            self.components["H2O"] = ureg.Quantity(self._solutes["H2O(aq)"]).to("mol").magnitude
+        else:
+            # calculate the moles of solvent (water) based on the density and solution volume
+            self.components["H2O"] = (
+                self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+            )  # moles = density / molar mass * volume
+
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
         self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
 
         # populate remaining solutes
+        CHECK_H = False
         for k, v in self._solutes.items():
             self.add_solute(k, v)
             # if user has specified H+ in solutes, check consistency with pH kwarg
             if standardize_formula(k) == "H[+1]":
-                # if user has not specified pH (default value), override the pH argument
-                if self._pH == 7:
-                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
-                # if user specifies non-default pH that does not match the supplied H+, raise an error
-                elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                    raise ValueError(
-                        "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
-                    )
+                CHECK_H = True
+
+        if CHECK_H:
+            # if user has not specified pH (default value), override the pH argument
+            if self._pH == 7:
+                self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+            # if user specifies non-default pH that does not match the supplied H+, raise an error
+            elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                warnings.warn(
+                    f"After initialization, the calculated solution pH of {self.pH:.3f} does not match the "
+                    f"specified pH of {self._pH:.3f}. This might be a result of erroneous input (e.g., specifying "
+                    "both pH and H+), or it can happen during from_dict / from_preset if you use a different "
+                    "engine than the one which generated the original dict."
+                )
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -1498,13 +1508,13 @@ class Solution(MSONable):
                 .magnitude
             )
 
-            # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass.magnitude <= 0:
                 self.logger.critical("All solvent has been depleted from the solution")
                 return
 
-            self._update_volume()
+            # update the volume to account for the space occupied by all the solutes
+            self.volume_update_required = True
 
     def get_total_moles_solute(self) -> Quantity:
         """Return the total moles of all solute in the solution."""
@@ -1675,13 +1685,12 @@ class Solution(MSONable):
         salt_dict: dict[str, dict[str, float | Salt]] = {}
 
         if use_totals:
-            # # use only the predominant species for each element
+            # use only the predominant species for each element
             components = {}
-            for el, lst in self.get_components_by_element().items():
+            for el, lst in self.get_components_by_element(nested=False).items():
                 component = lst[0]
-                ion = Ion.from_formula(component)
                 el_no_oxi_state = el.split("(")[0]
-                nu_el = ion.get_el_amt_dict()[el_no_oxi_state]
+                nu_el = self.get_property(component, "pmg_ion").get(el_no_oxi_state, 0)
                 components[component] = self.get_total_amount(el, "mol").magnitude / nu_el
             # add H+ and OH-, which would otherwise be excluded
             for k in ["H[+1]", "OH[-1]"]:
@@ -2532,14 +2541,24 @@ class Solution(MSONable):
         return d
 
     @classmethod
-    def from_dict(cls, d: dict) -> Solution:
-        """Instantiate a Solution from a dictionary generated by as_dict()."""
+    def from_dict(cls, d: dict, **kwargs) -> Solution:
+        """Instantiate a Solution from a dictionary generated by as_dict().
+
+        Args:
+            d (dict): A dictionary representation of a Solution, generated by the as_dict() method.
+
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override
+            any values in the dict.
+        """
         # because of the automatic volume updating that takes place during the __init__ process,
         # care must be taken here to recover the exact quantities of solute and volume
-        # first we store the volume of the serialized solution
+        # first we store the volume and solvent mass of the serialized solution
         orig_volume = ureg.Quantity(d["volume"])
+        orig_moles = ureg.Quantity(d["solutes"]["H2O(aq)"]).to("mol").magnitude if "H2O(aq)" in d["solutes"] else None
         # then instantiate a new one
         decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
+        decoded.update(kwargs)
         new_sol = cls(**decoded)
         # now determine how different the new solution volume is from the original
         scale_factor = (orig_volume / new_sol.volume).magnitude
@@ -2549,6 +2568,8 @@ class Solution(MSONable):
         # undo the scaling by diving by that scale factor
         for sol in new_sol.components:
             new_sol.components[sol] /= scale_factor
+        if orig_moles is not None:
+            new_sol.components["H2O(aq)"] = orig_moles
         # ensure that another volume update won't be triggered by these changes
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
@@ -2558,12 +2579,6 @@ class Solution(MSONable):
     def from_preset(
         cls,
         preset: Literal[
-            "seawater",
-            "rainwater",
-            "wastewater",
-            "urine",
-            "normal saline",
-            "Ringers lactate",
             "ash",
             "batt_mfg",
             "batt_recycling",
@@ -2573,20 +2588,27 @@ class Solution(MSONable):
             "excavation",
             "FGD",
             "flotation",
-            # "flue_gas",
             "gasification",
             "geothermal",
-            # "leachate",
+            "leachate",
             "mine_drainage",
             "mine_tailings",
-            # "plating",
+            "normal saline",
+            "plating",
             "pw_conv",
             "pw_unconv",
+            "rainwater",
             "refining",
+            "Ringers lactate",
+            "seawater",
             "semiconductor",
             "smelting",
             "tanning",
+            "urine",
+            "waste_gas",
+            "wastewater",
         ],
+        **kwargs,
     ) -> Solution:
         r"""Instantiate a solution from a preset composition.
 
@@ -2594,6 +2616,10 @@ class Solution(MSONable):
             preset (str): String representing the desired solution.
               Valid entries are 'seawater', 'rainwater', 'wastewater',
               'urine', 'normal saline' and 'Ringers lactate'.
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and
+            will override any values in the preset file. This allows you to use a preset as a starting
+            point and then modify it as needed by, e.g., changing the modeling engine or database.
 
         Returns:
             A pyEQL Solution object.
@@ -2604,12 +2630,6 @@ class Solution(MSONable):
         Notes:
             The following sections explain the different solution options:
 
-            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [mf08]_
-            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [me13]_
-            - 'urine' - typical human urine. See Table 3-15 of [me13]_
-            - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
-            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
             - 'ash' - bottom ash transport wastewater from fossil fuel combustion [kwptr2026]_
             - 'batt_mfg' - wastewater from lead-acid and legacy battery manufacturing processes [kwptr2026]_
             - 'batt_recycling' - wastewater from lithium ion battery recycling operations [kwptr2026]_
@@ -2619,19 +2639,25 @@ class Solution(MSONable):
             - 'excavation' - wastewater from excavation in metal ore mining operations [kwptr2026]_
             - 'FGD' - flue gas desulfurization wastewater from SO2 removal from fossil fuel combustion [kwptr2026]_
             - 'flotation' - milling and flotation wastewater from metal ore extraction [kwptr2026]_
-            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
             - 'gasification' - wastewater from gasification of carbon-based feedstocks to syngas [kwptr2026]_
             - 'geothermal' - geothermal produced water from geothermal power generation [kwptr2026]_
             - 'leachate' - leachate from metal ore mining wastes [kwptr2026]_
             - 'mine_drainage' - acid mine drainage wastewater from coal and metal ore mining operations [kwptr2026]_
             - 'mine_tailings' - mine tailings pond water from collective metal ore and mining wastes [kwptr2026]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
             - 'plating' - typical wastewater from metal electroplating operations [kwptr2026]_
             - 'pw_conv' - produced water from conventional hydrocarbon production [kwptr2026]_
             - 'pw_unconv' - produced water from unconventional hydrocarbon production [kwptr2026]_
+            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
             - 'refining' - petroleum refining wastewater from crude oil refineries [kwptr2026]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [mf08]_
             - 'semiconductor' - semiconductor and electronics manufacturing wastewater  [kwptr2026]_
             - 'smelting' - wastewater from metal ore smelting and refining from pyrometallurgical slags [kwptr2026]_
             - 'tanning' - wastewater from leather tanning and finishing operations [kwptr2026]_
+            - 'urine' - typical human urine. See Table 3-15 of [me13]_
+            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [me13]_
 
         References:
             .. [mf08] Millero, Frank J. "The composition of Standard Seawater and the definition of
@@ -2660,7 +2686,7 @@ class Solution(MSONable):
             raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
 
         # Create and return a Solution object
-        return cls().from_file(preset_path)
+        return cls().from_file(preset_path, **kwargs)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
@@ -2681,12 +2707,16 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(cls, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path, **kwargs) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
             filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
               Valid extensions are .json or .yaml.
+
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override any values in the file. This allows you to use a file as a starting point and then modify it as needed by, e.g., changing the modeling engine or database.
+            NOTE: CURRENTLY ONLY SUPPORTED FOR YAML FILES!
 
         Returns:
             A pyEQL Solution object.
@@ -2714,6 +2744,8 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
+            for k, v in kwargs.items():
+                solution_dict[k] = v
             return cls.from_dict(solution_dict)
         return loadfn(filename)
 
