@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- `Solution.get_saturation_index()`: `pyEQL` can now display saturation indices for solid phases when using the `native`,
+  `phreeqc`, or `phreeqc2026` engines. (#395, @SuixiongTay, @YitongPan1)
+- `Solution.alkalinity`: Alkalinity calculations now include an alternative definition based on the presence of weak
+  acid-base species. Previously, the calculation only considered conservative cations and strong base anions, which
+  meant that a solution that contained only weak acid/base species would return zero alkalinity. (#398, @SuixiongTay)
 - Added `python` 3.14 support (#404, @rkingsbury)
 - Docs: new charge balancing tutorial (#391, @SuixiongTay)
 - Docs: new tutorial for solid-liquid-gas equilibrium (#390, @YitongPan1)
