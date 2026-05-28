@@ -124,6 +124,36 @@ def s8():
     )
 
 
+@pytest.fixture
+def s9():
+    # weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["H3PO4(aq)", "1 mM"],  # no contribution to alk or hardness
+            ["H2PO4-", "1 mM"],  # -1 meq/L
+            ["HPO4-2", "1 mM"],  # -2 meq/L
+        ],
+        volume="1 L",
+        pH=3,
+    )
+
+
+@pytest.fixture
+def s10():
+    # both conservative cation and weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Na+", "1 mM"],  # 1 meq/L
+            ["H3SiO4-", "1 mM"],  # -1 meq/L
+            ["H2SiO4-2", "1 mM"],  # -2 meq/L
+            ["SiO2(aq)", "1 mM"],  # no contribution to alk or hardness
+        ],
+        volume="1 L",
+        pH=4,
+    )
+
+
 def test_empty_solution():
     # create an empty solution
     s1 = Solution(database=None)
@@ -219,7 +249,7 @@ def test_init_raises(caplog):
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
-    with pytest.raises(ValueError, match="Cannot specify both a non-default pH and H+"):
+    with pytest.warns(UserWarning, match="After initialization, the calculated solution pH"):
         Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, pH=10)
     module_log = logging.getLogger("pyEQL")
     with caplog.at_level(logging.WARNING, "pyEQL"):
@@ -384,7 +414,7 @@ def test_water_stability_reducing(s8, caplog):
     assert any("Hydrogen evolution may occur" in r.message for r in caplog.records)
 
 
-def test_alkalinity_hardness(s3, s5, s6):
+def test_alkalinity_hardness(s3, s5, s6, s9, s10):
     assert np.isclose(s3.hardness, 0)
     assert np.isclose(s3.alkalinity, 0)
 
@@ -393,6 +423,12 @@ def test_alkalinity_hardness(s3, s5, s6):
 
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
+
+    assert np.isclose(s9.alkalinity.magnitude, 100.09, rtol=0.005)
+    assert np.isclose(s9.hardness.magnitude, 0, rtol=0.005)
+
+    assert np.isclose(s10.alkalinity.magnitude, 150.135, rtol=0.005)
+    assert np.isclose(s10.hardness.magnitude, 100.09, rtol=0.005)
 
 
 def test_pressure_temperature(s5):
@@ -787,6 +823,58 @@ def test_arithmetic_and_copy(s2, s6):
         s2 + s_bad
 
 
+def test_from_dict_complex():
+    """
+    Test the behavior of as/from dict with a solution containing multiple solutes, that is
+    subjected too equilibration and forced volume updates to ensure volume, solvent mass,
+    and component amounts are all being properly serialized and deserialized. Test in
+    3 different unit systems to catch corner cases.
+    """
+    s1 = Solution({"Na+": "0.8 mol", "Cl-": "0.4 mol", "SO4-2": "0.2 mol"}, pH=2, volume="0.1 L")
+    s2 = Solution({"Na+": "0.8 mol/kg", "Cl-": "0.4 mol/kg", "SO4-2": "0.2 mol/kg"}, pH=2, volume="0.1 L")
+    s3 = Solution({"Na+": "0.8 mol/L", "Cl-": "0.4 mol/L", "SO4-2": "0.2 mol/L"}, pH=2, volume="0.1 L")
+
+    for s in [s1, s2, s3]:
+        orig_mass = s.mass
+
+        # equilibrate
+        s.equilibrate()
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+        assert s.volume_update_required is True
+
+        # store the original properties
+        orig_H = s.components["H[+1]"]
+        orig_pH = s.pH
+        orig_volume = s.volume
+        orig_solv_mol = s.components["H2O(aq)"]
+        orig_solv_volume = s._get_solvent_volume()
+        orig_slt_volume = s._get_solute_volume()
+
+        # update volume
+        s._update_volume()
+
+        # still consistent?
+        assert np.isclose(s.pH, orig_pH, atol=0.00001)
+        assert np.isclose(s.volume.magnitude, orig_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.components["H[+1]"], orig_H, atol=1e-8)
+        assert np.isclose(s.components["H2O(aq)"], orig_solv_mol, atol=1e-6)
+        assert np.isclose(s._get_solvent_volume().magnitude, orig_solv_volume.magnitude, atol=1e-5)
+        assert np.isclose(s._get_solute_volume().magnitude, orig_slt_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+
+        # serialize / deserialize
+        snew = Solution.from_dict(s.as_dict())
+
+        # still consistent?
+        assert np.isclose(snew.pH, orig_pH, atol=0.00001)
+        assert np.isclose(snew.volume.magnitude, orig_volume.magnitude, atol=1e-5)
+        assert np.isclose(snew.components["H[+1]"], orig_H, atol=1e-8)
+        assert np.isclose(snew.components["H2O(aq)"], orig_solv_mol, atol=1e-6)
+        assert np.isclose(snew._get_solvent_volume().magnitude, orig_solv_volume.magnitude, atol=1e-5)
+        assert np.isclose(snew._get_solute_volume().magnitude, orig_slt_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+
+
 def test_serialization(s1, s2, tmp_path):
     """Test that Solutions survive a round-trip through as_dict/from_dict and dumpfn/loadfn.
 
@@ -838,23 +926,23 @@ def test_serialization(s1, s2, tmp_path):
         "batt_recycling",
         "coal_washing",
         "CRL",
-        # "drilling", # Issue #335: pH/H+ inconsistency
+        "drilling",
         "excavation",
-        # "FGD", # Issue #335: pH/H+ inconsistency
+        "FGD",
         "flotation",
         "waste_gas",
-        # "gasification", # Issue #335: pH/H+ inconsistency
-        # "geothermal", # Issue #335: pH/H+ inconsistency
-        # "leachate",  # Issue #335: pH/H+ inconsistency
+        "gasification",
+        "geothermal",
+        "leachate",
         "mine_drainage",
         "mine_tailings",
         "plating",
-        # "pw_conv", # Issue #335: pH/H+ inconsistency
-        # "pw_unconv", # Issue #335: pH/H+ inconsistency
-        # "refining", # Issue #335: pH/H+ inconsistency
+        "pw_conv",
+        "pw_unconv",
+        "refining",
         "semiconductor",
         "smelting",
-        # "tanning", # Issue #335: pH/H+ inconsistency
+        "tanning",
     ],
 )
 def test_from_preset(preset_name, tmp_path):

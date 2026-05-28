@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `from_preset`/ `from_dict`: there was a subtle bug in the calculation of solution volumes that could cause a pH / H+
+  inconsistency when re-creating solutions from `dict` or files. This primarily affected solutions with many solutes and
+  the discrepancy was small in quantitative terms, but prevented some `presets` from loading correctly.
 - `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]` (#410, @rkingsbury)
 - `Solution.__init__`: fix the way the moles of solvent are initially calculated. The previous approach contained
   an error and also used a fixed water concentration of 55.55 mol/L regardless of temperature or pressure. The
