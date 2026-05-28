@@ -99,7 +99,7 @@ def s6_Ca():
 
 @pytest.fixture
 def s7():
-    # instability solution in specific redox and pH combinations
+    # unstable solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
@@ -113,7 +113,7 @@ def s7():
 
 @pytest.fixture
 def s8():
-    # instability solution in specific redox and pH combinations
+    # unstable solution in specific redox and pH combinations
     return Solution(
         [
             ["Na+", "100 mM"],  # 100 meq/L
@@ -122,6 +122,36 @@ def s8():
         volume="1 L",
         pH=0,
         pE=-10,
+    )
+
+
+@pytest.fixture
+def s9():
+    # weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["H3PO4(aq)", "1 mM"],  # no contribution to alk or hardness
+            ["H2PO4-", "1 mM"],  # -1 meq/L
+            ["HPO4-2", "1 mM"],  # -2 meq/L
+        ],
+        volume="1 L",
+        pH=3,
+    )
+
+
+@pytest.fixture
+def s10():
+    # both conservative cation and weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Na+", "1 mM"],  # 1 meq/L
+            ["H3SiO4-", "1 mM"],  # -1 meq/L
+            ["H2SiO4-2", "1 mM"],  # -2 meq/L
+            ["SiO2(aq)", "1 mM"],  # no contribution to alk or hardness
+        ],
+        volume="1 L",
+        pH=4,
     )
 
 
@@ -220,7 +250,7 @@ def test_init_raises(caplog):
         Solution(solvent="D2O")
     with pytest.raises(ValueError, match="Multiple solvents"):
         Solution(solvent=["D2O", "MeOH"])
-    with pytest.raises(ValueError, match="Cannot specify both a non-default pH and H+"):
+    with pytest.warns(UserWarning, match="After initialization, the calculated solution pH"):
         Solution({"HCO3-": "1 mM", "CO3--": "1 mM", "H+": "1 mM"}, pH=10)
     module_log = logging.getLogger("pyEQL")
     with caplog.at_level(logging.WARNING, "pyEQL"):
@@ -385,7 +415,7 @@ def test_water_stability_reducing(s8, caplog):
     assert any("Hydrogen evolution may occur" in r.message for r in caplog.records)
 
 
-def test_alkalinity_hardness(s3, s5, s6):
+def test_alkalinity_hardness(s3, s5, s6, s9, s10):
     assert np.isclose(s3.hardness, 0)
     assert np.isclose(s3.alkalinity, 0)
 
@@ -394,6 +424,12 @@ def test_alkalinity_hardness(s3, s5, s6):
 
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
+
+    assert np.isclose(s9.alkalinity.magnitude, 100.09, rtol=0.005)
+    assert np.isclose(s9.hardness.magnitude, 0, rtol=0.005)
+
+    assert np.isclose(s10.alkalinity.magnitude, 150.135, rtol=0.005)
+    assert np.isclose(s10.hardness.magnitude, 100.09, rtol=0.005)
 
 
 def test_pressure_temperature(s5):
@@ -788,92 +824,98 @@ def test_arithmetic_and_copy(s2, s6):
         s2 + s_bad
 
 
-def test_as_from_dict(s1, s2):
-    assert isinstance(s1.as_dict(), dict)
-    s1_new = Solution.from_dict(s1.as_dict())
-    assert s1_new.volume.magnitude == 2
-    assert s1_new._solutes["H[+1]"] == "2e-07 mol"
-    assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
-    assert s1_new.components == s1.components
-    assert np.isclose(s1_new.pH, s1.pH)
-    assert np.isclose(s1_new._pH, s1._pH)
-    assert np.isclose(s1_new.pE, s1.pE)
-    assert np.isclose(s1_new._pE, s1._pE)
-    assert s1_new.temperature == s1.temperature
-    assert s1_new.pressure == s1.pressure
-    assert s1_new.solvent == s1.solvent
-    assert s1_new._engine == s1._engine
-    # the solutions should point to different EOS instances
-    assert s1_new.engine != s1.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s1_new.database != s1.database
+def test_from_dict_complex():
+    """
+    Test the behavior of as/from dict with a solution containing multiple solutes, that is
+    subjected too equilibration and forced volume updates to ensure volume, solvent mass,
+    and component amounts are all being properly serialized and deserialized. Test in
+    3 different unit systems to catch corner cases.
+    """
+    s1 = Solution({"Na+": "0.8 mol", "Cl-": "0.4 mol", "SO4-2": "0.2 mol"}, pH=2, volume="0.1 L")
+    s2 = Solution({"Na+": "0.8 mol/kg", "Cl-": "0.4 mol/kg", "SO4-2": "0.2 mol/kg"}, pH=2, volume="0.1 L")
+    s3 = Solution({"Na+": "0.8 mol/L", "Cl-": "0.4 mol/L", "SO4-2": "0.2 mol/L"}, pH=2, volume="0.1 L")
 
-    s2_new = Solution.from_dict(s2.as_dict())
-    assert s2_new.volume == s2.volume
-    # components concentrations should be the same
-    assert s2_new.components == s2.components
-    # but not point to the same instances
-    assert s2_new.components is not s2.components
-    assert s2_new.get_total_moles_solute() == s2.get_total_moles_solute()
-    assert np.isclose(s2_new.pH, s2.pH)
-    assert np.isclose(s2_new._pH, s2._pH)
-    assert np.isclose(s2_new.pE, s2.pE)
-    assert np.isclose(s2_new._pE, s2._pE)
-    assert s2_new.temperature == s2.temperature
-    assert s2_new.pressure == s2.pressure
-    assert s2_new.solvent == s2.solvent
-    assert s2_new._engine == s2._engine
-    # the solutions should point to different EOS instances
-    assert s2_new.engine != s2.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s2_new.database != s2.database
+    for s in [s1, s2, s3]:
+        orig_mass = s.mass
+
+        # equilibrate
+        s.equilibrate()
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+        assert s.volume_update_required is True
+
+        # store the original properties
+        orig_H = s.components["H[+1]"]
+        orig_pH = s.pH
+        orig_volume = s.volume
+        orig_solv_mol = s.components["H2O(aq)"]
+        orig_solv_volume = s._get_solvent_volume()
+        orig_slt_volume = s._get_solute_volume()
+
+        # update volume
+        s._update_volume()
+
+        # still consistent?
+        assert np.isclose(s.pH, orig_pH, atol=0.00001)
+        assert np.isclose(s.volume.magnitude, orig_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.components["H[+1]"], orig_H, atol=1e-8)
+        assert np.isclose(s.components["H2O(aq)"], orig_solv_mol, atol=1e-6)
+        assert np.isclose(s._get_solvent_volume().magnitude, orig_solv_volume.magnitude, atol=1e-5)
+        assert np.isclose(s._get_solute_volume().magnitude, orig_slt_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+
+        # serialize / deserialize
+        snew = Solution.from_dict(s.as_dict())
+
+        # still consistent?
+        assert np.isclose(snew.pH, orig_pH, atol=0.00001)
+        assert np.isclose(snew.volume.magnitude, orig_volume.magnitude, atol=1e-5)
+        assert np.isclose(snew.components["H[+1]"], orig_H, atol=1e-8)
+        assert np.isclose(snew.components["H2O(aq)"], orig_solv_mol, atol=1e-6)
+        assert np.isclose(snew._get_solvent_volume().magnitude, orig_solv_volume.magnitude, atol=1e-5)
+        assert np.isclose(snew._get_solute_volume().magnitude, orig_slt_volume.magnitude, atol=1e-5)
+        assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
 
 
-# TODO - this test is redundant with test_as_from_dict, because dumpfn and loadfn just call as_dict and from_dict under the hood (for JSON files). Refactor and consolidate.
 def test_serialization(s1, s2, tmp_path):
-    dumpfn(s1, str(tmp_path / "s1.json"))
-    s1_new = loadfn(str(tmp_path / "s1.json"))
-    assert s1_new.volume.magnitude == 2
-    assert s1_new._solutes["H[+1]"] == "2e-07 mol"
-    assert s1_new.get_total_moles_solute() == s1.get_total_moles_solute()
-    assert s1_new.components == s1.components
-    assert np.isclose(s1_new.pH, s1.pH)
-    assert np.isclose(s1_new._pH, s1._pH)
-    assert np.isclose(s1_new.pE, s1.pE)
-    assert np.isclose(s1_new._pE, s1._pE)
-    assert s1_new.temperature == s1.temperature
-    assert s1_new.pressure == s1.pressure
-    assert s1_new.solvent == s1.solvent
-    assert s1_new._engine == s1._engine
-    # the solutions should point to different EOS instances
-    assert s1_new.engine != s1.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s1_new.database != s1.database
+    """Test that Solutions survive a round-trip through as_dict/from_dict and dumpfn/loadfn.
 
+    dumpfn/loadfn delegate to as_dict/from_dict for JSON files, so a single
+    helper that checks both paths avoids duplicating every assertion.
+    """
+
+    def assert_roundtrip(original, restored):
+        assert restored.volume == original.volume
+        assert restored.components == original.components
+        assert restored.components is not original.components
+        assert restored.get_total_moles_solute() == original.get_total_moles_solute()
+        assert np.isclose(restored.pH, original.pH)
+        assert np.isclose(restored._pH, original._pH)
+        assert np.isclose(restored.pE, original.pE)
+        assert np.isclose(restored._pE, original._pE)
+        assert restored.temperature == original.temperature
+        assert restored.pressure == original.pressure
+        assert restored.solvent == original.solvent
+        assert restored._engine == original._engine
+        # the solutions should point to different EOS instances
+        assert restored.engine != original.engine
+        # also should point to different Store instances
+        # TODO currently this test will fail due to a bug in maggma's __eq__
+        # assert restored.database != original.database
+
+    # as_dict / from_dict
+    assert isinstance(s1.as_dict(), dict)
+    assert_roundtrip(s1, Solution.from_dict(s1.as_dict()))
+    # s1-specific fields that aren't present on every Solution
+    s1_dict_restored = Solution.from_dict(s1.as_dict())
+    assert s1_dict_restored.volume.magnitude == 2
+    assert s1_dict_restored._solutes["H[+1]"] == "2e-07 mol"
+    assert_roundtrip(s2, Solution.from_dict(s2.as_dict()))
+
+    # dumpfn / loadfn (exercises the same code path via monty serialization)
+    dumpfn(s1, str(tmp_path / "s1.json"))
+    assert_roundtrip(s1, loadfn(str(tmp_path / "s1.json")))
     dumpfn(s2, str(tmp_path / "s2.json"))
-    s2_new = loadfn(str(tmp_path / "s2.json"))
-    assert s2_new.volume == s2.volume
-    # components concentrations should be the same
-    assert s2_new.components == s2.components
-    # but not point to the same instances
-    assert s2_new.components is not s2.components
-    assert s2_new.get_total_moles_solute() == s2.get_total_moles_solute()
-    assert np.isclose(s2_new.pH, s2.pH)
-    assert np.isclose(s2_new._pH, s2._pH)
-    assert np.isclose(s2_new.pE, s2.pE)
-    assert np.isclose(s2_new._pE, s2._pE)
-    assert s2_new.temperature == s2.temperature
-    assert s2_new.pressure == s2.pressure
-    assert s2_new.solvent == s2.solvent
-    assert s2_new._engine == s2._engine
-    # the solutions should point to different EOS instances
-    assert s2_new.engine != s2.engine
-    # also should point to different Store instances
-    # TODO currently this test will fail due to a bug in maggma's __eq__
-    # assert s2_new.database != s2.database
+    assert_roundtrip(s2, loadfn(str(tmp_path / "s2.json")))
 
 
 @pytest.mark.parametrize(
@@ -885,23 +927,23 @@ def test_serialization(s1, s2, tmp_path):
         "batt_recycling",
         "coal_washing",
         "CRL",
-        # "drilling", # Issue #335: pH/H+ inconsistency
+        "drilling",
         "excavation",
-        # "FGD", # Issue #335: pH/H+ inconsistency
+        "FGD",
         "flotation",
         "waste_gas",
-        # "gasification", # Issue #335: pH/H+ inconsistency
-        # "geothermal", # Issue #335: pH/H+ inconsistency
-        # "leachate",  # Issue #335: pH/H+ inconsistency
+        "gasification",
+        "geothermal",
+        "leachate",
         "mine_drainage",
         "mine_tailings",
         "plating",
-        # "pw_conv", # Issue #335: pH/H+ inconsistency
-        # "pw_unconv", # Issue #335: pH/H+ inconsistency
-        # "refining", # Issue #335: pH/H+ inconsistency
+        "pw_conv",
+        "pw_unconv",
+        "refining",
         "semiconductor",
         "smelting",
-        # "tanning", # Issue #335: pH/H+ inconsistency
+        "tanning",
     ],
 )
 def test_from_preset(preset_name, tmp_path):
