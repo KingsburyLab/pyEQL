@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## Added
+
+- Added `python` 3.14 support (#404, @rkingsbury)
+- Docs: new charge balancing tutorial (#391, @SuixiongTay)
+- Docs: new tutorial for solid-liquid-gas equilibrium (#390, @YitongPan1)
+- `Solution.__init__` now checks whether the supplied `pH` and `pE` conditions are within
+  the electrochemical stability limits of water, and logs a warning if they are not (#385, @YitongPan1)
+
+### Changed
+
+- Solute properties are now pre-cached to enhance performance, especially when creating
+  Solutions containing a large number of solutes (#384, @rkingsbury)
+- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependency count. (#403, @rkingsbury)
+
+### Fixed
+
+- `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]` (#410, @rkingsbury)
+- `Solution.__init__`: fix the way the moles of solvent are initially calculated. The previous approach contained
+  an error and also used a fixed water concentration of 55.55 mol/L regardless of temperature or pressure. The
+  calculation now uses the internal `water_substance` to retrieve the correct density and calculate the molarity. The flaw in the original method did not affect quantitative results because the initial amount of moles was
+  immediately overwritten by `add_amount` during `__init__`. (#406, @rkingsbury)
+- Docs: fixed issues with the built docs (#402, @YitongPan1; #401, @SuixiongTay)
+- Packaging: remove `.gitignore`'ed files from `scikit-build-core` sdist (#392, @vineetbansal)
+
+## Removed
+
+- Dropped `python` 3.10 support (#404, @rkingsbury)
+
 ## [1.4.0] - 2026-02-17
 
 ### Added
@@ -14,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
 - `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
   our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
-  Treatment and Resource Recovery Technologies," available at [https://doi.org/10.21203/rs.3.rs-8743330/v2]
+  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2]
 
 ### Changed
 

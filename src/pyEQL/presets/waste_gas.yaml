@@ -1,0 +1,27 @@
+'@module': pyEQL.solution
+'@class': Solution
+'@version': src
+solutes:
+  H2O(aq): 55.34457593619076 mol
+  Na[+1]: 0.03335711609089879 mol
+  SO4[-2]: 0.02714398122931359 mol
+  Ca[+2]: 0.011585852469257358 mol
+  CaSO4(aq): 0.006645306417109274 mol
+  HSO4[-1]: 0.002377977227651882 mol
+  H[+1]: 0.0022694033454295 mol
+  NaSO4[-1]: 0.002132284682440562 mol
+  H2SO4(aq): 3.309432859422478e-09 mol
+  OH[-1]: 6.5672660642282124e-12 mol
+  CaOH[+1]: 4.4960138578507417e-13 mol
+  NaOH(aq): 2.2687703631556682e-14 mol
+  H2(aq): 2.78191043063081e-26 mol
+  O2(aq): 0.0 mol
+volume: 1.0 l
+temperature: 298.15 K
+pressure: 1 atm
+pH: 2.6440883092597542
+pE: 8.5
+balance_charge: auto
+solvent: H2O(aq)
+default_diffusion_coeff: 1.6106e-09
+log_level: ERROR

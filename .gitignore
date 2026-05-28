@@ -51,6 +51,10 @@ MANIFEST
 # Per-project virtualenvs
 .venv*/
 .conda*/
+uv.lock
 
 # setuptools-scm managed version file
 src/pyEQL/_version.py
+
+# external IPHREEQC files
+src/pyEQL/phreeqc/ext/*
