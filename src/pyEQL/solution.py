@@ -834,8 +834,19 @@ class Solution(MSONable):
 
             Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and anions, respectively
             (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
-            In this method, the set of conservative cations is all Group I and Group II cations, and the
-            conservative anions are all the anions of strong acids.
+            When conservative cations (Group I and II cations) or strong base anions are present, the alkalinity is calculated according to[stm]_
+
+            .. math::   Alk = \sum_{i} z_{i} C_{B} + \sum_{i} z_{i} C_{A}
+
+            Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and strong base anions, respectively  (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
+
+            Alternatively, if those species are not present, then alkalinity is calculated based on the concentrations of weak acid and base species according to [stm]_
+
+            .. math:: Alk = -\sum_{i} z_{i} C_{i}
+
+            Where :math:`C_i` is the molar concentration of species i, and :math:`z_i` is its charge.
+
+            The summation should extend over all weak inorganic species that can participate in acid-base reactions. In this method, we consider HCO3[-1], CO3[-2], H2PO4[-1], HPO4[-2], PO4[-3], HS[-1], S[-2], H3SiO4[-1], H2SiO4[-2], B(OH)4[-1], NH3(aq), OH[-1], and H[+1] as the relevant weak acid/base species, while organics are excluded.
 
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
@@ -857,14 +868,44 @@ class Solution(MSONable):
             "Ba[+2]",
             "Ra[+2]",
         }
-        acid_anions = {"Cl[-1]", "Br[-1]", "I[-1]", "SO4[-2]", "NO3[-1]", "ClO4[-1]", "ClO3[-1]"}
+        acid_anions = {
+            "Cl[-1]",
+            "Br[-1]",
+            "I[-1]",
+            "SO4[-2]",
+            "NO3[-1]",
+            "ClO4[-1]",
+            "ClO3[-1]",
+        }
+
+        weak_species = {
+            "HCO3[-1]",
+            "CO3[-2]",
+            "H2PO4[-1]",
+            "HPO4[-2]",
+            "PO4[-3]",
+            "HS[-1]",
+            "S[-2]",
+            "H3SiO4[-1]",
+            "H2SiO4[-2]",
+            "B(OH)4[-1]",
+            "NH3(aq)",
+            "OH[-1]",
+            "H[+1]",
+        }  # Note that organics are excluded
+
+        conservative_species = base_cations.union(acid_anions)
+        # check presence of conservative cations or strong base anions
+        conservative_def = any(item in conservative_species for item in self.components)
 
         for item in self.components:
-            if item in base_cations.union(acid_anions):
-                z = self.get_property(item, "charge")
-                alkalinity += self.get_amount(item, "mol/L") * z
+            if item in conservative_species:
+                # Conservative cations and strong base anions
+                alkalinity += self.get_amount(item, "eq/L")
+            elif item in weak_species and not conservative_def:
+                # Weak acid/base species, exclude organics
+                alkalinity += self.get_amount(item, "eq/L") * (-1)
 
-        # convert the alkalinity to mg/L as CaCO3
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
     @property

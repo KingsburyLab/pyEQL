@@ -124,6 +124,36 @@ def s8():
     )
 
 
+@pytest.fixture
+def s9():
+    # weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["H3PO4(aq)", "1 mM"],  # no contribution to alk or hardness
+            ["H2PO4-", "1 mM"],  # -1 meq/L
+            ["HPO4-2", "1 mM"],  # -2 meq/L
+        ],
+        volume="1 L",
+        pH=3,
+    )
+
+
+@pytest.fixture
+def s10():
+    # both conservative cation and weak acid for alkalinity with pH variation
+    return Solution(
+        [
+            ["Ca+2", "1 mM"],  # 2 meq/L
+            ["Na+", "1 mM"],  # 1 meq/L
+            ["H3SiO4-", "1 mM"],  # -1 meq/L
+            ["H2SiO4-2", "1 mM"],  # -2 meq/L
+            ["SiO2(aq)", "1 mM"],  # no contribution to alk or hardness
+        ],
+        volume="1 L",
+        pH=4,
+    )
+
+
 def test_empty_solution():
     # create an empty solution
     s1 = Solution(database=None)
@@ -384,7 +414,7 @@ def test_water_stability_reducing(s8, caplog):
     assert any("Hydrogen evolution may occur" in r.message for r in caplog.records)
 
 
-def test_alkalinity_hardness(s3, s5, s6):
+def test_alkalinity_hardness(s3, s5, s6, s9, s10):
     assert np.isclose(s3.hardness, 0)
     assert np.isclose(s3.alkalinity, 0)
 
@@ -393,6 +423,12 @@ def test_alkalinity_hardness(s3, s5, s6):
 
     assert np.isclose(s6.alkalinity.magnitude, -5900, rtol=0.005)
     assert np.isclose(s6.hardness.magnitude, 600, rtol=0.005)
+
+    assert np.isclose(s9.alkalinity.magnitude, 100.09, rtol=0.005)
+    assert np.isclose(s9.hardness.magnitude, 0, rtol=0.005)
+
+    assert np.isclose(s10.alkalinity.magnitude, 150.135, rtol=0.005)
+    assert np.isclose(s10.hardness.magnitude, 100.09, rtol=0.005)
 
 
 def test_pressure_temperature(s5):
