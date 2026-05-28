@@ -2551,7 +2551,6 @@ class Solution(MSONable):
             "excavation",
             "FGD",
             "flotation",
-            "flue_gas",
             "gasification",
             "geothermal",
             "leachate",
