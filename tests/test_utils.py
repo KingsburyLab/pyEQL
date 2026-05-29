@@ -8,7 +8,13 @@ from iapws import IAPWS95, IAPWS97
 from pytest import raises
 
 from pyEQL import ureg
-from pyEQL.utils import FormulaDict, create_water_substance, format_solutes_dict, standardize_formula
+from pyEQL.utils import (
+    FormulaDict,
+    _translate_pint_quantity,
+    create_water_substance,
+    format_solutes_dict,
+    standardize_formula,
+)
 
 
 def test_standardize_formula():
@@ -105,3 +111,10 @@ def test_format_solute():
 def test_create_water_substance():
     assert isinstance(create_water_substance(300, 0.1), IAPWS97)
     assert isinstance(create_water_substance(ureg.Quantity(-15, "degC"), 0.1), IAPWS95)
+
+
+def test_translate_pint_quantity():
+    assert _translate_pint_quantity("5mol/kg") == (5, "mol/kg")
+    assert _translate_pint_quantity("0.1g/L") == (0.1, "g/L")
+    assert _translate_pint_quantity("1ppb") == (1, "ug/L")
+    assert _translate_pint_quantity("0.01 ppm") == (0.01, "mg/L")
