@@ -2,34 +2,32 @@
 name = "pyEQL"
 readme = "README.md"
 dynamic = ["version"]
-description="A python interface for solution chemistry"
-authors =[
-    {name = "Ryan Kingsbury", email = "kingsbury@princeton.edu"}
+description = "A python interface for solution chemistry"
+authors = [{ name = "Ryan Kingsbury", email = "kingsbury@princeton.edu" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering",
 ]
-classifiers=[
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Programming Language :: Python :: 3.14",
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Science/Research",
-        "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering",
-    ]
 license = "LGPL-3.0-or-later"
 license-files = ["LICEN[CS]E*", "AUTHORS.md"]
 requires-python = ">=3.11"
 dependencies = [
-        "pint>=0.24.4",
-        "numpy>1.26",
-        "scipy>=1.12",
-        "pymatgen-core>=2026.5.18",
-        "iapws>=1.5.3",
-        "monty>=2024.12.10",
-        "maggma>=0.71.4",
-        "phreeqpython>=1.5.2",
-    ]
+  "pint>=0.24.4",
+  "numpy>1.26",
+  "scipy>=1.12",
+  "pymatgen-core>=2026.5.18",
+  "iapws>=1.5.3",
+  "monty>=2024.12.10",
+  "maggma>=0.71.4",
+  "phreeqpython>=1.5.2",
+]
 
 [project.urls]
 Docs = "https://pyeql.readthedocs.io/"
@@ -39,21 +37,17 @@ Package = "https://pypi.org/project/pyEQL"
 
 [project.optional-dependencies]
 testing = [
-    "setuptools>=68",
-    "pre-commit>=2",
-    "pytest>=7",
-    "pytest-cov>=2.11",
-    "pytest-xdist>2",
-    "black",
-    "mypy>1",
-    "ruff>0.0.100",
-    "tox<4",
-    ]
-docs = [
-    "sphinx>=3.2.1",
-    "sphinx-rtd-theme",
-    "myst-parser[linkify]",
-    ]
+  "setuptools>=68",
+  "pre-commit>=2",
+  "pytest>=7",
+  "pytest-cov>=2.11",
+  "pytest-xdist>2",
+  "black",
+  "mypy>1",
+  "ruff>0.0.100",
+  "tox<4",
+]
+docs = ["sphinx>=3.2.1", "sphinx-rtd-theme", "myst-parser[linkify]"]
 full = ["rich"]
 
 [build-system]
@@ -62,11 +56,25 @@ build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 sdist.include = ["src/pyEQL/phreeqc/ext/**/*"]
+sdist.exclude = [
+  "cibuildwheel.toml",
+  "requirements.txt",
+  "tox.ini",
+  "pyeql-logo.svg",
+  "pyeql-logo.png",
+  ".github",
+  ".gitignore",
+  ".gitattributes",
+  ".zenodo.json",
+  ".readthedocs.yml",
+  ".coveragerc",
+  ".pre-commit-config.yaml",
+]
 install.components = ["python", "iphreeqc_database"]
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
 
 [tool.scikit-build.cmake.define]
-PYEQL_ENABLE_EXT = {env="PYEQL_ENABLE_EXT"}
+PYEQL_ENABLE_EXT = { env = "PYEQL_ENABLE_EXT" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -82,39 +90,36 @@ line-length = 120
 [tool.ruff]
 line-length = 120
 exclude = [".dat"]
-src = ["src"]
 
 [tool.ruff.lint]
 select = [
-  "B",    # flake8-bugbear
-  "C4",   # flake8-comprehensions
-  "D",    # pydocstyle
-  "E",    # pycodestyle error
-  "EXE",  # flake8-executable
-  "F",    # pyflakes
-  "FA",   # flake8-future-annotations
-  "FLY",  # flynt
-  "I",    # isort
-  "ICN",  # flake8-import-conventions
-  "ISC",  # flake8-implicit-str-concat
-  "PD",   # pandas-vet
-  "PERF", # perflint
-  "PIE",  # flake8-pie
-  "PL",   # pylint
-  "PT",   # flake8-pytest-style
-  "PYI",  # flakes8-pyi
-  "Q",    # flake8-quotes
-  "RET",  # flake8-return
-  "RSE",  # flake8-raise
-  "RUF",  # Ruff-specific rules
-  "SIM",  # flake8-simplify
-  "SLOT", # flake8-slots
-  "TCH",  # flake8-type-checking
-  "TID",  # tidy imports
-  "TID",  # flake8-tidy-imports
-  "UP",   # pyupgrade
-  "W",    # pycodestyle warning
-  "YTT",  # flake8-2020
+  "B",      # flake8-bugbear
+  "C4",     # flake8-comprehensions
+  "D",      # pydocstyle
+  "E",      # pycodestyle error
+  "EXE",    # flake8-executable
+  "F",      # pyflakes
+  "FA",     # flake8-future-annotations
+  "FLY",    # flynt
+  "I",      # isort
+  "ICN",    # flake8-import-conventions
+  "ISC",    # flake8-implicit-str-concat
+  "PD",     # pandas-vet
+  "PERF",   # perflint
+  "PIE",    # flake8-pie
+  "PL",     # pylint
+  "PT",     # flake8-pytest-style
+  "PYI",    # flakes8-pyi
+  "Q",      # flake8-quotes
+  "RET",    # flake8-return
+  "RSE",    # flake8-raise
+  "RUF",    # Ruff-specific rules
+  "SIM",    # flake8-simplify
+  "SLOT",   # flake8-slots
+  "TID",    # flake8-tidy-imports
+  "UP",     # pyupgrade
+  "W",      # pycodestyle warning
+  "YTT",    # flake8-2020
   "NPY201", # Numpy 2.0 migration
 ]
 ignore = [
@@ -128,7 +133,6 @@ ignore = [
   "D212",    # Multi-line docstring summary should start at the first line
   "FA100",   # Missing `from __future__ import annotations`, but uses `typing.XXX` TODO
   "PD011",   # pandas-use-of-dot-values
-  "PD901",   # pandas-df-variable-name
   "PERF203", # try-except-in-loop
   "PLR",     # pylint refactor
   "PLW2901", # Outer for loop variable overwritten by inner assignment target
@@ -155,17 +159,17 @@ addopts = [
   "--durations=30",
   "--verbose",
 ]
-norecursedirs = [
-  "dist",
-  "build",
-  ".tox",
-]
+norecursedirs = ["dist", "build", ".tox"]
 xfail_strict = true
-filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning", "ignore::FutureWarning"]
-log_cli_level = "warning"
-testpaths = [
-  "tests",
+filterwarnings = [
+  "error",
+  "ignore::UserWarning",
+  "ignore::DeprecationWarning",
+  "ignore::FutureWarning",
 ]
+log_level = "INFO"
+log_cli_level = "WARNING"
+testpaths = ["tests"]
 
 [tool.mypy]
 ignore_missing_imports = true
