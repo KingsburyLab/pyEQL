@@ -17,14 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `utils.interpret_units` was renamed to `utils.translate_units()` (#414, @SuixiongTay)
 - Solute properties are now pre-cached to enhance performance, especially when creating
   Solutions containing a large number of solutes (#384, @rkingsbury)
 - migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependency count. (#403, @rkingsbury)
 
 ### Fixed
 
-- `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]` (#410, @rkingsbury)
+- `Solution.__init__`: solutes can now be given using additional, common environomental unit abbreviations such as "ppm",
+   "ppb", etc., aligning with the unit types supported in `get_amount()` (#414, @SuixiongTay)
 - `Solution.__init__`: fix the way the moles of solvent are initially calculated. The previous approach contained
+- `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]` (#410, @rkingsbury)
   an error and also used a fixed water concentration of 55.55 mol/L regardless of temperature or pressure. The
   calculation now uses the internal `water_substance` to retrieve the correct density and calculate the molarity. The flaw in the original method did not affect quantitative results because the initial amount of moles was
   immediately overwritten by `add_amount` during `__init__`. (#406, @rkingsbury)
