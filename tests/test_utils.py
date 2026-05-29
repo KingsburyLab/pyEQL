@@ -36,6 +36,7 @@ def test_standardize_formula():
     assert standardize_formula("I3-") == "I3[-1]"
     assert standardize_formula("N3-") == "N3[-1]"
     assert standardize_formula("P3-") == "P3[-1]"
+    assert standardize_formula("Br3-") == "Br3[-1]"
     assert standardize_formula("HCOO-") == "HCO2[-1]"
     assert standardize_formula("CO2-1") == "C2O4[-2]"
     assert standardize_formula("C2O4--") == "C2O4[-2]"
