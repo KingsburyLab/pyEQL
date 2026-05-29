@@ -54,6 +54,10 @@ def _translate_pint_quantity(amount: str):
         return amount.magnitude, str(amount.units)
 
     match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+
+    if match is None:
+        return amount
+
     _value, _unit = match.groups()
     unit = translate_units(_unit)
     return (float(_value), unit)
