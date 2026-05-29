@@ -53,14 +53,17 @@ def _translate_pint_quantity(amount: str):
     if isinstance(amount, Quantity):
         return amount.magnitude, str(amount.units)
 
-    match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+    if "ppm" in amount or "ppb" in amount or "ppt" in amount or amount.strip().endswith("m"):
+        match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
 
-    if match is None:
-        return amount
+        if match is None:
+            return amount
 
-    _value, _unit = match.groups()
-    unit = translate_units(_unit)
-    return (float(_value), unit)
+        _value, _unit = match.groups()
+        unit = translate_units(_unit)
+        return float(_value), unit
+
+    return amount
 
 
 @lru_cache
