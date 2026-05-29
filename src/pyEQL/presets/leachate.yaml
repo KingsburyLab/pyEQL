@@ -1,13 +1,13 @@
 '@module': pyEQL.solution
 '@class': Solution
-'@version': src
+'@version': 1.4.0rc12.dev164+gdf2936156
 solutes:
   H2O(aq): 55.34457593619076 mol
   HSO4[-1]: 0.08613622967639416 mol
   SO4[-2]: 0.07841806345055419 mol
   MgSO4(aq): 0.061384407178653455 mol
   Al(SO4)2[-1]: 0.05012776664703689 mol
-  H[+1]: 0.049560071533417245 mol
+  H[+1]: 0.04956007153341727 mol
   Mg[+2]: 0.048140381959396836 mol
   AlSO4[+1]: 0.04417172527362224 mol
   Al[+3]: 0.021702984432194868 mol
@@ -26,7 +26,7 @@ solutes:
 volume: 1.0 l
 temperature: 298.15 K
 pressure: 1 atm
-pH: 1.3048680754487998
+pH: 1.3048680754487996
 pE: 8.5
 balance_charge: auto
 solvent: H2O(aq)
