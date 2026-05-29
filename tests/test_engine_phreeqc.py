@@ -302,7 +302,7 @@ def test_equilibrate_CO2_with_calcite():
 
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
-    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc")
+    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10e-7 mol/L"}, volume="1 L", engine="phreeqc")
     solution.equilibrate()
     assert np.isclose(solution.get_amount("Fe+3", "mol/L").magnitude, 3.093e-11)
     assert np.isclose(solution.get_amount("OH-", "mol/L").magnitude, 1.067e-07)
