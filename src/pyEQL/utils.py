@@ -20,7 +20,7 @@ from pyEQL import ureg
 logger = logging.getLogger(__name__)
 
 
-def interpret_units(unit: str) -> str:
+def translate_units(unit: str) -> str:
     """
     Translate commonly used environmental units such as 'ppm' into strings that `pint` can understand.
 
@@ -39,6 +39,24 @@ def interpret_units(unit: str) -> str:
         return "ng/L"
     # if all else fails, return the unit we were provided
     return unit
+
+
+def _translate_pint_quantity(amount: str):
+    """
+    Helper method to split a pint quantity string into magnitude and units.
+    """
+    import re  # noqa: PLC0415
+
+    from pint import Quantity  # noqa: PLC0415
+
+    # skip if already a pint Quantity
+    if isinstance(amount, Quantity):
+        return amount.magnitude, str(amount.units)
+
+    match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+    _value, _unit = match.groups()
+    unit = translate_units(_unit)
+    return (float(_value), unit)
 
 
 @lru_cache
