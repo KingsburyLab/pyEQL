@@ -2703,10 +2703,10 @@
         "elements": [
             "Br"
         ],
-        "formula": "Br[-0.33333333]",
+        "formula": "Br3[-1]",
         "formula_hill": "Br3",
-        "formula_html": "Br<sup>-1</sup>",
-        "formula_latex": "Br$^{-1}$",
+        "formula_html": "Br<sub>3</sub><sup>-1</sup>",
+        "formula_latex": "Br3$^{-1}$",
         "formula_pretty": "Br^-1",
         "model_parameters": {
             "activity_pitzer": {

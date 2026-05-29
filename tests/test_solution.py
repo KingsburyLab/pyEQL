@@ -804,6 +804,7 @@ def test_from_dict_complex():
         # equilibrate
         s.equilibrate()
         assert np.isclose(s.mass.magnitude, orig_mass.magnitude, atol=1e-5)
+        assert s.volume_update_required is True
 
         # store the original properties
         orig_H = s.components["H[+1]"]
