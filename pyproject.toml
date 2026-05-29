@@ -90,7 +90,6 @@ line-length = 120
 [tool.ruff]
 line-length = 120
 exclude = [".dat"]
-src = ["src"]
 
 [tool.ruff.lint]
 select = [
@@ -171,6 +170,7 @@ filterwarnings = [
   "ignore::DeprecationWarning",
   "ignore::FutureWarning",
 ]
+log_level = "INFO"
 log_cli_level = "warning"
 testpaths = ["tests"]
 
