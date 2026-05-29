@@ -30,7 +30,13 @@ from pyEQL.activity_correction import _debye_parameter_activity, _debye_paramete
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
+from pyEQL.utils import (
+    FormulaDict,
+    _translate_pint_quantity,
+    create_water_substance,
+    standardize_formula,
+    translate_units,
+)
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 # string to denote unknown oxidation states
@@ -1126,7 +1132,7 @@ class Solution(MSONable):
             :meth:`get_osmolarity`
             :meth:`get_osmolality`
             :meth:`get_total_moles_solute`
-            :func:`pyEQL.utils.interpret_units`
+            :func:`pyEQL.utils.translate_units`
         """
         z = 1
         # sanitized unit to be passed to pint
@@ -1136,7 +1142,7 @@ class Solution(MSONable):
             if z == 0:  # uncharged solutes have zero equiv concentration
                 return ureg.Quantity(0, _units)
         else:
-            _units = interpret_units(units)
+            _units = translate_units(units)
 
         # retrieve the number of moles of solute and its molecular weight
         try:
@@ -1302,14 +1308,14 @@ class Solution(MSONable):
 
         See Also:
             :meth:`get_amount`
-            :func:`pyEQL.utils.interpret_units`
+            :func:`pyEQL.utils.translate_units`
         """
-        _units = interpret_units(units)
+        _units = translate_units(units)
         TOT: Quantity = ureg.Quantity(0, _units)
 
         # standardize the element formula and units
         el = str(Element(element.split("(")[0]))
-        units = interpret_units(units)
+        units = translate_units(units)
 
         # enumerate the species whose concentrations we need
         comp_by_element = self.get_components_by_element()
@@ -1358,7 +1364,7 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should
                contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
-        Q = ureg.Quantity(*self.__split_pint_quantity__(amount))
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
@@ -1424,11 +1430,12 @@ class Solution(MSONable):
         Returns:
             Nothing. The concentration of solute is modified.
         """
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # Get the current amount of the solute
         current_amt = self.get_amount(solute, amount.split(" ")[1])
         if current_amt.magnitude == 0:
             self.logger.warning(f"Add new solute {solute} to the solution")
-        new_amt = ureg.Quantity(*self.__split_pint_quantity__(amount)) + current_amt
+        new_amt = Q + current_amt
         self.set_amount(solute, new_amt)
 
     def set_amount(self, solute: str, amount: str):
@@ -1455,14 +1462,15 @@ class Solution(MSONable):
             Nothing. The concentration of solute is modified.
 
         """
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # raise an error if a negative amount is specified
-        if ureg.Quantity(amount).magnitude < 0:
+        if Q.magnitude < 0:
             raise ValueError(f"Negative amount specified for solute {solute}. Concentration not changed.")
 
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
+        if Q.dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1470,17 +1478,13 @@ class Solution(MSONable):
             orig_volume = self.volume
 
             # change the amount of the solute present to match the desired amount
-            self.components[solute] = (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
+            self.components[solute] = Q.to(
+                "moles",
+                "chem",
+                mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
+                volume=self.volume,
+                solvent_mass=self.solvent_mass,
+            ).magnitude
 
             # calculate the volume occupied by all the solutes
             solute_vol = self._get_solute_volume()
@@ -1496,17 +1500,13 @@ class Solution(MSONable):
 
         else:
             # change the amount of the solute present
-            self.components[solute] = (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
+            self.components[solute] = Q.to(
+                "moles",
+                "chem",
+                mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
+                volume=self.volume,
+                solvent_mass=self.solvent_mass,
+            ).magnitude
 
             # make sure that there is still solvent present in the first place
             if self.solvent_mass.magnitude <= 0:
@@ -2856,17 +2856,6 @@ class Solution(MSONable):
         """
         self.volume /= factor
         return self
-
-    def __split_pint_quantity__(self, amount: str):
-        """
-        Helper method to split a pint quantity string into magnitude and units.
-        """
-        import re  # noqa: PLC0415
-
-        match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
-        _value, _unit = match.groups()
-        unit = interpret_units(_unit)
-        return (float(_value), unit)
 
     # informational methods
 
