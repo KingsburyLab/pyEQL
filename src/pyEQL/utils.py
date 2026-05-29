@@ -54,7 +54,13 @@ def _translate_pint_quantity(amount: str):
         return amount.magnitude, str(amount.units)
 
     match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+
+    if match is None:
+        return amount
+
     _value, _unit = match.groups()
+    # handle python ** expression in Pint quantity
+    _value = eval(_value) if "**" in _value else float(_value)
     unit = translate_units(_unit)
     return (float(_value), unit)
 
@@ -137,6 +143,15 @@ def standardize_formula(formula: str):
         sform = "Br3[-1]"
     elif sform == "P[-0.33333333]":
         sform = "P3[-1]"
+    # sulfur species
+    elif sform == "S[-0.4]":
+        sform = "S5[-2]"
+    elif sform == "S[-0.5]":
+        sform = "S4[-2]"
+    elif sform == "S[-0.66666667]":
+        sform = "S3[-2]"
+    elif sform == "S[-1]":
+        sform = "S2[-2]"  # note: S2[-2] has lower ΔGf than S[-2], so we want to standardize to S2[-2] rather than S[-2]
     # formate
     elif sform == "HCOO[-1]":
         sform = "HCO2[-1]"

@@ -27,7 +27,7 @@ repos:
       - id: codespell
         stages: [pre-commit, commit-msg]
         exclude_types: [html, svg, jupyter]
-        additional_dependencies: [tomli] # needed to read pyproject.toml below py3.11
+        args: ["--ignore-words-list=LaF"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
