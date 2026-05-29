@@ -32,6 +32,16 @@ def s4():
     return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
 
+@pytest.fixture
+def s5():
+    return pyEQL.Solution({"Na+": "1 ppb", "Cl-": "1 ppb"}, volume="2 L")
+
+
+@pytest.fixture
+def s6():
+    return pyEQL.Solution({"Na+": "1 %", "Cl-": "1 %"}, volume="1 L")
+
+
 class Test_solute_addition:
     """
     test behavior of various methods for adding solutes to a solution
@@ -222,6 +232,23 @@ class Test_solute_addition:
         s2.add_amount("Br-", "1 mol")
         assert np.allclose(s2.get_amount("Ca+2", "mol/L").magnitude, 0.5, atol=0.002)
         assert np.allclose(s2.get_amount("Br-", "mol/L").magnitude, 0.5, atol=0.002)
+
+    def test_add_amount_13(self, s5):
+        # test behavior when the solute is initially present at 1 ppb and we add 1 ppb to test both add_amount and get_amount behavior
+        s5.add_amount("Na+", "1 ppb")
+        s5.add_amount("Cl-", "1 ppb")
+        assert np.isclose(s5.get_amount("Na+", "ppb").magnitude, 2, atol=0.002)
+        assert np.isclose(s5.get_amount("Cl-", "ppb").magnitude, 2, atol=0.002)
+
+    def test_add_amount_14(self, s6):
+        # test behavior when the solute is initially present at 1 %  and calculate the expected percentage
+        # solution mass (1 kg) + 1% or 0.01 kg solute mass for both Na+ and Cl-
+        tot_Na_Cl_mass = 1.0 + 0.01 * 2  # kg
+        # compute percentage of total mass
+        Na_val = (0.01 / tot_Na_Cl_mass) * 100
+        Cl_val = (0.01 / tot_Na_Cl_mass) * 100
+        assert np.isclose(s6.get_amount("Na+", "%").magnitude, Na_val, atol=0.002)
+        assert np.isclose(s6.get_amount("Cl-", "%").magnitude, Cl_val, atol=0.002)
 
 
 class Test_get_amount:
