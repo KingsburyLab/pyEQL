@@ -2848,8 +2848,18 @@ class Solution(MSONable):
         self.components[formula] = target_mol.to("moles").magnitude
 
     def get_saturation_index(self, get_plot=None) -> dict:
-        """
-        Calculate the saturation index of a solute in the solution based on the current engine.
+        r"""
+        Calculate the saturation index of a solute in the solution.
+        Notes:
+            The saturation index (:math:`\mathrm{SI}`) is defined as log10(IAP/Ksp), where IAP is the ion activity product and Ksp is the solubility product constant.
+            This method calculates the saturation index based on the active engine and database from `__init__`. The interpretation of the saturation index values is as follows:
+
+            - :math:`\mathrm{SI} < 0`: The solution is **undersaturated**. The solid tends to dissolve if present.
+
+            - :math:`\mathrm{SI} = 0`: The solution is **at saturation equilibrium**. Therefore, at the saturation limit, the SI is zero.
+
+            - :math:`\mathrm{SI} > 0`: The solution is **supersaturated**. Precipitation is thermodynamically favored, although kinetic factors may delay or prevent it.
+
         Args:
             get_plot (bool, optional):
                 If True, displays an interactive bar plot of saturation indices sorted from most oversaturated to least. Defaults to None (no plot).
