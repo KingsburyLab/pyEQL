@@ -27,6 +27,7 @@ repos:
       - id: codespell
         stages: [pre-commit, commit-msg]
         exclude_types: [html, svg, jupyter]
+        args: ["--ignore-words-list=LaF"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

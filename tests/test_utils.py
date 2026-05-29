@@ -50,6 +50,11 @@ def test_standardize_formula():
     assert standardize_formula("H2SO4") == "H2SO4(aq)"
     assert standardize_formula("HClO4") == "HClO4(aq)"
     assert standardize_formula("CF3SO3-") == "CF3SO3[-1]"
+    assert standardize_formula("S5-2") == "S5[-2]"
+    assert standardize_formula("S5--") == "S5[-2]"
+    assert standardize_formula("S[-0.4]") == "S5[-2]"
+    assert standardize_formula("S[-0.5]") == "S4[-2]"
+    assert standardize_formula("S[-0.66666667]") == "S3[-2]"
     # superscripts, subscripts, and permuted sign/charge number
     assert standardize_formula("PO₄³⁻") == "PO4[-3]"
     assert standardize_formula("Co²⁺") == "Co[+2]"
