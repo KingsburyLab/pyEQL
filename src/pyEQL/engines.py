@@ -419,6 +419,9 @@ class Phreeqc2026EOS(EOS):
         # note that if balance_charge is set, it will have been passed to PHREEQC, so
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
+    
+        # set the volume update flag so that the volume will be consistent with the new composition.
+        solution.volume_update_required = True
 
     def _get_activity(self, k):
         return self.ppsol.get_activity(k)
