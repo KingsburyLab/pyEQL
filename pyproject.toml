@@ -116,8 +116,6 @@ select = [
   "RUF",    # Ruff-specific rules
   "SIM",    # flake8-simplify
   "SLOT",   # flake8-slots
-  "TCH",    # flake8-type-checking
-  "TID",    # tidy imports
   "TID",    # flake8-tidy-imports
   "UP",     # pyupgrade
   "W",      # pycodestyle warning
@@ -135,7 +133,6 @@ ignore = [
   "D212",    # Multi-line docstring summary should start at the first line
   "FA100",   # Missing `from __future__ import annotations`, but uses `typing.XXX` TODO
   "PD011",   # pandas-use-of-dot-values
-  "PD901",   # pandas-df-variable-name
   "PERF203", # try-except-in-loop
   "PLR",     # pylint refactor
   "PLW2901", # Outer for loop variable overwritten by inner assignment target
@@ -171,7 +168,7 @@ filterwarnings = [
   "ignore::FutureWarning",
 ]
 log_level = "INFO"
-log_cli_level = "warning"
+log_cli_level = "WARNING"
 testpaths = ["tests"]
 
 [tool.mypy]
