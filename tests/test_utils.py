@@ -119,7 +119,10 @@ def test_create_water_substance():
 
 
 def test_translate_pint_quantity():
+    import pytest  # noqa: PLC0415
+
     assert _translate_pint_quantity("5mol/kg") == (5, "mol/kg")
     assert _translate_pint_quantity("0.1g/L") == (0.1, "g/L")
     assert _translate_pint_quantity("1ppb") == (1, "ug/L")
     assert _translate_pint_quantity("0.01 ppm") == (0.01, "mg/L")
+    assert _translate_pint_quantity("10**(-10.3) mol/L") == pytest.approx((5.011872336e-11, "mol/L"))
