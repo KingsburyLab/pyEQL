@@ -30,7 +30,13 @@ from pyEQL.activity_correction import _debye_parameter_activity, _debye_paramete
 from pyEQL.engines import EOS, IdealEOS, NativeEOS, Phreeqc2026EOS, PhreeqcEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solute import Solute
-from pyEQL.utils import FormulaDict, create_water_substance, interpret_units, standardize_formula
+from pyEQL.utils import (
+    FormulaDict,
+    _translate_pint_quantity,
+    create_water_substance,
+    standardize_formula,
+    translate_units,
+)
 
 EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
 # string to denote unknown oxidation states
@@ -275,11 +281,6 @@ class Solution(MSONable):
         self.solvent = standardize_formula(solvent[0])
         """Formula of the component that is set as the solvent (currently only H2O(aq) is supported)."""
 
-        # calculate the moles of solvent (water) based on the density and solution volume
-        self.components["H2O"] = (
-            self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
-        )  # moles = density / molar mass * volume
-
         # store the provided solutes as a dict
         if isinstance(solutes, dict):
             self._solutes = solutes
@@ -299,23 +300,38 @@ class Solution(MSONable):
             self.database.query({"formula": {"$in": list(self._solutes.keys())}}, properties=CORE_PROPERTIES)
         )
 
+        if "H2O(aq)" in self._solutes:
+            self.components["H2O"] = ureg.Quantity(self._solutes["H2O(aq)"]).to("mol").magnitude
+        else:
+            # calculate the moles of solvent (water) based on the density and solution volume
+            self.components["H2O"] = (
+                self.volume.magnitude * 1000 * self.water_substance.rho / 18.01528
+            )  # moles = density / molar mass * volume
+
         # set the pH with H+ and OH-
         self.add_solute("H+", str(10 ** (-1 * pH)) + "mol/L")
         self.add_solute("OH-", str(K_W / (10 ** (-1 * pH))) + "mol/L")
 
         # populate remaining solutes
+        CHECK_H = False
         for k, v in self._solutes.items():
             self.add_solute(k, v)
             # if user has specified H+ in solutes, check consistency with pH kwarg
             if standardize_formula(k) == "H[+1]":
-                # if user has not specified pH (default value), override the pH argument
-                if self._pH == 7:
-                    self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
-                # if user specifies non-default pH that does not match the supplied H+, raise an error
-                elif not np.isclose(self.pH, self._pH, atol=1e-4):
-                    raise ValueError(
-                        "Cannot specify both a non-default pH and H+ at the same time. Please provide only one."
-                    )
+                CHECK_H = True
+
+        if CHECK_H:
+            # if user has not specified pH (default value), override the pH argument
+            if self._pH == 7:
+                self.logger.warning(f"H[+1] = {v} found in solutes. Overriding default pH with this value.")
+            # if user specifies non-default pH that does not match the supplied H+, raise an error
+            elif not np.isclose(self.pH, self._pH, atol=1e-4):
+                warnings.warn(
+                    f"After initialization, the calculated solution pH of {self.pH:.3f} does not match the "
+                    f"specified pH of {self._pH:.3f}. This might be a result of erroneous input (e.g., specifying "
+                    "both pH and H+), or it can happen during from_dict / from_preset if you use a different "
+                    "engine than the one which generated the original dict."
+                )
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -834,8 +850,19 @@ class Solution(MSONable):
 
             Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and anions, respectively
             (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
-            In this method, the set of conservative cations is all Group I and Group II cations, and the
-            conservative anions are all the anions of strong acids.
+            When conservative cations (Group I and II cations) or strong base anions are present, the alkalinity is calculated according to[stm]_
+
+            .. math::   Alk = \sum_{i} z_{i} C_{B} + \sum_{i} z_{i} C_{A}
+
+            Where :math:`C_{B}` and :math:`C_{A}` are conservative cations and strong base anions, respectively  (i.e. ions that do not participate in acid-base reactions), and :math:`z_{i}` is their signed charge.
+
+            Alternatively, if those species are not present, then alkalinity is calculated based on the concentrations of weak acid and base species according to [stm]_
+
+            .. math:: Alk = -\sum_{i} z_{i} C_{i}
+
+            Where :math:`C_i` is the molar concentration of species i, and :math:`z_i` is its charge.
+
+            The summation should extend over all weak inorganic species that can participate in acid-base reactions. In this method, we consider HCO3[-1], CO3[-2], H2PO4[-1], HPO4[-2], PO4[-3], HS[-1], S[-2], H3SiO4[-1], H2SiO4[-2], B(OH)4[-1], NH3(aq), OH[-1], and H[+1] as the relevant weak acid/base species, while organics are excluded.
 
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
@@ -857,14 +884,44 @@ class Solution(MSONable):
             "Ba[+2]",
             "Ra[+2]",
         }
-        acid_anions = {"Cl[-1]", "Br[-1]", "I[-1]", "SO4[-2]", "NO3[-1]", "ClO4[-1]", "ClO3[-1]"}
+        acid_anions = {
+            "Cl[-1]",
+            "Br[-1]",
+            "I[-1]",
+            "SO4[-2]",
+            "NO3[-1]",
+            "ClO4[-1]",
+            "ClO3[-1]",
+        }
+
+        weak_species = {
+            "HCO3[-1]",
+            "CO3[-2]",
+            "H2PO4[-1]",
+            "HPO4[-2]",
+            "PO4[-3]",
+            "HS[-1]",
+            "S[-2]",
+            "H3SiO4[-1]",
+            "H2SiO4[-2]",
+            "B(OH)4[-1]",
+            "NH3(aq)",
+            "OH[-1]",
+            "H[+1]",
+        }  # Note that organics are excluded
+
+        conservative_species = base_cations.union(acid_anions)
+        # check presence of conservative cations or strong base anions
+        conservative_def = any(item in conservative_species for item in self.components)
 
         for item in self.components:
-            if item in base_cations.union(acid_anions):
-                z = self.get_property(item, "charge")
-                alkalinity += self.get_amount(item, "mol/L") * z
+            if item in conservative_species:
+                # Conservative cations and strong base anions
+                alkalinity += self.get_amount(item, "eq/L")
+            elif item in weak_species and not conservative_def:
+                # Weak acid/base species, exclude organics
+                alkalinity += self.get_amount(item, "eq/L") * (-1)
 
-        # convert the alkalinity to mg/L as CaCO3
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
     @property
@@ -1075,7 +1132,7 @@ class Solution(MSONable):
             :meth:`get_osmolarity`
             :meth:`get_osmolality`
             :meth:`get_total_moles_solute`
-            :func:`pyEQL.utils.interpret_units`
+            :func:`pyEQL.utils.translate_units`
         """
         z = 1
         # sanitized unit to be passed to pint
@@ -1085,7 +1142,7 @@ class Solution(MSONable):
             if z == 0:  # uncharged solutes have zero equiv concentration
                 return ureg.Quantity(0, _units)
         else:
-            _units = interpret_units(units)
+            _units = translate_units(units)
 
         # retrieve the number of moles of solute and its molecular weight
         try:
@@ -1251,14 +1308,14 @@ class Solution(MSONable):
 
         See Also:
             :meth:`get_amount`
-            :func:`pyEQL.utils.interpret_units`
+            :func:`pyEQL.utils.translate_units`
         """
-        _units = interpret_units(units)
+        _units = translate_units(units)
         TOT: Quantity = ureg.Quantity(0, _units)
 
         # standardize the element formula and units
         el = str(Element(element.split("(")[0]))
-        units = interpret_units(units)
+        units = translate_units(units)
 
         # enumerate the species whose concentrations we need
         comp_by_element = self.get_components_by_element()
@@ -1307,7 +1364,7 @@ class Solution(MSONable):
             amount (str): The amount of substance in the specified unit system. The string should
                contain both a quantity and a pint-compatible representation of a ureg. e.g. '5 mol/kg' or '0.1 g/L'.
         """
-        Q = ureg.Quantity(amount)
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
@@ -1373,11 +1430,12 @@ class Solution(MSONable):
         Returns:
             Nothing. The concentration of solute is modified.
         """
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # Get the current amount of the solute
         current_amt = self.get_amount(solute, amount.split(" ")[1])
         if current_amt.magnitude == 0:
             self.logger.warning(f"Add new solute {solute} to the solution")
-        new_amt = ureg.Quantity(amount) + current_amt
+        new_amt = Q + current_amt
         self.set_amount(solute, new_amt)
 
     def set_amount(self, solute: str, amount: str):
@@ -1404,14 +1462,15 @@ class Solution(MSONable):
             Nothing. The concentration of solute is modified.
 
         """
+        Q = ureg.Quantity(*_translate_pint_quantity(amount))
         # raise an error if a negative amount is specified
-        if ureg.Quantity(amount).magnitude < 0:
+        if Q.magnitude < 0:
             raise ValueError(f"Negative amount specified for solute {solute}. Concentration not changed.")
 
         # if units are given on a per-volume basis,
         # iteratively solve for the amount of solute that will preserve the
         # original volume and result in the desired concentration
-        if ureg.Quantity(amount).dimensionality in (
+        if Q.dimensionality in (
             "[substance]/[length]**3",
             "[mass]/[length]**3",
         ):
@@ -1419,17 +1478,13 @@ class Solution(MSONable):
             orig_volume = self.volume
 
             # change the amount of the solute present to match the desired amount
-            self.components[solute] = (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
+            self.components[solute] = Q.to(
+                "moles",
+                "chem",
+                mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
+                volume=self.volume,
+                solvent_mass=self.solvent_mass,
+            ).magnitude
 
             # calculate the volume occupied by all the solutes
             solute_vol = self._get_solute_volume()
@@ -1445,25 +1500,21 @@ class Solution(MSONable):
 
         else:
             # change the amount of the solute present
-            self.components[solute] = (
-                ureg.Quantity(amount)
-                .to(
-                    "moles",
-                    "chem",
-                    mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
-                    volume=self.volume,
-                    solvent_mass=self.solvent_mass,
-                )
-                .magnitude
-            )
+            self.components[solute] = Q.to(
+                "moles",
+                "chem",
+                mw=ureg.Quantity(self.get_property(solute, "molecular_weight")),
+                volume=self.volume,
+                solvent_mass=self.solvent_mass,
+            ).magnitude
 
-            # update the volume to account for the space occupied by all the solutes
             # make sure that there is still solvent present in the first place
             if self.solvent_mass.magnitude <= 0:
                 self.logger.critical("All solvent has been depleted from the solution")
                 return
 
-            self._update_volume()
+            # update the volume to account for the space occupied by all the solutes
+            self.volume_update_required = True
 
     def get_total_moles_solute(self) -> Quantity:
         """Return the total moles of all solute in the solution."""
@@ -1634,13 +1685,12 @@ class Solution(MSONable):
         salt_dict: dict[str, dict[str, float | Salt]] = {}
 
         if use_totals:
-            # # use only the predominant species for each element
+            # use only the predominant species for each element
             components = {}
-            for el, lst in self.get_components_by_element().items():
+            for el, lst in self.get_components_by_element(nested=False).items():
                 component = lst[0]
-                ion = Ion.from_formula(component)
                 el_no_oxi_state = el.split("(")[0]
-                nu_el = ion.get_el_amt_dict()[el_no_oxi_state]
+                nu_el = self.get_property(component, "pmg_ion").get(el_no_oxi_state, 0)
                 components[component] = self.get_total_amount(el, "mol").magnitude / nu_el
             # add H+ and OH-, which would otherwise be excluded
             for k in ["H[+1]", "OH[-1]"]:
@@ -2491,14 +2541,24 @@ class Solution(MSONable):
         return d
 
     @classmethod
-    def from_dict(cls, d: dict) -> Solution:
-        """Instantiate a Solution from a dictionary generated by as_dict()."""
+    def from_dict(cls, d: dict, **kwargs) -> Solution:
+        """Instantiate a Solution from a dictionary generated by as_dict().
+
+        Args:
+            d (dict): A dictionary representation of a Solution, generated by the as_dict() method.
+
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override
+            any values in the dict.
+        """
         # because of the automatic volume updating that takes place during the __init__ process,
         # care must be taken here to recover the exact quantities of solute and volume
-        # first we store the volume of the serialized solution
+        # first we store the volume and solvent mass of the serialized solution
         orig_volume = ureg.Quantity(d["volume"])
+        orig_moles = ureg.Quantity(d["solutes"]["H2O(aq)"]).to("mol").magnitude if "H2O(aq)" in d["solutes"] else None
         # then instantiate a new one
         decoded = {k: MontyDecoder().process_decoded(v) for k, v in d.items() if not k.startswith("@")}
+        decoded.update(kwargs)
         new_sol = cls(**decoded)
         # now determine how different the new solution volume is from the original
         scale_factor = (orig_volume / new_sol.volume).magnitude
@@ -2508,6 +2568,8 @@ class Solution(MSONable):
         # undo the scaling by diving by that scale factor
         for sol in new_sol.components:
             new_sol.components[sol] /= scale_factor
+        if orig_moles is not None:
+            new_sol.components["H2O(aq)"] = orig_moles
         # ensure that another volume update won't be triggered by these changes
         # (this line should in principle be unnecessary, but it doesn't hurt anything)
         new_sol.volume_update_required = False
@@ -2517,12 +2579,6 @@ class Solution(MSONable):
     def from_preset(
         cls,
         preset: Literal[
-            "seawater",
-            "rainwater",
-            "wastewater",
-            "urine",
-            "normal saline",
-            "Ringers lactate",
             "ash",
             "batt_mfg",
             "batt_recycling",
@@ -2532,20 +2588,27 @@ class Solution(MSONable):
             "excavation",
             "FGD",
             "flotation",
-            # "flue_gas",
             "gasification",
             "geothermal",
-            # "leachate",
+            "leachate",
             "mine_drainage",
             "mine_tailings",
-            # "plating",
+            "normal saline",
+            "plating",
             "pw_conv",
             "pw_unconv",
+            "rainwater",
             "refining",
+            "Ringers lactate",
+            "seawater",
             "semiconductor",
             "smelting",
             "tanning",
+            "urine",
+            "waste_gas",
+            "wastewater",
         ],
+        **kwargs,
     ) -> Solution:
         r"""Instantiate a solution from a preset composition.
 
@@ -2553,6 +2616,10 @@ class Solution(MSONable):
             preset (str): String representing the desired solution.
               Valid entries are 'seawater', 'rainwater', 'wastewater',
               'urine', 'normal saline' and 'Ringers lactate'.
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and
+            will override any values in the preset file. This allows you to use a preset as a starting
+            point and then modify it as needed by, e.g., changing the modeling engine or database.
 
         Returns:
             A pyEQL Solution object.
@@ -2563,12 +2630,6 @@ class Solution(MSONable):
         Notes:
             The following sections explain the different solution options:
 
-            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
-            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [mf08]_
-            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [me13]_
-            - 'urine' - typical human urine. See Table 3-15 of [me13]_
-            - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
-            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
             - 'ash' - bottom ash transport wastewater from fossil fuel combustion [kwptr2026]_
             - 'batt_mfg' - wastewater from lead-acid and legacy battery manufacturing processes [kwptr2026]_
             - 'batt_recycling' - wastewater from lithium ion battery recycling operations [kwptr2026]_
@@ -2578,19 +2639,25 @@ class Solution(MSONable):
             - 'excavation' - wastewater from excavation in metal ore mining operations [kwptr2026]_
             - 'FGD' - flue gas desulfurization wastewater from SO2 removal from fossil fuel combustion [kwptr2026]_
             - 'flotation' - milling and flotation wastewater from metal ore extraction [kwptr2026]_
-            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
             - 'gasification' - wastewater from gasification of carbon-based feedstocks to syngas [kwptr2026]_
             - 'geothermal' - geothermal produced water from geothermal power generation [kwptr2026]_
             - 'leachate' - leachate from metal ore mining wastes [kwptr2026]_
             - 'mine_drainage' - acid mine drainage wastewater from coal and metal ore mining operations [kwptr2026]_
             - 'mine_tailings' - mine tailings pond water from collective metal ore and mining wastes [kwptr2026]_
+            - 'normal saline' or 'NS' - normal saline solution used in medicine [saline]_
             - 'plating' - typical wastewater from metal electroplating operations [kwptr2026]_
             - 'pw_conv' - produced water from conventional hydrocarbon production [kwptr2026]_
             - 'pw_unconv' - produced water from unconventional hydrocarbon production [kwptr2026]_
+            - 'rainwater' - pure water in equilibrium with atmospheric CO2 at pH 6
             - 'refining' - petroleum refining wastewater from crude oil refineries [kwptr2026]_
+            - 'Ringers lacatate' or 'RL' - Ringer's lactate solution used in medicine [lactate]_
+            - 'seawater' or 'SW'- Standard Seawater. See Table 4 of the Reference for Composition [mf08]_
             - 'semiconductor' - semiconductor and electronics manufacturing wastewater  [kwptr2026]_
             - 'smelting' - wastewater from metal ore smelting and refining from pyrometallurgical slags [kwptr2026]_
             - 'tanning' - wastewater from leather tanning and finishing operations [kwptr2026]_
+            - 'urine' - typical human urine. See Table 3-15 of [me13]_
+            - 'waste_gas' - wastewater from waste gas treatment during pyrometallurgical processing in metal ore and mining operations [kwptr2026]_
+            - 'wastewater' or 'WW' - medium strength domestic wastewater. See Table 3-18 of [me13]_
 
         References:
             .. [mf08] Millero, Frank J. "The composition of Standard Seawater and the definition of
@@ -2619,7 +2686,7 @@ class Solution(MSONable):
             raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
 
         # Create and return a Solution object
-        return cls().from_file(preset_path)
+        return cls().from_file(preset_path, **kwargs)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
@@ -2640,12 +2707,16 @@ class Solution(MSONable):
             dumpfn(self, filename)
 
     @classmethod
-    def from_file(cls, filename: str | Path) -> Solution:
+    def from_file(cls, filename: str | Path, **kwargs) -> Solution:
         """Loading from a .yaml or .json file.
 
         Args:
             filename (str | Path): Path to the .json or .yaml file (including extension) to load the Solution from.
               Valid extensions are .json or .yaml.
+
+        Kwargs:
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override any values in the file. This allows you to use a file as a starting point and then modify it as needed by, e.g., changing the modeling engine or database.
+            NOTE: CURRENTLY ONLY SUPPORTED FOR YAML FILES!
 
         Returns:
             A pyEQL Solution object.
@@ -2673,6 +2744,8 @@ class Solution(MSONable):
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
+            for k, v in kwargs.items():
+                solution_dict[k] = v
             return cls.from_dict(solution_dict)
         return loadfn(filename)
 
@@ -2844,3 +2917,68 @@ class Solution(MSONable):
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
+
+    def get_saturation_index(self, get_plot=None) -> dict:
+        r"""
+        Calculate the saturation index of a solute in the solution.
+        Notes:
+            The saturation index (:math:`\mathrm{SI}`) is defined as log10(IAP/Ksp), where IAP is the ion activity product and Ksp is the solubility product constant.
+            This method calculates the saturation index based on the active engine and database from `__init__`. The interpretation of the saturation index values is as follows:
+
+            - :math:`\mathrm{SI} < 0`: The solution is **undersaturated**. The solid tends to dissolve if present.
+
+            - :math:`\mathrm{SI} = 0`: The solution is **at saturation equilibrium**. Therefore, at the saturation limit, the SI is zero.
+
+            - :math:`\mathrm{SI} > 0`: The solution is **supersaturated**. Precipitation is thermodynamically favored, although kinetic factors may delay or prevent it.
+
+        Args:
+            get_plot (bool, optional):
+                If True, displays an interactive bar plot of saturation indices sorted from most oversaturated to least. Defaults to None (no plot).
+        Returns:
+            dict:
+                A dictionary with mineral phase names as keys and their saturation index values as values, sorted in descending order (most oversaturated to least oversaturated).
+        """
+
+        engine = self.engine
+
+        if not hasattr(engine, "ppsol"):
+            raise NotImplementedError(f"Engine {type(engine).__name__} does not support saturation index calculations.")
+
+        # caching method from Phrqsol
+        if (engine.ppsol is None) or (self.components != engine._stored_comp):
+            engine._destroy_ppsol()
+            engine._setup_ppsol(self)
+
+        ppsol = engine.ppsol
+
+        phases = list(ppsol.phases.keys())
+        eq_species_dict = {phase: ppsol.si(phase) for phase in phases}
+
+        sorted_eq_species_dict = dict(sorted(eq_species_dict.items(), key=lambda item: item[1], reverse=True))
+
+        if get_plot:
+            import pandas as pd  # noqa: PLC0415
+            import plotly.express as px  # noqa: PLC0415
+
+            df = pd.DataFrame(
+                {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
+            )
+
+            fig = px.bar(
+                df,
+                x="species",
+                y="si",
+                labels={"species": "Mineral Phase", "si": "Saturation Index"},
+                color="si",
+                color_continuous_scale="Mint",
+            )
+
+            fig.update_layout(
+                xaxis_tickangle=-45,
+                template="plotly_white",
+                height=500,
+            )
+
+            fig.show()
+
+        return sorted_eq_species_dict

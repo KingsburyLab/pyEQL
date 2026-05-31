@@ -307,7 +307,7 @@ def test_equilibrate_CO2_with_calcite():
 
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
-    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc2026")
+    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10e-7 mol/L"}, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
     assert np.isclose(solution.get_amount("Fe+3", "mol/L").magnitude, 3.093e-11)
     assert np.isclose(solution.get_amount("OH-", "mol/L").magnitude, 1.067e-07)
@@ -378,19 +378,22 @@ def test_equilibrate_logC_pH_carbonate_13():
     assert np.isclose(solution.get_amount("CO3-2", "mol/kg").magnitude, 9.979e-4, atol=1e-5)
 
 
-@pytest.mark.xfail(strict=True, reason="alkalinity discrepancy needs to be investigated")
 def test_alkalinity():
     solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
 
-    HCO3 = solution.get_amount("HCO3-", "mg/L").magnitude
-    CO3 = solution.get_amount("CO3-2", "mg/L").magnitude
-    OH = solution.get_amount("OH-", "mg/L").magnitude
-    H = solution.get_amount("H+", "mg/L").magnitude
+    HCO3 = solution.get_amount("HCO3-", "mol/L").magnitude
+    CO3 = solution.get_amount("CO3-2", "mol/L").magnitude
+    OH = solution.get_amount("OH-", "mol/L").magnitude
+    H = solution.get_amount("H+", "mol/L").magnitude
 
     # Alkalinity calculated from the excess of negative charges from weak acids
     calculated_alk = HCO3 + 2 * CO3 + OH - H
-    assert solution.alkalinity.to("mg/L").magnitude == pytest.approx(calculated_alk, abs=0.001)
+    # Convert alkalinity from mol/L to mg/L as CaCO3
+    EQUIV_WT_CACO3 = 100.09 / 2  # g/eq
+    calculated_alk_mg_L = calculated_alk * EQUIV_WT_CACO3 * 1000
+
+    assert solution.alkalinity.magnitude == pytest.approx(calculated_alk_mg_L, abs=1e-8)
 
 
 def test_equilibrate_2L():
