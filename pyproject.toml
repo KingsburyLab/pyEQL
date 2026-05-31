@@ -47,7 +47,14 @@ testing = [
   "ruff>0.0.100",
   "tox<4",
 ]
-docs = ["sphinx>=3.2.1", "sphinx-rtd-theme", "myst-parser[linkify]"]
+pourbaix = [
+  "mp-api>=0.45.0",
+]
+docs = [
+  "sphinx>=3.2.1",
+  "sphinx-rtd-theme",
+  "myst-parser[linkify]",
+]
 full = ["rich"]
 
 [build-system]
@@ -182,5 +189,5 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
 [tool.codespell]
-ignore-words-list = "nd,formate,Te,CaCl,CaF,ore"
+ignore-words-list = "nd,formate,Te,CaCl,CaF,ore, teh,hte,hsi"
 skip = "tests/test_files/*,src/pyEQL/database/*"
