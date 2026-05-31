@@ -17,6 +17,7 @@ jobs:
   test:
     needs: [lint]
     strategy:
+      fail-fast: false
       matrix:
         # We only test on min. and max. supported Python versions here.
         python-version: ["3.11", "3.14"]
