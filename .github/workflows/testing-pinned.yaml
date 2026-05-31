@@ -44,4 +44,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
+          pytest -n auto --dist=loadscope
