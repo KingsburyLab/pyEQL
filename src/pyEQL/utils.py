@@ -53,7 +53,7 @@ def _translate_pint_quantity(amount: str):
     if isinstance(amount, Quantity):
         return amount.magnitude, str(amount.units)
 
-    match = re.match(r"^\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*(.*)$", amount)
+    match = re.match(r"^\s*([0-9eE+\-*/().]+)\s*(.*)$", amount)
 
     if match is None:
         return amount
