@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- `Solution.get_transference_number`: New method alias to `get_transport_number` (#420, @rkingsbury)
 - Added `python` 3.14 support (#404, @rkingsbury)
 - Docs: new charge balancing tutorial (#391, @SuixiongTay)
 - Docs: new tutorial for solid-liquid-gas equilibrium (#390, @YitongPan1)
@@ -17,9 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `get_transport_number`: Clarify that the quantity returned by this method is really the _transference_
+  number, which is equal to the transport number whenever there are no concentration or pressure gradients. Also added
+  a new method `get_transference_number` as an alias. (#420, @rkingsbury)
 - Solute properties are now pre-cached to enhance performance, especially when creating
   Solutions containing a large number of solutes (#384, @rkingsbury)
-- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependency count. (#403, @rkingsbury)
+- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)`. (#403, @rkingsbury)
 
 ### Fixed
 
