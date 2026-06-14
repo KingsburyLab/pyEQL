@@ -363,6 +363,9 @@ class Phreeqc2026EOS(EOS):
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
+        # remove H2O(aq), because Phreeqc2026EOS does not include this species in ppsol.species. Leaving it can
+        # result in false positives.
+        missing_species.discard("H2O(aq)")
         if len(missing_species) > 0:
             logger.warning(
                 f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
@@ -646,7 +649,7 @@ class PhreeqcEOS(Phreeqc2026EOS):
         return result
 
 
-class NativeEOS(PhreeqcEOS):
+class NativeEOS(Phreeqc2026EOS):
     """
     pyEQL's native EOS. Uses the Pitzer model when possible, falls
     back to other models (e.g. Debye-Huckel) based on ionic strength
@@ -671,25 +674,7 @@ class NativeEOS(PhreeqcEOS):
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
         """
-        self.phreeqc_db = phreeqc_db
-        # database files in this list are not distributed with phreeqpython
-        self.db_path = (
-            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
-        )
-        # create the PhreeqcPython instance
-        # try/except added to catch unsupported architectures, such as Apple Silicon
-        try:
-            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
-        except OSError:
-            logger.error(
-                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
-                " pyEQL will work, but equilibrate() will have no effect."
-            )
-        # attributes to hold the PhreeqPython solution.
-        self.ppsol = None
-        # store the solution composition to see whether we need to re-instantiate the solution
-        self._stored_comp = None
+        super().__init__(phreeqc_db=phreeqc_db)
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str):
         r"""
