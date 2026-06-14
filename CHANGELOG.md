@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Phreeqc2026EOS`: an error in the `__deepcopy__` method prevented this class from functioning properly with some
+  `Solution` methods, such as arithmetic (`+`). (#XXX, @rkingsbury)
 - `from_preset`/ `from_dict`: there was a subtle bug in the calculation of solution volumes that could cause a pH / H+
   inconsistency when re-creating solutions from `dict` or files. This primarily affected solutions with many solutes and
   the discrepancy was small in quantitative terms, but prevented some `presets` from loading correctly.

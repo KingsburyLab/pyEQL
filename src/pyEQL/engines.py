@@ -200,13 +200,13 @@ class Phreeqc2026EOS(EOS):
         )
         # create the PhreeqcPython instance
         self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
-        # attributes to hold the PhreeqPython solution.
+        # attributes to hold the Phreeqc solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
+        """Helper method to set up a Phreeqc solution for subsequent analysis."""
 
         from pyEQL.phreeqc import PHRQSol  # noqa: PLC0415
 
@@ -458,15 +458,19 @@ class Phreeqc2026EOS(EOS):
         return ureg.Quantity(0, "L")
 
     def __deepcopy__(self, memo) -> Self:
-        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # custom deepcopy required because the Phreeqc instance used by the Native and Phreeqc engines
         # is not pickle-able.
+        from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
+
+        if not IS_AVAILABLE:
+            raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == "pp":
-                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                result.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
                 continue
             setattr(result, k, copy.deepcopy(v, memo))
         return result
@@ -623,6 +627,23 @@ class PhreeqcEOS(Phreeqc2026EOS):
         """
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
+
+    def __deepcopy__(self, memo) -> Self:
+        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # is not pickle-able.
+
+        if not PHREEQPYTHON_AVAILABLE:
+            raise RuntimeError("phreeqcpython support is not available in this installation")
+
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "pp":
+                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
 
 
 class NativeEOS(PhreeqcEOS):
