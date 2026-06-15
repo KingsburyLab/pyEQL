@@ -38,7 +38,7 @@ version `0.6.0`.
 
 ### Activity and osmotic coefficients
 
-Activity coefficients are calculated using the "effetive Pitzer model" of [Mistry et al.](https://doi.org/10.1016/j.desal.2013.03.015)
+Activity coefficients are calculated using the "effective Pitzer model" of [Mistry et al.](https://doi.org/10.1016/j.desal.2013.03.015)
 when possible. `pyEQL` selects parameters by identifying the predominant salt in the
 solution (see [Salt Matching](amounts.md#salt-vs-solute-concentrations)). The ionic
 strength is calculated based on all solutes, but only the predominant salt parameters
@@ -59,23 +59,23 @@ If data are not available, the volume for that solute is not accounted for.
 
 ### Speciation
 
-Speciation calculations are provided by PHREEQC via `phreeqpython`. We use the `llnl.dat`
-PHREEQC database due to its applicability for moderate salinity water and the large
-number of species included (see [Lu et al.](https://doi.org/10.1016/j.earscirev.2021.103888)).
-See `pyEQL.equilibrium.eqiulibrate_phreeqc` in the [module reference](internal.md#speciation-functions)
+Speciation calculations are provided by PHREEQC via our natively-developed IPHREEQC wrapper [`pyEQL.phreeqc`](https://github.com/KingsburyLab/pyEQL/tree/main/src/pyEQL/phreeqc).
+This wrapper powers the [`phreeqc2026` engine](#the-phreeqc2026-engine), described below. In the `native` engine, in
+contrast to the `phreeqc2026` engine, we use the `llnl.dat` PHREEQC database due to its superior accuracy for moderate salinity
+water and the large number of species included (see [Lu et al.](https://doi.org/10.1016/j.earscirev.2021.103888)).
+See `pyEQL.engine.Phreeqc2026EOS.equilibrate()` in the [module reference](internal.md#speciation-functions)
 for more details.
 
 ```{warning}
-Speciation support was added to the `native` engine in `v0.8.0` and should be considered
-experimental. Specifically, because the `native` engine uses a non-Pitzer PHREEQC database
-for speciation but uses the Pitzer model (when possible) for activity coefficients. As such,
-there may be subtle thermodynamic inconsistencies between the activities and the equilibrium
+The `native` engine is an engineering model designed to represent moderate to high salinity brines as accurately as
+possible. Because it uses a non-Pitzer PHREEQC database for speciation but uses the Pitzer model (when possible) for
+activity coefficients, there may be subtle thermodynamic inconsistencies between the activities and the equilibrium
 concentrations returned by `equilibrate()`.
 ```
 
 ## The `'phreeqc2026'` engine
 
-The `phreeqc2026` engine uses [`pyEQL.phreeqc`](https://github.com/KingsburyLab/pyEQL/tree/d323606e022825737c1663ee620dfa6180d2bebb/src/pyEQL/phreeqc)
+The `phreeqc2026` engine uses [`pyEQL.phreeqc`](https://github.com/KingsburyLab/pyEQL/tree/main/src/pyEQL/phreeqc)
 for speciation, activity, and volume calculations. The PHREEQC engine
 uses the `phreeqc.dat (v3.8)` PHREEQC database by default, although it is possible to instantiate
 the engine with other databases such as `llnl.dat`, `pitzer.dat`, `vitens.dat`, `wateq4f_PWN.dat`, and `geothermal.dat`. See
@@ -98,7 +98,7 @@ Older version provided in `pyEQL.equilibrium.equilibrate_phreeqc` has been remov
 Activity coefficients are calculated by dividing the PHREEQC activity by the molal
 concentration of the solute.
 
-Due to limitations in the `phreeqpython` interface, the osmotic coefficient is always
+Due to limitations in the [`phreeqpython`](https://github.com/Vitens/phreeqpython) interface, the osmotic coefficient is always
 returned as 1 at present.
 
 ```{warning}
@@ -109,20 +109,20 @@ make it difficult to access these properties.
 
 ### Solute volumes
 
-Due to limitations in the `phreeqpython` interface, solute volumes are ignored (as in
+Due to limitations in the [`phreeqpython`](https://github.com/Vitens/phreeqpython) interface, solute volumes are ignored (as in
 the `ideal` engine). More
 research is needed to determine whether this is consistent with intended PHREEQC behavior
 (when using the default database) or not.
 
 ```{warning}
 The `phreeqc` engine currently returns an osmotic coefficient of 1 and solute volume of
-0 for all solutions. There appear to be limitations in the `phreeqpython` interface that
+0 for all solutions. There appear to be limitations in the [`phreeqpython`](https://github.com/Vitens/phreeqpython) interface that
 make it difficult to access these properties.
 ```
 
 ### Speciation
 
-Speciation calculations are provided by PHREEQC via `phreeqpython`.
+Speciation calculations are provided by PHREEQC via [`phreeqpython`](https://github.com/Vitens/phreeqpython).
 
 ## The `'ideal'` engine
 

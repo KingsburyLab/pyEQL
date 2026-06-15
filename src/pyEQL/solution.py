@@ -163,10 +163,10 @@ class Solution(MSONable):
                 to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
-                important property calculations including conductivity and transport number, which are related to the
+                important property calculations including conductivity and transference number, which are related to the
                 weighted sums of diffusion coefficients of all species. Setting this argument to zero will exclude any
                 species that does not have a tabulated diffusion coefficient from these calculations, possibly resulting
-                in underestimation of the conductivity and/or inaccurate transport numbers.
+                in underestimation of the conductivity and/or inaccurate transference numbers.
 
                 Missing diffusion coefficients are especially likely in complex electrolytes containing, for example,
                 complexes or paired species such as NaSO4[-1]. In such cases, setting default_diffusion_coeff  to zero
@@ -2172,38 +2172,46 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
+    def get_transference_number(self, solute: str) -> Quantity:
+        """Alias of get_transport_number(). Note that the transference number is only equal to the transport number if there are no concentration or pressure gradients."""
+        return self.get_transport_number(solute)
+
     def get_transport_number(self, solute: str) -> Quantity:
-        r"""Calculate the transport number of the solute in the solution.
+        r"""Calculate the transference number of a solute in the solution. Note that this is the
+        same as the _transport_ number if (and only if) there are no concentration or pressure gradients.
 
         Args:
-            solute: Formula of the solute for which the transport number is
-                to be calculated.
+            solute: Formula of the solute for which the transference number is to be calculated.
 
         Returns:
-                The transport number of `solute`, as a dimensionless Quantity.
+                The transference number of `solute`, as a dimensionless Quantity.
 
         Notes:
-            Transport number is calculated according to :
+            Transference number is calculated according to :
 
                 .. math::
 
                     t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i}
 
-                Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
-                coefficient, and :math:`z_i` is the charge, and the summation extends
-                over all species in the solution.
+            Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
+            coefficient, and :math:`z_i` is the charge, and the summation extends
+            over all species in the solution.
 
-                Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
-                and ionic strength using the method implemented in PHREEQC >= 3.4.
-                See `get_diffusion_coefficient for` further details.
+            Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+            and ionic strength using the method implemented in PHREEQC >= 3.4.
+            See `get_diffusion_coefficient for` further details.
 
 
         References:
-                Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
-                ion effects on membrane potential and the permselectivity of ion exchange membranes.""
-                *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
+            Bieusheuvel, P.M.; Dykstra, J.E.; *Introduction to Physical Processes in Environmental
+            Technology*, Section 6.2. https://www.physicsofelectrochemicalprocesses.com/book.pdf.
+
+            Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
+            ion effects on membrane potential and the permselectivity of ion exchange membranes.""
+            *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
         See Also:
+            :py:meth:`get_transference_number`
             :py:meth:`get_diffusion_coefficient`
             :py:meth:`get_molar_conductivity`
         """
@@ -2960,7 +2968,7 @@ class Solution(MSONable):
             import pandas as pd  # noqa: PLC0415
             import plotly.express as px  # noqa: PLC0415
 
-            df = pd.DataFrame(
+            df = pd.DataFrame(  # noqa: PD901
                 {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
             )
 
