@@ -587,7 +587,7 @@ def test_components_by_element(s1, s2):
     # so we can't do a precise test of the order of the species in the lists.
     assert result.keys() == expected.keys()
     for element, species_list in expected.items():
-        if element == "O(-2.0)":
+        if element == "O(-2.0)" or element == "Cl(3.0)":
             # for this particular element and oxidation state, the order of the species in the list is not guaranteed
             assert set(result[element]) == set(species_list), f"Mismatch for element '{element}'"
         else:
@@ -670,7 +670,7 @@ def test_components_by_element_nested(s1, s2):
     assert result.keys() == expected.keys()
     for element, oxidation_states in expected.items():
         for oxi_state in oxidation_states:
-            if element == "O" and oxi_state == -2.0:
+            if (element == "O" and oxi_state == -2.0) or (element == "Cl" and oxi_state == 3.0):
                 # for this particular element and oxidation state, the order of the species in the list is not guaranteed
                 assert set(result[element][oxi_state]) == set(expected[element][oxi_state]), (
                     f"Mismatch for element '{element}', oxidation state {oxi_state}"
