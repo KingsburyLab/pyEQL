@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0] - 2026-06-XX
+## [1.5.0] - 2026-06-15
 
 ## Added
 
@@ -24,9 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **NEW DEFAULT BEHAVIOR** `NativeEOS`: the `native` modeling engine (the default) now uses the natively-developed `Phreeqc2026EOS` for speciation
-  calculations, rather than the legacy `PhreeqcEOS` which was based on `phreeqpython`. Both PHREEQC wrappers are still
+  calculations, rather than the legacy `PhreeqcEOS` which was based on [phreeqpython](https://github.com/Vitens/phreeqpython). Both PHREEQC wrappers are still
   available; the only thing that has changed in this release is which one the `native` modeling engine uses. (#422, @rkingsbury)
-- `Solution.__init__`: solutes can now be given using additional, common environomental unit
+- `Solution.__init__`: solutes can now be given using additional, common environmental unit
   abbreviations such as "ppm", "ppb", etc., aligning with the unit types supported in
   `get_amount()` (#414, @SuixiongTay)
 - `get_transport_number`: Clarify that the quantity returned by this method is really the _transference_
