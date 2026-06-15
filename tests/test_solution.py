@@ -557,7 +557,8 @@ def test_components_by_element(s1, s2):
         pytest.skip(reason="Phreeqpython not available")
 
     s2.equilibrate()
-    assert s2.get_components_by_element() == {
+
+    expected = {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
         "H(0.0)": ["H2(aq)"],
         "O(-2.0)": [
@@ -579,6 +580,18 @@ def test_components_by_element(s1, s2):
         "Cl(5.0)": ["ClO3[-1]"],
         "Cl(7.0)": ["ClO4[-1]"],
     }
+
+    result = s2.get_components_by_element(nested=False)
+
+    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
+    # so we can't do a precise test of the order of the species in the lists.
+    assert result.keys() == expected.keys()
+    for element, species_list in expected.items():
+        if element == "O(-2.0)" or element == "Cl(3.0)":
+            # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+            assert set(result[element]) == set(species_list), f"Mismatch for element '{element}'"
+        else:
+            assert result[element] == species_list, f"Mismatch for element '{element}'"
 
 
 def test_components_by_element_nested(s1, s2):
@@ -611,7 +624,9 @@ def test_components_by_element_nested(s1, s2):
 
     s2.equilibrate()
 
-    assert s2.get_components_by_element(nested=True) == {
+    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
+    # so we can't do a precise test of the order of the species in the lists.
+    expected = {
         "H": {
             1.0: [
                 "H2O(aq)",
@@ -632,9 +647,9 @@ def test_components_by_element_nested(s1, s2):
                 "HClO(aq)",
                 "ClO[-1]",
                 "ClO2[-1]",
-                "ClO3[-1]",
-                "ClO4[-1]",
                 "HClO2(aq)",
+                "ClO4[-1]",
+                "ClO3[-1]",
             ],
             0.0: ["O2(aq)"],
         },
@@ -649,6 +664,21 @@ def test_components_by_element_nested(s1, s2):
             7.0: ["ClO4[-1]"],
         },
     }
+
+    result = s2.get_components_by_element(nested=True)
+
+    assert result.keys() == expected.keys()
+    for element, oxidation_states in expected.items():
+        for oxi_state in oxidation_states:
+            if (element == "O" and oxi_state == -2.0) or (element == "Cl" and oxi_state == 3.0):
+                # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+                assert set(result[element][oxi_state]) == set(expected[element][oxi_state]), (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
+            else:
+                assert result[element][oxi_state] == expected[element][oxi_state], (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
 
 
 def test_get_total_amount(s2):
