@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `NativeEOS`: the `native` modeling engine (the default) now uses the natively-developed `Phreeqc2026EOS` for speciation
+  calculations, rather than the legacy `PhreeqcEOS` which was based on `phreeqpython`. Both PHREEQC wrappers are still
+  available; the only thing that has changed in this release is which one the `native` modeling engine uses. (#422, @rkingsbury)
 - `get_transport_number`: Clarify that the quantity returned by this method is really the _transference_
   number, which is equal to the transport number whenever there are no concentration or pressure gradients. Also added
   a new method `get_transference_number` as an alias. (#420, @rkingsbury)
@@ -28,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `Phreeqc2026EOS`: an error in the `__deepcopy__` method prevented this class from functioning properly with some
-  `Solution` methods, such as arithmetic (`+`). (#XXX, @rkingsbury)
+  `Solution` methods, such as arithmetic (`+`). (#421, @rkingsbury)
 - `from_preset`/ `from_dict`: there was a subtle bug in the calculation of solution volumes that could cause a pH / H+
   inconsistency when re-creating solutions from `dict` or files. This primarily affected solutions with many solutes and
   the discrepancy was small in quantitative terms, but prevented some `presets` from loading correctly.
