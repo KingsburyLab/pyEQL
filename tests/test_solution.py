@@ -12,6 +12,7 @@ from importlib.resources import files
 from itertools import zip_longest
 
 import numpy as np
+import plotly.graph_objs as go
 import pytest
 import yaml
 from monty.serialization import dumpfn, loadfn
@@ -556,7 +557,8 @@ def test_components_by_element(s1, s2):
         pytest.skip(reason="Phreeqpython not available")
 
     s2.equilibrate()
-    assert s2.get_components_by_element() == {
+
+    expected = {
         "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
         "H(0.0)": ["H2(aq)"],
         "O(-2.0)": [
@@ -578,6 +580,18 @@ def test_components_by_element(s1, s2):
         "Cl(5.0)": ["ClO3[-1]"],
         "Cl(7.0)": ["ClO4[-1]"],
     }
+
+    result = s2.get_components_by_element(nested=False)
+
+    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
+    # so we can't do a precise test of the order of the species in the lists.
+    assert result.keys() == expected.keys()
+    for element, species_list in expected.items():
+        if element == "O(-2.0)" or element == "Cl(3.0)":
+            # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+            assert set(result[element]) == set(species_list), f"Mismatch for element '{element}'"
+        else:
+            assert result[element] == species_list, f"Mismatch for element '{element}'"
 
 
 def test_components_by_element_nested(s1, s2):
@@ -610,7 +624,9 @@ def test_components_by_element_nested(s1, s2):
 
     s2.equilibrate()
 
-    assert s2.get_components_by_element(nested=True) == {
+    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
+    # so we can't do a precise test of the order of the species in the lists.
+    expected = {
         "H": {
             1.0: [
                 "H2O(aq)",
@@ -631,9 +647,9 @@ def test_components_by_element_nested(s1, s2):
                 "HClO(aq)",
                 "ClO[-1]",
                 "ClO2[-1]",
-                "ClO3[-1]",
-                "ClO4[-1]",
                 "HClO2(aq)",
+                "ClO4[-1]",
+                "ClO3[-1]",
             ],
             0.0: ["O2(aq)"],
         },
@@ -648,6 +664,21 @@ def test_components_by_element_nested(s1, s2):
             7.0: ["ClO4[-1]"],
         },
     }
+
+    result = s2.get_components_by_element(nested=True)
+
+    assert result.keys() == expected.keys()
+    for element, oxidation_states in expected.items():
+        for oxi_state in oxidation_states:
+            if (element == "O" and oxi_state == -2.0) or (element == "Cl" and oxi_state == 3.0):
+                # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+                assert set(result[element][oxi_state]) == set(expected[element][oxi_state]), (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
+            else:
+                assert result[element][oxi_state] == expected[element][oxi_state], (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
 
 
 def test_get_total_amount(s2):
@@ -1239,3 +1270,62 @@ class TestLinearCombinationSoluteVolume:
                 "OH-", "size.molar_volume"
             )
         assert solute_volume_without_protons_and_hydroxide.m == expected_solute_volume.m
+
+
+@pytest.mark.parametrize("engine", ["native", "phreeqc", "phreeqc2026"])
+class TestSaturationIndex:
+    @staticmethod
+    def test_halite_si_over(engine, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        solution = Solution({"Na+": "10 mol/L", "K+": "10 mol/L", "Cl-": "10 mol/L"}, engine=engine)
+        si = solution.get_saturation_index()
+        assert si["Halite"] > 0.01
+        si_plot = solution.get_saturation_index(get_plot=True)
+        assert isinstance(si_plot, dict)
+        values = list(si.values())
+        assert values == sorted(values, reverse=True)
+
+    def test_halite_si_under(self, engine, monkeypatch):
+        solution = Solution({"Na+": "0.001 mol/L", "Cl-": "0.001 mol/L"}, engine=engine)
+        si = solution.get_saturation_index()
+        assert si["Halite"] < -0.01
+
+    def test_halite_si_near(self, engine, monkeypatch):
+        solution = Solution({"Na+": "6 mol/L", "Cl-": "6 mol/L"}, engine=engine)
+        si = solution.get_saturation_index()
+        assert -0.5 < si["Halite"] < 0.0
+
+    def test_calcite_si_matches_phreeqc(self, engine, monkeypatch):
+        from pyEQL.engines import Phreeqc2026EOS, PhreeqcEOS  # noqa: PLC0415
+
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        phreeqc_eos = PhreeqcEOS(phreeqc_db="phreeqc.dat")
+        phreeqc2026_eos = Phreeqc2026EOS(phreeqc_db="phreeqc.dat")
+        composition = {"Ca2+": "2 mmol/L", "CO3-2": "2 mmol/L", "H+": "10**(-10.3) mol/L"}
+
+        phreeqc_si = Solution(composition, engine=phreeqc_eos).get_saturation_index()
+        phreeqc2026_si = Solution(composition, engine=phreeqc2026_eos).get_saturation_index()
+        assert pytest.approx(phreeqc2026_si["Calcite"], rel=1e-3, abs=1e-3) == phreeqc_si["Calcite"]
+        assert phreeqc_si["Calcite"] == pytest.approx(2.14, rel=1e-2, abs=1e-2)
+        assert phreeqc2026_si["Calcite"] == pytest.approx(2.14, rel=1e-2, abs=1e-2)
+
+    def test_saturation_index_ideal_not_supported(self, engine, monkeypatch):
+        solution = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine="ideal")
+        with pytest.raises(NotImplementedError):
+            solution.get_saturation_index()
+
+    # @pytest.mark.skip(reason="temporarily disabled")
+    def test_multi_equilibrate_si(self, engine, monkeypatch):
+        monkeypatch.setattr(go.Figure, "show", lambda self: None)
+        solution = Solution(
+            {"Na+": "10 mol/L", "K+": "10 mol/L", "Ca2+": "0.05 mol/L", "Cl-": "10 mol/L", "CO3-2": "0.05 mol/L"},
+            engine="native",
+        )
+        si = solution.get_saturation_index()
+        assert isinstance(si, dict)
+        assert "Halite" in si
+        assert "Calcite" in si
+        assert len(si) >= 2
+        solution.equilibrate()
+        assert 0 < si["Halite"] < 1
+        assert 0 < si["Calcite"] < 1

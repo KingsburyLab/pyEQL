@@ -163,10 +163,10 @@ class Solution(MSONable):
                 to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
-                important property calculations including conductivity and transport number, which are related to the
+                important property calculations including conductivity and transference number, which are related to the
                 weighted sums of diffusion coefficients of all species. Setting this argument to zero will exclude any
                 species that does not have a tabulated diffusion coefficient from these calculations, possibly resulting
-                in underestimation of the conductivity and/or inaccurate transport numbers.
+                in underestimation of the conductivity and/or inaccurate transference numbers.
 
                 Missing diffusion coefficients are especially likely in complex electrolytes containing, for example,
                 complexes or paired species such as NaSO4[-1]. In such cases, setting default_diffusion_coeff  to zero
@@ -2172,38 +2172,46 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
+    def get_transference_number(self, solute: str) -> Quantity:
+        """Alias of get_transport_number(). Note that the transference number is only equal to the transport number if there are no concentration or pressure gradients."""
+        return self.get_transport_number(solute)
+
     def get_transport_number(self, solute: str) -> Quantity:
-        r"""Calculate the transport number of the solute in the solution.
+        r"""Calculate the transference number of a solute in the solution. Note that this is the
+        same as the _transport_ number if (and only if) there are no concentration or pressure gradients.
 
         Args:
-            solute: Formula of the solute for which the transport number is
-                to be calculated.
+            solute: Formula of the solute for which the transference number is to be calculated.
 
         Returns:
-                The transport number of `solute`, as a dimensionless Quantity.
+                The transference number of `solute`, as a dimensionless Quantity.
 
         Notes:
-            Transport number is calculated according to :
+            Transference number is calculated according to :
 
                 .. math::
 
                     t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i}
 
-                Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
-                coefficient, and :math:`z_i` is the charge, and the summation extends
-                over all species in the solution.
+            Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
+            coefficient, and :math:`z_i` is the charge, and the summation extends
+            over all species in the solution.
 
-                Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
-                and ionic strength using the method implemented in PHREEQC >= 3.4.
-                See `get_diffusion_coefficient for` further details.
+            Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+            and ionic strength using the method implemented in PHREEQC >= 3.4.
+            See `get_diffusion_coefficient for` further details.
 
 
         References:
-                Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
-                ion effects on membrane potential and the permselectivity of ion exchange membranes.""
-                *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
+            Bieusheuvel, P.M.; Dykstra, J.E.; *Introduction to Physical Processes in Environmental
+            Technology*, Section 6.2. https://www.physicsofelectrochemicalprocesses.com/book.pdf.
+
+            Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
+            ion effects on membrane potential and the permselectivity of ion exchange membranes.""
+            *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
         See Also:
+            :py:meth:`get_transference_number`
             :py:meth:`get_diffusion_coefficient`
             :py:meth:`get_molar_conductivity`
         """
@@ -2917,3 +2925,68 @@ class Solution(MSONable):
         mw = self.get_property(formula, "molecular_weight")
         target_mol = quantity.to("moles", "chem", mw=mw, volume=self.volume, solvent_mass=self.solvent_mass)
         self.components[formula] = target_mol.to("moles").magnitude
+
+    def get_saturation_index(self, get_plot=None) -> dict:
+        r"""
+        Calculate the saturation index of a solute in the solution.
+        Notes:
+            The saturation index (:math:`\mathrm{SI}`) is defined as log10(IAP/Ksp), where IAP is the ion activity product and Ksp is the solubility product constant.
+            This method calculates the saturation index based on the active engine and database from `__init__`. The interpretation of the saturation index values is as follows:
+
+            - :math:`\mathrm{SI} < 0`: The solution is **undersaturated**. The solid tends to dissolve if present.
+
+            - :math:`\mathrm{SI} = 0`: The solution is **at saturation equilibrium**. Therefore, at the saturation limit, the SI is zero.
+
+            - :math:`\mathrm{SI} > 0`: The solution is **supersaturated**. Precipitation is thermodynamically favored, although kinetic factors may delay or prevent it.
+
+        Args:
+            get_plot (bool, optional):
+                If True, displays an interactive bar plot of saturation indices sorted from most oversaturated to least. Defaults to None (no plot).
+        Returns:
+            dict:
+                A dictionary with mineral phase names as keys and their saturation index values as values, sorted in descending order (most oversaturated to least oversaturated).
+        """
+
+        engine = self.engine
+
+        if not hasattr(engine, "ppsol"):
+            raise NotImplementedError(f"Engine {type(engine).__name__} does not support saturation index calculations.")
+
+        # caching method from Phrqsol
+        if (engine.ppsol is None) or (self.components != engine._stored_comp):
+            engine._destroy_ppsol()
+            engine._setup_ppsol(self)
+
+        ppsol = engine.ppsol
+
+        phases = list(ppsol.phases.keys())
+        eq_species_dict = {phase: ppsol.si(phase) for phase in phases}
+
+        sorted_eq_species_dict = dict(sorted(eq_species_dict.items(), key=lambda item: item[1], reverse=True))
+
+        if get_plot:
+            import pandas as pd  # noqa: PLC0415
+            import plotly.express as px  # noqa: PLC0415
+
+            df = pd.DataFrame(  # noqa: PD901
+                {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
+            )
+
+            fig = px.bar(
+                df,
+                x="species",
+                y="si",
+                labels={"species": "Mineral Phase", "si": "Saturation Index"},
+                color="si",
+                color_continuous_scale="Mint",
+            )
+
+            fig.update_layout(
+                xaxis_tickangle=-45,
+                template="plotly_white",
+                height=500,
+            )
+
+            fig.show()
+
+        return sorted_eq_species_dict

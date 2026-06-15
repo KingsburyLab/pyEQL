@@ -201,7 +201,7 @@ class Phreeqc2026EOS(EOS):
         )
         # create the PhreeqcPython instance
         self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
-        # attributes to hold the PhreeqPython solution.
+        # attributes to hold the Phreeqc solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
@@ -210,7 +210,7 @@ class Phreeqc2026EOS(EOS):
         return PHRQSol(d)
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
+        """Helper method to set up a Phreeqc solution for subsequent analysis."""
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -368,6 +368,9 @@ class Phreeqc2026EOS(EOS):
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
+        # remove H2O(aq), because Phreeqc2026EOS does not include this species in ppsol.species. Leaving it can
+        # result in false positives.
+        missing_species.discard("H2O(aq)")
         if len(missing_species) > 0:
             logger.warning(
                 f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
@@ -469,15 +472,19 @@ class Phreeqc2026EOS(EOS):
         return ureg.Quantity(0, "L")
 
     def __deepcopy__(self, memo) -> Self:
-        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # custom deepcopy required because the Phreeqc instance used by the Native and Phreeqc engines
         # is not pickle-able.
+        from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
+
+        if not IS_AVAILABLE:
+            raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == "pp":
-                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                result.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
                 continue
             setattr(result, k, copy.deepcopy(v, memo))
         return result
@@ -549,8 +556,25 @@ class PhreeqcEOS(Phreeqc2026EOS):
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
 
+    def __deepcopy__(self, memo) -> Self:
+        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # is not pickle-able.
 
-class NativeEOS(PhreeqcEOS):
+        if not PHREEQPYTHON_AVAILABLE:
+            raise RuntimeError("phreeqcpython support is not available in this installation")
+
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "pp":
+                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
+
+class NativeEOS(Phreeqc2026EOS):
     """
     pyEQL's native EOS. Uses the Pitzer model when possible, falls
     back to other models (e.g. Debye-Huckel) based on ionic strength
@@ -575,25 +599,7 @@ class NativeEOS(PhreeqcEOS):
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
         """
-        self.phreeqc_db = phreeqc_db
-        # database files in this list are not distributed with phreeqpython
-        self.db_path = (
-            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
-        )
-        # create the PhreeqcPython instance
-        # try/except added to catch unsupported architectures, such as Apple Silicon
-        try:
-            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
-        except OSError:
-            logger.error(
-                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
-                " pyEQL will work, but equilibrate() will have no effect."
-            )
-        # attributes to hold the PhreeqPython solution.
-        self.ppsol = None
-        # store the solution composition to see whether we need to re-instantiate the solution
-        self._stored_comp = None
+        super().__init__(phreeqc_db=phreeqc_db)
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str):
         r"""

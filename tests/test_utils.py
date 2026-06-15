@@ -50,6 +50,11 @@ def test_standardize_formula():
     assert standardize_formula("H2SO4") == "H2SO4(aq)"
     assert standardize_formula("HClO4") == "HClO4(aq)"
     assert standardize_formula("CF3SO3-") == "CF3SO3[-1]"
+    assert standardize_formula("S5-2") == "S5[-2]"
+    assert standardize_formula("S5--") == "S5[-2]"
+    assert standardize_formula("S[-0.4]") == "S5[-2]"
+    assert standardize_formula("S[-0.5]") == "S4[-2]"
+    assert standardize_formula("S[-0.66666667]") == "S3[-2]"
     # superscripts, subscripts, and permuted sign/charge number
     assert standardize_formula("PO₄³⁻") == "PO4[-3]"
     assert standardize_formula("Co²⁺") == "Co[+2]"
@@ -114,7 +119,10 @@ def test_create_water_substance():
 
 
 def test_translate_pint_quantity():
+    import pytest  # noqa: PLC0415
+
     assert _translate_pint_quantity("5mol/kg") == (5, "mol/kg")
     assert _translate_pint_quantity("0.1g/L") == (0.1, "g/L")
     assert _translate_pint_quantity("1ppb") == (1, "ug/L")
     assert _translate_pint_quantity("0.01 ppm") == (0.01, "mg/L")
+    assert _translate_pint_quantity("10**(-10.3) mol/L") == pytest.approx((5.011872336e-11, "mol/L"))

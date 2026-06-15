@@ -6,6 +6,7 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class using the `phreeqc` engine (phreeqpython)
 """
 
+import copy
 import logging
 
 import numpy as np
@@ -429,3 +430,17 @@ def test_equilibrate_with_atm():
     assert np.isclose(s1.get_amount("CO2(aq)", "mol/kg").magnitude, 0.00001429, atol=1e-6)  # PHREQCUI - 1.429e-05
     assert np.isclose(s1.get_amount("O2(aq)", "mol/kg").magnitude, 0.0002683, atol=1e-6)  # PHREEQCUI - 2.683e-04
     assert np.isclose(s1.get_amount("N2(aq)", "mol/kg").magnitude, 0)  # PHREEQCUI - 0
+
+
+def test_deepcopy(s2):
+    s2_copy = copy.deepcopy(s2)
+    assert s2.components == s2_copy.components
+    assert s2.volume == s2_copy.volume
+    assert s2.solvent == s2_copy.solvent
+    assert s2.temperature == s2_copy.temperature
+    assert s2.pressure == s2_copy.pressure
+    assert s2.engine.__class__ == s2_copy.engine.__class__
+    assert s2.engine.pp.__class__ == s2_copy.engine.pp.__class__
+    # addition implicitly uses the deepcopy method, so we can also test that here
+    assert (s2 + s2).components.keys() == s2.components.keys()
+    assert (s2 + s2).volume == 2 * s2.volume

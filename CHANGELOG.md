@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- `Solution.get_transference_number`: New method alias to `get_transport_number` (#420, @rkingsbury)
 - Added `python` 3.14 support (#404, @rkingsbury)
 - Docs: new charge balancing tutorial (#391, @SuixiongTay)
 - Docs: new tutorial for solid-liquid-gas equilibrium (#390, @YitongPan1)
@@ -17,12 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `NativeEOS`: the `native` modeling engine (the default) now uses the natively-developed `Phreeqc2026EOS` for speciation
+  calculations, rather than the legacy `PhreeqcEOS` which was based on `phreeqpython`. Both PHREEQC wrappers are still
+  available; the only thing that has changed in this release is which one the `native` modeling engine uses. (#422, @rkingsbury)
+- `get_transport_number`: Clarify that the quantity returned by this method is really the _transference_
+  number, which is equal to the transport number whenever there are no concentration or pressure gradients. Also added
+  a new method `get_transference_number` as an alias. (#420, @rkingsbury)
 - Solute properties are now pre-cached to enhance performance, especially when creating
   Solutions containing a large number of solutes (#384, @rkingsbury)
-- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependency count. (#403, @rkingsbury)
+- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)`. (#403, @rkingsbury)
 
 ### Fixed
 
+- `Phreeqc2026EOS`: an error in the `__deepcopy__` method prevented this class from functioning properly with some
+  `Solution` methods, such as arithmetic (`+`). (#421, @rkingsbury)
 - `from_preset`/ `from_dict`: there was a subtle bug in the calculation of solution volumes that could cause a pH / H+
   inconsistency when re-creating solutions from `dict` or files. This primarily affected solutions with many solutes and
   the discrepancy was small in quantitative terms, but prevented some `presets` from loading correctly.
