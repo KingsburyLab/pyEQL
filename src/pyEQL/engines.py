@@ -19,6 +19,7 @@ from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
+from pyEQL.phreeqc import PHRQSol
 from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
@@ -205,10 +206,11 @@ class Phreeqc2026EOS(EOS):
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
+    def _ppsol_dict_input(self, d):
+        return PHRQSol(d)
+
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a Phreeqc solution for subsequent analysis."""
-
-        from pyEQL.phreeqc import PHRQSol  # noqa: PLC0415
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -264,7 +266,7 @@ class Phreeqc2026EOS(EOS):
                 d[key] += " charge"
 
         try:
-            ppsol = self.pp.add_solution(PHRQSol(d))
+            ppsol = self.pp.add_solution(self._ppsol_dict_input(d))
         except Exception as e:
             # catch problems with the input to phreeqc
             raise ValueError(
@@ -275,9 +277,12 @@ class Phreeqc2026EOS(EOS):
 
         self.ppsol = ppsol
 
+    def _handle_destroy_ppsol(self):
+        return self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+
     def _destroy_ppsol(self) -> None:
         if self.ppsol is not None:
-            self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+            self._handle_destroy_ppsol()
             self.ppsol = None
 
     def equilibrate(
@@ -417,9 +422,15 @@ class Phreeqc2026EOS(EOS):
         # note that if balance_charge is set, it will have been passed to PHREEQC, so
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
-
+    
         # set the volume update flag so that the volume will be consistent with the new composition.
         solution.volume_update_required = True
+
+    def _get_activity(self, k):
+        return self.ppsol.get_activity(k)
+
+    def _get_molality(self, k):
+        return self.ppsol.get_molality(k)
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
@@ -440,7 +451,7 @@ class Phreeqc2026EOS(EOS):
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        act = self.ppsol.get_activity(k) / self.ppsol.get_molality(k)
+        act = self._get_activity(k) / self._get_molality(k)
 
         return ureg.Quantity(act, "dimensionless")
 
@@ -488,6 +499,7 @@ class PhreeqcEOS(Phreeqc2026EOS):
             "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
         ] = "phreeqc.dat",
     ) -> None:
+        super().__init__(phreeqc_db=phreeqc_db)
         """
         Args:
             phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
@@ -520,104 +532,17 @@ class PhreeqcEOS(Phreeqc2026EOS):
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
-    def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
-        self._stored_comp = solution.components.copy()
-        solv_mass = solution.solvent_mass.to("kg").magnitude
-        # inherit bulk solution properties
-        d = {
-            "temp": solution.temperature.to("degC").magnitude,
-            "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
-            "pH": solution.pH,
-            "pe": solution.pE,
-            "redox": "pe",  # hard-coded to use the pe
-            # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
-            # really have to specify the solvent mass in 1 liter of solution
-            "water": solv_mass,
-        }
-        if solution.balance_charge == "pH":
-            d["pH"] = str(d["pH"]) + " charge"
-        if solution.balance_charge == "pE":
-            d["pe"] = str(d["pe"]) + " charge"
+    def _ppsol_dict_input(self, d):
+        return d
 
-        # add the composition to the dict
-        # also, skip H and O
-        for el, mol in solution.get_el_amt_dict().items():
-            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
-            # all distinct oxi states of each element present. If there are elements present whose oxi states
-            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
-            # entered into the composition dict. This can especially cause problems after equilibrate() has already
-            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
-            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
-            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
-            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
-            # oxi state happens to be iterated through last.
+    def _handle_destroy_ppsol(self):
+        return self.ppsol.forget()
 
-            # strip off the oxi state
-            bare_el = el.split("(")[0]
-            if bare_el in SPECIAL_ELEMENTS:
-                # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
-                # passing, e.g. 'C(4)' and not 'C(4.0)'
-                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
-            elif bare_el in ["H", "O"]:
-                continue
-            else:
-                key = bare_el
+    def _get_activity(self, k):
+        return self.ppsol.pp.ip.get_activity(self.ppsol.number, k)
 
-            if key in d:
-                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
-                # add all their amounts together
-                d[key] += str(mol / solv_mass)
-            else:
-                d[key] = str(mol / solv_mass)
-
-            # tell PHREEQC which species to use for charge balance
-            if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
-                d[key] += " charge"
-
-        # create the PHREEQC solution object
-        try:
-            ppsol = self.pp.add_solution(d)
-        except Exception as e:
-            print(d)
-            # catch problems with the input to phreeqc
-            raise ValueError(
-                "There is a problem with your input. The error message received from "
-                f" phreeqpython is:\n\n {e}\n Check your input arguments, especially "
-                "the composition dictionary, and try again."
-            )
-
-        self.ppsol = ppsol
-
-    def _destroy_ppsol(self) -> None:
-        """Remove the PhreeqPython solution from memory."""
-        if self.ppsol is not None:
-            self.ppsol.forget()
-            self.ppsol = None
-
-    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
-        """
-        Return the *molal scale* activity coefficient of solute, given a Solution
-        object.
-        """
-        if (self.ppsol is None) or (solution.components != self._stored_comp):
-            self._destroy_ppsol()
-            self._setup_ppsol(solution)
-
-        # translate the species into keys that phreeqc will understand
-        k = standardize_formula(solute)
-        spl = k.split("[")
-        el = spl[0]
-        chg = spl[1].split("]")[0]
-        if chg[-1] == "1":
-            chg = chg[0]  # just pass + or -, not +1 / -1
-        k = el + chg
-
-        # calculate the molal scale activity coefficient
-        # act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
-        act = self.ppsol.pp.ip.get_activity(self.ppsol.number, k) / self.ppsol.pp.ip.get_molality(self.ppsol.number, k)
-
-        return ureg.Quantity(act, "dimensionless")
+    def _get_molality(self, k):
+        return self.ppsol.pp.ip.get_molality(self.ppsol.number, k)
 
     def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         """
