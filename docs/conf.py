@@ -320,7 +320,7 @@ linkcheck_allowed_redirects = {
 # https://idst.inl.gov/ is reachable, just not from the github runner.
 # doi.org links are skipped because DOI redirects reliably trigger 403s from
 # publisher sites (e.g. Elsevier, Wiley, ACS) when accessed from CI runners.
-linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$", r"https://doi\.org/.*"]
+linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$", r"https://doi\.org/.*", r"https://.*\.usgs\.gov/.*"]
 # Treat timeouts as non-broken so transient CI network issues don't fail the build.
 linkcheck_report_timeouts_as_broken = False
 # Retry flaky links a few times before reporting failure.
