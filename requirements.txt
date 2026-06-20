@@ -128,7 +128,7 @@ monty==2026.5.18
     #   pymatgen-core
 mpmath==1.3.0
     # via sympy
-msgpack==1.1.2
+msgpack==1.2.1
     # via maggma
 mypy==2.1.0
     # via pyeql (pyproject.toml)
