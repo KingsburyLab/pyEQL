@@ -176,7 +176,7 @@ pandas==3.0.3
     # via
     #   maggma
     #   pymatgen-core
-paramiko==3.5.1
+paramiko==5.0.0
     # via
     #   maggma
     #   sshtunnel
