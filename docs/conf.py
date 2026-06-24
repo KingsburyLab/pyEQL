@@ -103,7 +103,7 @@ copyright = "2023, Ryan Kingsbury"
 #
 # version: The short X.Y version.
 # release: The full version, including alpha/beta/rc tags.
-# If you don’t need the separation provided between version and release,
+# If you don't need the separation provided between version and release,
 # just set them both to the same value.
 try:
     from pyEQL import __version__ as version
@@ -179,6 +179,11 @@ html_theme_options = {
     "repo_url": "https://github.com/KingsburyLab/pyEQL/",
     "repo_name": "pyEQL",
     # 'logo_icon': 'e798',
+    "social": [{
+            "icon": "fontawesome/brands/github",
+            "link": "https://github.com/KingsburyLab/pyEQL/releases",
+            "name": "Releases",
+    }],
     "toc_title": "pyEQL: a python interface for water chemistry",
     "palette": { "primary": "blue", "accent": "light-blue" },
     "globaltoc_collapse": True,
@@ -190,7 +195,7 @@ html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "se
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-# html_title = None
+html_title = "pyEQL: a python interface for water chemistry"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
@@ -313,7 +318,13 @@ linkcheck_allowed_redirects = {
     r"https://tox\.wiki": r"https://tox\.wiki/.*",
 }
 # https://idst.inl.gov/ is reachable, just not from the github runner.
-linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$"]
+# doi.org links are skipped because DOI redirects reliably trigger 403s from
+# publisher sites (e.g. Elsevier, Wiley, ACS) when accessed from CI runners.
+linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$", r"https://doi\.org/.*", r"https://.*\.usgs\.gov/.*"]
+# Treat timeouts as non-broken so transient CI network issues don't fail the build.
+linkcheck_report_timeouts_as_broken = False
+# Retry flaky links a few times before reporting failure.
+linkcheck_retries = 3
 linkcheck_rate_limit_timeout = 500
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)

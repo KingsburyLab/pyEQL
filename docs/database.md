@@ -141,7 +141,7 @@ The database currently contains one or more physichochemical properties for each
  - Be[+2]
  - Bi[+3]
  - BrO3[-1]
- - Br[-0.33333333]
+ - Br3[-1]
  - Br[-1]
  - C2N3[-1]
  - CH3COO[-1]

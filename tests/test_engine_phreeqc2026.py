@@ -6,6 +6,7 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class using the `phreeqc2026` engine.
 """
 
+import copy
 import logging
 
 import numpy as np
@@ -307,7 +308,7 @@ def test_equilibrate_CO2_with_calcite():
 
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
-    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10**-7 mol/L"}, volume="1 L", engine="phreeqc2026")
+    solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10e-7 mol/L"}, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
     assert np.isclose(solution.get_amount("Fe+3", "mol/L").magnitude, 3.093e-11)
     assert np.isclose(solution.get_amount("OH-", "mol/L").magnitude, 1.067e-07)
@@ -378,19 +379,22 @@ def test_equilibrate_logC_pH_carbonate_13():
     assert np.isclose(solution.get_amount("CO3-2", "mol/kg").magnitude, 9.979e-4, atol=1e-5)
 
 
-@pytest.mark.xfail(strict=True, reason="alkalinity discrepancy needs to be investigated")
 def test_alkalinity():
     solution = Solution({"CO2(aq)": "0.001 mol/L"}, pH=7, volume="1 L", engine="phreeqc2026")
     solution.equilibrate()
 
-    HCO3 = solution.get_amount("HCO3-", "mg/L").magnitude
-    CO3 = solution.get_amount("CO3-2", "mg/L").magnitude
-    OH = solution.get_amount("OH-", "mg/L").magnitude
-    H = solution.get_amount("H+", "mg/L").magnitude
+    HCO3 = solution.get_amount("HCO3-", "mol/L").magnitude
+    CO3 = solution.get_amount("CO3-2", "mol/L").magnitude
+    OH = solution.get_amount("OH-", "mol/L").magnitude
+    H = solution.get_amount("H+", "mol/L").magnitude
 
     # Alkalinity calculated from the excess of negative charges from weak acids
     calculated_alk = HCO3 + 2 * CO3 + OH - H
-    assert solution.alkalinity.to("mg/L").magnitude == pytest.approx(calculated_alk, abs=0.001)
+    # Convert alkalinity from mol/L to mg/L as CaCO3
+    EQUIV_WT_CACO3 = 100.09 / 2  # g/eq
+    calculated_alk_mg_L = calculated_alk * EQUIV_WT_CACO3 * 1000
+
+    assert solution.alkalinity.magnitude == pytest.approx(calculated_alk_mg_L, abs=1e-8)
 
 
 def test_equilibrate_2L():
@@ -431,3 +435,17 @@ def test_equilibrate_with_atm():
     assert np.isclose(s1.get_amount("CO2(aq)", "mol/kg").magnitude, 0.00001429, atol=1e-6)  # PHREQCUI - 1.429e-05
     assert np.isclose(s1.get_amount("O2(aq)", "mol/kg").magnitude, 0.0002683, atol=1e-6)  # PHREEQCUI - 2.683e-04
     assert np.isclose(s1.get_amount("N2(aq)", "mol/kg").magnitude, 0)  # PHREEQCUI - 0
+
+
+def test_deepcopy(s2):
+    s2_copy = copy.deepcopy(s2)
+    assert s2.components == s2_copy.components
+    assert s2.volume == s2_copy.volume
+    assert s2.solvent == s2_copy.solvent
+    assert s2.temperature == s2_copy.temperature
+    assert s2.pressure == s2_copy.pressure
+    assert s2.engine.__class__ == s2_copy.engine.__class__
+    assert s2.engine.pp.__class__ == s2_copy.engine.pp.__class__
+    # addition implicitly uses the deepcopy method, so we can also test that here
+    assert (s2 + s2).components.keys() == s2.components.keys()
+    assert (s2 + s2).volume == 2 * s2.volume

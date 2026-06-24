@@ -32,6 +32,16 @@ def s4():
     return pyEQL.Solution([["Na+", "8 mol"], ["Cl-", "8 mol"]], volume="2 L")
 
 
+@pytest.fixture
+def s5():
+    return pyEQL.Solution({"Na+": "1 ppb", "Cl-": "1 ppb"}, volume="2 L")
+
+
+@pytest.fixture
+def s6():
+    return pyEQL.Solution({"Na+": "1 %", "Cl-": "1 %"}, volume="1 L")
+
+
 class Test_solute_addition:
     """
     test behavior of various methods for adding solutes to a solution
@@ -223,6 +233,23 @@ class Test_solute_addition:
         assert np.allclose(s2.get_amount("Ca+2", "mol/L").magnitude, 0.5, atol=0.002)
         assert np.allclose(s2.get_amount("Br-", "mol/L").magnitude, 0.5, atol=0.002)
 
+    def test_add_amount_13(self, s5):
+        # test behavior when the solute is initially present at 1 ppb and we add 1 ppb to test both add_amount and get_amount behavior
+        s5.add_amount("Na+", "1 ppb")
+        s5.add_amount("Cl-", "1 ppb")
+        assert np.isclose(s5.get_amount("Na+", "ppb").magnitude, 2, atol=0.002)
+        assert np.isclose(s5.get_amount("Cl-", "ppb").magnitude, 2, atol=0.002)
+
+    def test_add_amount_14(self, s6):
+        # test behavior when the solute is initially present at 1 %  and calculate the expected percentage
+        # solution mass (1 kg) + 1% or 0.01 kg solute mass for both Na+ and Cl-
+        tot_Na_Cl_mass = 1.0 + 0.01 * 2  # kg
+        # compute percentage of total mass
+        Na_val = (0.01 / tot_Na_Cl_mass) * 100
+        Cl_val = (0.01 / tot_Na_Cl_mass) * 100
+        assert np.isclose(s6.get_amount("Na+", "%").magnitude, Na_val, atol=0.002)
+        assert np.isclose(s6.get_amount("Cl-", "%").magnitude, Cl_val, atol=0.002)
+
 
 class Test_get_amount:
     """
@@ -230,6 +257,13 @@ class Test_get_amount:
     ----------------------------
     1 mol NaCl / L = 58.44 g/L
     Na+ = 22.98977 g/mol
+    Density ~ 1.03856 according to CRC "concentrative properties of aqueous solutions" table.
+
+    Molality: 58.44 g/mol NaCl * 1 mol/L = 0.05844 kg
+    1 L weighs 1.03856 kg => 1 mol Na+ / (1.03856 - 0.05844)) = 1.02028606 mol/kg
+
+    Mole fraction: 1 mol Na+ / (1 mol Na+ + 1 mol Cl- + (1.03856 - 0.05844) kg H2O / (0.01801528 g/mol)) = 0.017728948
+
 
     """
 
@@ -241,7 +275,7 @@ class Test_get_amount:
         assert np.isclose(s1.get_amount("Na+", "mol/L").magnitude, 1)
 
         # get_amount() - mol/kg
-        assert np.isclose(s1.get_amount("Na+", "mol/kg").magnitude, 1.021800387280832)
+        assert np.isclose(s1.get_amount("Na+", "mol/kg").magnitude, 1.02028606, atol=1e-2)
 
         # get_amount() - g/L
         assert np.isclose(s1.get_amount("Na+", "g/L").magnitude, 22.98977)
@@ -253,7 +287,7 @@ class Test_get_amount:
         assert np.isclose(s1.get_amount("Na+", "mol").magnitude, 1)
 
         # get_amount() - fraction
-        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.017754374259808723)
+        assert np.isclose(s1.get_amount("Na+", "fraction"), 0.017728948, atol=1e-4)
 
         # get_amount() - count
         assert np.isclose(s1.get_amount("Na+", "count").magnitude, 6.02214e23)

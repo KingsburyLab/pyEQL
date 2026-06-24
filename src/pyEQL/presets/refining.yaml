@@ -1,6 +1,6 @@
 '@module': pyEQL.solution
 '@class': Solution
-'@version': src
+'@version': 1.4.0rc12.dev164+gdf2936156
 solutes:
   H2O(aq): 55.34457593619076 mol
   Na[+1]: 1.7976080639680394 mol

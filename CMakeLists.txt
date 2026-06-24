@@ -25,7 +25,19 @@ if(PYEQL_ENABLE_EXT)
     include_directories(${IPHREEQC_INCLUDE_DIRS})
     set(IPHREEQC_BUILD_DIR   ${IPHREEQC_BASE}/build)
     add_subdirectory(${IPHREEQC_DIR} ${IPHREEQC_BUILD_DIR})
-    set_target_properties(IPhreeqc PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+    # Hide IPhreeqc's symbols when it is statically linked into _phreeqc.so.
+    # Upstream IPhreeqc does not build with -fvisibility=hidden, so without
+    # this every Phreeqc/IPhreeqcLib symbol gets re-exported from _phreeqc.so.
+    # That collides with phreeqpython's own copy of IPhreeqc (a different
+    # build), causing segfault once both modules are loaded in the same Python
+    # process.
+    # See https://linuxvox.com/blog/c-fvisibility-hidden-fvisibility-inlines-hidden/
+    set_target_properties(IPhreeqc PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+        C_VISIBILITY_PRESET hidden
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON)
     # -------------------------------------------------------
 
     # -------------------------------------------------------

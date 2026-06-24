@@ -20,7 +20,7 @@ from pyEQL import ureg
 logger = logging.getLogger(__name__)
 
 
-def interpret_units(unit: str) -> str:
+def translate_units(unit: str) -> str:
     """
     Translate commonly used environmental units such as 'ppm' into strings that `pint` can understand.
 
@@ -39,6 +39,30 @@ def interpret_units(unit: str) -> str:
         return "ng/L"
     # if all else fails, return the unit we were provided
     return unit
+
+
+def _translate_pint_quantity(amount: str):
+    """
+    Helper method to split a pint quantity string into magnitude and units.
+    """
+    import re  # noqa: PLC0415
+
+    from pint import Quantity  # noqa: PLC0415
+
+    # skip if already a pint Quantity
+    if isinstance(amount, Quantity):
+        return amount.magnitude, str(amount.units)
+
+    match = re.match(r"^\s*([0-9eE+\-*/().]+)\s*(.*)$", amount)
+
+    if match is None:
+        return amount
+
+    _value, _unit = match.groups()
+    # handle python ** expression in Pint quantity
+    _value = eval(_value) if "**" in _value else float(_value)
+    unit = translate_units(_unit)
+    return (float(_value), unit)
 
 
 @lru_cache
@@ -110,13 +134,24 @@ def standardize_formula(formula: str):
     # thiocyanate
     elif "CSN" in sform:
         sform = sform.replace("CSN", "SCN")
-    # triiodide, nitride, an phosphide
+    # triiodide, trinitride, tribromide and phosphide
     elif sform == "I[-0.33333333]":
         sform = "I3[-1]"
     elif sform == "N[-0.33333333]":
         sform = "N3[-1]"
+    elif sform == "Br[-0.33333333]":
+        sform = "Br3[-1]"
     elif sform == "P[-0.33333333]":
         sform = "P3[-1]"
+    # sulfur species
+    elif sform == "S[-0.4]":
+        sform = "S5[-2]"
+    elif sform == "S[-0.5]":
+        sform = "S4[-2]"
+    elif sform == "S[-0.66666667]":
+        sform = "S3[-2]"
+    elif sform == "S[-1]":
+        sform = "S2[-2]"  # note: S2[-2] has lower ΔGf than S[-2], so we want to standardize to S2[-2] rather than S[-2]
     # formate
     elif sform == "HCOO[-1]":
         sform = "HCO2[-1]"
