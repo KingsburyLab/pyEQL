@@ -219,8 +219,9 @@ class Phreeqc2026EOS(EOS):
             "temp": solution.temperature.to("degC").magnitude,
             "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
             "pH": solution.pH,
+            # PHREEQC will use the specified (fixed) pE value during equlibrate, as long
+            # as no "redox" line is specified here.
             "pe": solution.pE,
-            "redox": "pe",  # hard-coded to use the pe
             # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
             # really have to specify the solvent mass in 1 liter of solution
             "water": solv_mass,
@@ -422,7 +423,7 @@ class Phreeqc2026EOS(EOS):
         # note that if balance_charge is set, it will have been passed to PHREEQC, so
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
-    
+
         # set the volume update flag so that the volume will be consistent with the new composition.
         solution.volume_update_required = True
 
