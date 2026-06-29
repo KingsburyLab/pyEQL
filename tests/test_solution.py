@@ -745,6 +745,20 @@ def test_equilibrate(s1, s2, s5_pH):
     assert np.isclose(s5_pH.pE, orig_pE)
 
 
+def test_redox():
+    # compare pE 0 and pE 10. higher pE should have more oxidized species
+    s1 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=0, engine="native")
+    s2 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=10, engine="native")
+    s1.equilibrate()
+    s2.equilibrate()
+    assert np.isclose(s1.get_total_amount("S", "mg/L").magnitude, s2.get_total_amount("S", "mg/L").magnitude, atol=1e-3)
+    assert s1.get_total_amount("S(-2)", "mg/L").magnitude > s2.get_total_amount("S(-2)", "mg/L").magnitude
+    assert s1.get_total_amount("S(-0.4)", "mg/L").magnitude < s2.get_total_amount("S(-0.4)", "mg/L").magnitude
+    # if oxygen is present, sulfate should form even at pE=0
+    s1.equilibrate(atmosphere=True)
+    assert s1.get_total_amount("S(6)", "mg/L").magnitude > 0
+
+
 def test_tds(s1, s2, s5):
     assert s1.total_dissolved_solids.magnitude == 0
     assert np.isclose(s2.total_dissolved_solids.magnitude, 4 * 58442.769)
