@@ -50,31 +50,6 @@ solutes:
   ClO2[-1]: 2.7342990216912294e-30 mol
   HClO2(aq): 6.953126880886863e-31 mol
   S2O8[-2]: 9.229007044741642e-36 mol
-  H2C(aq): 0.0 mol
-  H3C(aq): 0.0 mol
-  CH4(aq): 0.0 mol
-  CO(aq): 0.0 mol
-  H2(aq): 0.0 mol
-  H2S(aq): 0.0 mol
-  H2SO3(aq): 0.0 mol
-  HS[-1]: 0.0 mol
-  HS2O3[-1]: 0.0 mol
-  HSO3[-1]: 0.0 mol
-  MgOH[+1]: 0.0 mol
-  S[-2]: 0.0 mol
-  S2[-2]: 0.0 mol
-  S2O3[-2]: 0.0 mol
-  SO2[-1]: 0.0 mol
-  S2O5[-2]: 0.0 mol
-  S2O6[-2]: 0.0 mol
-  S3[-2]: 0.0 mol
-  SO2[-0.66666667]: 0.0 mol
-  S4[-2]: 0.0 mol
-  S2O3[-1]: 0.0 mol
-  S5[-2]: 0.0 mol
-  S5O6[-2]: 0.0 mol
-  SO2(aq): 0.0 mol
-  SO3[-2]: 0.0 mol
 volume: 1.0 l
 temperature: 298.15 K
 pressure: 1 atm
