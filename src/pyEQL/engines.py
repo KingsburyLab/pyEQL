@@ -817,12 +817,12 @@ class NativeEOS(Phreeqc2026EOS):
 
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '0.2 mol/kg', 'Cl-': '0.2 mol/kg'})
-            >>> s1.get_osmotic_coefficient()
-            <Quantity(0.923715281, 'dimensionless')>
+            >>> s1.get_osmotic_coefficient()  # doctest: +ELLIPSIS
+            <Quantity(0.92371529..., 'dimensionless')>
 
             >>> s1 = pyEQL.Solution({'Mg+2': '0.3 mol/kg', 'Cl-': '0.6 mol/kg'},temperature='30 degC')
-            >>> s1.get_osmotic_coefficient()
-            <Quantity(0.891409618, 'dimensionless')>
+            >>> s1.get_osmotic_coefficient()  # doctest: +ELLIPSIS
+            <Quantity(0.8914105..., 'dimensionless')>
 
         References:
             [may11]

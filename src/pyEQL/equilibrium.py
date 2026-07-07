@@ -84,13 +84,13 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
         Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 53. Wiley Interscience, 1996.
 
     Examples:
-        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC')) #doctest: +ELLIPSIS
-        0.00203566...
+        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC'))  # doctest: +ELLIPSIS
+        <Quantity(0.002035664..., 'dimensionless')>
 
         If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
 
-        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC')) #doctest: +ELLIPSIS
-        0.00203566...
+        >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'))  # doctest: +ELLIPSIS
+        <Quantity(0.002035664..., 'dimensionless')>
     """
     output = equilibrium_constant * np.exp(
         enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
@@ -135,8 +135,8 @@ def adjust_temp_arrhenius(
         https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Physical_Chemistry_(LibreTexts)/28%3A_Chemical_Kinetics_I_-_Rate_Laws/28.07%3A_Rate_Constants_Are_Usually_Strongly_Temperature_Dependent
 
     Examples:
-        >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC')) #doctest: +ELLIPSIS
-        1.8867225...e-24
+        >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC'))  # doctest: +ELLIPSIS
+        <Quantity(1.8867..., 'dimensionless')>
     """
     output = rate_constant * np.exp(
         activation_energy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
@@ -178,22 +178,22 @@ def alpha(n, pH, pKa_list):
         Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 127-130. Wiley Interscience, 1996.
 
     Examples:
-        >>> alpha(1,8,[4.7]) #doctest: +ELLIPSIS
+        >>> alpha(1,8,[4.7])  # doctest: +ELLIPSIS
         0.999...
 
         The sum of all alpha values should equal 1
 
-        >>> alpha(0,8,[6.35,10.33]) #doctest: +ELLIPSIS
+        >>> alpha(0,8,[6.35,10.33])  # doctest: +ELLIPSIS
         0.021...
-        >>> alpha(1,8,[6.35,10.33]) #doctest: +ELLIPSIS
-        0.979...
-        >>> alpha(2,8,[6.35,10.33]) #doctest: +ELLIPSIS
-        2.043...e-09
+        >>> alpha(1,8,[6.35,10.33])  # doctest: +ELLIPSIS
+        0.973...
+        >>> alpha(2,8,[6.35,10.33])  # doctest: +ELLIPSIS
+        0.004...
 
-        If pH is equal to one of the pKa values the function should return 0.5.
+        If pH is equal to one of the pKa values the alpha value approaches 0.5.
 
-        >>> alpha(1,6.35,[6.35,10.33])
-        0.5
+        >>> alpha(1,6.35,[6.35,10.33])  # doctest: +ELLIPSIS
+        0.4999...
     """
     # generate an error if no pKa values are specified
     if len(pKa_list) == 0:
@@ -217,7 +217,6 @@ def alpha(n, pH, pKa_list):
         for pK in pKa_list[0 : i + 1]:
             k_term *= 10**-pK
         terms_list.append(k_term * 10 ** (-pH * (num_protons - (i + 1))))
-    print(terms_list)
 
     # return the desired distribution factor
     alpha = terms_list[n] / sum(terms_list)

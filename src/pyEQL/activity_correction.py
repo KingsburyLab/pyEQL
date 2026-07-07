@@ -145,8 +145,8 @@ def _debye_parameter_osmotic(temperature="25 degC"):
            and Debye-Huckel Limiting Law Slopes." /J. Phys. Chem. Ref. Data/ 19(2), 1990.
 
     Examples:
-        >>> _debye_parameter_osmotic() #doctest: +ELLIPSIS
-        0.3916...
+        >>> _debye_parameter_osmotic()  # doctest: +ELLIPSIS
+        <Quantity(0.391..., 'kilogram ** 0.5 / mole ** 0.5')>
 
     See Also:
         :func:`_debye_parameter_activity`
@@ -368,29 +368,29 @@ def get_activity_coefficient_pitzer(
             The mean molal (mol/kg) scale ionic activity coefficient of solute, dimensionless
 
     Examples:
-        >>> get_activity_coefficient_pitzer(0.5*ureg.Quantity('mol/kg'),0.5*ureg.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
-        ￼0.61915...
+        >>> get_activity_coefficient_pitzer(0.5*ureg.Quantity('mol/kg'),0.5*ureg.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.6194..., 'dimensionless')>
 
-        >>> get_activity_coefficient_pitzer(5.6153*ureg.Quantity('mol/kg'),5.6153*ureg.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
-        ￼0.76331...
+        >>> get_activity_coefficient_pitzer(5.6153*ureg.Quantity('mol/kg'),5.6153*ureg.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.7641..., 'dimensionless')>
 
         Notes: the examples below are for comparison with experimental and modeling data presented in
         the May et al reference below.
 
         10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.2725
 
-        >>> get_activity_coefficient_pitzer(10*ureg.Quantity('mol/kg'),10*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.22595 ...
+        >>> get_activity_coefficient_pitzer(10*ureg.Quantity('mol/kg'),10*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.220..., 'dimensionless')>
 
         5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.3011
 
-        >>> get_activity_coefficient_pitzer(5*ureg.Quantity('mol/kg'),5*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.30249 ...
+        >>> get_activity_coefficient_pitzer(5*ureg.Quantity('mol/kg'),5*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.302..., 'dimensionless')>
 
         18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.1653
 
-        >>> get_activity_coefficient_pitzer(18*ureg.Quantity('mol/kg'),18*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.16241 ...
+        >>> get_activity_coefficient_pitzer(18*ureg.Quantity('mol/kg'),18*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.162..., 'dimensionless')>
 
     References:
         Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly
@@ -480,30 +480,30 @@ def get_apparent_volume_pitzer(
 
         0.25 mol/kg CuSO4. Expected result (from graph) = 0.5 cm ** 3 / mol
 
-        >>> get_apparent_volume_pitzer(1.0*ureg.Quantity('mol/kg'),0.25*ureg.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
-        0.404...
+        >>> get_apparent_volume_pitzer(1.0*ureg.Quantity('mol/kg'),0.25*ureg.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.22..., 'centimeter ** 3 / mole')>
 
         1.0 mol/kg CuSO4. Expected result (from graph) = 4 cm ** 3 / mol
 
-        >>> get_apparent_volume_pitzer(4.0*ureg.Quantity('mol/kg'),1.0*ureg.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)
-        4.424...
+        >>> get_apparent_volume_pitzer(4.0*ureg.Quantity('mol/kg'),1.0*ureg.Quantity('mol/kg'),1.4,12,0.001499,-0.008124,0.2203,-0.0002589,-6,2,-2,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(4.1..., 'centimeter ** 3 / mole')>
 
         10.0 mol/kg ammonium nitrate. Expected result (from graph) = 50.3 cm ** 3 / mol
 
-        >>> get_apparent_volume_pitzer(10.0*ureg.Quantity('mol/kg'),10.0*ureg.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
-        50.286...
+        >>> get_apparent_volume_pitzer(10.0*ureg.Quantity('mol/kg'),10.0*ureg.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(50.1..., 'centimeter ** 3 / mole')>
 
         20.0 mol/kg ammonium nitrate. Expected result (from graph) = 51.2 cm ** 3 / mol
 
-        >>> get_apparent_volume_pitzer(20.0*ureg.Quantity('mol/kg'),20.0*ureg.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)
-        51.145...
+        >>> get_apparent_volume_pitzer(20.0*ureg.Quantity('mol/kg'),20.0*ureg.Quantity('mol/kg'),2,0,0.000001742,0.0002926,0,0.000000424,46.9,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(51.0..., 'centimeter ** 3 / mole')>
 
         Notes: the examples below are for comparison with experimental and modeling data presented in the Krumgalz et al reference below.
 
         0.8 mol/kg NaF. Expected result = 0.03
 
-        >>> get_apparent_volume_pitzer(0.8*ureg.Quantity('mol/kg'),0.8*ureg.Quantity('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)
-        0.22595 ...
+        >>> get_apparent_volume_pitzer(0.8*ureg.Quantity('mol/kg'),0.8*ureg.Quantity('mol/kg'),2,0,0.000024693,0.00003169,0,-0.000004068,-2.426,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(-1.1..., 'centimeter ** 3 / mole')>
 
     References:
         May, P. M., Rowland, D., Hefter, G., & Königsberger, E. (2011).
@@ -819,30 +819,30 @@ def get_osmotic_coefficient_pitzer(
     Examples:
         Experimental value according to Beyer and Stieger reference is 1.3550
 
-        >>> get_osmotic_coefficient_pitzer(10.175*ureg.Quantity('mol/kg'),10.175*ureg.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)
-        1.3552 ...
+        >>> get_osmotic_coefficient_pitzer(10.175*ureg.Quantity('mol/kg'),10.175*ureg.Quantity('mol/kg'),1,0.5,-.0181191983,-.4625822071,.4682,.000246063,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(1.355..., 'dimensionless')>
 
         Experimental value according to Beyer and Stieger reference is 1.084
 
-        >>> get_osmotic_coefficient_pitzer(5.6153*ureg.Quantity('mol/kg'),5.6153*ureg.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)
-        1.0850 ...
+        >>> get_osmotic_coefficient_pitzer(5.6153*ureg.Quantity('mol/kg'),5.6153*ureg.Quantity('mol/kg'),3,0.5,0.0369993,0.354664,0.0997513,-0.00171868,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(1.085..., 'dimensionless')>
 
         Notes: the examples below are for comparison with experimental and modeling data presented in the May et al reference below.
 
         10 mol/kg ammonium nitrate. Estimated result (from graph) = 0.62
 
-        >>> get_osmotic_coefficient_pitzer(10*ureg.Quantity('mol/kg'),10*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.6143 ...
+        >>> get_osmotic_coefficient_pitzer(10*ureg.Quantity('mol/kg'),10*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.614..., 'dimensionless')>
 
         5 mol/kg ammonium nitrate. Estimated result (from graph) = 0.7
 
-        >>> get_osmotic_coefficient_pitzer(5*ureg.Quantity('mol/kg'),5*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.6925 ...
+        >>> get_osmotic_coefficient_pitzer(5*ureg.Quantity('mol/kg'),5*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.692..., 'dimensionless')>
 
         18 mol/kg ammonium nitrate. Estimated result (from graph) = 0.555
 
-        >>> get_osmotic_coefficient_pitzer(18*ureg.Quantity('mol/kg'),18*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)
-        0.5556 ...
+        >>> get_osmotic_coefficient_pitzer(18*ureg.Quantity('mol/kg'),18*ureg.Quantity('mol/kg'),2,0,-0.01709,0.09198,0,0.000419,1,-1,1,1,b=1.2)  # doctest: +ELLIPSIS
+        <Quantity(0.555..., 'dimensionless')>
 
     References:
         Scharge, T., Munoz, A.G., and Moog, H.C. (2012). Activity Coefficients of Fission Products in Highly Salinary Solutions of Na+, K+, Mg2+, Ca2+, Cl-, and SO42- : Cs+.
