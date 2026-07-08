@@ -29,5 +29,8 @@ jobs:
       - name: Build docs
         run: tox -e docs
 
+      - name: Run doctests
+        run: tox -e doctests
+
       - name: Check links
         run: tox -e links

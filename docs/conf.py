@@ -328,3 +328,19 @@ linkcheck_retries = 3
 linkcheck_rate_limit_timeout = 500
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)
+
+# -- Doctest configuration ---------------------------------------------------
+# Provide a common namespace for all doctests so examples in module docstrings
+# don't have to repeat boilerplate imports.
+doctest_global_setup = """
+import pyEQL
+from pyEQL import Solution, ureg
+from pyEQL.activity_correction import (
+    _debye_parameter_osmotic,
+    _debye_parameter_activity,
+    get_activity_coefficient_pitzer,
+    get_apparent_volume_pitzer,
+    get_osmotic_coefficient_pitzer,
+)
+from pyEQL.equilibrium import adjust_temp_arrhenius, adjust_temp_vanthoff, alpha
+"""

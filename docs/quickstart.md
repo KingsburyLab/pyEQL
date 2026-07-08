@@ -22,8 +22,8 @@ Create a Solution object by invoking the Solution class:
 
    >>> from pyEQL import Solution
    >>> s1 = Solution()
-   >>> s1
-   <pyEQL.Solution at 0x7f9d188309b0>
+   >>> s1  # doctest: +ELLIPSIS
+   <pyEQL.solution.Solution object at 0x...>
 
 ```
 
