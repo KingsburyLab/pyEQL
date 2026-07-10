@@ -806,7 +806,7 @@ class NativeEOS(Phreeqc2026EOS):
             )
 
         else:
-            logger.error(
+            logger.warning(
                 f"Ionic strength too high to estimate activity for species {solute}. Specify parameters for Pitzer "
                 "model. Returning unit activity coefficient"
             )
