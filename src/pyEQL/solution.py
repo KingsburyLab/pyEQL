@@ -1100,7 +1100,7 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution()
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
-            <Quantity(0.49327..., 'pascal')>
+            <Quantity(0.494327..., 'pascal')>
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
