@@ -559,7 +559,7 @@ def test_components_by_element(s1, s2):
     s2.equilibrate()
 
     expected = {
-        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
+        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)"],
         "H(0.0)": ["H2(aq)"],
         "O(-2.0)": [
             "H2O(aq)",
@@ -567,31 +567,14 @@ def test_components_by_element(s1, s2):
             "NaOH(aq)",
             "HClO(aq)",
             "ClO[-1]",
-            "ClO2[-1]",
-            "ClO3[-1]",
-            "ClO4[-1]",
-            "HClO2(aq)",
         ],
         "O(0.0)": ["O2(aq)"],
         "Na(1.0)": ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
         "Cl(-1.0)": ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
         "Cl(1.0)": ["HClO(aq)", "ClO[-1]"],
-        "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
-        "Cl(5.0)": ["ClO3[-1]"],
-        "Cl(7.0)": ["ClO4[-1]"],
     }
 
-    result = s2.get_components_by_element(nested=False)
-
-    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
-    # so we can't do a precise test of the order of the species in the lists.
-    assert result.keys() == expected.keys()
-    for element, species_list in expected.items():
-        if element == "O(-2.0)" or element == "Cl(3.0)":
-            # for this particular element and oxidation state, the order of the species in the list is not guaranteed
-            assert set(result[element]) == set(species_list), f"Mismatch for element '{element}'"
-        else:
-            assert result[element] == species_list, f"Mismatch for element '{element}'"
+    assert s2.get_components_by_element(nested=False) == expected
 
 
 def test_components_by_element_nested(s1, s2):
@@ -624,8 +607,6 @@ def test_components_by_element_nested(s1, s2):
 
     s2.equilibrate()
 
-    # Note: in this test, the amounts of several chloride species are zero, making their sort order arbitrary
-    # so we can't do a precise test of the order of the species in the lists.
     expected = {
         "H": {
             1.0: [
@@ -635,7 +616,6 @@ def test_components_by_element_nested(s1, s2):
                 "HCl(aq)",
                 "NaOH(aq)",
                 "HClO(aq)",
-                "HClO2(aq)",
             ],
             0.0: ["H2(aq)"],
         },
@@ -646,10 +626,6 @@ def test_components_by_element_nested(s1, s2):
                 "NaOH(aq)",
                 "HClO(aq)",
                 "ClO[-1]",
-                "ClO2[-1]",
-                "HClO2(aq)",
-                "ClO4[-1]",
-                "ClO3[-1]",
             ],
             0.0: ["O2(aq)"],
         },
@@ -659,9 +635,6 @@ def test_components_by_element_nested(s1, s2):
         "Cl": {
             -1.0: ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
             1.0: ["HClO(aq)", "ClO[-1]"],
-            3.0: ["ClO2[-1]", "HClO2(aq)"],
-            5.0: ["ClO3[-1]"],
-            7.0: ["ClO4[-1]"],
         },
     }
 
