@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `Solution.pH` now returns the negative log10 of the hydrogen ion *activity* rather than its molar
+  concentration. Previously `pH` reported a concentration-based value while the equilibrium engines
+  (e.g. PHREEQC) interpret the pH they are given as an activity-based value. This disparity caused a
+  small but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated
+  calls to `equilibrate()`. The cached `pH` values in the bundled `presets` have been updated
+  accordingly. (Note: the `pH` *constructor argument* is still interpreted on the concentration
+  scale, i.e. `Solution(..., pH=X)` sets `[H+] = 10**(-X)`; making the input activity-based as well is
+  left as a follow-up.) (#434, @rkingsbury)
+
+### Fixed
+
+- `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
+  (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
+  This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
+
 ## [1.5.0] - 2026-06-15
 
 ## Added

@@ -483,8 +483,17 @@ class Solution(MSONable):
 
     @property
     def pH(self) -> float:
-        """Return the pH of the solution."""
-        return self.p("H+", activity=False)
+        """Return the pH of the solution.
+
+        pH is defined thermodynamically as the negative log10 of the hydrogen ion
+        *activity* (not concentration). Using the activity is important for
+        consistency with the equilibrium engines (e.g. PHREEQC), which interpret the
+        pH they are given as -log10(a_H+). Reporting a concentration-based pH here
+        while feeding it back into the engine as an activity-based pH caused a
+        systematic, non-convergent drift in pH (and hence mass and volume) on
+        repeated calls to equilibrate(). See GitHub issue #434.
+        """
+        return self.p("H+", activity=True)
 
     def p(self, solute: str, activity=True) -> float:
         """

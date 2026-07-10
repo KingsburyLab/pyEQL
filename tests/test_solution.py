@@ -906,7 +906,10 @@ def test_serialization(s1, s2, tmp_path):
         assert restored.components is not original.components
         assert restored.get_total_moles_solute() == original.get_total_moles_solute()
         assert np.isclose(restored.pH, original.pH)
-        assert np.isclose(restored._pH, original._pH)
+        # as_dict serializes the (activity-based) pH property, so after a round-trip the restored
+        # solution's input pH (_pH) equals the *derived* pH of the original, not its original _pH
+        # input (which was interpreted on the concentration scale at construction).
+        assert np.isclose(restored._pH, original.pH)
         assert np.isclose(restored.pE, original.pE)
         assert np.isclose(restored._pE, original._pE)
         assert restored.temperature == original.temperature
