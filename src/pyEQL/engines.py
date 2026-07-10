@@ -364,6 +364,12 @@ class Phreeqc2026EOS(EOS):
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
         for s, mol in self.ppsol.species_moles.items():
+            # during some redox equlibration calculations, PHREEQC will return species
+            # with amounts that are exactly zero. These species often have oxidation states
+            # that are difficult for Solute to parse, which then causes errors in some
+            # downstream methods. Ignore anything that has a zero concentration.
+            if mol == 0:
+                continue
             solution.components[s] = mol
 
         # log a message if any components were not touched by PHREEQC
