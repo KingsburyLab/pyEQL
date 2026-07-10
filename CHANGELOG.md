@@ -9,14 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `Solution.pH` now returns the negative log10 of the hydrogen ion *activity* rather than its molar
-  concentration. Previously `pH` reported a concentration-based value while the equilibrium engines
-  (e.g. PHREEQC) interpret the pH they are given as an activity-based value. This disparity caused a
-  small but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated
-  calls to `equilibrate()`. The cached `pH` values in the bundled `presets` have been updated
-  accordingly. (Note: the `pH` *constructor argument* is still interpreted on the concentration
-  scale, i.e. `Solution(..., pH=X)` sets `[H+] = 10**(-X)`; making the input activity-based as well is
-  left as a follow-up.) (#434, @rkingsbury)
+- `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
+  `Solution`, both on input and output, matching how the equilibrium engines (e.g. PHREEQC) interpret
+  pH:
+  - `Solution.pH` returns the negative log10 of the hydrogen ion *activity* rather than its molar
+    concentration.
+  - The `pH` constructor argument is likewise interpreted as an activity: `Solution(..., pH=X)`
+    yields a solution whose activity-based `pH` equals `X`. Emulating PHREEQC, the input pH fixes the
+    H+ activity (`a_H+ = 10**(-X)`) and the H+ concentration is back-calculated from the activity
+    coefficient (`m = a / gamma`); OH- is set from the water equilibrium on the activity scale
+    (`a_H+ * a_OH- = K_W`), which keeps neutral solutions electroneutral. Because the activity
+    coefficient depends on composition, the concentrations are found by a short fixed-point iteration
+    (`Solution._solve_pH`). Explicitly supplied `H+`/`OH-` still take precedence over the `pH`
+    argument.
+
+  Previously `pH` reported (and the constructor set) a concentration-based value, which caused a small
+  but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated calls
+  to `equilibrate()`. The cached `pH` values in the bundled `presets` have been updated accordingly.
+  (#434, @rkingsbury)
 
 ### Fixed
 

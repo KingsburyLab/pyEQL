@@ -906,10 +906,7 @@ def test_serialization(s1, s2, tmp_path):
         assert restored.components is not original.components
         assert restored.get_total_moles_solute() == original.get_total_moles_solute()
         assert np.isclose(restored.pH, original.pH)
-        # as_dict serializes the (activity-based) pH property, so after a round-trip the restored
-        # solution's input pH (_pH) equals the *derived* pH of the original, not its original _pH
-        # input (which was interpreted on the concentration scale at construction).
-        assert np.isclose(restored._pH, original.pH)
+        assert np.isclose(restored._pH, original._pH)
         assert np.isclose(restored.pE, original.pE)
         assert np.isclose(restored._pE, original._pE)
         assert restored.temperature == original.temperature
@@ -928,7 +925,10 @@ def test_serialization(s1, s2, tmp_path):
     # s1-specific fields that aren't present on every Solution
     s1_dict_restored = Solution.from_dict(s1.as_dict())
     assert s1_dict_restored.volume.magnitude == 2
-    assert s1_dict_restored._solutes["H[+1]"] == "2e-07 mol"
+    # pH is defined on the activity scale, so at pH 7 the H+ *concentration* is 10**(-7) / gamma_H+
+    # (close to, but not exactly, 1e-7 M). Check the H+ solute survives the round-trip rather than
+    # hard-coding a gamma-dependent value.
+    assert np.isclose(float(s1_dict_restored._solutes["H[+1]"].split()[0]), s1.components["H[+1]"])
     assert_roundtrip(s2, Solution.from_dict(s2.as_dict()))
 
     # dumpfn / loadfn (exercises the same code path via monty serialization)

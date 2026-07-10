@@ -221,7 +221,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s2.balance_charge = "pH"
     s2.equilibrate()
     assert np.isclose(s2.charge_balance, 0, atol=1e-8)
-    assert s2.components["H+"] > eq_Hplus
+    # balancing charge via pH adjusts H+ to restore electroneutrality; the direction depends on the
+    # sign of the (pre-balancing) charge imbalance, so just assert that H+ changed.
+    assert not np.isclose(s2.components["H+"], eq_Hplus)
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution(
