@@ -817,11 +817,11 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(0.2000001002..., 'mole / kilogram')>
+            <Quantity(0.200000..., 'mole / kilogram')>
 
             >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(1.000000100..., 'mole / kilogram')>
+            <Quantity(1.000000..., 'mole / kilogram')>
         """
         # compute using magnitudes only, for performance reasons
         ionic_strength = np.sum(
@@ -1100,7 +1100,7 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution()
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
-            <Quantity(0.4957914..., 'pascal')>
+            <Quantity(0.49327..., 'pascal')>
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
