@@ -293,6 +293,22 @@ def test_equilibrate_water_pH7():
     assert np.isclose(solution.get_amount("H2O", "mol/kg").magnitude, 55.50843506179199)
 
 
+def test_repeated_equilibrate():
+    # repeated calls to equilibrate should not change the properties (much)
+    for cb in [None, "pH", "auto"]:
+        s1 = Solution({}, pH=7.00, volume="1 L", engine="phreeqc", balance_charge=cb)
+        first_pH = s1.pH
+        first_volume = s1.volume.magnitude
+        first_mass = s1.mass.magnitude
+        first_solv_mass = s1.solvent_mass.magnitude
+        for _ in range(10):
+            s1.equilibrate()
+        assert np.isclose(s1.pH, first_pH, atol=0.003)
+        assert np.isclose(s1.volume.magnitude, first_volume, atol=1e-9)
+        assert np.isclose(s1.mass.magnitude, first_mass, atol=1e-8)
+        assert np.isclose(s1.solvent_mass.magnitude, first_solv_mass, atol=1e-12)
+
+
 def test_equilibrate_CO2_with_calcite():
     solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=False, gases={"CO2": -2.95, "O2": -0.6778}, solids=["Calcite"])
