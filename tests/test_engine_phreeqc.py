@@ -430,6 +430,9 @@ def test_equilibrate_with_atm():
     assert np.isclose(s1.get_amount("CO2(aq)", "mol/kg").magnitude, 0.00001429, atol=1e-6)  # PHREQCUI - 1.429e-05
     assert np.isclose(s1.get_amount("O2(aq)", "mol/kg").magnitude, 0.0002683, atol=1e-6)  # PHREEQCUI - 2.683e-04
     assert np.isclose(s1.get_amount("N2(aq)", "mol/kg").magnitude, 0)  # PHREEQCUI - 0
+    # for some reason, gas-equilibrium can result in zero concentration solutes. These should be
+    # filtered out.
+    assert not any(v == 0 for v in s1.components.values())
 
 
 def test_deepcopy(s2):
