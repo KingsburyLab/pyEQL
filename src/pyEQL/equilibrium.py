@@ -59,7 +59,7 @@ def adjust_temp_pitzer(c1, c2, c3, c4, c5, temp, temp_ref=ureg.Quantity("298.15 
     )
 
 
-def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=ureg.Quantity(25, "degC")):
+def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_temperature=ureg.Quantity("25 degC")):
     r"""
     Adjust a reaction equilibrium constant from one temperature to another.
 
@@ -110,7 +110,7 @@ def adjust_temp_arrhenius(
     rate_constant,
     activation_energy,
     temperature,
-    reference_temperature=ureg.Quantity(25, "degC"),
+    reference_temperature=ureg.Quantity("25 degC"),
 ):
     r"""
     Adjust a reaction equilibrium constant from one temperature to another.
