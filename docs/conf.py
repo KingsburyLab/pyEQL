@@ -84,6 +84,23 @@ myst_heading_anchors = 3
 # always execute notebooks when compiling docs
 # nbsphinx_execute = 'always'
 
+# -- Autodoc options ---------------------------------------------------------
+# Render both the class docstring *and* the ``__init__`` docstring for
+# documented classes. Without this, autodoc's default ("class") shows only the
+# class docstring and silently drops the entire ``__init__`` "Args:" section, so
+# constructor kwargs (e.g. those of Solution and EOS) appear with no
+# descriptions. This is especially noticeable for kwargs that are also exposed
+# as class properties (temperature, pressure, pH, ...).
+autoclass_content = "both"
+
+# Render default argument values using their source-code form rather than the
+# evaluated repr(). Defaults that are ``ureg.Quantity`` objects otherwise render
+# as e.g. ``<Quantity(25, 'degree_Celsius')>``; the comma in that repr breaks the
+# theme's signature tokenizer, which then fails to match documented parameters
+# and drops their descriptions (with a Napoleon "does not match ... signature"
+# warning). Paired with keeping such defaults in comma-free single-argument form.
+autodoc_preserve_defaults = True
+
 # The suffix of source filenames.
 source_suffix = [".rst", ".md"]
 
@@ -318,9 +335,18 @@ linkcheck_allowed_redirects = {
     r"https://tox\.wiki": r"https://tox\.wiki/.*",
 }
 # https://idst.inl.gov/ is reachable, just not from the github runner.
+# www.hydrochemistry.eu is reachable in a browser, but the github runner
+# intermittently fails to connect ("[Errno 101] Network is unreachable"),
+# which linkcheck_retries cannot recover from when the whole job lacks a route.
 # doi.org links are skipped because DOI redirects reliably trigger 403s from
 # publisher sites (e.g. Elsevier, Wiley, ACS) when accessed from CI runners.
-linkcheck_ignore = [r"https://localhost:\d+/", r"^https://idst\.inl\.gov/$", r"https://doi\.org/.*", r"https://.*\.usgs\.gov/.*"]
+linkcheck_ignore = [
+    r"https://localhost:\d+/",
+    r"^https://idst\.inl\.gov/$",
+    r"https://doi\.org/.*",
+    r"https://.*\.usgs\.gov/.*",
+    r"https://www\.hydrochemistry\.eu/.*",
+]
 # Treat timeouts as non-broken so transient CI network issues don't fail the build.
 linkcheck_report_timeouts_as_broken = False
 # Retry flaky links a few times before reporting failure.
