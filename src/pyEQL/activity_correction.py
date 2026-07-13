@@ -743,7 +743,7 @@ def _pitzer_log_gamma(
     nu_cation,
     nu_anion,
     temperature="25 degC",
-    b=ureg.Quantity(1.2, "kg**0.5/mol**0.5"),
+    b=ureg.Quantity("1.2 kg**0.5/mol**0.5"),
 ):
     r"""
     Returns the natural logarithm of the binary activity coefficient calculated by the Pitzer
