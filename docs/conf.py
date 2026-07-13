@@ -369,4 +369,5 @@ from pyEQL.activity_correction import (
     get_osmotic_coefficient_pitzer,
 )
 from pyEQL.equilibrium import adjust_temp_arrhenius, adjust_temp_vanthoff, alpha
+from pyEQL.salt_ion_match import Salt
 """

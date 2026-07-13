@@ -176,12 +176,14 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '1 mol/L','Cl-': '1 mol/L'},temperature='20 degC',volume='500 mL')
-            >>> print(s1)
-            Components:
+            >>> print(s1)  # doctest: +ELLIPSIS
             Volume: 0.500 l
-            Pressure: 1.000 atm
             Temperature: 293.150 K
-            Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
+            Pressure: 1.000 atm
+            pH: 7.0
+            pE: 8.5
+            Solvent: H2O(aq)
+            Components: KeysView({'H2O(aq)': ..., 'Na[+1]': 0.5, 'Cl[-1]': 0.5, 'OH[-1]': ..., 'H[+1]': ...})
         """
         # create a logger and attach it to this class
         self.log_level = log_level.upper()
