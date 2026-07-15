@@ -324,6 +324,27 @@ def test_equilibrate_CO2_with_calcite():
     )  # slight tolerance adjustment
 
 
+def test_equilibrate_no_false_mass_balance_error(caplog):
+    """The element mass-balance check in equilibrate() should not fire for elements that
+    legitimately change: those exchanged with a supplied gas/solid phase, or the charge-balancing
+    species whose total PHREEQC adjusts to maintain electroneutrality (see #434)."""
+    err = "differs from the original"
+
+    # 1) gas phase: equilibrating carbonate against a low CO2 partial pressure degasses carbon,
+    #    changing the total C by far more than the 5% tolerance
+    s_gas = Solution({"Na+": "2 mmol/L", "HCO3-": "2 mmol/L"}, engine="phreeqc2026", balance_charge=None)
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s_gas.equilibrate(gases={"CO2": -6.0})
+    assert err not in caplog.text
+
+    # 2) charge-balancing species: PHREEQC adjusts the total of the balancing ion (Na here)
+    caplog.clear()
+    s_cb = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="auto", pH=7, pE=8.5, engine="native")
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s_cb.equilibrate()
+    assert err not in caplog.text
+
+
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
     solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10e-7 mol/L"}, volume="1 L", engine="phreeqc2026")

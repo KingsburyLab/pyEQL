@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Self
 
 from phreeqpython import PhreeqPython
+from pymatgen.core import Composition
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
@@ -416,6 +417,24 @@ class Phreeqc2026EOS(EOS):
         # by PHREEQC.
         _rtol = 0.05  # differing by more than 5%
 
+        # Some elements' totals are *expected* to change during equilibration and should not be
+        # flagged as errors below:
+        #   - elements exchanged with a gas or solid phase supplied to equilibrate
+        #   - the charge-balancing species, whose amount is adjusted to maintain electroneutrality
+        # Gas names are chemical formulas whose constituent elements we can parse. Solid names are
+        # often mineral names that cannot reliably be parsed, so if any solids were supplied we
+        # treat every element as potentially exchanged with a phase (phase_elements = None).
+        phase_elements: set[str] | None = set()
+        if solids:
+            phase_elements = None
+        else:
+            for gas in gases:
+                try:
+                    phase_elements |= {str(e) for e in Composition(gas).elements}
+                except Exception:
+                    phase_elements = None
+                    break
+
         new_el_dict = solution.get_el_amt_dict(nested=True)
         for el in orig_el_dict:
             orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
@@ -436,6 +455,12 @@ class Phreeqc2026EOS(EOS):
                     }
                 )
             elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
+                # skip the error if this element is expected to change: it participates in a
+                # supplied gas/solid phase, or it is (part of) the charge-balancing species
+                el_components = {comp for comps in orig_components_by_element.get(el, {}).values() for comp in comps}
+                el_is_charge_balancer = solution._cb_species is not None and solution._cb_species in el_components
+                if phase_elements is None or el in phase_elements or el_is_charge_balancer:
+                    continue
                 logger.error(
                     f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
                     f"which differs from the original concentration of {orig_el_amount}. This "
