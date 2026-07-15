@@ -205,6 +205,10 @@ class Phreeqc2026EOS(EOS):
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
+        # re-entrancy guard: True while _setup_ppsol is reading solution.pH (which, for a
+        # PHREEQC-based activity model, would otherwise recursively try to rebuild this same
+        # ppsol). See _setup_ppsol and get_activity_coefficient.
+        self._building_ppsol = False
 
     def _ppsol_dict_input(self, d):
         return PHRQSol(d)
@@ -214,11 +218,24 @@ class Phreeqc2026EOS(EOS):
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
+        # Reading solution.pH computes -log10 of the H+ *activity*. For a PHREEQC-based
+        # activity model, that computation would recursively try to (re)build this very
+        # ppsol, causing infinite recursion. Guard the read: while _building_ppsol is True,
+        # get_activity_coefficient falls back to a unit H+ activity coefficient, so the pH
+        # passed to PHREEQC here is effectively the concentration-based value (an adequate
+        # starting point; PHREEQC computes its own internal activities). The native engine,
+        # which derives activity coefficients from Pitzer/Debye-Huckel rather than PHREEQC,
+        # is unaffected by the guard and therefore passes a true activity-based pH.
+        self._building_ppsol = True
+        try:
+            input_pH = solution.pH
+        finally:
+            self._building_ppsol = False
         # inherit bulk solution properties
         d = {
             "temp": solution.temperature.to("degC").magnitude,
             "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
-            "pH": solution.pH,
+            "pH": input_pH,
             # PHREEQC will use the specified (fixed) pE value during equlibrate, as long
             # as no "redox" line is specified here.
             "pe": solution.pE,
@@ -444,6 +461,13 @@ class Phreeqc2026EOS(EOS):
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
+        # Re-entrancy guard: if we are here because _setup_ppsol is currently reading
+        # solution.pH, do not try to (re)build the ppsol - that would recurse infinitely.
+        # Fall back to a unit activity coefficient, which makes the pH passed to PHREEQC
+        # during setup the concentration-based value. See _setup_ppsol.
+        if self._building_ppsol:
+            return ureg.Quantity(1, "dimensionless")
+
         if (self.ppsol is None) or (solution.components != self._stored_comp):
             self._destroy_ppsol()
             self._setup_ppsol(solution)
@@ -492,6 +516,12 @@ class Phreeqc2026EOS(EOS):
         for k, v in self.__dict__.items():
             if k == "pp":
                 result.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            if k in ("ppsol", "_stored_comp"):
+                # ppsol is a live ctypes handle into the Phreeqc instance and cannot be
+                # pickled/deepcopied. Reset it (and the stored composition used to decide
+                # whether a rebuild is needed) so the copy lazily rebuilds its own ppsol.
+                setattr(result, k, None)
                 continue
             setattr(result, k, copy.deepcopy(v, memo))
         return result
@@ -576,6 +606,12 @@ class PhreeqcEOS(Phreeqc2026EOS):
         for k, v in self.__dict__.items():
             if k == "pp":
                 result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            if k in ("ppsol", "_stored_comp"):
+                # ppsol is a live ctypes handle into the PhreeqPython instance and cannot be
+                # pickled/deepcopied. Reset it (and the stored composition used to decide
+                # whether a rebuild is needed) so the copy lazily rebuilds its own ppsol.
+                setattr(result, k, None)
                 continue
             setattr(result, k, copy.deepcopy(v, memo))
         return result
@@ -675,9 +711,13 @@ class NativeEOS(Phreeqc2026EOS):
                 salt = d["salt"]
                 break
 
-        # show an error if no salt can be found that contains the solute
+        # show an error if no salt can be found that contains the solute. H+ and OH- are trace
+        # species that are not paired into a salt in dilute/neutral solutions, where a unit
+        # activity coefficient is the correct result, so suppress the message for them to avoid
+        # log spam on every pH access.
         if salt is None:
-            logger.error(f"No salts found that contain solute {solute}. Returning unit activity coefficient.")
+            if rform not in ("H[+1]", "OH[-1]"):
+                logger.error(f"No salts found that contain solute {solute}. Returning unit activity coefficient.")
             return ureg.Quantity(1, "dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
@@ -766,7 +806,7 @@ class NativeEOS(Phreeqc2026EOS):
             )
 
         else:
-            logger.error(
+            logger.warning(
                 f"Ionic strength too high to estimate activity for species {solute}. Specify parameters for Pitzer "
                 "model. Returning unit activity coefficient"
             )

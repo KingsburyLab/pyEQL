@@ -19,7 +19,7 @@ solutes:
 volume: 1 l
 temperature: 298.15 K
 pressure: 1 atm
-pH: 7.0
+pH: 6.997073747237363
 pE: 8.5
 balance_charge:
 solvent: H2O(aq)
