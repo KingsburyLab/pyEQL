@@ -2615,8 +2615,16 @@ class Solution(MSONable):
                 d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
-        # replace the engine with the associated str
-        d["engine"] = self._engine
+        # replace the engine with its associated string name. self.engine is always an EOS
+        # instance; when an EOS instance (rather than a name) is passed to the constructor,
+        # self._engine holds that instance, which is not serializable. Map the engine type back to
+        # the name understood by __init__ so the dict can be serialized and round-tripped.
+        d["engine"] = {
+            IdealEOS: "ideal",
+            NativeEOS: "native",
+            PhreeqcEOS: "phreeqc",
+            Phreeqc2026EOS: "phreeqc2026",
+        }.get(type(self.engine), self._engine)
         # d["logger"] = self.logger.__dict__
         return d
 

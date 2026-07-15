@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
   (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
   This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
+- `Solution.as_dict`: a `Solution` created by passing an `EOS` *instance* (rather than a name) to the
+  `engine` kwarg can now be serialized. Previously `as_dict` stored the raw engine object, which is not
+  serializable; it now stores the corresponding engine name. (@rkingsbury)
 
 ## [1.5.0] - 2026-06-15
 
