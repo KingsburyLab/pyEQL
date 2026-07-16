@@ -938,6 +938,24 @@ def test_serialization(s1, s2, tmp_path):
     assert_roundtrip(s2, loadfn(str(tmp_path / "s2.json")))
 
 
+def test_serialization_engine_instance(tmp_path):
+    """A Solution created by passing an EOS *instance* (rather than a name) to the engine kwarg
+    should still serialize: as_dict stores the engine's name so the dict is JSON-serializable and
+    round-trips to the same engine type."""
+    for eos, name in [(IdealEOS(), "ideal"), (NativeEOS(), "native")]:
+        s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=eos)
+        d = s.as_dict()
+        assert d["engine"] == name
+
+        # full round-trip through monty JSON serialization
+        dumpfn(s, str(tmp_path / f"s_{name}.json"))
+        restored = loadfn(str(tmp_path / f"s_{name}.json"))
+        assert isinstance(restored, Solution)
+        assert type(restored.engine) is type(s.engine)
+        assert restored._engine == name
+        assert restored.components == s.components
+
+
 @pytest.mark.parametrize(
     "preset_name",
     [
