@@ -188,7 +188,7 @@ periodictable==2.1.0
     # via phreeqpython
 phreeqpython==1.6.2
     # via pyeql (pyproject.toml)
-pillow==12.2.0
+pillow==12.3.0
     # via matplotlib
 pint==0.25.3
     # via pyeql (pyproject.toml)
