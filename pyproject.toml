@@ -24,7 +24,7 @@ dependencies = [
   "scipy>=1.12",
   "pymatgen-core>=2026.5.18",
   "iapws>=1.5.3",
-  "monty>=2024.12.10",
+  "monty>=2024.12.10,<2026.7.16",
   "maggma>=0.71.4",
   "phreeqpython>=1.5.2",
 ]
