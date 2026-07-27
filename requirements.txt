@@ -294,7 +294,7 @@ scipy==1.17.1
     #   pymatgen-core
 sentinels==1.1.1
     # via mongomock
-setuptools==82.0.1
+setuptools==83.0.0
     # via pyeql (pyproject.toml)
 six==1.17.0
     # via
