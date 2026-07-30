@@ -912,9 +912,12 @@ def test_serialization(s1, s2, tmp_path):
         assert restored.temperature == original.temperature
         assert restored.pressure == original.pressure
         assert restored.solvent == original.solvent
-        assert restored._engine == original._engine
+        # the engine round-trips as a fully-serialized EOS: the restored Solution uses the same
+        # engine type (a deserialized Solution holds an EOS instance rather than the original name)
+        assert type(restored.engine) is type(original.engine)
+        assert restored.engine.as_dict() == original.engine.as_dict()
         # the solutions should point to different EOS instances
-        assert restored.engine != original.engine
+        assert restored.engine is not original.engine
         # also should point to different Store instances
         # TODO currently this test will fail due to a bug in maggma's __eq__
         # assert restored.database != original.database
@@ -940,20 +943,51 @@ def test_serialization(s1, s2, tmp_path):
 
 def test_serialization_engine_instance(tmp_path):
     """A Solution created by passing an EOS *instance* (rather than a name) to the engine kwarg
-    should still serialize: as_dict stores the engine's name so the dict is JSON-serializable and
-    round-trips to the same engine type."""
+    should serialize: because EOS subclasses MSONable, as_dict stores the engine as a serialized
+    MSONable dict that round-trips to the same engine type (and constructor arguments)."""
     for eos, name in [(IdealEOS(), "ideal"), (NativeEOS(), "native")]:
         s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=eos)
         d = s.as_dict()
-        assert d["engine"] == name
+        # the engine is serialized as a full MSONable dict, not merely its name
+        assert isinstance(d["engine"], dict)
+        assert d["engine"]["@class"] == type(eos).__name__
+        assert d["engine"]["@module"] == "pyEQL.engines"
 
         # full round-trip through monty JSON serialization
         dumpfn(s, str(tmp_path / f"s_{name}.json"))
         restored = loadfn(str(tmp_path / f"s_{name}.json"))
         assert isinstance(restored, Solution)
         assert type(restored.engine) is type(s.engine)
-        assert restored._engine == name
+        assert restored.engine.as_dict() == s.engine.as_dict()
         assert restored.components == s.components
+
+
+def test_serialization_engine_backward_compat():
+    """Older serialized Solutions stored the engine as a plain string name (e.g. "native"). Those
+    dicts must still load, with __init__ resolving the name to the corresponding EOS instance."""
+    for name, cls in [("ideal", IdealEOS), ("native", NativeEOS)]:
+        d = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=name).as_dict()
+        # simulate a legacy dict that stored only the engine name
+        d["engine"] = name
+        restored = Solution.from_dict(d)
+        assert type(restored.engine) is cls
+
+
+def test_serialization_engine_instance_yaml(tmp_path):
+    """A Solution serialized to YAML with a non-default EOS instance round-trips to the same engine
+    type via to_file / from_file, exercising the YAML path of from_file."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / "s.yaml")
+    s.to_file(path)
+
+    restored = Solution.from_file(path)
+    assert isinstance(restored, Solution)
+    assert type(restored.engine) is IdealEOS
+    assert restored.components == s.components
+
+    # kwargs passed to from_file still override the value stored in the file
+    overridden = Solution.from_file(path, engine="native")
+    assert type(overridden.engine) is NativeEOS
 
 
 @pytest.mark.parametrize(

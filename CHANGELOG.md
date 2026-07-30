@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `EOS` (and all its subclasses: `IdealEOS`, `NativeEOS`, `PhreeqcEOS`, `Phreeqc2026EOS`) now inherit
+  from `monty.json.MSONable`, making equation-of-state engines fully serializable via `as_dict` /
+  `from_dict` (and hence `dumpfn` / `loadfn`). Serialization captures the engine type and its
+  constructor arguments (e.g. `phreeqc_db`). (#443, @rkingsbury)
+
 ### Changed
 
 - `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
@@ -35,7 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
 - `Solution.as_dict`: a `Solution` created by passing an `EOS` *instance* (rather than a name) to the
   `engine` kwarg can now be serialized. Previously `as_dict` stored the raw engine object, which is not
-  serializable; it now stores the corresponding engine name. (@rkingsbury)
+  serializable; it now stores the engine as a fully-serialized `MSONable` dict that round-trips to the
+  same engine type and arguments. Dicts that stored the engine name as a plain string (produced by
+  earlier versions) still load correctly. (#443, @rkingsbury)
+- `Solution.from_file`: loading a `.yaml` file no longer breaks with `monty >= 2026.7.16`, which treats
+  YAML and JSON on equal footing in `loadfn` (returning a reconstructed `Solution` rather than a plain
+  dict). `from_file` now handles both return types, remaining compatible with older `monty` releases.
+  (#445, @rkingsbury)
 
 ## [1.5.0] - 2026-06-15
 

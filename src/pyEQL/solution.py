@@ -2615,16 +2615,13 @@ class Solution(MSONable):
                 d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
-        # replace the engine with its associated string name. self.engine is always an EOS
-        # instance; when an EOS instance (rather than a name) is passed to the constructor,
-        # self._engine holds that instance, which is not serializable. Map the engine type back to
-        # the name understood by __init__ so the dict can be serialized and round-tripped.
-        d["engine"] = {
-            IdealEOS: "ideal",
-            NativeEOS: "native",
-            PhreeqcEOS: "phreeqc",
-            Phreeqc2026EOS: "phreeqc2026",
-        }.get(type(self.engine), self._engine)
+        # Serialize the engine as an MSONable dict. self.engine is always an EOS instance (EOS
+        # subclasses MSONable), so this round-trips faithfully - including the specific engine type
+        # and its constructor arguments (e.g. phreeqc_db) - whether the engine was passed to the
+        # constructor by name (e.g. "native") or as an instance. from_dict / MontyDecoder rebuilds
+        # the engine automatically. Older dicts that stored the engine name as a plain string still
+        # load correctly because __init__ continues to accept engine names.
+        d["engine"] = self.engine.as_dict()
         # d["logger"] = self.logger.__dict__
         return d
 
@@ -2828,7 +2825,12 @@ class Solution(MSONable):
                 "engine",
                 # "database",
             ]
-            solution_dict = loadfn(filename)
+            loaded = loadfn(filename)
+            # monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, so it may return a
+            # fully reconstructed Solution here, whereas older versions return a plain dict. Normalize
+            # to a dict so the filtering + from_dict logic below behaves identically regardless of the
+            # installed monty version, preserving backward compatibility (see issue #445).
+            solution_dict = loaded.as_dict() if isinstance(loaded, Solution) else loaded
             keys_to_delete = [key for key in solution_dict if key not in true_keys]
             for key in keys_to_delete:
                 solution_dict.pop(key)
@@ -2858,7 +2860,12 @@ class Solution(MSONable):
         if self.solvent != other.solvent:
             raise ValueError("Cannot add Solution with different solvents!")
 
-        if self._engine != other._engine:
+        # Compare the resolved engines by their serialized form rather than the raw ``_engine``
+        # values. ``_engine`` may be a name (e.g. "native") or an EOS instance depending on how each
+        # Solution was constructed (a deserialized Solution now holds an EOS instance), so comparing
+        # ``_engine`` directly would spuriously fail when mixing the two. ``self.engine`` is always an
+        # EOS instance, and its ``as_dict`` captures both the engine type and its arguments.
+        if self.engine.as_dict() != other.engine.as_dict():
             raise ValueError("Cannot add Solution with different engines!")
 
         if self.database != other.database:
