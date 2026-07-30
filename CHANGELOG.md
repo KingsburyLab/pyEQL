@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Solution.from_file`: loading a `.yaml` file no longer breaks with `monty >= 2026.7.16`, which treats
   YAML and JSON on equal footing in `loadfn` (returning a reconstructed `Solution` rather than a plain
   dict). `from_file` now handles both return types, remaining compatible with older `monty` releases.
-  (#445, @rkingsbury)
+  With this fix, the temporary `monty < 2026.7.16` upper bound has been removed. (#445, @rkingsbury)
 
 ## [1.5.0] - 2026-06-15
 
