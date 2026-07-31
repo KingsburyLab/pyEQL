@@ -21,6 +21,7 @@ from pint import Quantity
 import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
+from pyEQL import solution as solution_module
 from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
@@ -988,6 +989,36 @@ def test_serialization_engine_instance_yaml(tmp_path):
     # kwargs passed to from_file still override the value stored in the file
     overridden = Solution.from_file(path, engine="native")
     assert type(overridden.engine) is NativeEOS
+
+
+def test_from_file_yaml_new_monty(tmp_path, monkeypatch):
+    """monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, reconstructing a serialized
+    YAML directly into a Solution (older versions return a plain dict). Simulate that behavior so the
+    Solution branch of from_file is exercised regardless of the installed monty version (#445). Without
+    override kwargs the loaded Solution is returned as-is; with kwargs, the overrides are applied."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / "s.yaml")
+    s.to_file(path)
+
+    real_loadfn = solution_module.loadfn
+
+    def new_monty_loadfn(filename, *args, **kwargs):
+        # older monty returns a dict; reconstruct a Solution from it to mimic newer monty
+        d = real_loadfn(filename, *args, **kwargs)
+        return Solution.from_dict({k: v for k, v in d.items() if not str(k).startswith("@")})
+
+    monkeypatch.setattr(solution_module, "loadfn", new_monty_loadfn)
+
+    # no kwargs: the reconstructed Solution is returned directly
+    restored = Solution.from_file(path)
+    assert isinstance(restored, Solution)
+    assert type(restored.engine) is IdealEOS
+    assert restored.components == s.components
+
+    # kwargs still override values from the file
+    overridden = Solution.from_file(path, engine="native")
+    assert type(overridden.engine) is NativeEOS
+    assert overridden.components == s.components
 
 
 @pytest.mark.parametrize(

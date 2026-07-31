@@ -2813,6 +2813,22 @@ class Solution(MSONable):
             raise FileNotFoundError(f"File '{filename}' not found!")
         str_filename = str(filename)
         if "yaml" in str_filename.lower():
+            loaded = loadfn(filename)
+            # monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, so it fully
+            # reconstructs a serialized file into a Solution, whereas older versions return a plain
+            # dict. See issue #445.
+            if isinstance(loaded, Solution):
+                # monty already did the reconstruction, so there is no dict to filter. Return it
+                # directly unless the caller passed overrides, in which case re-serialize, apply the
+                # kwargs, and rebuild so they take effect.
+                if not kwargs:
+                    return loaded
+                solution_dict = loaded.as_dict()
+                solution_dict.update(kwargs)
+                return cls.from_dict(solution_dict)
+
+            # older monty: loaded is a plain dict. Keep only the keys understood by __init__ (the
+            # @module/@class/@version and any extra keys are dropped), apply overrides, and rebuild.
             true_keys = [
                 "solutes",
                 "volume",
@@ -2825,17 +2841,8 @@ class Solution(MSONable):
                 "engine",
                 # "database",
             ]
-            loaded = loadfn(filename)
-            # monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, so it may return a
-            # fully reconstructed Solution here, whereas older versions return a plain dict. Normalize
-            # to a dict so the filtering + from_dict logic below behaves identically regardless of the
-            # installed monty version, preserving backward compatibility (see issue #445).
-            solution_dict = loaded.as_dict() if isinstance(loaded, Solution) else loaded
-            keys_to_delete = [key for key in solution_dict if key not in true_keys]
-            for key in keys_to_delete:
-                solution_dict.pop(key)
-            for k, v in kwargs.items():
-                solution_dict[k] = v
+            solution_dict = {k: v for k, v in loaded.items() if k in true_keys}
+            solution_dict.update(kwargs)
             return cls.from_dict(solution_dict)
         return loadfn(filename)
 
