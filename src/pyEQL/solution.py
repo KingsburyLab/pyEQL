@@ -2615,8 +2615,13 @@ class Solution(MSONable):
                 d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
-        # replace the engine with the associated str
-        d["engine"] = self._engine
+        # Serialize the engine as an MSONable dict. self.engine is always an EOS instance (EOS
+        # subclasses MSONable), so this round-trips faithfully - including the specific engine type
+        # and its constructor arguments (e.g. phreeqc_db) - whether the engine was passed to the
+        # constructor by name (e.g. "native") or as an instance. from_dict / MontyDecoder rebuilds
+        # the engine automatically. Older dicts that stored the engine name as a plain string still
+        # load correctly because __init__ continues to accept engine names.
+        d["engine"] = self.engine.as_dict()
         # d["logger"] = self.logger.__dict__
         return d
 
@@ -2765,8 +2770,9 @@ class Solution(MSONable):
         else:
             raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
 
-        # Create and return a Solution object
-        return cls().from_file(preset_path, **kwargs)
+        # Create and return a Solution object. from_file is a classmethod, so call it on the class
+        # directly rather than constructing (and discarding) a default Solution instance.
+        return cls.from_file(preset_path, **kwargs)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
@@ -2795,8 +2801,10 @@ class Solution(MSONable):
               Valid extensions are .json or .yaml.
 
         Kwargs:
-            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override any values in the file. This allows you to use a file as a starting point and then modify it as needed by, e.g., changing the modeling engine or database.
-            NOTE: CURRENTLY ONLY SUPPORTED FOR YAML FILES!
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will
+            override any values in the file. This allows you to use a file as a starting point and then
+            modify it as needed by, e.g., changing the modeling engine or database. Supported for both
+            .json and .yaml files.
 
         Returns:
             A pyEQL Solution object.
@@ -2806,28 +2814,19 @@ class Solution(MSONable):
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File '{filename}' not found!")
-        str_filename = str(filename)
-        if "yaml" in str_filename.lower():
-            true_keys = [
-                "solutes",
-                "volume",
-                "temperature",
-                "pressure",
-                "pH",
-                "pE",
-                "balance_charge",
-                "solvent",
-                "engine",
-                # "database",
-            ]
-            solution_dict = loadfn(filename)
-            keys_to_delete = [key for key in solution_dict if key not in true_keys]
-            for key in keys_to_delete:
-                solution_dict.pop(key)
-            for k, v in kwargs.items():
-                solution_dict[k] = v
-            return cls.from_dict(solution_dict)
-        return loadfn(filename)
+        loaded = loadfn(filename)
+        # monty >= 2026.7.16 reconstructs both JSON and YAML into a Solution via from_dict; older monty
+        # only does so for JSON and returns a plain dict for YAML. Normalize both to a dict, apply any
+        # override kwargs, and rebuild through from_dict so the result is identical across file types and
+        # monty versions. (#445)
+        if isinstance(loaded, Solution):
+            if not kwargs:
+                return loaded
+            solution_dict = loaded.as_dict()
+        else:
+            solution_dict = loaded  # plain dict; from_dict ignores the @module/@class/@version keys
+        solution_dict.update(kwargs)
+        return cls.from_dict(solution_dict)
 
     # arithmetic operations
     def __add__(self, other: Solution) -> Solution:
@@ -2850,7 +2849,12 @@ class Solution(MSONable):
         if self.solvent != other.solvent:
             raise ValueError("Cannot add Solution with different solvents!")
 
-        if self._engine != other._engine:
+        # Compare the resolved engines by their serialized form rather than the raw ``_engine``
+        # values. ``_engine`` may be a name (e.g. "native") or an EOS instance depending on how each
+        # Solution was constructed (a deserialized Solution now holds an EOS instance), so comparing
+        # ``_engine`` directly would spuriously fail when mixing the two. ``self.engine`` is always an
+        # EOS instance, and its ``as_dict`` captures both the engine type and its arguments.
+        if self.engine.as_dict() != other.engine.as_dict():
             raise ValueError("Cannot add Solution with different engines!")
 
         if self.database != other.database:
