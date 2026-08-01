@@ -974,11 +974,13 @@ def test_serialization_engine_backward_compat():
         assert type(restored.engine) is cls
 
 
-def test_serialization_engine_instance_yaml(tmp_path):
-    """A Solution serialized to YAML with a non-default EOS instance round-trips to the same engine
-    type via to_file / from_file, exercising the YAML path of from_file."""
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_engine_roundtrip_and_override(tmp_path, ext):
+    """A Solution created with a non-default EOS *instance* round-trips through to_file / from_file for
+    both file types, preserving the engine type. Override kwargs passed to from_file replace values
+    stored in the file (here, swapping the engine)."""
     s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
-    path = str(tmp_path / "s.yaml")
+    path = str(tmp_path / f"s.{ext}")
     s.to_file(path)
 
     restored = Solution.from_file(path)
@@ -986,56 +988,33 @@ def test_serialization_engine_instance_yaml(tmp_path):
     assert type(restored.engine) is IdealEOS
     assert restored.components == s.components
 
-    # kwargs passed to from_file still override the value stored in the file
+    # kwargs passed to from_file override the value stored in the file
     overridden = Solution.from_file(path, engine="native")
     assert type(overridden.engine) is NativeEOS
+    assert overridden.components == s.components
 
 
-def test_from_file_yaml_new_monty(tmp_path, monkeypatch):
-    """monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, reconstructing a serialized
-    YAML directly into a Solution (older versions return a plain dict). Simulate that behavior so the
-    Solution branch of from_file is exercised regardless of the installed monty version (#445). Without
-    override kwargs the loaded Solution is returned as-is; with kwargs, the overrides are applied."""
+def test_from_file_new_monty_returns_solution_directly(tmp_path, monkeypatch):
+    """monty >= 2026.7.16 makes loadfn reconstruct a serialized file directly into a Solution (older
+    monty returns a plain dict for YAML). Simulate that so the Solution branch of from_file is covered
+    on any installed monty: with no override kwargs the loaded Solution is returned as-is (same object);
+    with kwargs it is re-serialized and rebuilt so the overrides take effect."""
     s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
     path = str(tmp_path / "s.yaml")
     s.to_file(path)
 
+    # a stand-in for the fully reconstructed Solution that newer monty's loadfn would return
     real_loadfn = solution_module.loadfn
+    sentinel = Solution.from_dict({k: v for k, v in real_loadfn(path).items() if not str(k).startswith("@")})
+    monkeypatch.setattr(solution_module, "loadfn", lambda *args, **kwargs: sentinel)
 
-    def new_monty_loadfn(filename, *args, **kwargs):
-        # older monty returns a dict; reconstruct a Solution from it to mimic newer monty
-        d = real_loadfn(filename, *args, **kwargs)
-        return Solution.from_dict({k: v for k, v in d.items() if not str(k).startswith("@")})
+    # no kwargs: the reconstructed Solution is returned directly, untouched
+    assert Solution.from_file(path) is sentinel
 
-    monkeypatch.setattr(solution_module, "loadfn", new_monty_loadfn)
-
-    # no kwargs: the reconstructed Solution is returned directly
-    restored = Solution.from_file(path)
-    assert isinstance(restored, Solution)
-    assert type(restored.engine) is IdealEOS
-    assert restored.components == s.components
-
-    # kwargs still override values from the file
+    # kwargs: a new Solution is rebuilt with the overrides applied
     overridden = Solution.from_file(path, engine="native")
+    assert overridden is not sentinel
     assert type(overridden.engine) is NativeEOS
-    assert overridden.components == s.components
-
-
-def test_from_file_json_kwargs_override(tmp_path):
-    """from_file now honors override kwargs for JSON files too, not only YAML. A JSON file round-trips,
-    and a kwarg passed to from_file overrides the value stored in the file."""
-    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=NativeEOS())
-    path = str(tmp_path / "s.json")
-    s.to_file(path)
-
-    restored = Solution.from_file(path)
-    assert isinstance(restored, Solution)
-    assert type(restored.engine) is NativeEOS
-    assert restored.components == s.components
-
-    overridden = Solution.from_file(path, engine="ideal")
-    assert type(overridden.engine) is IdealEOS
-    assert overridden.components == s.components
 
 
 @pytest.mark.parametrize("ext", ["yaml", "json"])
