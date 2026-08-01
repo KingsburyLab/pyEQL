@@ -1021,6 +1021,44 @@ def test_from_file_yaml_new_monty(tmp_path, monkeypatch):
     assert overridden.components == s.components
 
 
+def test_from_file_json_kwargs_override(tmp_path):
+    """from_file now honors override kwargs for JSON files too, not only YAML. A JSON file round-trips,
+    and a kwarg passed to from_file overrides the value stored in the file."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=NativeEOS())
+    path = str(tmp_path / "s.json")
+    s.to_file(path)
+
+    restored = Solution.from_file(path)
+    assert isinstance(restored, Solution)
+    assert type(restored.engine) is NativeEOS
+    assert restored.components == s.components
+
+    overridden = Solution.from_file(path, engine="ideal")
+    assert type(overridden.engine) is IdealEOS
+    assert overridden.components == s.components
+
+
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_preserves_all_init_fields(tmp_path, ext):
+    """from_file must preserve every serialized __init__ field. default_diffusion_coeff and log_level
+    were silently dropped by an earlier key allowlist on the older-monty YAML path; both should now
+    survive a round-trip for both file types."""
+    s = Solution(
+        {"Na+": "1 mol/L", "Cl-": "1 mol/L"},
+        default_diffusion_coeff=5e-10,
+        log_level="DEBUG",
+    )
+    # sanity check that these differ from the __init__ defaults, so the assertions are meaningful
+    assert s.default_diffusion_coeff != 1.6106e-9
+    assert s.log_level != "ERROR"
+
+    path = str(tmp_path / f"s.{ext}")
+    s.to_file(path)
+    restored = Solution.from_file(path)
+    assert restored.default_diffusion_coeff == 5e-10
+    assert restored.log_level == "DEBUG"
+
+
 @pytest.mark.parametrize(
     "preset_name",
     [

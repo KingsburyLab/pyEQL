@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from `monty.json.MSONable`, making equation-of-state engines fully serializable via `as_dict` /
   `from_dict` (and hence `dumpfn` / `loadfn`). Serialization captures the engine type and its
   constructor arguments (e.g. `phreeqc_db`). (#443, @rkingsbury)
+- `Solution.from_file`: override `kwargs` (e.g. `engine=...`) are now honored for `.json` files, not
+  only `.yaml` files. (#445, @rkingsbury)
 
 ### Changed
 
@@ -49,6 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   YAML and JSON on equal footing in `loadfn` (returning a reconstructed `Solution` rather than a plain
   dict). `from_file` now handles both return types, remaining compatible with older `monty` releases.
   With this fix, the temporary `monty < 2026.7.16` upper bound has been removed. (#445, @rkingsbury)
+- `Solution.from_file`: loading a serialized file now preserves *all* stored constructor fields,
+  including `default_diffusion_coeff` and `log_level`. A key allowlist previously dropped these on the
+  older-`monty` YAML path, so a file could round-trip differently depending on the installed `monty`
+  version; both paths now reconstruct identically via `from_dict`. (#445, @rkingsbury)
 
 ## [1.5.0] - 2026-06-15
 

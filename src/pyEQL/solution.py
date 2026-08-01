@@ -2770,8 +2770,9 @@ class Solution(MSONable):
         else:
             raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
 
-        # Create and return a Solution object
-        return cls().from_file(preset_path, **kwargs)
+        # Create and return a Solution object. from_file is a classmethod, so call it on the class
+        # directly rather than constructing (and discarding) a default Solution instance.
+        return cls.from_file(preset_path, **kwargs)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
@@ -2800,8 +2801,10 @@ class Solution(MSONable):
               Valid extensions are .json or .yaml.
 
         Kwargs:
-            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override any values in the file. This allows you to use a file as a starting point and then modify it as needed by, e.g., changing the modeling engine or database.
-            NOTE: CURRENTLY ONLY SUPPORTED FOR YAML FILES!
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will
+            override any values in the file. This allows you to use a file as a starting point and then
+            modify it as needed by, e.g., changing the modeling engine or database. Supported for both
+            .json and .yaml files.
 
         Returns:
             A pyEQL Solution object.
@@ -2811,40 +2814,19 @@ class Solution(MSONable):
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File '{filename}' not found!")
-        str_filename = str(filename)
-        if "yaml" in str_filename.lower():
-            loaded = loadfn(filename)
-            # monty >= 2026.7.16 treats YAML and JSON on equal footing in loadfn, so it fully
-            # reconstructs a serialized file into a Solution, whereas older versions return a plain
-            # dict. See issue #445.
-            if isinstance(loaded, Solution):
-                # monty already did the reconstruction, so there is no dict to filter. Return it
-                # directly unless the caller passed overrides, in which case re-serialize, apply the
-                # kwargs, and rebuild so they take effect.
-                if not kwargs:
-                    return loaded
-                solution_dict = loaded.as_dict()
-                solution_dict.update(kwargs)
-                return cls.from_dict(solution_dict)
-
-            # older monty: loaded is a plain dict. Keep only the keys understood by __init__ (the
-            # @module/@class/@version and any extra keys are dropped), apply overrides, and rebuild.
-            true_keys = [
-                "solutes",
-                "volume",
-                "temperature",
-                "pressure",
-                "pH",
-                "pE",
-                "balance_charge",
-                "solvent",
-                "engine",
-                # "database",
-            ]
-            solution_dict = {k: v for k, v in loaded.items() if k in true_keys}
-            solution_dict.update(kwargs)
-            return cls.from_dict(solution_dict)
-        return loadfn(filename)
+        loaded = loadfn(filename)
+        # monty >= 2026.7.16 reconstructs both JSON and YAML into a Solution via from_dict; older monty
+        # only does so for JSON and returns a plain dict for YAML. Normalize both to a dict, apply any
+        # override kwargs, and rebuild through from_dict so the result is identical across file types and
+        # monty versions. (#445)
+        if isinstance(loaded, Solution):
+            if not kwargs:
+                return loaded
+            solution_dict = loaded.as_dict()
+        else:
+            solution_dict = loaded  # plain dict; from_dict ignores the @module/@class/@version keys
+        solution_dict.update(kwargs)
+        return cls.from_dict(solution_dict)
 
     # arithmetic operations
     def __add__(self, other: Solution) -> Solution:
