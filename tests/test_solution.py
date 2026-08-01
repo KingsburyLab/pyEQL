@@ -21,6 +21,7 @@ from pint import Quantity
 import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
+from pyEQL import solution as solution_module
 from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
@@ -912,9 +913,12 @@ def test_serialization(s1, s2, tmp_path):
         assert restored.temperature == original.temperature
         assert restored.pressure == original.pressure
         assert restored.solvent == original.solvent
-        assert restored._engine == original._engine
+        # the engine round-trips as a fully-serialized EOS: the restored Solution uses the same
+        # engine type (a deserialized Solution holds an EOS instance rather than the original name)
+        assert type(restored.engine) is type(original.engine)
+        assert restored.engine.as_dict() == original.engine.as_dict()
         # the solutions should point to different EOS instances
-        assert restored.engine != original.engine
+        assert restored.engine is not original.engine
         # also should point to different Store instances
         # TODO currently this test will fail due to a bug in maggma's __eq__
         # assert restored.database != original.database
@@ -936,6 +940,102 @@ def test_serialization(s1, s2, tmp_path):
     assert_roundtrip(s1, loadfn(str(tmp_path / "s1.json")))
     dumpfn(s2, str(tmp_path / "s2.json"))
     assert_roundtrip(s2, loadfn(str(tmp_path / "s2.json")))
+
+
+def test_serialization_engine_instance(tmp_path):
+    """A Solution created by passing an EOS *instance* (rather than a name) to the engine kwarg
+    should serialize: because EOS subclasses MSONable, as_dict stores the engine as a serialized
+    MSONable dict that round-trips to the same engine type (and constructor arguments)."""
+    for eos, name in [(IdealEOS(), "ideal"), (NativeEOS(), "native")]:
+        s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=eos)
+        d = s.as_dict()
+        # the engine is serialized as a full MSONable dict, not merely its name
+        assert isinstance(d["engine"], dict)
+        assert d["engine"]["@class"] == type(eos).__name__
+        assert d["engine"]["@module"] == "pyEQL.engines"
+
+        # full round-trip through monty JSON serialization
+        dumpfn(s, str(tmp_path / f"s_{name}.json"))
+        restored = loadfn(str(tmp_path / f"s_{name}.json"))
+        assert isinstance(restored, Solution)
+        assert type(restored.engine) is type(s.engine)
+        assert restored.engine.as_dict() == s.engine.as_dict()
+        assert restored.components == s.components
+
+
+def test_serialization_engine_backward_compat():
+    """Older serialized Solutions stored the engine as a plain string name (e.g. "native"). Those
+    dicts must still load, with __init__ resolving the name to the corresponding EOS instance."""
+    for name, cls in [("ideal", IdealEOS), ("native", NativeEOS)]:
+        d = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=name).as_dict()
+        # simulate a legacy dict that stored only the engine name
+        d["engine"] = name
+        restored = Solution.from_dict(d)
+        assert type(restored.engine) is cls
+
+
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_engine_roundtrip_and_override(tmp_path, ext):
+    """A Solution created with a non-default EOS *instance* round-trips through to_file / from_file for
+    both file types, preserving the engine type. Override kwargs passed to from_file replace values
+    stored in the file (here, swapping the engine)."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / f"s.{ext}")
+    s.to_file(path)
+
+    restored = Solution.from_file(path)
+    assert isinstance(restored, Solution)
+    assert type(restored.engine) is IdealEOS
+    assert restored.components == s.components
+
+    # kwargs passed to from_file override the value stored in the file
+    overridden = Solution.from_file(path, engine="native")
+    assert type(overridden.engine) is NativeEOS
+    assert overridden.components == s.components
+
+
+def test_from_file_new_monty_returns_solution_directly(tmp_path, monkeypatch):
+    """monty >= 2026.7.16 makes loadfn reconstruct a serialized file directly into a Solution (older
+    monty returns a plain dict for YAML). Simulate that so the Solution branch of from_file is covered
+    on any installed monty: with no override kwargs the loaded Solution is returned as-is (same object);
+    with kwargs it is re-serialized and rebuilt so the overrides take effect."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / "s.yaml")
+    s.to_file(path)
+
+    # a stand-in for the fully reconstructed Solution that newer monty's loadfn would return. Build it
+    # directly (not via loadfn, whose return type depends on the installed monty version).
+    sentinel = Solution.from_dict(s.as_dict())
+    monkeypatch.setattr(solution_module, "loadfn", lambda *args, **kwargs: sentinel)
+
+    # no kwargs: the reconstructed Solution is returned directly, untouched
+    assert Solution.from_file(path) is sentinel
+
+    # kwargs: a new Solution is rebuilt with the overrides applied
+    overridden = Solution.from_file(path, engine="native")
+    assert overridden is not sentinel
+    assert type(overridden.engine) is NativeEOS
+
+
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_preserves_all_init_fields(tmp_path, ext):
+    """from_file must preserve every serialized __init__ field. default_diffusion_coeff and log_level
+    were silently dropped by an earlier key allowlist on the older-monty YAML path; both should now
+    survive a round-trip for both file types."""
+    s = Solution(
+        {"Na+": "1 mol/L", "Cl-": "1 mol/L"},
+        default_diffusion_coeff=5e-10,
+        log_level="DEBUG",
+    )
+    # sanity check that these differ from the __init__ defaults, so the assertions are meaningful
+    assert s.default_diffusion_coeff != 1.6106e-9
+    assert s.log_level != "ERROR"
+
+    path = str(tmp_path / f"s.{ext}")
+    s.to_file(path)
+    restored = Solution.from_file(path)
+    assert restored.default_diffusion_coeff == 5e-10
+    assert restored.log_level == "DEBUG"
 
 
 @pytest.mark.parametrize(
