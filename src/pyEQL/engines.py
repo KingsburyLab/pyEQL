@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Self
 
+from monty.json import MSONable
 from phreeqpython import PhreeqPython
 
 import pyEQL.activity_correction as ac
@@ -53,7 +54,7 @@ def _phreeqpython_available():
 PHREEQPYTHON_AVAILABLE = _phreeqpython_available()
 
 
-class EOS(ABC):
+class EOS(MSONable, ABC):
     """
     Abstract base class for pyEQL equation of state classes.
 
@@ -61,6 +62,12 @@ class EOS(ABC):
     standalone functions available in pyEQL.activity_correction and pyEQL.equilibrium
     as much as possible. This facilitates robust unit testing while allowing users
     to "mix and match" or customize the various models as needed.
+
+    Inheriting from ``MSONable`` makes every ``EOS`` fully serializable: ``as_dict`` /
+    ``from_dict`` (and hence :func:`monty.serialization.dumpfn` / :func:`~monty.serialization.loadfn`)
+    round-trip an engine instance by capturing its constructor arguments. Concrete
+    subclasses therefore only need to store their ``__init__`` arguments as attributes of
+    the same name (e.g. ``self.phreeqc_db``) for serialization to work automatically.
     """
 
     @abstractmethod
