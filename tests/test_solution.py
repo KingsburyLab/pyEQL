@@ -1003,9 +1003,9 @@ def test_from_file_new_monty_returns_solution_directly(tmp_path, monkeypatch):
     path = str(tmp_path / "s.yaml")
     s.to_file(path)
 
-    # a stand-in for the fully reconstructed Solution that newer monty's loadfn would return
-    real_loadfn = solution_module.loadfn
-    sentinel = Solution.from_dict({k: v for k, v in real_loadfn(path).items() if not str(k).startswith("@")})
+    # a stand-in for the fully reconstructed Solution that newer monty's loadfn would return. Build it
+    # directly (not via loadfn, whose return type depends on the installed monty version).
+    sentinel = Solution.from_dict(s.as_dict())
     monkeypatch.setattr(solution_module, "loadfn", lambda *args, **kwargs: sentinel)
 
     # no kwargs: the reconstructed Solution is returned directly, untouched
