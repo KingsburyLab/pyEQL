@@ -690,7 +690,9 @@ class TestUnitActivity:
         caplog.set_level(logging.ERROR, logger=solution.logger.name)
         warnings_recorded = []
         for solute in solution.components:
-            if solute != solution.solvent:
+            # H+ and OH- intentionally do not log this message (they are trace species not
+            # paired into a salt in dilute/neutral solutions); see NativeEOS.get_activity_coefficient.
+            if solute not in (solution.solvent, "H[+1]", "OH[-1]"):
                 _ = solution.get_activity_coefficient(solute)
                 expected_record = (
                     engines.logger.name,
