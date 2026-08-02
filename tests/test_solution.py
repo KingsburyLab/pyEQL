@@ -557,8 +557,9 @@ def test_components_by_element(s1, s2):
         pytest.skip(reason="Phreeqpython not available")
 
     s2.equilibrate()
-    assert s2.get_components_by_element() == {
-        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
+
+    expected = {
+        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)"],
         "H(0.0)": ["H2(aq)"],
         "O(-2.0)": [
             "H2O(aq)",
@@ -566,19 +567,14 @@ def test_components_by_element(s1, s2):
             "NaOH(aq)",
             "HClO(aq)",
             "ClO[-1]",
-            "ClO2[-1]",
-            "ClO3[-1]",
-            "ClO4[-1]",
-            "HClO2(aq)",
         ],
         "O(0.0)": ["O2(aq)"],
         "Na(1.0)": ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
         "Cl(-1.0)": ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
         "Cl(1.0)": ["HClO(aq)", "ClO[-1]"],
-        "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
-        "Cl(5.0)": ["ClO3[-1]"],
-        "Cl(7.0)": ["ClO4[-1]"],
     }
+
+    assert s2.get_components_by_element(nested=False) == expected
 
 
 def test_components_by_element_nested(s1, s2):
@@ -611,7 +607,7 @@ def test_components_by_element_nested(s1, s2):
 
     s2.equilibrate()
 
-    assert s2.get_components_by_element(nested=True) == {
+    expected = {
         "H": {
             1.0: [
                 "H2O(aq)",
@@ -620,7 +616,6 @@ def test_components_by_element_nested(s1, s2):
                 "HCl(aq)",
                 "NaOH(aq)",
                 "HClO(aq)",
-                "HClO2(aq)",
             ],
             0.0: ["H2(aq)"],
         },
@@ -631,10 +626,6 @@ def test_components_by_element_nested(s1, s2):
                 "NaOH(aq)",
                 "HClO(aq)",
                 "ClO[-1]",
-                "ClO2[-1]",
-                "ClO3[-1]",
-                "ClO4[-1]",
-                "HClO2(aq)",
             ],
             0.0: ["O2(aq)"],
         },
@@ -644,11 +635,23 @@ def test_components_by_element_nested(s1, s2):
         "Cl": {
             -1.0: ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
             1.0: ["HClO(aq)", "ClO[-1]"],
-            3.0: ["ClO2[-1]", "HClO2(aq)"],
-            5.0: ["ClO3[-1]"],
-            7.0: ["ClO4[-1]"],
         },
     }
+
+    result = s2.get_components_by_element(nested=True)
+
+    assert result.keys() == expected.keys()
+    for element, oxidation_states in expected.items():
+        for oxi_state in oxidation_states:
+            if (element == "O" and oxi_state == -2.0) or (element == "Cl" and oxi_state == 3.0):
+                # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+                assert set(result[element][oxi_state]) == set(expected[element][oxi_state]), (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
+            else:
+                assert result[element][oxi_state] == expected[element][oxi_state], (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
 
 
 def test_get_total_amount(s2):
@@ -713,6 +716,20 @@ def test_equilibrate(s1, s2, s5_pH):
     assert "HCO3[-1]" in s5_pH.components
     assert s5_pH.pH > orig_pH
     assert np.isclose(s5_pH.pE, orig_pE)
+
+
+def test_redox():
+    # compare pE 0 and pE 10. higher pE should have more oxidized species
+    s1 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=0, engine="native")
+    s2 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=10, engine="native")
+    s1.equilibrate()
+    s2.equilibrate()
+    assert np.isclose(s1.get_total_amount("S", "mg/L").magnitude, s2.get_total_amount("S", "mg/L").magnitude, atol=1e-3)
+    assert s1.get_total_amount("S(-2)", "mg/L").magnitude > s2.get_total_amount("S(-2)", "mg/L").magnitude
+    assert s1.get_total_amount("S(-0.4)", "mg/L").magnitude < s2.get_total_amount("S(-0.4)", "mg/L").magnitude
+    # if oxygen is present, sulfate should form even at pE=0
+    s1.equilibrate(atmosphere=True)
+    assert s1.get_total_amount("S(6)", "mg/L").magnitude > 0
 
 
 def test_tds(s1, s2, s5):

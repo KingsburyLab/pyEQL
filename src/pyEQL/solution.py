@@ -163,10 +163,10 @@ class Solution(MSONable):
                 to None, nothing will be printed.
             default_diffusion_coeff: Diffusion coefficient value in m^2/s to use in
                 calculations when there is no diffusion coefficient for a species in the database. This affects several
-                important property calculations including conductivity and transport number, which are related to the
+                important property calculations including conductivity and transference number, which are related to the
                 weighted sums of diffusion coefficients of all species. Setting this argument to zero will exclude any
                 species that does not have a tabulated diffusion coefficient from these calculations, possibly resulting
-                in underestimation of the conductivity and/or inaccurate transport numbers.
+                in underestimation of the conductivity and/or inaccurate transference numbers.
 
                 Missing diffusion coefficients are especially likely in complex electrolytes containing, for example,
                 complexes or paired species such as NaSO4[-1]. In such cases, setting default_diffusion_coeff  to zero
@@ -176,12 +176,14 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '1 mol/L','Cl-': '1 mol/L'},temperature='20 degC',volume='500 mL')
-            >>> print(s1)
-            Components:
+            >>> print(s1)  # doctest: +ELLIPSIS
             Volume: 0.500 l
-            Pressure: 1.000 atm
             Temperature: 293.150 K
-            Components: ['H2O(aq)', 'H[+1]', 'OH[-1]', 'Na[+1]', 'Cl[-1]']
+            Pressure: 1.000 atm
+            pH: 7.0
+            pE: 8.5
+            Solvent: H2O(aq)
+            Components: KeysView({'H2O(aq)': ..., 'Na[+1]': 0.5, 'Cl[-1]': 0.5, 'OH[-1]': ..., 'H[+1]': ...})
         """
         # create a logger and attach it to this class
         self.log_level = log_level.upper()
@@ -795,12 +797,12 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-            >>> s1.ionic_strength
-            <Quantity(0.20000010029672785, 'mole / kilogram')>
+            >>> s1.ionic_strength  # doctest: +ELLIPSIS
+            <Quantity(0.2000001002..., 'mole / kilogram')>
 
             >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
-            >>> s1.ionic_strength
-            <Quantity(1.0000001004383303, 'mole / kilogram')>
+            >>> s1.ionic_strength  # doctest: +ELLIPSIS
+            <Quantity(1.000000100..., 'mole / kilogram')>
         """
         # compute using magnitudes only, for performance reasons
         ionic_strength = np.sum(
@@ -1038,8 +1040,8 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = pyEQL.Solution()
-            >>> s1.bjerrum_length
-            <Quantity(0.7152793009386953, 'nanometer')>
+            >>> s1.bjerrum_length  # doctest: +ELLIPSIS
+            <Quantity(0.714..., 'nanometer')>
 
         See Also:
             :attr:`dielectric_constant`
@@ -1077,13 +1079,13 @@ class Solution(MSONable):
             .. [wk] https://en.wikipedia.org/wiki/Osmotic_pressure#Derivation_of_the_van_'t_Hoff_formula
 
         Examples:
-            >>> s1=pyEQL.Solution()
-            >>> s1.osmotic_pressure
-            <Quantity(0.495791416, 'pascal')>
+            >>> s1 = pyEQL.Solution()
+            >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
+            <Quantity(0.4957914..., 'pascal')>
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
-            >>> soln.osmotic_pressure
-            <Quantity(906516.7318131207, 'pascal')>
+            >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
+            <Quantity(9132..., 'pascal')>
         """
         partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
 
@@ -1591,14 +1593,14 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
-            >>> s1.get_salt()
-            <pyEQL.salt_ion_match.Salt object at 0x7fe6d3542048>
+            >>> s1.get_salt()  # doctest: +ELLIPSIS
+            <pyEQL.salt_ion_match.Salt object at 0x...>
             >>> s1.get_salt().formula
             'NaCl'
             >>> s1.get_salt().nu_cation
             1
             >>> s1.get_salt().z_anion
-            -1
+            -1.0
 
             >>> s2 = pyEQL.Solution([['Na+','0.1 mol/kg'],['Mg+2','0.2 mol/kg'],['Cl-','0.5 mol/kg']])
             >>> s2.get_salt().formula
@@ -1606,7 +1608,7 @@ class Solution(MSONable):
             >>> s2.get_salt().nu_anion
             2
             >>> s2.get_salt().z_cation
-            2
+            2.0
         """
         try:
             salt: Salt = next(d["salt"] for d in self.get_salt_dict().values())
@@ -1660,15 +1662,15 @@ class Solution(MSONable):
             ...     }
             ... )
             >>> salt_dict = s1.get_salt_dict()
-            >>> list(salt_dict)  # Only returns salts with concentrations > 1e-3 m
-            ['NaCl', 'Ca(HCO3)2']
+            >>> list(salt_dict)  # Returns salts above the default cutoff (1e-6 mol/kg)
+            ['NaCl', 'Ca(HCO3)2', 'Ca(ClO)2']
             >>> salt_dict['NaCl']['salt']
             <pyEQL.salt_ion_match.Salt object at ...>
             >>> salt_dict['NaCl']['mol']
             1.0
-            >>> salt_dict = s1.get_salt_dict(cutoff=1e-4)
-            >>> list(salt_dict)  # Returns 'Ca(ClO)2' because of reduced cutoff and Cl has different oxidation state
-            ['NaCl', 'Ca(HCO3)2', 'Ca(ClO)2']
+            >>> salt_dict = s1.get_salt_dict(cutoff=1e-3)
+            >>> list(salt_dict)  # Higher cutoff excludes the minor ClO- species
+            ['NaCl', 'Ca(HCO3)2']
             >>> salt_dict = s1.get_salt_dict(cutoff=1e-4, use_totals=False)
             >>> list(salt_dict)  # Returns salts with minor (same oxidation state) species since use_totals=False
             ['NaCl', 'Ca(HCO3)2', 'CaCO3', 'Ca(ClO)2']
@@ -1960,8 +1962,8 @@ class Solution(MSONable):
 
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.3 mol/kg'],['Cl-','0.3 mol/kg']])
-            >>> s1.get_water_activity()
-            <Quantity(0.9900944932888518, 'dimensionless')>
+            >>> s1.get_water_activity()  # doctest: +ELLIPSIS
+            <Quantity(0.99009..., 'dimensionless')>
         """
         osmotic_coefficient = self.get_osmotic_coefficient()
 
@@ -2172,38 +2174,46 @@ class Solution(MSONable):
             return ureg.Quantity(val)
         return None
 
+    def get_transference_number(self, solute: str) -> Quantity:
+        """Alias of get_transport_number(). Note that the transference number is only equal to the transport number if there are no concentration or pressure gradients."""
+        return self.get_transport_number(solute)
+
     def get_transport_number(self, solute: str) -> Quantity:
-        r"""Calculate the transport number of the solute in the solution.
+        r"""Calculate the transference number of a solute in the solution. Note that this is the
+        same as the _transport_ number if (and only if) there are no concentration or pressure gradients.
 
         Args:
-            solute: Formula of the solute for which the transport number is
-                to be calculated.
+            solute: Formula of the solute for which the transference number is to be calculated.
 
         Returns:
-                The transport number of `solute`, as a dimensionless Quantity.
+                The transference number of `solute`, as a dimensionless Quantity.
 
         Notes:
-            Transport number is calculated according to :
+            Transference number is calculated according to :
 
                 .. math::
 
                     t_i = {D_i z_i^2 C_i \over \sum D_i z_i^2 C_i}
 
-                Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
-                coefficient, and :math:`z_i` is the charge, and the summation extends
-                over all species in the solution.
+            Where :math:`C_i` is the concentration in mol/L, :math:`D_i` is the diffusion
+            coefficient, and :math:`z_i` is the charge, and the summation extends
+            over all species in the solution.
 
-                Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
-                and ionic strength using the method implemented in PHREEQC >= 3.4.
-                See `get_diffusion_coefficient for` further details.
+            Diffusion coefficients :math:`D_i` are adjusted for the effects of temperature
+            and ionic strength using the method implemented in PHREEQC >= 3.4.
+            See `get_diffusion_coefficient for` further details.
 
 
         References:
-                Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
-                ion effects on membrane potential and the permselectivity of ion exchange membranes.""
-                *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
+            Bieusheuvel, P.M.; Dykstra, J.E.; *Introduction to Physical Processes in Environmental
+            Technology*, Section 6.2. https://www.physicsofelectrochemicalprocesses.com/book.pdf.
+
+            Geise, G. M.; Cassady, H. J.; Paul, D. R.; Logan, E.; Hickner, M. A. "Specific
+            ion effects on membrane potential and the permselectivity of ion exchange membranes.""
+            *Phys. Chem. Chem. Phys.* 2014, 16, 21673-21681.
 
         See Also:
+            :py:meth:`get_transference_number`
             :py:meth:`get_diffusion_coefficient`
             :py:meth:`get_molar_conductivity`
         """
@@ -2421,8 +2431,8 @@ class Solution(MSONable):
 
         Examples:
             >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
-            >>> soln.get_lattice_distance('Na+')
-            1.492964.... nanometer
+            >>> soln.get_lattice_distance('Na+')  # doctest: +ELLIPSIS
+            <Quantity(1.497..., 'nanometer')>
 
         Notes:
             The lattice distance is related to the molar concentration as follows:
@@ -2960,7 +2970,7 @@ class Solution(MSONable):
             import pandas as pd  # noqa: PLC0415
             import plotly.express as px  # noqa: PLC0415
 
-            df = pd.DataFrame(
+            df = pd.DataFrame(  # noqa: PD901
                 {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
             )
 
