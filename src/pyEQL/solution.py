@@ -233,6 +233,10 @@ class Solution(MSONable):
             self.balance_charge = standardize_formula(balance_charge)
         else:
             self.balance_charge = balance_charge  #: Standardized formula of the species used for charge balancing.
+        # the actual charge-balancing species is determined further below, once the composition is
+        # known; initialize it here so the attribute always exists (e.g. if setting the pH triggers a
+        # PHREEQC ppsol build, which reads _cb_species, before that determination runs).
+        self._cb_species = None
 
         # instantiate a water substance for property retrieval
         self.water_substance = create_water_substance(self.temperature, self.pressure)
@@ -316,11 +320,15 @@ class Solution(MSONable):
 
         # populate remaining solutes
         CHECK_H = False
+        CHECK_OH = False
         for k, v in self._solutes.items():
             self.add_solute(k, v)
-            # if user has specified H+ in solutes, check consistency with pH kwarg
+            # if user has specified H+ or OH- in solutes, that explicit amount governs and the
+            # pH argument is not used to (re)set the H+/OH- concentrations below
             if standardize_formula(k) == "H[+1]":
                 CHECK_H = True
+            if standardize_formula(k) == "OH[-1]":
+                CHECK_OH = True
 
         if CHECK_H:
             # if user has not specified pH (default value), override the pH argument
@@ -334,6 +342,10 @@ class Solution(MSONable):
                     "both pH and H+), or it can happen during from_dict / from_preset if you use a different "
                     "engine than the one which generated the original dict."
                 )
+        elif not CHECK_OH:
+            # neither H+ nor OH- was supplied explicitly, so the pH argument governs. Interpret it
+            # on the activity scale (like PHREEQC) and back-calculate the H+/OH- concentrations.
+            self._solve_pH(pH)
 
         # determine the species that will be used for charge balancing, when needed.
         # this is necessary to do even if the composition is already electroneutral,
@@ -485,8 +497,17 @@ class Solution(MSONable):
 
     @property
     def pH(self) -> float:
-        """Return the pH of the solution."""
-        return self.p("H+", activity=False)
+        """Return the pH of the solution.
+
+        pH is defined thermodynamically as the negative log10 of the hydrogen ion
+        *activity* (not concentration). Using the activity is important for
+        consistency with the equilibrium engines (e.g. PHREEQC), which interpret the
+        pH they are given as -log10(a_H+). Reporting a concentration-based pH here
+        while feeding it back into the engine as an activity-based pH caused a
+        systematic, non-convergent drift in pH (and hence mass and volume) on
+        repeated calls to equilibrate(). See GitHub issue #434.
+        """
+        return self.p("H+", activity=True)
 
     def p(self, solute: str, activity=True) -> float:
         """
@@ -798,11 +819,11 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(0.2000001002..., 'mole / kilogram')>
+            <Quantity(0.200000..., 'mole / kilogram')>
 
             >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(1.000000100..., 'mole / kilogram')>
+            <Quantity(1.000000..., 'mole / kilogram')>
         """
         # compute using magnitudes only, for performance reasons
         ionic_strength = np.sum(
@@ -1081,7 +1102,7 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution()
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
-            <Quantity(0.4957914..., 'pascal')>
+            <Quantity(0.494327..., 'pascal')>
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
@@ -2447,6 +2468,55 @@ class Solution(MSONable):
 
         return distance.to("nm")
 
+    def _solve_pH(self, target_pH: float, max_iter: int = 20, atol: float = 1e-8) -> None:
+        """Set [H+] and [OH-] so the solution's pH (activity scale) equals ``target_pH``.
+
+        This emulates PHREEQC. The input pH fixes the H+ *activity*
+        (:math:`a_{H^+} = 10^{-pH}`); the corresponding H+ *concentration* is then
+        back-calculated from the activity coefficient (:math:`m = a / \\gamma`). OH- is set
+        from the water self-ionization equilibrium expressed on the activity scale
+        (:math:`a_{H^+} \\, a_{OH^-} = K_W`), so that -- when :math:`\\gamma_{H^+}` and
+        :math:`\\gamma_{OH^-}` are equal, as in a neutral solution -- the H+ and OH-
+        concentrations remain equal and the solution stays electroneutral.
+
+        The activity coefficients depend on the overall composition (and, very weakly, on the
+        trace H+/OH- concentrations themselves), so the concentrations are found by fixed-point
+        iteration; this converges in a handful of steps because H+/OH- are usually trace.
+
+        Args:
+            target_pH: The desired (activity-scale) pH.
+            max_iter: Maximum number of fixed-point iterations.
+            atol: Absolute tolerance on pH used to decide convergence.
+        """
+        a_H = 10 ** (-target_pH)  # target H+ activity
+        a_OH = K_W / a_H  # OH- activity from the water equilibrium (activity product)
+        for _ in range(max_iter):
+            # For physically extreme pH (e.g. pH >> 14), the implied H+ or OH- concentration is so
+            # large that the activity-coefficient model can overflow. Guard against that and fall
+            # back to an ideal (unit) activity coefficient, which reduces to setting the
+            # concentration equal to the target activity.
+            with np.errstate(over="ignore", invalid="ignore"):
+                gamma_H = self.get_activity_coefficient("H+").magnitude
+                gamma_OH = self.get_activity_coefficient("OH-").magnitude
+            gamma_H = gamma_H if np.isfinite(gamma_H) and gamma_H > 0 else 1.0
+            gamma_OH = gamma_OH if np.isfinite(gamma_OH) and gamma_OH > 0 else 1.0
+            # target molality = activity / activity coefficient. Set the H+/OH- moles directly
+            # from the target molality (moles = molality * solvent_mass). These are trace species
+            # that occupy negligible volume, so we deliberately do not adjust the solvent mass or
+            # volume - that keeps both the molar and molal concentrations of the other solutes
+            # exactly as specified, rather than perturbing them via a volume/solvent recalculation.
+            solvent_kg = self.solvent_mass.to("kg").magnitude
+            self.components["H+"] = a_H / gamma_H * solvent_kg
+            self.components["OH-"] = a_OH / gamma_OH * solvent_kg
+            if np.isclose(self.pH, target_pH, atol=atol):
+                break
+        else:
+            self.logger.warning(
+                f"pH did not converge to the requested value of {target_pH} within {max_iter} "
+                f"iterations (last value: {self.pH}). The H+ activity coefficient may be strongly "
+                "composition-dependent for this solution."
+            )
+
     def _adjust_charge_balance(self, atol=1e-8) -> None:
         """Helper method to adjust the charge balance of the Solution."""
         cb = self.charge_balance
@@ -2545,8 +2615,13 @@ class Solution(MSONable):
                 d[k] = str(v)
         # replace solutes with the current composition
         d["solutes"] = {k: f"{v} mol" for k, v in self.components.items()}
-        # replace the engine with the associated str
-        d["engine"] = self._engine
+        # Serialize the engine as an MSONable dict. self.engine is always an EOS instance (EOS
+        # subclasses MSONable), so this round-trips faithfully - including the specific engine type
+        # and its constructor arguments (e.g. phreeqc_db) - whether the engine was passed to the
+        # constructor by name (e.g. "native") or as an instance. from_dict / MontyDecoder rebuilds
+        # the engine automatically. Older dicts that stored the engine name as a plain string still
+        # load correctly because __init__ continues to accept engine names.
+        d["engine"] = self.engine.as_dict()
         # d["logger"] = self.logger.__dict__
         return d
 
@@ -2695,8 +2770,9 @@ class Solution(MSONable):
         else:
             raise FileNotFoundError(f"Invalid preset! File '{yaml_path}' or '{json_path} not found!")
 
-        # Create and return a Solution object
-        return cls().from_file(preset_path, **kwargs)
+        # Create and return a Solution object. from_file is a classmethod, so call it on the class
+        # directly rather than constructing (and discarding) a default Solution instance.
+        return cls.from_file(preset_path, **kwargs)
 
     def to_file(self, filename: str | Path) -> None:
         """Saving to a .yaml or .json file.
@@ -2725,8 +2801,10 @@ class Solution(MSONable):
               Valid extensions are .json or .yaml.
 
         Kwargs:
-            Any kwargs passed to this method will be passed to the Solution __init__ method, and will override any values in the file. This allows you to use a file as a starting point and then modify it as needed by, e.g., changing the modeling engine or database.
-            NOTE: CURRENTLY ONLY SUPPORTED FOR YAML FILES!
+            Any kwargs passed to this method will be passed to the Solution __init__ method, and will
+            override any values in the file. This allows you to use a file as a starting point and then
+            modify it as needed by, e.g., changing the modeling engine or database. Supported for both
+            .json and .yaml files.
 
         Returns:
             A pyEQL Solution object.
@@ -2736,28 +2814,19 @@ class Solution(MSONable):
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File '{filename}' not found!")
-        str_filename = str(filename)
-        if "yaml" in str_filename.lower():
-            true_keys = [
-                "solutes",
-                "volume",
-                "temperature",
-                "pressure",
-                "pH",
-                "pE",
-                "balance_charge",
-                "solvent",
-                "engine",
-                # "database",
-            ]
-            solution_dict = loadfn(filename)
-            keys_to_delete = [key for key in solution_dict if key not in true_keys]
-            for key in keys_to_delete:
-                solution_dict.pop(key)
-            for k, v in kwargs.items():
-                solution_dict[k] = v
-            return cls.from_dict(solution_dict)
-        return loadfn(filename)
+        loaded = loadfn(filename)
+        # monty >= 2026.7.16 reconstructs both JSON and YAML into a Solution via from_dict; older monty
+        # only does so for JSON and returns a plain dict for YAML. Normalize both to a dict, apply any
+        # override kwargs, and rebuild through from_dict so the result is identical across file types and
+        # monty versions. (#445)
+        if isinstance(loaded, Solution):
+            if not kwargs:
+                return loaded
+            solution_dict = loaded.as_dict()
+        else:
+            solution_dict = loaded  # plain dict; from_dict ignores the @module/@class/@version keys
+        solution_dict.update(kwargs)
+        return cls.from_dict(solution_dict)
 
     # arithmetic operations
     def __add__(self, other: Solution) -> Solution:
@@ -2780,7 +2849,12 @@ class Solution(MSONable):
         if self.solvent != other.solvent:
             raise ValueError("Cannot add Solution with different solvents!")
 
-        if self._engine != other._engine:
+        # Compare the resolved engines by their serialized form rather than the raw ``_engine``
+        # values. ``_engine`` may be a name (e.g. "native") or an EOS instance depending on how each
+        # Solution was constructed (a deserialized Solution now holds an EOS instance), so comparing
+        # ``_engine`` directly would spuriously fail when mixing the two. ``self.engine`` is always an
+        # EOS instance, and its ``as_dict`` captures both the engine type and its arguments.
+        if self.engine.as_dict() != other.engine.as_dict():
             raise ValueError("Cannot add Solution with different engines!")
 
         if self.database != other.database:

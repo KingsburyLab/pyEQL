@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `EOS` (and all its subclasses: `IdealEOS`, `NativeEOS`, `PhreeqcEOS`, `Phreeqc2026EOS`) now inherit
+  from `monty.json.MSONable`, making equation-of-state engines fully serializable via `as_dict` /
+  `from_dict` (and hence `dumpfn` / `loadfn`). Serialization captures the engine type and its
+  constructor arguments (e.g. `phreeqc_db`). (#443, @rkingsbury)
+- `Solution.from_file`: override `kwargs` (e.g. `engine=...`) are now honored for `.json` files, not
+  only `.yaml` files. (#445, @rkingsbury)
+
+### Changed
+
+- `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
+  `Solution`, both on input and output, matching how the equilibrium engines (e.g. PHREEQC) interpret
+  pH:
+  - `Solution.pH` returns the negative log10 of the hydrogen ion *activity* rather than its molar
+    concentration.
+  - The `pH` constructor argument is likewise interpreted as an activity: `Solution(..., pH=X)`
+    yields a solution whose activity-based `pH` equals `X`. Emulating PHREEQC, the input pH fixes the
+    H+ activity (`a_H+ = 10**(-X)`) and the H+ concentration is back-calculated from the activity
+    coefficient (`m = a / gamma`); OH- is set from the water equilibrium on the activity scale
+    (`a_H+ * a_OH- = K_W`), which keeps neutral solutions electroneutral. Because the activity
+    coefficient depends on composition, the concentrations are found by a short fixed-point iteration
+    (`Solution._solve_pH`). Explicitly supplied `H+`/`OH-` still take precedence over the `pH`
+    argument.
+
+  Previously `pH` reported (and the constructor set) a concentration-based value, which caused a small
+  but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated calls
+  to `equilibrate()`. The cached `pH` values in the bundled `presets` have been updated accordingly.
+  (#434, @rkingsbury)
+
+### Fixed
+
+- `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
+  (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
+  This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
+- `Solution.as_dict`: a `Solution` created by passing an `EOS` *instance* (rather than a name) to the
+  `engine` kwarg can now be serialized. Previously `as_dict` stored the raw engine object, which is not
+  serializable; it now stores the engine as a fully-serialized `MSONable` dict that round-trips to the
+  same engine type and arguments. Dicts that stored the engine name as a plain string (produced by
+  earlier versions) still load correctly. (#443, @rkingsbury)
+- `Solution.from_file`: loading a `.yaml` file no longer breaks with `monty >= 2026.7.16`, which treats
+  YAML and JSON on equal footing in `loadfn` (returning a reconstructed `Solution` rather than a plain
+  dict). `from_file` now handles both return types, remaining compatible with older `monty` releases.
+  With this fix, the temporary `monty < 2026.7.16` upper bound has been removed. (#445, @rkingsbury)
+- `Solution.from_file`: loading a serialized file now preserves *all* stored constructor fields,
+  including `default_diffusion_coeff` and `log_level`. A key allowlist previously dropped these on the
+  older-`monty` YAML path, so a file could round-trip differently depending on the installed `monty`
+  version; both paths now reconstruct identically via `from_dict`. (#445, @rkingsbury)
+
 ## [1.5.0] - 2026-06-15
 
 ## Added

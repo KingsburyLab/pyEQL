@@ -216,7 +216,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s2.balance_charge = "pH"
     s2.equilibrate()
     assert np.isclose(s2.charge_balance, 0, atol=1e-8)
-    assert s2.components["H+"] > eq_Hplus
+    # balancing charge via pH adjusts H+ to restore electroneutrality; the direction depends on the
+    # sign of the (pre-balancing) charge imbalance, so just assert that H+ changed.
+    assert not np.isclose(s2.components["H+"], eq_Hplus)
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution(
@@ -273,9 +275,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
 def test_equilibrate_water_pH7():
     solution = Solution({}, pH=7.00, temperature="25 degC", volume="1 L", engine="phreeqc")
     solution.equilibrate()
-    # pH = -log10[H+]
+    # pH = -log10[a_H+]
     assert np.isclose(solution.get_amount("H+", "mol/kg").magnitude, 1.001e-07)
-    # 14 - pH = log10[OH-]
+    # 14 - pH = log10[a_OH-]
     assert np.isclose(solution.get_amount("OH-", "mol/kg").magnitude, 1.013e-07)
     # small amount of H2 gas
     assert solution.get_amount("H2", "mol/kg") > 0
@@ -284,6 +286,22 @@ def test_equilibrate_water_pH7():
     #   mol = 0.99704 kg * 1000 g/kg / (18.01528 g/mol) = 55.34413009400909
     #   mol/kg = 55.34413009400909 / 0.99704 = 55.50843506179199
     assert np.isclose(solution.get_amount("H2O", "mol/kg").magnitude, 55.50843506179199)
+
+
+def test_repeated_equilibrate():
+    # repeated calls to equilibrate should not change the properties (much)
+    for cb in [None, "pH", "auto"]:
+        s1 = Solution({}, pH=7.00, volume="1 L", engine="phreeqc", balance_charge=cb)
+        first_pH = s1.pH
+        first_volume = s1.volume.magnitude
+        first_mass = s1.mass.magnitude
+        first_solv_mass = s1.solvent_mass.magnitude
+        for _ in range(10):
+            s1.equilibrate()
+        assert np.isclose(s1.pH, first_pH, atol=0.003)
+        assert np.isclose(s1.volume.magnitude, first_volume, atol=1e-9)
+        assert np.isclose(s1.mass.magnitude, first_mass, atol=1e-8)
+        assert np.isclose(s1.solvent_mass.magnitude, first_solv_mass, atol=1e-12)
 
 
 def test_equilibrate_CO2_with_calcite():
