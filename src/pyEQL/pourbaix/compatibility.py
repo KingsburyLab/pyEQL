@@ -49,7 +49,7 @@ __date__ = "April 2020"
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 MU_H2O = -2.4583  # Free energy of formation of water, eV/H2O, used by MaterialsProjectAqueousCompatibility
 MP2020_COMPAT_CONFIG = loadfn(f"{MODULE_DIR}/MP2020Compatibility.yaml")
-# MP_COMPAT_CONFIG = loadfn(f"{MODULE_DIR}/MPCompatibility.yaml")
+MP_COMPAT_CONFIG = loadfn(f"{MODULE_DIR}/MPCompatibility.yaml")
 
 # This was compiled by cross-referencing structures in Materials Project from exp_compounds.json.gz
 # used in the fitting of the MP2020 correction scheme, and applying the BVAnalyzer algorithm to
@@ -879,6 +879,56 @@ class CorrectionsList(Compatibility):
             print("-" * 30)
 
         print(f"The final energy after corrections is {dct['corrected_energy']:f}")
+
+
+class MaterialsProjectCompatibility(CorrectionsList):
+    """This class implements the GGA/GGA+U mixing scheme, which allows mixing of
+    entries. Note that this should only be used for VASP calculations using the
+    MaterialsProject parameters (see pymatgen.io.vasp.sets.MPVaspInputSet).
+    Using this compatibility scheme on runs with different parameters is not valid.
+    """
+
+    def __init__(
+        self,
+        compat_type: Literal["GGA", "Advanced"] = "Advanced",
+        correct_peroxide: bool = True,
+        check_potcar_hash: bool = False,
+    ) -> None:
+        """
+        Args:
+            compat_type ("GGA" | "Advanced"): "GGA" means all GGA+U
+                entries are excluded. "Advanced" means mixing scheme is
+                implemented to make entries compatible with each other,
+                but entries which are supposed to be done in GGA+U will have the
+                equivalent GGA entries excluded. For example, Fe oxides should
+                have a U value under the Advanced scheme. A GGA Fe oxide run
+                will therefore be excluded under the scheme.
+            correct_peroxide: Specify whether peroxide/superoxide/ozonide
+                corrections are to be applied or not.
+            check_potcar_hash (bool): Use potcar hash to verify potcars are correct.
+        """
+        self.compat_type = compat_type
+        self.correct_peroxide = correct_peroxide
+        self.check_potcar_hash = check_potcar_hash
+        file_path = f"{MODULE_DIR}/MPCompatibility.yaml"
+        super().__init__(
+            [
+                PotcarCorrection(MPRelaxSet, check_hash=check_potcar_hash),
+                GasCorrection(file_path),
+                AnionCorrection(file_path, correct_peroxide=correct_peroxide),
+                UCorrection(file_path, MPRelaxSet, compat_type),
+            ]
+        )
+
+
+# Note from Ryan Kingsbury (2022-10-14): MaterialsProject2020Compatibility inherits from Compatibility
+# instead of CorrectionsList which came before it because CorrectionsList had technical limitations.
+# When we did the new scheme (MP2020) we decided to refactor the base Compatibility class to not
+# require CorrectionsList.
+
+# This was particularly helpful for the AqueousCorrection class. The new system gives complete
+# flexibility to process entries however needed inside the get_adjustments() method, rather than
+# having to create a list of separate correction classes.
 
 
 @cached_class

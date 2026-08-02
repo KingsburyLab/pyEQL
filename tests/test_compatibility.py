@@ -17,12 +17,14 @@ from pytest import approx
 
 from pyEQL.pourbaix.compatibility import (
     MP2020_COMPAT_CONFIG,
+    MP_COMPAT_CONFIG,
     MU_H2O,
     AqueousCorrection,
     Compatibility,
     CompatibilityError,
     MaterialsProject2020Compatibility,
     MaterialsProjectAqueousCompatibility,
+    MaterialsProjectCompatibility,
     needs_u_correction,
 )
 
@@ -123,6 +125,424 @@ def test_overlapping_adjustments():
 
 
 @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
+class TestMaterialsProjectCompatibility:
+    def setup_method(self):
+        self.entry1 = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+
+        self.entry_sulfide = ComputedEntry(
+            "FeS",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": False,
+                "run_type": "GGA",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE S 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+
+        self.entry4 = ComputedEntry(
+            "H8",
+            -27.1,
+            correction=0.0,
+            parameters={
+                "run_type": "LDA",
+                "is_hubbard": False,
+                "pseudo_potential": {
+                    "functional": "PBE",
+                    "labels": ["H"],
+                    "pot_type": "paw",
+                },
+                "hubbards": {},
+                "potcar_symbols": ["PBE H"],
+                "oxide_type": "None",
+            },
+        )
+
+        self.entry2 = ComputedEntry(
+            "Fe3O4",
+            -2,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        self.entry3 = ComputedEntry(
+            "FeO",
+            -2,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 4.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+
+        self.compat = MaterialsProjectCompatibility(check_potcar_hash=False)
+        self.gga_compat = MaterialsProjectCompatibility("GGA", check_potcar_hash=False)
+
+    def test_process_entry(self):
+        # Correct parameters
+        assert self.compat.process_entry(self.entry1) is not None
+        assert self.gga_compat.process_entry(self.entry1) is None
+
+        # Correct parameters
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": False,
+                "hubbards": {},
+                "run_type": "GGA",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+        assert self.gga_compat.process_entry(entry) is not None
+
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is not None
+
+    def test_correction_values(self):
+        # test_corrections
+        assert self.compat.process_entry(self.entry1).correction == approx(-2.733 * 2 - 0.70229 * 3)
+
+        entry = ComputedEntry(
+            "FeF3",
+            -2,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "F": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE F 08Apr2002",  # codespell:ignore=titel
+                        "hash": "180141c33d032bfbfff30b3bea9d23dd",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is not None
+
+        # Check actual correction
+        assert self.compat.process_entry(entry).correction == approx(-2.733)
+
+        assert self.compat.process_entry(self.entry_sulfide).correction == approx(-0.66346)
+
+    def test_u_values(self):
+        # Wrong U value
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.2, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+
+        # GGA run of U
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": False,
+                "hubbards": None,
+                "run_type": "GGA",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+
+        # GGA+U run of non-U
+        entry = ComputedEntry(
+            "Al2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Al": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Al 06Sep2000",  # codespell:ignore=titel
+                        "hash": "805c888bbd2793e462311f6a20d873d9",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+
+        # Materials project should not have a U for sulfides
+        entry = ComputedEntry(
+            "FeS2",
+            -2,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "S": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE S 08Apr2002",  # codespell:ignore=titel
+                        "hash": "f7f8e4a74a6cbb8d63e41f4373b54df2",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+
+    def test_wrong_psp(self):
+        # Wrong psp
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe 06Sep2000",  # codespell:ignore=titel
+                        "hash": "9530da8244e4dac17580869b4adab115",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        assert self.compat.process_entry(entry) is None
+
+    def test_element_processing(self):
+        entry = ComputedEntry(
+            "O",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": False,
+                "hubbards": {},
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    }
+                ],
+                "run_type": "GGA",
+            },
+        )
+        entry = self.compat.process_entry(entry)
+        # assert entry.entry_id == -8
+        assert entry.energy == approx(-1)
+        assert self.gga_compat.process_entry(entry).energy == approx(-1)
+
+    def test_get_explanation_dict(self):
+        compat = MaterialsProjectCompatibility(check_potcar_hash=False)
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        dct = compat.get_explanation_dict(entry)
+        assert dct["corrections"][0]["name"] == "MPRelaxSet Potcar Correction"
+
+    def test_get_corrections_dict(self):
+        compat = MaterialsProjectCompatibility(check_potcar_hash=False)
+        gga_compat = MaterialsProjectCompatibility("GGA", check_potcar_hash=False)
+
+        # Correct parameters
+        entry = ComputedEntry(
+            "Fe2O3",
+            -1,
+            correction=0.0,
+            parameters={
+                "is_hubbard": True,
+                "hubbards": {"Fe": 5.3, "O": 0},
+                "run_type": "GGA+U",
+                "potcar_spec": [
+                    {
+                        "titel": "PAW_PBE Fe_pv 06Sep2000",  # codespell:ignore=titel
+                        "hash": "994537de5c4122b7f1b77fb604476db4",
+                    },
+                    {
+                        "titel": "PAW_PBE O 08Apr2002",  # codespell:ignore=titel
+                        "hash": "7a25bc5b9a5393f46600a4939d357982",
+                    },
+                ],
+            },
+        )
+        comp = compat.get_corrections_dict(entry)[0]
+        assert comp["MP Anion Correction"] == approx(-2.10687)
+        assert comp["MP Advanced Correction"] == approx(-5.466)
+
+        entry.parameters["is_hubbard"] = False
+        del entry.parameters["hubbards"]
+        comp = gga_compat.get_corrections_dict(entry)[0]
+        assert "MP Advanced Correction" not in comp
+
+    def test_process_entries(self):
+        entries = self.compat.process_entries([self.entry1, self.entry2, self.entry3, self.entry4])
+        assert len(entries) == 2
+
+    @pytest.mark.skipif(sys.platform.startswith("win"), reason="Windows broken permissions.")
+    def test_parallel_process_entries(self):
+        # TODO: get DeprecationWarning: This process (pid=xxxx) is multi-threaded,
+        # use of fork() may lead to deadlocks in the child.
+        # pid = os.fork()
+        with pytest.raises(
+            ValueError,
+            match="Parallel processing is not possible with for 'inplace=True'",
+        ):
+            entries = self.compat.process_entries(
+                [self.entry1, self.entry2, self.entry3, self.entry4],
+                inplace=True,
+                n_workers=2,
+            )
+
+        entries = self.compat.process_entries(
+            [self.entry1, self.entry2, self.entry3, self.entry4],
+            inplace=False,
+            n_workers=2,
+        )
+        assert len(entries) == 2
+
+    def test_msonable(self):
+        compat_dict = self.compat.as_dict()
+        decoder = MontyDecoder()
+        temp_compat = decoder.process_decoded(compat_dict)
+        assert isinstance(temp_compat, MaterialsProjectCompatibility)
+
+
 class TestMaterialsProjectCompatibility2020:
     def setup_method(self):
         self.entry1 = ComputedEntry(
@@ -1148,7 +1568,7 @@ class TestMaterialsProjectAqueousCompatibility:
 
 class TestAqueousCorrection:
     def setup_method(self):
-        fp = f"{PMG_ENTRIES_DIR}/MITCompatibility.yaml"
+        fp = "../src/pyEQL/pourbaix/MITCompatibility.yaml"
         self.corr = AqueousCorrection(fp)
 
     def test_compound_energy(self):
@@ -1280,6 +1700,7 @@ class TestCorrectionErrors2020Compatibility:
     "u_config",
     [
         MP2020_COMPAT_CONFIG["Corrections"]["GGAUMixingCorrections"],
+        MP_COMPAT_CONFIG["Advanced"]["UCorrections"],
     ],
 )
 @pytest.mark.parametrize(
