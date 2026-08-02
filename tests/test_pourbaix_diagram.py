@@ -4,6 +4,9 @@ import multiprocessing
 from importlib.resources import files
 from unittest import TestCase
 
+import matplotlib as mpl
+
+mpl.use("Agg", force=True)
 import matplotlib.pyplot as plt
 import numpy as np
 from monty.serialization import dumpfn, loadfn
