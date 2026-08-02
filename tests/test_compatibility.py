@@ -1073,6 +1073,44 @@ class TestMaterialsProjectAqueousCompatibility:
         MaterialsProjectAqueousCompatibility().process_entries(entries, inplace=False)
         assert all(e.correction == e_copy.correction for e, e_copy in zip(entries, entries_copy, strict=True))
 
+    def test_nitrogen_correction(self):
+        import numpy as np  # noqa: PLC0415
+
+        compat = MaterialsProjectAqueousCompatibility(
+            o2_energy=-10,
+            h2o_energy=-20,
+            h2o_adjustments=-0.5,
+            solid_compat=None,
+        )
+
+        entry = ComputedEntry(Composition("Li3N"), -10)
+        correction = next(
+            adj.value for adj in compat.get_adjustments(entry) if adj.name == "MP Aqueous Nitrogen correction"
+        )
+        assert np.isclose(correction, 0.26, atol=1e-8)
+
+        entry = ComputedEntry(Composition("N2"), -10)
+        assert not any(adj.name == "MP Aqueous Nitrogen correction" for adj in compat.get_adjustments(entry))
+
+    def test_universal_solid_shift_adjustment(self):
+        import numpy as np  # noqa: PLC0415
+
+        compat = MaterialsProjectAqueousCompatibility(
+            o2_energy=-10,
+            h2o_energy=-20,
+            h2o_adjustments=-0.5,
+            solid_compat=None,
+            universal_solid_shift_eV_per_atom=0.1,
+        )
+
+        li2o_entry = ComputedEntry(Composition("Li2O"), -10)
+        correction = next(
+            adj.value
+            for adj in compat.get_adjustments(li2o_entry)
+            if adj.name == "User universal solid shift (eV/atom)"
+        )
+        assert np.isclose(correction, 0.3, atol=1e-8)
+
     # def test_solid_compat_args_propagation(self): # Currently commented out
     #     hydrate_entry = ComputedEntry(Composition("FeH4O2"), -10)
 
