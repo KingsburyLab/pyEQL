@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.6.0] - 2026-08-03
 
 ### Added
 
@@ -13,14 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from `monty.json.MSONable`, making equation-of-state engines fully serializable via `as_dict` /
   `from_dict` (and hence `dumpfn` / `loadfn`). Serialization captures the engine type and its
   constructor arguments (e.g. `phreeqc_db`). (#443, @rkingsbury)
-- `Solution.from_file`: override `kwargs` (e.g. `engine=...`) are now honored for `.json` files, not
-  only `.yaml` files. (#445, @rkingsbury)
+- Docs: doctests are now tested as part of CI, and have been updated for consistency with recent versions
+  of `pyEQL`. (#447, @rkingsbury)
 
 ### Changed
 
-- `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
+- **MAJOR CHANGE** `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
   `Solution`, both on input and output, matching how the equilibrium engines (e.g. PHREEQC) interpret
-  pH:
+  pH (#434, @rkingsbury):
   - `Solution.pH` returns the negative log10 of the hydrogen ion *activity* rather than its molar
     concentration.
   - The `pH` constructor argument is likewise interpreted as an activity: `Solution(..., pH=X)`
@@ -31,17 +31,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     coefficient depends on composition, the concentrations are found by a short fixed-point iteration
     (`Solution._solve_pH`). Explicitly supplied `H+`/`OH-` still take precedence over the `pH`
     argument.
+  - Previously `pH` reported (and the constructor set) a concentration-based value, which caused a small
+    but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated calls
+    to `equilibrate()`.
+- The the bundled `presets` for industrial wastewaters have had their compositions and pH updated slightly,
+  and the reference in the docstring of `from_preset` now points to the [published version of the paper](https://doi.org/10.1021/acs.est.6c04293) rather than the preprint. (#441, @SuixiongTay)
+- `FormulaDict` was modified so that re-sorts data lazily, resulting in a roughly 20% performance improvement
+  when creating solutions containing many solutes (#452, @rkingsbury)
+- CI: The `testing` workflow has been renamed `testing-latest` for clarity and for consistency with `testing-pinned`
 
-  Previously `pH` reported (and the constructor set) a concentration-based value, which caused a small
-  but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated calls
-  to `equilibrate()`. The cached `pH` values in the bundled `presets` have been updated accordingly.
-  (#434, @rkingsbury)
 
 ### Fixed
 
-- `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
-  (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
-  This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
 - `Solution.as_dict`: a `Solution` created by passing an `EOS` *instance* (rather than a name) to the
   `engine` kwarg can now be serialized. Previously `as_dict` stored the raw engine object, which is not
   serializable; it now stores the engine as a fully-serialized `MSONable` dict that round-trips to the
@@ -55,6 +56,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   including `default_diffusion_coeff` and `log_level`. A key allowlist previously dropped these on the
   older-`monty` YAML path, so a file could round-trip differently depending on the installed `monty`
   version; both paths now reconstruct identically via `from_dict`. (#445, @rkingsbury)
+- `Solution.from_file`: override `kwargs` (e.g. `engine=...`) are now honored for `.json` files, not
+  only `.yaml` files. (#445, @rkingsbury)
+- `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
+  (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
+  This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
+- `Solution.equilibrate` previously returned solutes reported by the PHREEQC engines even when their concentrations
+  were exactly zero. These species often had oxidation states that were difficult for `Solute` to parse, which
+  then caused errors in some downstream methods. These zero-concentration solutes are now filtered out.
+  (#438, @rkingsbury)
+- `Solution.equilibrate` would previously log `ERROR` when the mass of certain elements involved in gas-liquid or
+  solid-liquid equilibrium, or in charge balancing, changed. In these cases, the change is expected and should not
+  result in an error. This behavior was changed to only raise `ERROR` when the mass of an element not involved in
+  phase equilibrium or charge balancing changes. (#442, @rkingsbury)
+- Docs: Some parameter descriptions and docstrings for `__init__` arguments were being dropped from the built
+  documentation. This has been fixed. (#440, @rkingsbury)
 
 ## [1.5.0] - 2026-06-15
 
@@ -121,7 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
 - `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
   our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
-  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2]
+  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2] (NOTE: see final published version at https://doi.org/10.1021/acs.est.6c04293)
 
 ### Changed
 
