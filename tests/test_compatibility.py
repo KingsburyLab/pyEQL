@@ -38,7 +38,7 @@ import pymatgen
 
 PMG_ENTRIES_DIR = os.path.dirname(os.path.abspath(pymatgen.analysis.compatibility.__file__))
 
-mp_compat_dir = files("pyEQL") / "pourbaix" / "MPCompatibility.yaml"
+mp_compat_dir = files("pyEQL") / "pourbaix" / "MITCompatibility.yaml"
 
 
 @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
