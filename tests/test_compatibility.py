@@ -5,6 +5,7 @@ import math
 import os
 import sys
 from collections import defaultdict
+from importlib.resources import files
 from typing import TYPE_CHECKING
 
 import pytest
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
 import pymatgen
 
 PMG_ENTRIES_DIR = os.path.dirname(os.path.abspath(pymatgen.analysis.compatibility.__file__))
+
+mp_compat_dir = files("pyEQL") / "pourbaix" / "MPCompatibility.yaml"
 
 
 @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
@@ -1568,7 +1571,7 @@ class TestMaterialsProjectAqueousCompatibility:
 
 class TestAqueousCorrection:
     def setup_method(self):
-        fp = "../src/pyEQL/pourbaix/MITCompatibility.yaml"
+        fp = mp_compat_dir
         self.corr = AqueousCorrection(fp)
 
     def test_compound_energy(self):
