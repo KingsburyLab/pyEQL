@@ -209,6 +209,14 @@ def test_get_pourbaix_entries(monkeypatch):
                 ComputedEntry(Composition("Fe2O3"), -100),
             ]
 
+    class DummyGibbsComputedStructureEntry:
+        temp = None
+
+        @classmethod
+        def from_entries(cls, entries, temp):
+            cls.temp = temp
+            return entries
+
     pourbaix_api = Pourbaix_api(DummyMPR())
 
     monkeypatch.setattr(
@@ -240,7 +248,16 @@ def test_get_pourbaix_entries(monkeypatch):
         lambda self, entries: entries,
     )
 
+    monkeypatch.setattr(
+        "pymatgen.entries.computed_entries.GibbsComputedStructureEntry",
+        DummyGibbsComputedStructureEntry,
+    )
+
     pbx_entries = pourbaix_api.get_pourbaix_entries("Fe")
 
     assert pbx_entries
     assert all(isinstance(e, PourbaixEntry) for e in pbx_entries)
+
+    pbx_entries_with_gibbs = pourbaix_api.get_pourbaix_entries("Fe", use_gibbs=300)
+    assert pbx_entries_with_gibbs
+    assert all(isinstance(e, PourbaixEntry) for e in pbx_entries_with_gibbs)
