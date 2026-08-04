@@ -1,4 +1,5 @@
 import itertools
+import os
 from importlib.resources import files
 
 import numpy as np
@@ -8,6 +9,7 @@ pytest.importorskip("mp_api", reason="mp_api not installed or incompatible with 
 from mp_api.client import MPRester
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
+from pymatgen.core.composition import Composition
 from pymatgen.core.ion import Ion
 from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
@@ -22,12 +24,12 @@ def mpr():
     rester.session.close()
 
 
-# @pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
+@pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
 class TestMPRester:
     fake_mp_api_key = "12345678901234567890123456789012"
     default_endpoint = "https://api.materialsproject.org/"
 
-    # @pytest.mark.skip(reason="SSL issues")
+    @pytest.mark.skip(reason="SSL issues")
     def test_get_ion_entries(self, mpr):
         entries = mpr.get_entries_in_chemsys("Ti-O-H", additional_criteria={"thermo_types": ["GGA_GGA+U"]})
         pd = PhaseDiagram(entries)
@@ -193,3 +195,52 @@ def test_get_ion_entries_from_phase_diagram():
     assert isinstance(ion_entries[0], IonEntry)
     assert ion_entries[0].ion.reduced_formula == "SO4[-2]"
     assert ion_entries[0].energy == pytest.approx(expected_energy)
+
+
+def test_get_pourbaix_entries(monkeypatch):
+    from pymatgen.analysis.compatibility import MaterialsProjectAqueousCompatibility  # noqa: PLC0415
+
+    class DummyMPR:
+        def get_entries_in_chemsys(self, *args, **kwargs):
+            return [
+                ComputedEntry(Composition("Fe"), 0),
+                ComputedEntry(Composition("O2"), 0),
+                ComputedEntry(Composition("H2"), 0),
+                ComputedEntry(Composition("Fe2O3"), -100),
+            ]
+
+    pourbaix_api = Pourbaix_api(DummyMPR())
+
+    monkeypatch.setattr(
+        pourbaix_api,
+        "get_ion_reference_data_for_chemsys",
+        lambda chemsys: [
+            {
+                "identifier": "Fe[2+]",
+                "formula": "Fe[2+]",
+                "data": {
+                    "MajElements": "Fe",
+                    "RefSolid": "Fe",
+                    "ΔGᶠ": {"value": 0, "unit": "kJ/mol"},
+                    "ΔGᶠRefSolid": {"value": 0, "unit": "kJ/mol"},
+                },
+            }
+        ],
+    )
+
+    monkeypatch.setattr(
+        pourbaix_api,
+        "get_ion_entries",
+        lambda pd, ion_ref_data=None: [IonEntry(Ion.from_formula("Fe[2+]"), 0)],
+    )
+
+    monkeypatch.setattr(
+        MaterialsProjectAqueousCompatibility,
+        "process_entries",
+        lambda self, entries: entries,
+    )
+
+    pbx_entries = pourbaix_api.get_pourbaix_entries("Fe")
+
+    assert pbx_entries
+    assert all(isinstance(e, PourbaixEntry) for e in pbx_entries)
