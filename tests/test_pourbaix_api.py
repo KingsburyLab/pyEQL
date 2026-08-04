@@ -1,5 +1,5 @@
 import itertools
-import os
+from importlib.resources import files
 
 import numpy as np
 import pytest
@@ -10,6 +10,7 @@ from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
 from pymatgen.core.ion import Ion
 from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
+from pymatgen.entries.computed_entries import ComputedEntry
 
 from pyEQL.pourbaix.pourbaix_api import Pourbaix_api
 
@@ -21,14 +22,14 @@ def mpr():
     rester.session.close()
 
 
-@pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
+# @pytest.mark.skipif(os.getenv("MP_API_KEY", None) is None, reason="No API key found.")
 class TestMPRester:
     fake_mp_api_key = "12345678901234567890123456789012"
     default_endpoint = "https://api.materialsproject.org/"
 
-    @pytest.mark.skip(reason="SSL issues")
+    # @pytest.mark.skip(reason="SSL issues")
     def test_get_ion_entries(self, mpr):
-        entries = mpr.get_entries_in_chemsys("Ti-O-H")
+        entries = mpr.get_entries_in_chemsys("Ti-O-H", additional_criteria={"thermo_types": ["GGA_GGA+U"]})
         pd = PhaseDiagram(entries)
         pourbaix_api = Pourbaix_api(mpr)  # instantiated in test
         ion_entry_data = pourbaix_api.get_ion_reference_data_for_chemsys("Ti-O-H")
@@ -41,7 +42,7 @@ class TestMPRester:
         assert len(bi_v_entry_data) == len(bi_data) + len(v_data)
 
         # test an incomplete phase diagram
-        entries = mpr.get_entries_in_chemsys("Ti-O")
+        entries = mpr.get_entries_in_chemsys("Ti-O", additional_criteria={"thermo_types": ["GGA_GGA+U"]})
         pd = PhaseDiagram(entries)
         with pytest.raises(ValueError, match="The phase diagram chemical system"):
             pourbaix_api.get_ion_entries(pd)
@@ -50,7 +51,9 @@ class TestMPRester:
         ion_data = pourbaix_api.get_ion_reference_data_for_chemsys("S")
         ion_ref_comps = [Ion.from_formula(d["data"]["RefSolid"]).composition for d in ion_data]
         ion_ref_elts = set(itertools.chain.from_iterable(i.elements for i in ion_ref_comps))
-        ion_ref_entries = mpr.get_entries_in_chemsys([*map(str, ion_ref_elts), "O", "H"])
+        ion_ref_entries = mpr.get_entries_in_chemsys(
+            [*map(str, ion_ref_elts), "O", "H"], additional_criteria={"thermo_types": ["GGA_GGA+U"]}
+        )
         mpc = MaterialsProjectAqueousCompatibility()
         ion_ref_entries = mpc.process_entries(ion_ref_entries)
         ion_ref_pd = PhaseDiagram(ion_ref_entries)
@@ -111,3 +114,82 @@ class TestMPRester:
         # pbx_entries = self.rester.get_pourbaix_entries(["S"])
         # so4_two_minus = pbx_entries[9]
         # self.assertAlmostEqual(so4_two_minus.energy, 0.301511, places=3)
+
+
+def test_get_ion_reference_data_for_chemsys(tmp_path):
+    mp_ref_dir = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
+
+    pourbaix_api = object.__new__(Pourbaix_api)
+    pourbaix_api.json_path = mp_ref_dir
+
+    entries = pourbaix_api.get_ion_reference_data_for_chemsys("B-V")
+    assert {entry["identifier"] for entry in entries} == {
+        "V2O7[4-]",
+        "HVO4(aq)",
+        "VOH2O2[3+]",
+        "H2V10O28[4-]",
+        "VO2[+]",
+        "VO3[-]",
+        "VO4[3-]",
+        "HVO4[2-]",
+        "HV2O7[3-]",
+        "VO[2+]",
+        "VO4[-]",
+        "H2VO4[+]",
+        "H3V2O7[-]",
+        "HV10O28[5-]",
+        "B4O7[2-]",
+        "H2B4O7(aq)",
+        "H5(BO3)2(H2O2)2[-]",
+        "BH4[-]",
+        "BO2[-]",
+        "H2BO3[-]",
+        "H3BO3(aq)",
+        "H2BO3(H2O2)[-]",
+        "HB4O7[-]",
+        "B(OH)4[-]",
+    }
+    assert {entry["data"]["MajElements"] for entry in entries} == {"B", "V"}
+    assert {entry["data"]["RefSolid"] for entry in entries} == {"B2O3", "VO2"}
+
+    entries = pourbaix_api.get_ion_reference_data_for_chemsys(["Na"])
+    assert {entry["identifier"] for entry in entries} == {"Na[+]"}
+    assert {entry["formula"] for entry in entries} == {"Na[+1]"}
+    assert {entry["data"]["MajElements"] for entry in entries} == {"Na"}
+    assert {entry["data"]["RefSolid"] for entry in entries} == {"Na2O"}
+
+
+def test_get_ion_entries_from_phase_diagram():
+    entries = [
+        ComputedEntry("H2", 0.0),
+        ComputedEntry("O2", 0.0),
+        ComputedEntry("Na", 0.0),
+        ComputedEntry("S", 0.0),
+        ComputedEntry("Na2SO4", -10.0),
+    ]
+    pd = PhaseDiagram(entries)
+
+    ion_ref_data = [
+        {
+            "formula": "SO4[-2]",
+            "data": {
+                "MajElements": "S",
+                "RefSolid": "Na2SO4",
+                "ΔGᶠRefSolid": {"value": -100.0, "unit": "kJ/mol"},
+                "ΔGᶠ": {"value": -50.0, "unit": "kJ/mol"},
+            },
+        }
+    ]
+
+    pourbaix_api = object.__new__(Pourbaix_api)
+    ion_entries = pourbaix_api.get_ion_entries(pd, ion_ref_data)
+
+    ref_solid = entries[-1]
+    ref_solid_energy = -100.0 / 96.485
+    ion_free_energy = -50.0 / 96.485
+    expected_energy = ion_free_energy + (pd.get_form_energy(ref_solid) - ref_solid_energy)
+
+    assert len(ion_entries) == 1
+    assert isinstance(ion_entries[0], IonEntry)
+    assert ion_entries[0].ion.reduced_formula == "SO4[-2]"
+    assert ion_entries[0].energy == pytest.approx(expected_energy)
