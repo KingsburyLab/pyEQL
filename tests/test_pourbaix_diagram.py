@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from monty.serialization import dumpfn, loadfn
 from pymatgen.core.composition import Composition
+from pymatgen.core.ion import Ion
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.util.testing import PymatgenTest
 from pytest import approx
 
 from pyEQL import Solution
-from pyEQL.pourbaix.ion import Ion
 from pyEQL.pourbaix.pourbaix_diagram import (
     IonEntry,
     MultiEntry,

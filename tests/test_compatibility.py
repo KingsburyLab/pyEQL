@@ -1723,3 +1723,19 @@ class TestCorrectionErrors2020Compatibility:
 )
 def test_needs_u_correction(comp: CompositionLike, expected: set[str], u_config: dict):
     assert needs_u_correction(comp, u_config=u_config) == expected
+
+
+def test_explain_with_adjustments(capsys):
+    class DummyCompatibility(Compatibility):
+        def get_adjustments(self, entry):
+            return [ConstantEnergyAdjustment(-10, name="Dummy adjustment")]
+
+    compat = DummyCompatibility()
+    entry = compat.process_entry(ComputedEntry("Fe2O3", -10))
+
+    compat.explain(entry)
+    out = capsys.readouterr().out
+
+    assert "The uncorrected energy of Fe2 O3" in out
+    # since -10 + (-10) = -20
+    assert "The final energy after adjustments is -20.000 eV" in out
