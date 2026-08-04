@@ -177,8 +177,8 @@ def test_get_ion_entries_from_phase_diagram():
             "data": {
                 "MajElements": "S",
                 "RefSolid": "Na2SO4",
-                "ΔGᶠRefSolid": {"value": -100.0, "unit": "kJ/mol"},
-                "ΔGᶠ": {"value": -50.0, "unit": "kJ/mol"},
+                "ΔGᶠRefSolid": {"value": -0.1, "unit": "MJ/mol"},
+                "ΔGᶠ": {"value": -0.05, "unit": "MJ/mol"},
             },
         }
     ]
@@ -187,8 +187,8 @@ def test_get_ion_entries_from_phase_diagram():
     ion_entries = pourbaix_api.get_ion_entries(pd, ion_ref_data)
 
     ref_solid = entries[-1]
-    ref_solid_energy = -100.0 / 96.485
-    ion_free_energy = -50.0 / 96.485
+    ref_solid_energy = -0.1 / 96485
+    ion_free_energy = -0.05 / 96485
     expected_energy = ion_free_energy + (pd.get_form_energy(ref_solid) - ref_solid_energy)
 
     assert len(ion_entries) == 1
@@ -261,3 +261,20 @@ def test_get_pourbaix_entries(monkeypatch):
     pbx_entries_with_gibbs = pourbaix_api.get_pourbaix_entries("Fe", use_gibbs=300)
     assert pbx_entries_with_gibbs
     assert all(isinstance(e, PourbaixEntry) for e in pbx_entries_with_gibbs)
+
+
+def test_nbs_table_ion_data(mpr):
+    pourbaix_api = Pourbaix_api(mpr)
+    nbs_db = pourbaix_api.NBS_table_ion_data()
+
+    assert "NO3[-1]" in nbs_db
+    assert "SO4[-2]" in nbs_db
+    assert "Al[+3]" in nbs_db
+
+    entry = nbs_db["SO4[-2]"]
+
+    assert "exp_form_E" in entry
+    assert "exp_entropy" in entry
+
+    assert entry["exp_form_E"]["units"] == "kJ/mol"
+    assert entry["exp_entropy"]["units"] == "J/(mol*K)"

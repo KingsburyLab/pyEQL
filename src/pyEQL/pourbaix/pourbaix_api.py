@@ -3,10 +3,10 @@ import warnings
 from importlib.resources import files
 from typing import Literal
 
-import pandas as pd
 from emmet.core.settings import EmmetSettings
 from monty.serialization import loadfn
 from mp_api.client.core.settings import MAPIClientSettings
+from openpyxl import load_workbook
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import Ion, IonEntry
 from pymatgen.core import Composition, Element
@@ -292,11 +292,42 @@ class Pourbaix_api:
         return speciated_ions  # noqa: RET504
 
     @staticmethod
-    def standardize_NBS_formula(x):
-        try:
-            return standardize_formula(x)
-        except Exception as e:
-            return f"ERROR: {e}"
+    def _rich_text_formula(value):
+        if value is None:
+            return ""
+
+        if isinstance(value, str):
+            return value.strip()
+
+        formula = ""
+        charge = ""
+
+        for run in value:
+            text = getattr(run, "text", str(run))
+            font = getattr(run, "font", None)
+
+            if getattr(font, "vertAlign", None) == "superscript":
+                charge += text
+            else:
+                formula += text
+
+        formula = formula.strip()
+        charge = charge.strip().replace("\N{MINUS SIGN}", "-")
+
+        if not charge:
+            return formula
+
+        if charge[-1] in "+-":
+            if formula.count("(") > formula.count(")"):
+                formula += ")"
+            return f"{formula}[{charge[-1]}{charge[:-1] or '1'}]"
+
+        if charge[0] in "+-":
+            if formula.count("(") > formula.count(")"):
+                formula += ")"
+            return f"{formula}[{charge[0]}{charge[1:] or '1'}]"
+
+        return formula + charge
 
     def NBS_table_ion_data(self):
         """
@@ -306,17 +337,21 @@ class Pourbaix_api:
         :param self: Description
         """
         nbs_data = self.xlsx_path
-        df_dict = pd.read_excel(nbs_data, sheet_name="NBS Tables", skiprows=3)
-        df_dict = df_dict[df_dict.iloc[:, 4].isin(["ao", "ai"])]
-        df_dict.iloc[:, 0] = df_dict.iloc[:, 0].apply(self.standardize_NBS_formula)  # Unnamed: 8 is delta G_f
+        workbook = load_workbook(nbs_data, data_only=True, rich_text=True)
+        worksheet = workbook["NBS Tables"]
 
-        # Dictionary that maps the column names with formation energy
         nbs_db = {}
-        for i in range(len(df_dict)):
-            identifier = df_dict.iloc[i, 0]
+        for row in worksheet.iter_rows(min_row=5, values_only=False):
+            if row[4].value not in {"ao", "ai"}:
+                continue
+
+            formula = self._rich_text_formula(row[0].value)
+            formula = formula.replace("·", "").replace("∙", "")
+            identifier = standardize_formula(formula)
+
             nbs_db[identifier] = {
-                "exp_form_E": {"value": df_dict.iloc[i, 8], "units": "kJ/mol"},
-                "exp_entropy": {"value": df_dict.iloc[i, 9], "units": "J/(mol*K)"},
+                "exp_form_E": {"value": row[8].value, "units": "kJ/mol"},
+                "exp_entropy": {"value": row[9].value, "units": "J/(mol*K)"},
             }
 
         return nbs_db

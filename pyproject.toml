@@ -46,6 +46,7 @@ testing = [
   "mypy>1",
   "ruff>0.0.100",
   "tox<4",
+  "openpyxl",
 ]
 pourbaix = [
   "mp-api>=0.45.0",
