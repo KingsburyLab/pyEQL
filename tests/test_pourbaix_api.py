@@ -263,7 +263,7 @@ def test_get_pourbaix_entries(monkeypatch):
     assert all(isinstance(e, PourbaixEntry) for e in pbx_entries_with_gibbs)
 
 
-def test_nbs_table_ion_data(mpr):
+def test_nbs_table_ion_data():
     class DummyMPR:
         pass
 
