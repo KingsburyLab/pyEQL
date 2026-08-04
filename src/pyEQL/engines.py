@@ -223,6 +223,15 @@ class Phreeqc2026EOS(EOS):
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a Phreeqc solution for subsequent analysis."""
+        if self.pp is None:
+            # Backend unavailable (see the engine's __init__). Raise a clear, immediate error
+            # instead of crashing deep in the wrapper. Raising ValueError (rather than, e.g.,
+            # RuntimeError) lets get_activity_coefficient's caller catch it and fall back to
+            # unit activity coefficients, so property reads still work.
+            raise ValueError(
+                "The PHREEQC backend is unavailable on this platform, so this calculation "
+                "cannot be performed. See earlier log messages for details."
+            )
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
@@ -340,6 +349,11 @@ class Phreeqc2026EOS(EOS):
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
         """
+        if self.pp is None:
+            # The PHREEQC backend failed to initialize on this platform (see the engine's
+            # __init__). Honor the documented contract: equilibrate() has no effect.
+            logger.debug("PHREEQC backend unavailable; equilibrate() has no effect.")
+            return
         if self.ppsol is not None:
             self.ppsol.forget()
         self._setup_ppsol(solution)
@@ -586,15 +600,21 @@ class PhreeqcEOS(Phreeqc2026EOS):
         self.db_path = (
             Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
         )
-        # create the PhreeqcPython instance
-        # try/except added to catch unsupported architectures, such as Apple Silicon
+        # create the PhreeqPython instance
+        # try/except added to catch platforms with no compatible phreeqpython binary, such as
+        # Apple Silicon or aarch64 Linux (phreeqpython ships no arm64 Linux shared library)
         try:
             self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
         except OSError:
+            # super().__init__() already set self.pp to an in-tree Phreeqc wrapper, which is the
+            # wrong type for this (phreeqpython-backed) engine. Discard it and mark the backend
+            # unavailable so equilibrate() cleanly no-ops instead of crashing deep inside the
+            # wrapper. See equilibrate() and _setup_ppsol().
+            self.pp = None
             logger.error(
                 "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
-                " pyEQL will work, but equilibrate() will have no effect."
+                " are running on a platform with no compatible phreeqpython binary, such as Apple M1/M2"
+                " chips or aarch64 Linux. pyEQL will work, but equilibrate() will have no effect."
             )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
