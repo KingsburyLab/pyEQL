@@ -296,7 +296,7 @@ def test_equilibrate_water_pH7():
 def test_repeated_equilibrate():
     # repeated calls to equilibrate should not change the properties (much)
     for cb in [None, "pH", "auto"]:
-        s1 = Solution({}, pH=7.00, volume="1 L", engine="phreeqc", balance_charge=cb)
+        s1 = Solution({}, pH=7.00, volume="1 L", engine="phreeqc2026", balance_charge=cb)
         first_pH = s1.pH
         first_volume = s1.volume.magnitude
         first_mass = s1.mass.magnitude
