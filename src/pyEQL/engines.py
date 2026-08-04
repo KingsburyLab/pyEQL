@@ -352,7 +352,7 @@ class Phreeqc2026EOS(EOS):
         if self.pp is None:
             # The PHREEQC backend failed to initialize on this platform (see the engine's
             # __init__). Honor the documented contract: equilibrate() has no effect.
-            logger.debug("PHREEQC backend unavailable; equilibrate() has no effect.")
+            logger.error("PHREEQC backend unavailable; equilibrate() has no effect.")
             return
         if self.ppsol is not None:
             self.ppsol.forget()
