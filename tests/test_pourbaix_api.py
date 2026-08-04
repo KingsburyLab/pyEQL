@@ -264,7 +264,10 @@ def test_get_pourbaix_entries(monkeypatch):
 
 
 def test_nbs_table_ion_data(mpr):
-    pourbaix_api = Pourbaix_api(mpr)
+    class DummyMPR:
+        pass
+
+    pourbaix_api = Pourbaix_api(DummyMPR())
     nbs_db = pourbaix_api.NBS_table_ion_data()
 
     assert "NO3[-1]" in nbs_db
