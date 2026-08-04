@@ -255,6 +255,18 @@ class FormulaDict(UserDict):
     formula notation (e.g., "Na+", "Na+1", "Na[+]" all have the same effect)
     """
 
+    def __init__(self, *args, **kwargs) -> None:
+        # Whether self.data is currently in sorted (descending-by-value) order. Set before
+        # calling super().__init__ because that may trigger __setitem__ during construction.
+        self._sorted = True
+        super().__init__(*args, **kwargs)
+
+    def _ensure_sorted(self) -> None:
+        """Sort the underlying data by value (descending) if a mutation invalidated the order."""
+        if not self._sorted:
+            self.data = dict(sorted(self.data.items(), key=lambda x: x[1], reverse=True))
+            self._sorted = True
+
     def __getitem__(self, key) -> Any:
         return super().__getitem__(standardize_formula(key))
 
@@ -262,8 +274,22 @@ class FormulaDict(UserDict):
         # ensure that all values are stored as python floats, not numpy types
         # see https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
         super().__setitem__(standardize_formula(key), float(value))
-        # sort contents anytime an item is set
-        self.data = dict(sorted(self.items(), key=lambda x: x[1], reverse=True))
+        # defer sorting until the contents are next iterated (lazy sort via _ensure_sorted),
+        # which avoids an O(n log n) re-sort on every assignment
+        self._sorted = False
+
+    def __iter__(self):
+        # Iteration is the read barrier: keys(), values(), items(), list(), dict(), and
+        # `for` loops all funnel through here, so sorting now guarantees callers observe
+        # the same descending-by-amount order they did under eager sorting.
+        self._ensure_sorted()
+        return iter(self.data)
+
+    def __repr__(self) -> str:
+        # UserDict.__repr__ reads self.data directly, bypassing __iter__; sort first so the
+        # printed representation matches iteration order.
+        self._ensure_sorted()
+        return super().__repr__()
 
     # Necessary to define this so that .get() works properly in python 3.12+
     # see https://github.com/python/cpython/issues/105524
@@ -272,3 +298,5 @@ class FormulaDict(UserDict):
 
     def __delitem__(self, key) -> None:
         super().__delitem__(standardize_formula(key))
+        # deleting a key preserves the relative order of the remaining items, so the
+        # sorted/dirty state is unchanged.

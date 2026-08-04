@@ -1,4 +1,4 @@
-name: testing
+name: testing-latest
 
 on:
   pull_request:
