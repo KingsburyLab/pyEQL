@@ -166,6 +166,15 @@ def test_salt_with_equilibration() -> None:
     assert s1.get_salt().formula == "MgCl2"
     assert np.isclose(s1.get_salt_dict(cutoff=0.0)["MgCl2"]["mol"], 1)
 
+    # https://github.com/KingsburyLab/pyEQL/issues/431
+    # test a preset solution with a complex composition
+    s2 = pyEQL.Solution.from_preset("refining")
+    d = s2.get_salt_dict(use_totals=True)
+    assert d != {}
+    assert np.isclose(d["CaSO4"]["mol"], s2.get_total_amount("Ca", "mol").magnitude)
+    d = s2.get_salt_dict(use_totals=False)
+    assert "NaNaSO4" not in d
+
 
 def test_salt_asymmetric() -> None:
     """
