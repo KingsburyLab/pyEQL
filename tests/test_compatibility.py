@@ -20,6 +20,7 @@ from pyEQL.pourbaix.compatibility import (
     MP2020_COMPAT_CONFIG,
     MP_COMPAT_CONFIG,
     MU_H2O,
+    AnionCorrection,
     AqueousCorrection,
     Compatibility,
     CompatibilityError,
@@ -1595,6 +1596,12 @@ class TestAqueousCorrection:
         entry = self.corr.correct_entry(entry)
         assert entry.energy == approx(-24.344373)
 
+    def test_correction_str(self):
+        assert str(self.corr) == f"{self.corr.name} Aqueous Correction"
+
+    def test_cpd_error_File(self):
+        assert isinstance(self.corr.cpd_errors, defaultdict)
+
 
 class TestCorrectionErrors2020Compatibility:
     def setup_method(self):
@@ -1739,3 +1746,31 @@ def test_explain_with_adjustments(capsys):
     assert "The uncorrected energy of Fe2 O3" in out
     # since -10 + (-10) = -20
     assert "The final energy after adjustments is -20.000 eV" in out
+
+
+def make_anion_correction(correct_peroxide=True):
+    corr_dir = files("pyEQL") / "pourbaix" / "MP2020Compatibility.yaml"
+    correction = AnionCorrection(corr_dir, correct_peroxide=True)
+
+    entry = ComputedEntry("FeS2", 0, data={"sulfide_type": "polysulfide"})
+    value = correction.get_correction(entry)
+    expected = correction.sulfide_correction["sulfide"] * entry.composition["S"]
+    assert value.nominal_value == pytest.approx(expected.nominal_value)
+
+    entry = ComputedEntry("Li2O2", 0, data={"oxide_type": "peroxide"})
+    value = correction.get_correction(entry)
+    expected = correction.oxide_correction["peroxide"] * entry.composition["O"]
+    assert value.nominal_value == pytest.approx(expected.nominal_value)
+
+    entry = ComputedEntry("FeHO2", 0, data={"oxide_type": "hydroxide"})
+    value = correction.get_correction(entry)
+    expected = correction.oxide_correction["oxide"] * entry.composition["O"]
+    assert value.nominal_value == pytest.approx(expected.nominal_value)
+
+    entry = ComputedEntry("Fe2O3", 0)
+
+    with pytest.warns(UserWarning, match="No structure or oxide_type"):
+        value = correction.get_correction(entry)
+
+    expected = correction.oxide_correction["oxide"] * entry.composition["O"]
+    assert value.nominal_value == pytest.approx(expected.nominal_value)
