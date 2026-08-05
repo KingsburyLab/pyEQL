@@ -196,6 +196,22 @@ def test_get_ion_entries_from_phase_diagram():
     assert ion_entries[0].ion.reduced_formula == "SO4[-2]"
     assert ion_entries[0].energy == pytest.approx(expected_energy)
 
+    ion_ref_data[0]["data"]["ΔGᶠRefSolid"] = {
+        "value": -100.0,
+        "unit": "kJ/mol",
+    }
+    ion_ref_data[0]["data"]["ΔGᶠ"] = {
+        "value": -50.0,
+        "unit": "kJ/mol",
+    }
+
+    ion_entries = pourbaix_api.get_ion_entries(pd, ion_ref_data)
+    ref_solid_energy = -100.0 / 96.485
+    ion_free_energy = -50.0 / 96.485
+    expected_energy = ion_free_energy + (pd.get_form_energy(ref_solid) - ref_solid_energy)
+
+    assert ion_entries[0].energy == pytest.approx(expected_energy)
+
 
 def test_get_pourbaix_entries(monkeypatch):
     from pymatgen.analysis.compatibility import MaterialsProjectAqueousCompatibility  # noqa: PLC0415

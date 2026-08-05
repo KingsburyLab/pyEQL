@@ -480,6 +480,8 @@ class TestMaterialsProjectCompatibility:
         dct = compat.get_explanation_dict(entry)
         assert dct["corrections"][0]["name"] == "MPRelaxSet Potcar Correction"
 
+        compat.explain(entry)
+
     def test_get_corrections_dict(self):
         compat = MaterialsProjectCompatibility(check_potcar_hash=False)
         gga_compat = MaterialsProjectCompatibility("GGA", check_potcar_hash=False)
