@@ -1198,6 +1198,16 @@ class TestMaterialsProjectCompatibility2020:
         processed_entry = compat.process_entry(self.entry_many_anions)
         assert processed_entry.energy == -1
 
+    def test_custom_config_file(self):
+        config_file = str(files("pyEQL") / "pourbaix" / "MP2020Compatibility.yaml")
+
+        compat = MaterialsProject2020Compatibility(
+            check_potcar_hash=False,
+            config_file=config_file,
+        )
+
+        assert compat.config_file == config_file
+
 
 class TestSulfideTypeCorrection2020:
     def setup_method(self):
@@ -1749,25 +1759,34 @@ def test_explain_with_adjustments(capsys):
     # since -10 + (-10) = -20
     assert "The final energy after adjustments is -20.000 eV" in out
 
+    entry = ComputedEntry("Fe2O3", -10)
 
-def make_anion_correction(correct_peroxide=True):
-    corr_dir = files("pyEQL") / "pourbaix" / "MP2020Compatibility.yaml"
+    compat.explain(entry)
+    out = capsys.readouterr().out
+
+    assert "No energy adjustments have been applied to this entry." in out
+
+
+def test_anion_correction():
+    assert AnionCorrection.__module__ == "pyEQL.pourbaix.compatibility"
+
+    corr_dir = files("pyEQL") / "pourbaix" / "MPCompatibility.yaml"
     correction = AnionCorrection(corr_dir, correct_peroxide=True)
 
     entry = ComputedEntry("FeS2", 0, data={"sulfide_type": "polysulfide"})
     value = correction.get_correction(entry)
     expected = correction.sulfide_correction["sulfide"] * entry.composition["S"]
-    assert value.nominal_value == pytest.approx(expected.nominal_value)
+    assert value.nominal_value == pytest.approx(expected)
 
     entry = ComputedEntry("Li2O2", 0, data={"oxide_type": "peroxide"})
     value = correction.get_correction(entry)
     expected = correction.oxide_correction["peroxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected.nominal_value)
+    assert value.nominal_value == pytest.approx(expected)
 
     entry = ComputedEntry("FeHO2", 0, data={"oxide_type": "hydroxide"})
     value = correction.get_correction(entry)
     expected = correction.oxide_correction["oxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected.nominal_value)
+    assert value.nominal_value == pytest.approx(expected)
 
     entry = ComputedEntry("Fe2O3", 0)
 
@@ -1775,4 +1794,4 @@ def make_anion_correction(correct_peroxide=True):
         value = correction.get_correction(entry)
 
     expected = correction.oxide_correction["oxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected.nominal_value)
+    assert value.nominal_value == pytest.approx(expected)
