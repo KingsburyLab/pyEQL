@@ -15,10 +15,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Self
 
+from monty.json import MSONable
 from phreeqpython import PhreeqPython
+from pymatgen.core import Composition
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
+from pyEQL.phreeqc import PHRQSol
 from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
@@ -52,7 +55,7 @@ def _phreeqpython_available():
 PHREEQPYTHON_AVAILABLE = _phreeqpython_available()
 
 
-class EOS(ABC):
+class EOS(MSONable, ABC):
     """
     Abstract base class for pyEQL equation of state classes.
 
@@ -60,6 +63,12 @@ class EOS(ABC):
     standalone functions available in pyEQL.activity_correction and pyEQL.equilibrium
     as much as possible. This facilitates robust unit testing while allowing users
     to "mix and match" or customize the various models as needed.
+
+    Inheriting from ``MSONable`` makes every ``EOS`` fully serializable: ``as_dict`` /
+    ``from_dict`` (and hence :func:`monty.serialization.dumpfn` / :func:`~monty.serialization.loadfn`)
+    round-trip an engine instance by capturing its constructor arguments. Concrete
+    subclasses therefore only need to store their ``__init__`` arguments as attributes of
+    the same name (e.g. ``self.phreeqc_db``) for serialization to work automatically.
     """
 
     @abstractmethod
@@ -200,25 +209,53 @@ class Phreeqc2026EOS(EOS):
         )
         # create the PhreeqcPython instance
         self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
-        # attributes to hold the PhreeqPython solution.
+        # attributes to hold the Phreeqc solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
+        # re-entrancy guard: True while _setup_ppsol is reading solution.pH (which, for a
+        # PHREEQC-based activity model, would otherwise recursively try to rebuild this same
+        # ppsol). See _setup_ppsol and get_activity_coefficient.
+        self._building_ppsol = False
+
+    def _ppsol_dict_input(self, d):
+        return PHRQSol(d)
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
-
-        from pyEQL.phreeqc import PHRQSol  # noqa: PLC0415
+        """Helper method to set up a Phreeqc solution for subsequent analysis."""
+        if self.pp is None:
+            # Backend unavailable (see the engine's __init__). Raise a clear, immediate error
+            # instead of crashing deep in the wrapper. Raising ValueError (rather than, e.g.,
+            # RuntimeError) lets get_activity_coefficient's caller catch it and fall back to
+            # unit activity coefficients, so property reads still work.
+            raise ValueError(
+                "The PHREEQC backend is unavailable on this platform, so this calculation "
+                "cannot be performed. See earlier log messages for details."
+            )
 
         self._stored_comp = solution.components.copy()
         solv_mass = solution.solvent_mass.to("kg").magnitude
+        # Reading solution.pH computes -log10 of the H+ *activity*. For a PHREEQC-based
+        # activity model, that computation would recursively try to (re)build this very
+        # ppsol, causing infinite recursion. Guard the read: while _building_ppsol is True,
+        # get_activity_coefficient falls back to a unit H+ activity coefficient, so the pH
+        # passed to PHREEQC here is effectively the concentration-based value (an adequate
+        # starting point; PHREEQC computes its own internal activities). The native engine,
+        # which derives activity coefficients from Pitzer/Debye-Huckel rather than PHREEQC,
+        # is unaffected by the guard and therefore passes a true activity-based pH.
+        self._building_ppsol = True
+        try:
+            input_pH = solution.pH
+        finally:
+            self._building_ppsol = False
         # inherit bulk solution properties
         d = {
             "temp": solution.temperature.to("degC").magnitude,
             "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
-            "pH": solution.pH,
+            "pH": input_pH,
+            # PHREEQC will use the specified (fixed) pE value during equlibrate, as long
+            # as no "redox" line is specified here.
             "pe": solution.pE,
-            "redox": "pe",  # hard-coded to use the pe
             # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
             # really have to specify the solvent mass in 1 liter of solution
             "water": solv_mass,
@@ -264,7 +301,7 @@ class Phreeqc2026EOS(EOS):
                 d[key] += " charge"
 
         try:
-            ppsol = self.pp.add_solution(PHRQSol(d))
+            ppsol = self.pp.add_solution(self._ppsol_dict_input(d))
         except Exception as e:
             # catch problems with the input to phreeqc
             raise ValueError(
@@ -275,9 +312,12 @@ class Phreeqc2026EOS(EOS):
 
         self.ppsol = ppsol
 
+    def _handle_destroy_ppsol(self):
+        return self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+
     def _destroy_ppsol(self) -> None:
         if self.ppsol is not None:
-            self.pp.remove_solution(0)  # TODO: Are we only expecting a single solution per wrapper?
+            self._handle_destroy_ppsol()
             self.ppsol = None
 
     def equilibrate(
@@ -309,6 +349,11 @@ class Phreeqc2026EOS(EOS):
                 {"CO2": "0.000316 atm"}
                 {"CO2": -3.5}
         """
+        if self.pp is None:
+            # The PHREEQC backend failed to initialize on this platform (see the engine's
+            # __init__). Honor the documented contract: equilibrate() has no effect.
+            logger.error("PHREEQC backend unavailable; equilibrate() has no effect.")
+            return
         if self.ppsol is not None:
             self.ppsol.forget()
         self._setup_ppsol(solution)
@@ -358,11 +403,20 @@ class Phreeqc2026EOS(EOS):
         # use the output from PHREEQC to update the Solution composition
         # the .species_moles attribute should return MOLES (not moles per ___)
         for s, mol in self.ppsol.species_moles.items():
+            # during some redox equlibration calculations, PHREEQC will return species
+            # with amounts that are exactly zero. These species often have oxidation states
+            # that are difficult for Solute to parse, which then causes errors in some
+            # downstream methods. Ignore anything that has a zero concentration.
+            if mol == 0:
+                continue
             solution.components[s] = mol
 
         # log a message if any components were not touched by PHREEQC
         # if that was the case, re-adjust the charge balance to account for those species (since PHREEQC did not)
         missing_species = set(self._stored_comp.keys()) - {standardize_formula(s) for s in self.ppsol.species}
+        # remove H2O(aq), because Phreeqc2026EOS does not include this species in ppsol.species. Leaving it can
+        # result in false positives.
+        missing_species.discard("H2O(aq)")
         if len(missing_species) > 0:
             logger.warning(
                 f"After equilibration, the amounts of species {sorted(missing_species)} were not modified "
@@ -384,6 +438,24 @@ class Phreeqc2026EOS(EOS):
         # by PHREEQC.
         _rtol = 0.05  # differing by more than 5%
 
+        # Some elements' totals are *expected* to change during equilibration and should not be
+        # flagged as errors below:
+        #   - elements exchanged with a gas or solid phase supplied to equilibrate
+        #   - the charge-balancing species, whose amount is adjusted to maintain electroneutrality
+        # Gas names are chemical formulas whose constituent elements we can parse. Solid names are
+        # often mineral names that cannot reliably be parsed, so if any solids were supplied we
+        # treat every element as potentially exchanged with a phase (phase_elements = None).
+        phase_elements: set[str] | None = set()
+        if solids:
+            phase_elements = None
+        else:
+            for gas in gases:
+                try:
+                    phase_elements |= {str(e) for e in Composition(gas).elements}
+                except Exception:
+                    phase_elements = None
+                    break
+
         new_el_dict = solution.get_el_amt_dict(nested=True)
         for el in orig_el_dict:
             orig_el_amount = sum([orig_el_dict[el][k] for k in orig_el_dict[el]])
@@ -404,6 +476,12 @@ class Phreeqc2026EOS(EOS):
                     }
                 )
             elif abs(orig_el_amount - new_el_amount) / orig_el_amount > _rtol:
+                # skip the error if this element is expected to change: it participates in a
+                # supplied gas/solid phase, or it is (part of) the charge-balancing species
+                el_components = {comp for comps in orig_components_by_element.get(el, {}).values() for comp in comps}
+                el_is_charge_balancer = solution._cb_species is not None and solution._cb_species in el_components
+                if phase_elements is None or el in phase_elements or el_is_charge_balancer:
+                    continue
                 logger.error(
                     f"PHREEQC returned a total Element {el} concentration of {new_el_amount} mol, "
                     f"which differs from the original concentration of {orig_el_amount}. This "
@@ -418,11 +496,24 @@ class Phreeqc2026EOS(EOS):
         # set the volume update flag so that the volume will be consistent with the new composition.
         solution.volume_update_required = True
 
+    def _get_activity(self, k):
+        return self.ppsol.get_activity(k)
+
+    def _get_molality(self, k):
+        return self.ppsol.get_molality(k)
+
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
         """
         Return the *molal scale* activity coefficient of solute, given a Solution
         object.
         """
+        # Re-entrancy guard: if we are here because _setup_ppsol is currently reading
+        # solution.pH, do not try to (re)build the ppsol - that would recurse infinitely.
+        # Fall back to a unit activity coefficient, which makes the pH passed to PHREEQC
+        # during setup the concentration-based value. See _setup_ppsol.
+        if self._building_ppsol:
+            return ureg.Quantity(1, "dimensionless")
+
         if (self.ppsol is None) or (solution.components != self._stored_comp):
             self._destroy_ppsol()
             self._setup_ppsol(solution)
@@ -437,7 +528,7 @@ class Phreeqc2026EOS(EOS):
         k = el + chg
 
         # calculate the molal scale activity coefficient
-        act = self.ppsol.get_activity(k) / self.ppsol.get_molality(k)
+        act = self._get_activity(k) / self._get_molality(k)
 
         return ureg.Quantity(act, "dimensionless")
 
@@ -458,15 +549,25 @@ class Phreeqc2026EOS(EOS):
         return ureg.Quantity(0, "L")
 
     def __deepcopy__(self, memo) -> Self:
-        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # custom deepcopy required because the Phreeqc instance used by the Native and Phreeqc engines
         # is not pickle-able.
+        from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
+
+        if not IS_AVAILABLE:
+            raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == "pp":
-                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                result.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            if k in ("ppsol", "_stored_comp"):
+                # ppsol is a live ctypes handle into the Phreeqc instance and cannot be
+                # pickled/deepcopied. Reset it (and the stored composition used to decide
+                # whether a rebuild is needed) so the copy lazily rebuilds its own ppsol.
+                setattr(result, k, None)
                 continue
             setattr(result, k, copy.deepcopy(v, memo))
         return result
@@ -481,6 +582,7 @@ class PhreeqcEOS(Phreeqc2026EOS):
             "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
         ] = "phreeqc.dat",
     ) -> None:
+        super().__init__(phreeqc_db=phreeqc_db)
         """
         Args:
             phreeqc_db: Name of the PHREEQC database file to use for solution thermodynamics
@@ -498,119 +600,38 @@ class PhreeqcEOS(Phreeqc2026EOS):
         self.db_path = (
             Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
         )
-        # create the PhreeqcPython instance
-        # try/except added to catch unsupported architectures, such as Apple Silicon
+        # create the PhreeqPython instance
+        # try/except added to catch platforms with no compatible phreeqpython binary, such as
+        # Apple Silicon or aarch64 Linux (phreeqpython ships no arm64 Linux shared library)
         try:
             self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
         except OSError:
+            # super().__init__() already set self.pp to an in-tree Phreeqc wrapper, which is the
+            # wrong type for this (phreeqpython-backed) engine. Discard it and mark the backend
+            # unavailable so equilibrate() cleanly no-ops instead of crashing deep inside the
+            # wrapper. See equilibrate() and _setup_ppsol().
+            self.pp = None
             logger.error(
                 "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
-                " pyEQL will work, but equilibrate() will have no effect."
+                " are running on a platform with no compatible phreeqpython binary, such as Apple M1/M2"
+                " chips or aarch64 Linux. pyEQL will work, but equilibrate() will have no effect."
             )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
         # store the solution composition to see whether we need to re-instantiate the solution
         self._stored_comp = None
 
-    def _setup_ppsol(self, solution: "solution.Solution") -> None:
-        """Helper method to set up a PhreeqPython solution for subsequent analysis."""
-        self._stored_comp = solution.components.copy()
-        solv_mass = solution.solvent_mass.to("kg").magnitude
-        # inherit bulk solution properties
-        d = {
-            "temp": solution.temperature.to("degC").magnitude,
-            "units": "mol/kgw",  # to avoid confusion about volume, use mol/kgw which seems more robust in PHREEQC
-            "pH": solution.pH,
-            "pe": solution.pE,
-            "redox": "pe",  # hard-coded to use the pe
-            # PHREEQC will assume 1 kg if not specified, there is also no direct way to specify volume, so we
-            # really have to specify the solvent mass in 1 liter of solution
-            "water": solv_mass,
-        }
-        if solution.balance_charge == "pH":
-            d["pH"] = str(d["pH"]) + " charge"
-        if solution.balance_charge == "pE":
-            d["pe"] = str(d["pe"]) + " charge"
+    def _ppsol_dict_input(self, d):
+        return d
 
-        # add the composition to the dict
-        # also, skip H and O
-        for el, mol in solution.get_el_amt_dict().items():
-            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
-            # all distinct oxi states of each element present. If there are elements present whose oxi states
-            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
-            # entered into the composition dict. This can especially cause problems after equilibrate() has already
-            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
-            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
-            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
-            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
-            # oxi state happens to be iterated through last.
+    def _handle_destroy_ppsol(self):
+        return self.ppsol.forget()
 
-            # strip off the oxi state
-            bare_el = el.split("(")[0]
-            if bare_el in SPECIAL_ELEMENTS:
-                # PHREEQC will ignore float-formatted oxi states. Need to make sure we are
-                # passing, e.g. 'C(4)' and not 'C(4.0)'
-                key = f"{bare_el}({int(float(el.split('(')[-1].split(')')[0]))})"
-            elif bare_el in ["H", "O"]:
-                continue
-            else:
-                key = bare_el
+    def _get_activity(self, k):
+        return self.ppsol.pp.ip.get_activity(self.ppsol.number, k)
 
-            if key in d:
-                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
-                # add all their amounts together
-                d[key] += str(mol / solv_mass)
-            else:
-                d[key] = str(mol / solv_mass)
-
-            # tell PHREEQC which species to use for charge balance
-            if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
-                d[key] += " charge"
-
-        # create the PHREEQC solution object
-        try:
-            ppsol = self.pp.add_solution(d)
-        except Exception as e:
-            print(d)
-            # catch problems with the input to phreeqc
-            raise ValueError(
-                "There is a problem with your input. The error message received from "
-                f" phreeqpython is:\n\n {e}\n Check your input arguments, especially "
-                "the composition dictionary, and try again."
-            )
-
-        self.ppsol = ppsol
-
-    def _destroy_ppsol(self) -> None:
-        """Remove the PhreeqPython solution from memory."""
-        if self.ppsol is not None:
-            self.ppsol.forget()
-            self.ppsol = None
-
-    def get_activity_coefficient(self, solution: "solution.Solution", solute: str) -> ureg.Quantity:
-        """
-        Return the *molal scale* activity coefficient of solute, given a Solution
-        object.
-        """
-        if (self.ppsol is None) or (solution.components != self._stored_comp):
-            self._destroy_ppsol()
-            self._setup_ppsol(solution)
-
-        # translate the species into keys that phreeqc will understand
-        k = standardize_formula(solute)
-        spl = k.split("[")
-        el = spl[0]
-        chg = spl[1].split("]")[0]
-        if chg[-1] == "1":
-            chg = chg[0]  # just pass + or -, not +1 / -1
-        k = el + chg
-
-        # calculate the molal scale activity coefficient
-        # act = self.ppsol.activity(k, "mol") / self.ppsol.molality(k, "mol")
-        act = self.ppsol.pp.ip.get_activity(self.ppsol.number, k) / self.ppsol.pp.ip.get_molality(self.ppsol.number, k)
-
-        return ureg.Quantity(act, "dimensionless")
+    def _get_molality(self, k):
+        return self.ppsol.pp.ip.get_molality(self.ppsol.number, k)
 
     def get_osmotic_coefficient(self, solution: "solution.Solution") -> ureg.Quantity:
         """
@@ -624,8 +645,31 @@ class PhreeqcEOS(Phreeqc2026EOS):
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
 
+    def __deepcopy__(self, memo) -> Self:
+        # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
+        # is not pickle-able.
 
-class NativeEOS(PhreeqcEOS):
+        if not PHREEQPYTHON_AVAILABLE:
+            raise RuntimeError("phreeqcpython support is not available in this installation")
+
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "pp":
+                result.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
+                continue
+            if k in ("ppsol", "_stored_comp"):
+                # ppsol is a live ctypes handle into the PhreeqPython instance and cannot be
+                # pickled/deepcopied. Reset it (and the stored composition used to decide
+                # whether a rebuild is needed) so the copy lazily rebuilds its own ppsol.
+                setattr(result, k, None)
+                continue
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
+
+class NativeEOS(Phreeqc2026EOS):
     """
     pyEQL's native EOS. Uses the Pitzer model when possible, falls
     back to other models (e.g. Debye-Huckel) based on ionic strength
@@ -650,25 +694,7 @@ class NativeEOS(PhreeqcEOS):
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
         """
-        self.phreeqc_db = phreeqc_db
-        # database files in this list are not distributed with phreeqpython
-        self.db_path = (
-            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
-        )
-        # create the PhreeqcPython instance
-        # try/except added to catch unsupported architectures, such as Apple Silicon
-        try:
-            self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
-        except OSError:
-            logger.error(
-                "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on an architecture that is not supported by PHREEQC, such as Apple M1/M2 chips."
-                " pyEQL will work, but equilibrate() will have no effect."
-            )
-        # attributes to hold the PhreeqPython solution.
-        self.ppsol = None
-        # store the solution composition to see whether we need to re-instantiate the solution
-        self._stored_comp = None
+        super().__init__(phreeqc_db=phreeqc_db)
 
     def get_activity_coefficient(self, solution: "solution.Solution", solute: str):
         r"""
@@ -737,9 +763,13 @@ class NativeEOS(PhreeqcEOS):
                 salt = d["salt"]
                 break
 
-        # show an error if no salt can be found that contains the solute
+        # show an error if no salt can be found that contains the solute. H+ and OH- are trace
+        # species that are not paired into a salt in dilute/neutral solutions, where a unit
+        # activity coefficient is the correct result, so suppress the message for them to avoid
+        # log spam on every pH access.
         if salt is None:
-            logger.error(f"No salts found that contain solute {solute}. Returning unit activity coefficient.")
+            if rform not in ("H[+1]", "OH[-1]"):
+                logger.error(f"No salts found that contain solute {solute}. Returning unit activity coefficient.")
             return ureg.Quantity(1, "dimensionless")
 
         # use the Pitzer model for higher ionic strength, if the parameters are available
@@ -828,7 +858,7 @@ class NativeEOS(PhreeqcEOS):
             )
 
         else:
-            logger.error(
+            logger.warning(
                 f"Ionic strength too high to estimate activity for species {solute}. Specify parameters for Pitzer "
                 "model. Returning unit activity coefficient"
             )
@@ -885,12 +915,12 @@ class NativeEOS(PhreeqcEOS):
 
         Examples:
             >>> s1 = pyEQL.Solution({'Na+': '0.2 mol/kg', 'Cl-': '0.2 mol/kg'})
-            >>> s1.get_osmotic_coefficient()
-            <Quantity(0.923715281, 'dimensionless')>
+            >>> s1.get_osmotic_coefficient()  # doctest: +ELLIPSIS
+            <Quantity(0.92371529..., 'dimensionless')>
 
             >>> s1 = pyEQL.Solution({'Mg+2': '0.3 mol/kg', 'Cl-': '0.6 mol/kg'},temperature='30 degC')
-            >>> s1.get_osmotic_coefficient()
-            <Quantity(0.891409618, 'dimensionless')>
+            >>> s1.get_osmotic_coefficient()  # doctest: +ELLIPSIS
+            <Quantity(0.8914105..., 'dimensionless')>
 
         References:
             [may11]

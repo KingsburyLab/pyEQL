@@ -17,6 +17,7 @@ jobs:
   test:
     needs: [lint]
     strategy:
+      fail-fast: false
       matrix:
         # We only test on min. and max. supported Python versions here.
         python-version: ["3.11", "3.14"]
@@ -29,10 +30,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}${{ matrix.dev }}
 

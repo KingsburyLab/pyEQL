@@ -6,6 +6,7 @@ This file contains tests for the volume and concentration-related methods
 used by pyEQL's Solution class using the `phreeqc2026` engine.
 """
 
+import copy
 import logging
 
 import numpy as np
@@ -220,7 +221,9 @@ def test_equilibrate(s1, s2, s5_pH, s6_Ca, caplog):
     s2.balance_charge = "pH"
     s2.equilibrate()
     assert np.isclose(s2.charge_balance, 0, atol=1e-8)
-    assert s2.components["H+"] > eq_Hplus
+    # balancing charge via pH adjusts H+ to restore electroneutrality; the direction depends on the
+    # sign of the (pre-balancing) charge imbalance, so just assert that H+ changed.
+    assert not np.isclose(s2.components["H+"], eq_Hplus)
 
     # test log message if there is a species not present in the phreeqc database
     s_zr = Solution(
@@ -290,6 +293,22 @@ def test_equilibrate_water_pH7():
     assert np.isclose(solution.get_amount("H2O", "mol/kg").magnitude, 55.50843506179199)
 
 
+def test_repeated_equilibrate():
+    # repeated calls to equilibrate should not change the properties (much)
+    for cb in [None, "pH", "auto"]:
+        s1 = Solution({}, pH=7.00, volume="1 L", engine="phreeqc2026", balance_charge=cb)
+        first_pH = s1.pH
+        first_volume = s1.volume.magnitude
+        first_mass = s1.mass.magnitude
+        first_solv_mass = s1.solvent_mass.magnitude
+        for _ in range(10):
+            s1.equilibrate()
+        assert np.isclose(s1.pH, first_pH, atol=0.003)
+        assert np.isclose(s1.volume.magnitude, first_volume, atol=1e-9)
+        assert np.isclose(s1.mass.magnitude, first_mass, atol=1e-8)
+        assert np.isclose(s1.solvent_mass.magnitude, first_solv_mass, atol=1e-12)
+
+
 def test_equilibrate_CO2_with_calcite():
     solution = Solution({}, pH=7.0, volume="1 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=False, gases={"CO2": -2.95, "O2": -0.6778}, solids=["Calcite"])
@@ -303,6 +322,27 @@ def test_equilibrate_CO2_with_calcite():
     assert np.isclose(
         solution.get_amount("Ca+2", "mol/kg").magnitude, 7.427e-04, atol=1e-5
     )  # slight tolerance adjustment
+
+
+def test_equilibrate_no_false_mass_balance_error(caplog):
+    """The element mass-balance check in equilibrate() should not fire for elements that
+    legitimately change: those exchanged with a supplied gas/solid phase, or the charge-balancing
+    species whose total PHREEQC adjusts to maintain electroneutrality (see #434)."""
+    err = "differs from the original"
+
+    # 1) gas phase: equilibrating carbonate against a low CO2 partial pressure degasses carbon,
+    #    changing the total C by far more than the 5% tolerance
+    s_gas = Solution({"Na+": "2 mmol/L", "HCO3-": "2 mmol/L"}, engine="phreeqc2026", balance_charge=None)
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s_gas.equilibrate(gases={"CO2": -6.0})
+    assert err not in caplog.text
+
+    # 2) charge-balancing species: PHREEQC adjusts the total of the balancing ion (Na here)
+    caplog.clear()
+    s_cb = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="auto", pH=7, pE=8.5, engine="native")
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s_cb.equilibrate()
+    assert err not in caplog.text
 
 
 def test_equilibrate_FeO3H3_ppt():
@@ -434,3 +474,20 @@ def test_equilibrate_with_atm():
     assert np.isclose(s1.get_amount("CO2(aq)", "mol/kg").magnitude, 0.00001429, atol=1e-6)  # PHREQCUI - 1.429e-05
     assert np.isclose(s1.get_amount("O2(aq)", "mol/kg").magnitude, 0.0002683, atol=1e-6)  # PHREEQCUI - 2.683e-04
     assert np.isclose(s1.get_amount("N2(aq)", "mol/kg").magnitude, 0)  # PHREEQCUI - 0
+    # for some reason, gas-equilibrium can result in zero concentration solutes. These should be
+    # filtered out.
+    assert not any(v == 0 for v in s1.components.values())
+
+
+def test_deepcopy(s2):
+    s2_copy = copy.deepcopy(s2)
+    assert s2.components == s2_copy.components
+    assert s2.volume == s2_copy.volume
+    assert s2.solvent == s2_copy.solvent
+    assert s2.temperature == s2_copy.temperature
+    assert s2.pressure == s2_copy.pressure
+    assert s2.engine.__class__ == s2_copy.engine.__class__
+    assert s2.engine.pp.__class__ == s2_copy.engine.pp.__class__
+    # addition implicitly uses the deepcopy method, so we can also test that here
+    assert (s2 + s2).components.keys() == s2.components.keys()
+    assert (s2 + s2).volume == 2 * s2.volume

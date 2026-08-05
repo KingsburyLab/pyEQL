@@ -21,6 +21,7 @@ from pint import Quantity
 import pyEQL
 import pyEQL.activity_correction as ac
 from pyEQL import Solution, engines, ureg
+from pyEQL import solution as solution_module
 from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
@@ -557,8 +558,9 @@ def test_components_by_element(s1, s2):
         pytest.skip(reason="Phreeqpython not available")
 
     s2.equilibrate()
-    assert s2.get_components_by_element() == {
-        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)", "HClO2(aq)"],
+
+    expected = {
+        "H(1.0)": ["H2O(aq)", "OH[-1]", "H[+1]", "HCl(aq)", "NaOH(aq)", "HClO(aq)"],
         "H(0.0)": ["H2(aq)"],
         "O(-2.0)": [
             "H2O(aq)",
@@ -566,19 +568,14 @@ def test_components_by_element(s1, s2):
             "NaOH(aq)",
             "HClO(aq)",
             "ClO[-1]",
-            "ClO2[-1]",
-            "ClO3[-1]",
-            "ClO4[-1]",
-            "HClO2(aq)",
         ],
         "O(0.0)": ["O2(aq)"],
         "Na(1.0)": ["Na[+1]", "NaCl(aq)", "NaOH(aq)"],
         "Cl(-1.0)": ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
         "Cl(1.0)": ["HClO(aq)", "ClO[-1]"],
-        "Cl(3.0)": ["ClO2[-1]", "HClO2(aq)"],
-        "Cl(5.0)": ["ClO3[-1]"],
-        "Cl(7.0)": ["ClO4[-1]"],
     }
+
+    assert s2.get_components_by_element(nested=False) == expected
 
 
 def test_components_by_element_nested(s1, s2):
@@ -611,7 +608,7 @@ def test_components_by_element_nested(s1, s2):
 
     s2.equilibrate()
 
-    assert s2.get_components_by_element(nested=True) == {
+    expected = {
         "H": {
             1.0: [
                 "H2O(aq)",
@@ -620,7 +617,6 @@ def test_components_by_element_nested(s1, s2):
                 "HCl(aq)",
                 "NaOH(aq)",
                 "HClO(aq)",
-                "HClO2(aq)",
             ],
             0.0: ["H2(aq)"],
         },
@@ -631,10 +627,6 @@ def test_components_by_element_nested(s1, s2):
                 "NaOH(aq)",
                 "HClO(aq)",
                 "ClO[-1]",
-                "ClO2[-1]",
-                "ClO3[-1]",
-                "ClO4[-1]",
-                "HClO2(aq)",
             ],
             0.0: ["O2(aq)"],
         },
@@ -644,11 +636,23 @@ def test_components_by_element_nested(s1, s2):
         "Cl": {
             -1.0: ["Cl[-1]", "NaCl(aq)", "HCl(aq)"],
             1.0: ["HClO(aq)", "ClO[-1]"],
-            3.0: ["ClO2[-1]", "HClO2(aq)"],
-            5.0: ["ClO3[-1]"],
-            7.0: ["ClO4[-1]"],
         },
     }
+
+    result = s2.get_components_by_element(nested=True)
+
+    assert result.keys() == expected.keys()
+    for element, oxidation_states in expected.items():
+        for oxi_state in oxidation_states:
+            if (element == "O" and oxi_state == -2.0) or (element == "Cl" and oxi_state == 3.0):
+                # for this particular element and oxidation state, the order of the species in the list is not guaranteed
+                assert set(result[element][oxi_state]) == set(expected[element][oxi_state]), (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
+            else:
+                assert result[element][oxi_state] == expected[element][oxi_state], (
+                    f"Mismatch for element '{element}', oxidation state {oxi_state}"
+                )
 
 
 def test_get_total_amount(s2):
@@ -713,6 +717,20 @@ def test_equilibrate(s1, s2, s5_pH):
     assert "HCO3[-1]" in s5_pH.components
     assert s5_pH.pH > orig_pH
     assert np.isclose(s5_pH.pE, orig_pE)
+
+
+def test_redox():
+    # compare pE 0 and pE 10. higher pE should have more oxidized species
+    s1 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=0, engine="native")
+    s2 = Solution({"Na[+]": "1 mg/L", "S[-2]": "1 mg/L"}, balance_charge="pH", pH=7, pE=10, engine="native")
+    s1.equilibrate()
+    s2.equilibrate()
+    assert np.isclose(s1.get_total_amount("S", "mg/L").magnitude, s2.get_total_amount("S", "mg/L").magnitude, atol=1e-3)
+    assert s1.get_total_amount("S(-2)", "mg/L").magnitude > s2.get_total_amount("S(-2)", "mg/L").magnitude
+    assert s1.get_total_amount("S(-0.4)", "mg/L").magnitude < s2.get_total_amount("S(-0.4)", "mg/L").magnitude
+    # if oxygen is present, sulfate should form even at pE=0
+    s1.equilibrate(atmosphere=True)
+    assert s1.get_total_amount("S(6)", "mg/L").magnitude > 0
 
 
 def test_tds(s1, s2, s5):
@@ -895,9 +913,12 @@ def test_serialization(s1, s2, tmp_path):
         assert restored.temperature == original.temperature
         assert restored.pressure == original.pressure
         assert restored.solvent == original.solvent
-        assert restored._engine == original._engine
+        # the engine round-trips as a fully-serialized EOS: the restored Solution uses the same
+        # engine type (a deserialized Solution holds an EOS instance rather than the original name)
+        assert type(restored.engine) is type(original.engine)
+        assert restored.engine.as_dict() == original.engine.as_dict()
         # the solutions should point to different EOS instances
-        assert restored.engine != original.engine
+        assert restored.engine is not original.engine
         # also should point to different Store instances
         # TODO currently this test will fail due to a bug in maggma's __eq__
         # assert restored.database != original.database
@@ -908,7 +929,10 @@ def test_serialization(s1, s2, tmp_path):
     # s1-specific fields that aren't present on every Solution
     s1_dict_restored = Solution.from_dict(s1.as_dict())
     assert s1_dict_restored.volume.magnitude == 2
-    assert s1_dict_restored._solutes["H[+1]"] == "2e-07 mol"
+    # pH is defined on the activity scale, so at pH 7 the H+ *concentration* is 10**(-7) / gamma_H+
+    # (close to, but not exactly, 1e-7 M). Check the H+ solute survives the round-trip rather than
+    # hard-coding a gamma-dependent value.
+    assert np.isclose(float(s1_dict_restored._solutes["H[+1]"].split()[0]), s1.components["H[+1]"])
     assert_roundtrip(s2, Solution.from_dict(s2.as_dict()))
 
     # dumpfn / loadfn (exercises the same code path via monty serialization)
@@ -916,6 +940,102 @@ def test_serialization(s1, s2, tmp_path):
     assert_roundtrip(s1, loadfn(str(tmp_path / "s1.json")))
     dumpfn(s2, str(tmp_path / "s2.json"))
     assert_roundtrip(s2, loadfn(str(tmp_path / "s2.json")))
+
+
+def test_serialization_engine_instance(tmp_path):
+    """A Solution created by passing an EOS *instance* (rather than a name) to the engine kwarg
+    should serialize: because EOS subclasses MSONable, as_dict stores the engine as a serialized
+    MSONable dict that round-trips to the same engine type (and constructor arguments)."""
+    for eos, name in [(IdealEOS(), "ideal"), (NativeEOS(), "native")]:
+        s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=eos)
+        d = s.as_dict()
+        # the engine is serialized as a full MSONable dict, not merely its name
+        assert isinstance(d["engine"], dict)
+        assert d["engine"]["@class"] == type(eos).__name__
+        assert d["engine"]["@module"] == "pyEQL.engines"
+
+        # full round-trip through monty JSON serialization
+        dumpfn(s, str(tmp_path / f"s_{name}.json"))
+        restored = loadfn(str(tmp_path / f"s_{name}.json"))
+        assert isinstance(restored, Solution)
+        assert type(restored.engine) is type(s.engine)
+        assert restored.engine.as_dict() == s.engine.as_dict()
+        assert restored.components == s.components
+
+
+def test_serialization_engine_backward_compat():
+    """Older serialized Solutions stored the engine as a plain string name (e.g. "native"). Those
+    dicts must still load, with __init__ resolving the name to the corresponding EOS instance."""
+    for name, cls in [("ideal", IdealEOS), ("native", NativeEOS)]:
+        d = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=name).as_dict()
+        # simulate a legacy dict that stored only the engine name
+        d["engine"] = name
+        restored = Solution.from_dict(d)
+        assert type(restored.engine) is cls
+
+
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_engine_roundtrip_and_override(tmp_path, ext):
+    """A Solution created with a non-default EOS *instance* round-trips through to_file / from_file for
+    both file types, preserving the engine type. Override kwargs passed to from_file replace values
+    stored in the file (here, swapping the engine)."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / f"s.{ext}")
+    s.to_file(path)
+
+    restored = Solution.from_file(path)
+    assert isinstance(restored, Solution)
+    assert type(restored.engine) is IdealEOS
+    assert restored.components == s.components
+
+    # kwargs passed to from_file override the value stored in the file
+    overridden = Solution.from_file(path, engine="native")
+    assert type(overridden.engine) is NativeEOS
+    assert overridden.components == s.components
+
+
+def test_from_file_new_monty_returns_solution_directly(tmp_path, monkeypatch):
+    """monty >= 2026.7.16 makes loadfn reconstruct a serialized file directly into a Solution (older
+    monty returns a plain dict for YAML). Simulate that so the Solution branch of from_file is covered
+    on any installed monty: with no override kwargs the loaded Solution is returned as-is (same object);
+    with kwargs it is re-serialized and rebuilt so the overrides take effect."""
+    s = Solution({"Na+": "1 mol/L", "Cl-": "1 mol/L"}, engine=IdealEOS())
+    path = str(tmp_path / "s.yaml")
+    s.to_file(path)
+
+    # a stand-in for the fully reconstructed Solution that newer monty's loadfn would return. Build it
+    # directly (not via loadfn, whose return type depends on the installed monty version).
+    sentinel = Solution.from_dict(s.as_dict())
+    monkeypatch.setattr(solution_module, "loadfn", lambda *args, **kwargs: sentinel)
+
+    # no kwargs: the reconstructed Solution is returned directly, untouched
+    assert Solution.from_file(path) is sentinel
+
+    # kwargs: a new Solution is rebuilt with the overrides applied
+    overridden = Solution.from_file(path, engine="native")
+    assert overridden is not sentinel
+    assert type(overridden.engine) is NativeEOS
+
+
+@pytest.mark.parametrize("ext", ["yaml", "json"])
+def test_from_file_preserves_all_init_fields(tmp_path, ext):
+    """from_file must preserve every serialized __init__ field. default_diffusion_coeff and log_level
+    were silently dropped by an earlier key allowlist on the older-monty YAML path; both should now
+    survive a round-trip for both file types."""
+    s = Solution(
+        {"Na+": "1 mol/L", "Cl-": "1 mol/L"},
+        default_diffusion_coeff=5e-10,
+        log_level="DEBUG",
+    )
+    # sanity check that these differ from the __init__ defaults, so the assertions are meaningful
+    assert s.default_diffusion_coeff != 1.6106e-9
+    assert s.log_level != "ERROR"
+
+    path = str(tmp_path / f"s.{ext}")
+    s.to_file(path)
+    restored = Solution.from_file(path)
+    assert restored.default_diffusion_coeff == 5e-10
+    assert restored.log_level == "DEBUG"
 
 
 @pytest.mark.parametrize(

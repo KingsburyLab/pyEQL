@@ -65,7 +65,7 @@ a report in the [issue tracker](https://github.com/KingsburyLab/pyEQL/issues) to
 
 ### Hacking pyEQL, step by step
 
-1. [Fork the pyEQL repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) on Github
+1. [Fork the pyEQL repository](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/fork-a-repo) on Github
 
 2. Clone your repository to a directory of your choice:
 

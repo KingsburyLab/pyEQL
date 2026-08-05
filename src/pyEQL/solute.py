@@ -60,12 +60,10 @@ class Datum:
 @dataclass
 class Solute:
     """
-    represent each chemical species as an object containing its formal charge,
-    transport numbers, concentration, activity, etc.
+    represent each chemical species as an object containing its physicochemical properties. The Solute class stores ONLY those properties that DO NOT depend on solution composition. Solute properties such as activity coefficient or concentration that do depend on compsition are accessed via Solution class methods.
 
     Args:
-        formula: Chemical formula for the solute. Charged species must contain a + or - and (for polyvalent solutes)
-            a number representing the net charge (e.g. 'SO4-2').
+        formula: Chemical formula for the solute. Charged species must contain a + or - and (for polyvalent solutes) a number representing the net charge (e.g. 'SO4-2').
     """
 
     formula: str

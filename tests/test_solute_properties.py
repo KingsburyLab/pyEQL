@@ -23,7 +23,7 @@ RTOL = 0.05
 
 class Test_transport_number:
     """
-    test get_transport_number
+    test get_transport_number and get_transference_number
     ------------------------------------------------
     """
 
@@ -34,6 +34,7 @@ class Test_transport_number:
         # The transport number of any ion should be between 0 and 1
         assert s1.get_transport_number("K+") >= 0
         assert s1.get_transport_number("K+") <= 1
+        assert s1.get_transference_number("K+") == s1.get_transport_number("K+")
 
         # The transport number of water should be 0
         assert s1.get_transport_number("H2O") == 0

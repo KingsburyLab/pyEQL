@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
         ref: ${{ github.event.release.tag_name }}
@@ -50,13 +50,13 @@ jobs:
             cibw_archs: "arm64"
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
         ref: ${{ github.event.release.tag_name }}
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v3.4
+      uses: pypa/cibuildwheel@v4.1
       with:
         config-file: cibuildwheel.toml
         output-dir: wheelhouse

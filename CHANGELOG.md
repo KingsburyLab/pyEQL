@@ -5,10 +5,90 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.6.1] - 2026-08-04
+
+### Fixed
+
+- Fixed a minor issue in the test suite that prevented aarch64 Linux wheel from building
+  correctly. (#445, @rkingsbury)
+
+## [1.6.0] - 2026-08-03
+
+### Added
+
+- `EOS` (and all its subclasses: `IdealEOS`, `NativeEOS`, `PhreeqcEOS`, `Phreeqc2026EOS`) now inherit
+  from `monty.json.MSONable`, making equation-of-state engines fully serializable via `as_dict` /
+  `from_dict` (and hence `dumpfn` / `loadfn`). Serialization captures the engine type and its
+  constructor arguments (e.g. `phreeqc_db`). (#443, @rkingsbury)
+- Docs: doctests are now tested as part of CI, and have been updated for consistency with recent versions
+  of `pyEQL`. (#447, @rkingsbury)
+
+### Changed
+
+- **MAJOR CHANGE** `pH` is now consistently defined on the **activity** scale (`pH = -log10(a_H+)`) throughout
+  `Solution`, both on input and output, matching how the equilibrium engines (e.g. PHREEQC) interpret
+  pH (#434, @rkingsbury):
+  - `Solution.pH` returns the negative log10 of the hydrogen ion *activity* rather than its molar
+    concentration.
+  - The `pH` constructor argument is likewise interpreted as an activity: `Solution(..., pH=X)`
+    yields a solution whose activity-based `pH` equals `X`. Emulating PHREEQC, the input pH fixes the
+    H+ activity (`a_H+ = 10**(-X)`) and the H+ concentration is back-calculated from the activity
+    coefficient (`m = a / gamma`); OH- is set from the water equilibrium on the activity scale
+    (`a_H+ * a_OH- = K_W`), which keeps neutral solutions electroneutral. Because the activity
+    coefficient depends on composition, the concentrations are found by a short fixed-point iteration
+    (`Solution._solve_pH`). Explicitly supplied `H+`/`OH-` still take precedence over the `pH`
+    argument.
+  - Previously `pH` reported (and the constructor set) a concentration-based value, which caused a small
+    but systematic, non-convergent drift in `pH` (and hence solution mass and volume) on repeated calls
+    to `equilibrate()`.
+- The the bundled `presets` for industrial wastewaters have had their compositions and pH updated slightly,
+  and the reference in the docstring of `from_preset` now points to the [published version of the paper](https://doi.org/10.1021/acs.est.6c04293) rather than the preprint. (#441, @SuixiongTay)
+- `FormulaDict` was modified so that re-sorts data lazily, resulting in a roughly 20% performance improvement
+  when creating solutions containing many solutes (#452, @rkingsbury)
+- CI: The `testing` workflow has been renamed `testing-latest` for clarity and for consistency with `testing-pinned`
+
+
+### Fixed
+
+- `Solution.as_dict`: a `Solution` created by passing an `EOS` *instance* (rather than a name) to the
+  `engine` kwarg can now be serialized. Previously `as_dict` stored the raw engine object, which is not
+  serializable; it now stores the engine as a fully-serialized `MSONable` dict that round-trips to the
+  same engine type and arguments. Dicts that stored the engine name as a plain string (produced by
+  earlier versions) still load correctly. (#443, @rkingsbury)
+- `Solution.from_file`: loading a `.yaml` file no longer breaks with `monty >= 2026.7.16`, which treats
+  YAML and JSON on equal footing in `loadfn` (returning a reconstructed `Solution` rather than a plain
+  dict). `from_file` now handles both return types, remaining compatible with older `monty` releases.
+  With this fix, the temporary `monty < 2026.7.16` upper bound has been removed. (#445, @rkingsbury)
+- `Solution.from_file`: loading a serialized file now preserves *all* stored constructor fields,
+  including `default_diffusion_coeff` and `log_level`. A key allowlist previously dropped these on the
+  older-`monty` YAML path, so a file could round-trip differently depending on the installed `monty`
+  version; both paths now reconstruct identically via `from_dict`. (#445, @rkingsbury)
+- `Solution.from_file`: override `kwargs` (e.g. `engine=...`) are now honored for `.json` files, not
+  only `.yaml` files. (#445, @rkingsbury)
+- `PhreeqcEOS.__deepcopy__` / `Phreeqc2026EOS.__deepcopy__`: the live PHREEQC solution handle
+  (`ppsol`, a ctypes object) is no longer deep-copied - it is reset so the copy rebuilds it lazily.
+  This previously worked only because `Solution.pH` did not instantiate `ppsol`. (#434, @rkingsbury)
+- `Solution.equilibrate` previously returned solutes reported by the PHREEQC engines even when their concentrations
+  were exactly zero. These species often had oxidation states that were difficult for `Solute` to parse, which
+  then caused errors in some downstream methods. These zero-concentration solutes are now filtered out.
+  (#438, @rkingsbury)
+- `Solution.equilibrate` would previously log `ERROR` when the mass of certain elements involved in gas-liquid or
+  solid-liquid equilibrium, or in charge balancing, changed. In these cases, the change is expected and should not
+  result in an error. This behavior was changed to only raise `ERROR` when the mass of an element not involved in
+  phase equilibrium or charge balancing changes. (#442, @rkingsbury)
+- Docs: Some parameter descriptions and docstrings for `__init__` arguments were being dropped from the built
+  documentation. This has been fixed. (#440, @rkingsbury)
+
+## [1.5.0] - 2026-06-15
 
 ## Added
 
+- **NEW FEATURE** `Solution.get_saturation_index()`: `pyEQL` can now display saturation indices for solid
+  phases when using the `native`, `phreeqc`, or `phreeqc2026` engines. (#395, @SuixiongTay, @YitongPan1)
+- `Solution.alkalinity`: Alkalinity calculations now include an alternative definition based on the presence of weak
+  acid-base species. Previously, the calculation only considered conservative cations and strong base anions, which
+  meant that a solution that contained only weak acid/base species would return zero alkalinity. (#398, @SuixiongTay)
+- `Solution.get_transference_number`: New method alias to `get_transport_number` (#420, @rkingsbury)
 - Added `python` 3.14 support (#404, @rkingsbury)
 - Docs: new charge balancing tutorial (#391, @SuixiongTay)
 - Docs: new tutorial for solid-liquid-gas equilibrium (#390, @YitongPan1)
@@ -17,20 +97,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Solute properties are now pre-cached to enhance performance, especially when creating
-  Solutions containing a large number of solutes (#384, @rkingsbury)
-- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)` to reduce dependency count. (#403, @rkingsbury)
+- **NEW DEFAULT BEHAVIOR** `NativeEOS`: the `native` modeling engine (the default) now uses the natively-developed `Phreeqc2026EOS` for speciation
+  calculations, rather than the legacy `PhreeqcEOS` which was based on [phreeqpython](https://github.com/Vitens/phreeqpython). Both PHREEQC wrappers are still
+  available; the only thing that has changed in this release is which one the `native` modeling engine uses. (#422, @rkingsbury)
+- `Solution.__init__`: solutes can now be given using additional, common environmental unit
+  abbreviations such as "ppm", "ppb", etc., aligning with the unit types supported in
+  `get_amount()` (#414, @SuixiongTay)
+- `get_transport_number`: Clarify that the quantity returned by this method is really the _transference_
+  number, which is equal to the transport number whenever there are no concentration or pressure gradients. Also added
+  a new method `get_transference_number` as an alias. (#420, @rkingsbury)
+- `utils.interpret_units` was renamed to `utils.translate_units()` (#414, @SuixiongTay)
+- Solute properties are now pre-cached to enhance performance, especially when creating Solutions containing a large
+  number of solutes (#384, @rkingsbury)
+- migrate from `pymatgen` to `[pymatgen-core](https://github.com/materialsproject/pymatgen-core)`. (#403, @rkingsbury)
 
 ### Fixed
 
+- `Phreeqc2026EOS`: an error in the `__deepcopy__` method prevented this class from functioning properly with some
+  `Solution` methods, such as arithmetic (`+`). (#421, @rkingsbury)
 - `from_preset`/ `from_dict`: there was a subtle bug in the calculation of solution volumes that could cause a pH / H+
   inconsistency when re-creating solutions from `dict` or files. This primarily affected solutions with many solutes and
   the discrepancy was small in quantitative terms, but prevented some `presets` from loading correctly.
-- `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]` (#410, @rkingsbury)
 - `Solution.__init__`: fix the way the moles of solvent are initially calculated. The previous approach contained
   an error and also used a fixed water concentration of 55.55 mol/L regardless of temperature or pressure. The
-  calculation now uses the internal `water_substance` to retrieve the correct density and calculate the molarity. The flaw in the original method did not affect quantitative results because the initial amount of moles was
+  calculation now uses the internal `water_substance` to retrieve the correct density and calculate the molarity.
+  The flaw in the original method did not affect quantitative results because the initial amount of moles was
   immediately overwritten by `add_amount` during `__init__`. (#406, @rkingsbury)
+- `utils.standardize_formula()`: Triiodide ion now correctly renders as `Br3[-1]` rather than `Br[-0.33333333]`
+  (#410, @rkingsbury)
+- `utils.standardize_formula()`: Sulfur species with fractional oxidation states such as `S5[-2]`, `S4[-2]`,
+  `S3 [-2]`, and `S2[-2]` now render correctly. Previously they were rendered as `S[-0.4]`, `S[-0.5]`,
+  `S[-0.66666667]`, and `S[-1]` (#416, @SuixiongTay)
 - Docs: fixed issues with the built docs (#402, @YitongPan1; #401, @SuixiongTay)
 - Packaging: remove `.gitignore`'ed files from `scikit-build-core` sdist (#392, @vineetbansal)
 
@@ -42,12 +139,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Phreeqc2026EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by USGS. This
-  new PHREEQC interface is accessible via the new `phreeqc2026` electrolyte modeling engine, and will be used
+- `Phreeqc2026EOS`: Brand new, custom-compiled wrapper that interfaces directly with IPHREEQC modules distributed by
+  USGS. This new PHREEQC interface is accessible via the new `phreeqc2026` electrolyte modeling engine, and will be used
   by default in the `native` engine in `v1.5.0`. (#306, #318, #318, #319, #333, # @vineetbansal)
 - `Solution.from_preset`: Added presets for 22 representative industrial wastewater compositions, explained in detail in
   our recent preprint "Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for
-  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2]
+  Treatment and Resource Recovery Technologies," available at [https://www.researchsquare.com/article/rs-8743330/v2] (NOTE: see final published version at https://doi.org/10.1021/acs.est.6c04293)
 
 ### Changed
 
