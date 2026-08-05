@@ -322,10 +322,10 @@ class Pourbaix_api:
                 formula += ")"
             return f"{formula}[{charge[-1]}{charge[:-1] or '1'}]"
 
-        if charge[0] in "+-":
-            if formula.count("(") > formula.count(")"):
-                formula += ")"
-            return f"{formula}[{charge[0]}{charge[1:] or '1'}]"
+        # if charge[0] in "+-": # not needed for NBS tables
+        #     if formula.count("(") > formula.count(")"):
+        #         formula += ")"
+        #     return f"{formula}[{charge[0]}{charge[1:] or '1'}]"
 
         return formula + charge
 

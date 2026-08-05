@@ -161,6 +161,46 @@ def test_get_ion_reference_data_for_chemsys(tmp_path):
     assert {entry["data"]["RefSolid"] for entry in entries} == {"Na2O"}
 
 
+def test_generate_solution_objects():
+    pourbaix_api = Pourbaix_api(
+        mpr=None,
+        comp_dict={
+            "Na": 0.001,
+            "Cl": 0.001,
+        },
+    )
+
+    result = pourbaix_api.generate_solution_objects()
+
+    for species in ["H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"]:
+        assert species not in result
+
+    entries1 = pourbaix_api.modified_get_ion_reference_data_for_chemsys("Na-Cl")
+
+    identifiers = {entry["identifier"] for entry in entries1}
+    for species in ["Na[+1]", "Cl[-1]"]:
+        assert species in identifiers
+
+    na_entry = next(entry for entry in entries1 if entry["identifier"] == "Cl[-1]")
+    assert na_entry["data"]["charge"]["value"] == -1
+    assert na_entry["data"]["MajElements"] == "Cl"
+
+    entries2 = pourbaix_api.modified_get_ion_reference_data_for_chemsys("C-H-O")
+    identifiers = {entry["identifier"] for entry in entries2}
+
+    species_charges = {
+        "C2H2(aq)": 0,
+        "C2H4(aq)": 0,
+        "C2O4[2-]": -2,
+        "HCO3[-]": -1,
+    }
+
+    for identifier, charge in species_charges.items():
+        assert identifier in identifiers
+        entry = next(entry for entry in entries2 if entry["identifier"] == identifier)
+        assert entry["data"]["charge"]["value"] == charge
+
+
 def test_get_ion_entries_from_phase_diagram():
     entries = [
         ComputedEntry("H2", 0.0),
@@ -297,3 +337,5 @@ def test_nbs_table_ion_data():
 
     assert entry["exp_form_E"]["units"] == "kJ/mol"
     assert entry["exp_entropy"]["units"] == "J/(mol*K)"
+
+    assert Pourbaix_api._rich_text_formula("H2BO3·H2O2[-1]") == "H2BO3·H2O2[-1]"
