@@ -1768,6 +1768,10 @@ def test_explain_with_adjustments(capsys):
 
 
 def test_anion_correction():
+    import numpy as np  # noqa: PLC0415
+    from pymatgen.core import Lattice, Structure  # noqa: PLC0415
+    from pymatgen.entries.computed_entries import ComputedEntry, ComputedStructureEntry  # noqa: PLC0415
+
     assert AnionCorrection.__module__ == "pyEQL.pourbaix.compatibility"
 
     corr_dir = files("pyEQL") / "pourbaix" / "MPCompatibility.yaml"
@@ -1776,17 +1780,17 @@ def test_anion_correction():
     entry = ComputedEntry("FeS2", 0, data={"sulfide_type": "polysulfide"})
     value = correction.get_correction(entry)
     expected = correction.sulfide_correction["sulfide"] * entry.composition["S"]
-    assert value.nominal_value == pytest.approx(expected)
+    assert np.isclose(value.nominal_value, expected, atol=1e-8)
 
     entry = ComputedEntry("Li2O2", 0, data={"oxide_type": "peroxide"})
     value = correction.get_correction(entry)
     expected = correction.oxide_correction["peroxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected)
+    assert np.isclose(value.nominal_value, expected, atol=1e-8)
 
     entry = ComputedEntry("FeHO2", 0, data={"oxide_type": "hydroxide"})
     value = correction.get_correction(entry)
     expected = correction.oxide_correction["oxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected)
+    assert np.isclose(value.nominal_value, expected, atol=1e-8)
 
     entry = ComputedEntry("Fe2O3", 0)
 
@@ -1794,4 +1798,31 @@ def test_anion_correction():
         value = correction.get_correction(entry)
 
     expected = correction.oxide_correction["oxide"] * entry.composition["O"]
-    assert value.nominal_value == pytest.approx(expected)
+    assert np.isclose(value.nominal_value, expected, atol=1e-8)
+
+    for formula, correction_key in [
+        ("Li2O2", "peroxide"),
+        ("KO2", "superoxide"),
+        ("KO3", "ozonide"),
+    ]:
+        entry = ComputedEntry(formula, 0)
+
+        value = correction.get_correction(entry)
+
+        expected = correction.oxide_correction[correction_key] * entry.composition["O"]
+
+        assert np.isclose(value.nominal_value, expected, atol=1e-8)
+
+    # Generate a structure to avoid mp-api
+    entry = ComputedStructureEntry(
+        Structure(
+            Lattice.cubic(10),
+            ["Mg", "O"],
+            [[0, 0, 0], [0.5, 0.5, 0.5]],
+        ),
+        0,
+    )
+
+    value = correction.get_correction(entry)
+    expected = correction.oxide_correction["oxide"] * entry.composition["O"]
+    assert np.isclose(value.nominal_value, expected, atol=1e-8)
