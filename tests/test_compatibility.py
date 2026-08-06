@@ -1163,7 +1163,7 @@ class TestMaterialsProjectCompatibility2020:
                 "potcar_symbols": ["PBE Li_sv", "PBE O"],
                 "oxide_type": "peroxide",
             },
-            "data": {"oxide_type": "peroxide"},
+            "data": {},
             "entry_id": "mp-841",
             "correction": 0,
         }
@@ -1191,7 +1191,7 @@ class TestMaterialsProjectCompatibility2020:
                 "potcar_symbols": ["PBE K_sv", "PBE O"],
                 "oxide_type": "superoxide",
             },
-            "data": {"oxide_type": "superoxide"},
+            "data": {},
             "entry_id": "mp-1866",
             "correction": 0,
         }
@@ -1219,7 +1219,7 @@ class TestMaterialsProjectCompatibility2020:
                 "potcar_symbols": ["PBE K_sv", "PBE O"],
                 "oxide_type": "ozonide",
             },
-            "data": {"oxide_type": "ozonide"},
+            "data": {},
             "entry_id": "mp-1726",
             "correction": 0,
         }
