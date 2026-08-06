@@ -318,6 +318,16 @@ def test_get_pourbaix_entries(monkeypatch):
     assert pbx_entries_with_gibbs
     assert all(isinstance(e, PourbaixEntry) for e in pbx_entries_with_gibbs)
 
+    pbx_entries = pourbaix_api.get_pourbaix_entries(["Fe", "Cr"], solid_compat="MaterialsProjectCompatibility")
+    for pbx_entry in pbx_entries:
+        assert isinstance(pbx_entry, PourbaixEntry)
+
+    with pytest.raises(ValueError, match="Solid compatibility can only be"):
+        pourbaix_api.get_pourbaix_entries(
+            ["Fe", "Cr"],
+            solid_compat=None,
+        )
+
 
 def test_nbs_table_ion_data():
     class DummyMPR:

@@ -293,9 +293,6 @@ class Pourbaix_api:
 
     @staticmethod
     def _rich_text_formula(value):
-        if value is None:
-            return ""
-
         if isinstance(value, str):
             return value.strip()
 
@@ -317,17 +314,17 @@ class Pourbaix_api:
         if not charge:
             return formula
 
-        if charge[-1] in "+-":
-            if formula.count("(") > formula.count(")"):
-                formula += ")"
-            return f"{formula}[{charge[-1]}{charge[:-1] or '1'}]"
+        if charge[-1] not in "+-":
+            raise ValueError(f"Could not parse charge from rich-text formula: {formula}{charge}")
+
+        if formula.count("(") > formula.count(")"):
+            formula += ")"
 
         # if charge[0] in "+-": # not needed for NBS tables
         #     if formula.count("(") > formula.count(")"):
         #         formula += ")"
-        #     return f"{formula}[{charge[0]}{charge[1:] or '1'}]"
 
-        return formula + charge
+        return f"{formula}[{charge[-1]}{charge[:-1] or '1'}]"
 
     def NBS_table_ion_data(self):
         """
