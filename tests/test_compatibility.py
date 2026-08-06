@@ -128,6 +128,18 @@ def test_overlapping_adjustments():
     assert len(processed) == 0
 
 
+class FailingCompatibility(Compatibility):
+    def get_adjustments(self, entry):
+        raise CompatibilityError("test error")
+
+    def test_on_error_raise():
+        with pytest.raises(CompatibilityError, match="test error"):
+            FailingCompatibility()._process_entry_inplace(
+                ComputedEntry("Fe2O3", -33.305),
+                on_error="raise",
+            )
+
+
 @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
 class TestMaterialsProjectCompatibility:
     def setup_method(self):
