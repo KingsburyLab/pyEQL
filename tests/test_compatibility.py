@@ -1115,6 +1115,119 @@ class TestMaterialsProjectCompatibility2020:
         processed = gga_compat.process_entry(entry)
         assert "MP2020 GGA/GGA+U mixing correction" not in [ea.name for ea in processed.energy_adjustments]
 
+        # Fe 4 H 4 O 8 (FeHO2)
+        entry = {
+            "@module": "pymatgen.entries.computed_entries",
+            "@class": "ComputedEntry",
+            "energy": -96.71,
+            "composition": defaultdict(float, {"Fe": 4.0, "H": 4.0, "O": 8.0}),
+            "energy_adjustments": [],
+            "parameters": {
+                "run_type": "GGA+U",
+                "is_hubbard": True,
+                "pseudo_potential": {
+                    "functional": "PBE",
+                    "labels": ["Fe_pv", "H", "O"],
+                    "pot_type": "paw",
+                },
+                "hubbards": {"Fe": 5.3, "H": 0.0, "O": 0.0},
+                "potcar_symbols": ["PBE Fe_pv", "PBE H", "PBE O"],
+                "oxide_type": "hydroxide",
+            },
+            "data": {"oxide_type": "hydroxide"},
+            "entry_id": "mp-605437",
+            "correction": 0,
+        }
+        entry = ComputedEntry.from_dict(entry)
+        adjustments = compat.get_adjustments(entry)
+
+        assert any(ea.name == "MP2020 anion correction (oxide)" for ea in adjustments)
+        assert not any(ea.name == "MP2020 anion correction (hydroxide)" for ea in adjustments)
+
+        # Li 4 O 4 (Li2O2)
+        entry = {
+            "@module": "pymatgen.entries.computed_entries",
+            "@class": "ComputedEntry",
+            "energy": -38.71,
+            "composition": defaultdict(float, {"Li": 4.0, "O": 4.0}),
+            "energy_adjustments": [],
+            "parameters": {
+                "run_type": "GGA",
+                "is_hubbard": True,
+                "pseudo_potential": {
+                    "functional": "PBE",
+                    "labels": ["Li", "O"],
+                    "pot_type": "paw",
+                },
+                "hubbards": {"Li": 0.0, "O": 0.0},
+                "potcar_symbols": ["PBE Li_sv", "PBE O"],
+                "oxide_type": "peroxide",
+            },
+            "data": {"oxide_type": "peroxide"},
+            "entry_id": "mp-841",
+            "correction": 0,
+        }
+        entry = ComputedEntry.from_dict(entry)
+        adjustments = compat.get_adjustments(entry)
+
+        assert any(ea.name == "MP2020 anion correction (peroxide)" for ea in adjustments)
+
+        # K 1 O 2 (KO2)
+        entry = {
+            "@module": "pymatgen.entries.computed_entries",
+            "@class": "ComputedEntry",
+            "energy": -13.62,
+            "composition": defaultdict(float, {"K": 1.0, "O": 2.0}),
+            "energy_adjustments": [],
+            "parameters": {
+                "run_type": "GGA",
+                "is_hubbard": True,
+                "pseudo_potential": {
+                    "functional": "PBE",
+                    "labels": ["K", "O"],
+                    "pot_type": "paw",
+                },
+                "hubbards": {"K": 0.0, "O": 0.0},
+                "potcar_symbols": ["PBE K_sv", "PBE O"],
+                "oxide_type": "superoxide",
+            },
+            "data": {"oxide_type": "superoxide"},
+            "entry_id": "mp-1866",
+            "correction": 0,
+        }
+        entry = ComputedEntry.from_dict(entry)
+        adjustments = compat.get_adjustments(entry)
+
+        assert any(ea.name == "MP2020 anion correction (superoxide)" for ea in adjustments)
+
+        # K 4 O 12 (KO3)
+        entry = {
+            "@module": "pymatgen.entries.computed_entries",
+            "@class": "ComputedEntry",
+            "energy": -74.14,
+            "composition": defaultdict(float, {"K": 4.0, "O": 12.0}),
+            "energy_adjustments": [],
+            "parameters": {
+                "run_type": "GGA",
+                "is_hubbard": True,
+                "pseudo_potential": {
+                    "functional": "PBE",
+                    "labels": ["K", "O"],
+                    "pot_type": "paw",
+                },
+                "hubbards": {"K": 0.0, "O": 0.0},
+                "potcar_symbols": ["PBE K_sv", "PBE O"],
+                "oxide_type": "ozonide",
+            },
+            "data": {"oxide_type": "ozonide"},
+            "entry_id": "mp-1726",
+            "correction": 0,
+        }
+        entry = ComputedEntry.from_dict(entry)
+        adjustments = compat.get_adjustments(entry)
+
+        assert any(ea.name == "MP2020 anion correction (ozonide)" for ea in adjustments)
+
     def test_process_entries(self):
         entries = self.compat.process_entries([self.entry1, self.entry2, self.entry3])
         assert len(entries) == 2
