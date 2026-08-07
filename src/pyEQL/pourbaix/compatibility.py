@@ -1301,7 +1301,7 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         o2_energy: float | None = None,
         h2o_energy: float | None = None,
         h2o_adjustments: float | None = None,
-        universal_solid_shift_eV_per_atom: float = 0.0,  # <--- NEW (total eV per entry)
+        universal_solid_shift_eV_per_atom: float = 0.0,
         apply_universal_shift_to: str = "compounds",
     ) -> None:
         """Initialize the MaterialsProjectAqueousCompatibility class.

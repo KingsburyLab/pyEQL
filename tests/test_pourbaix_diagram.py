@@ -330,12 +330,6 @@ class TestPourbaixDiagram(TestCase):
 
         multientries = pourbaix_diagram._generate_multielement_entries(entries)
 
-        for entry in multientries:
-            print()
-            print(type(entry))
-            print(entry)
-            print(entry.composition)
-
         assert multientries
         assert all(isinstance(entry, MultiEntry) for entry in multientries)
 
