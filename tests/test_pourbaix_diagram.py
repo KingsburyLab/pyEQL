@@ -318,6 +318,27 @@ class TestPourbaixDiagram(TestCase):
         assert np.isclose(test_sol.get_amount("Cl", default_units).magnitude, 2)
         assert np.isclose(test_sol.get_amount("SO4", default_units).magnitude, 1)
 
+    def test_generate_multielement_entries(self):
+        entries = self.test_data["Ag-Te"]
+
+        pourbaix_diagram = PourbaixDiagram(
+            entries,
+            filter_solids=True,
+            comp_dict={"Ag": 0.5, "Te": 0.5},
+            conc_dict={"Ag": 1e-8, "Te": 1e-8},
+        )
+
+        multientries = pourbaix_diagram._generate_multielement_entries(entries)
+
+        for entry in multientries:
+            print()
+            print(type(entry))
+            print(entry)
+            print(entry.composition)
+
+        assert multientries
+        assert all(isinstance(entry, MultiEntry) for entry in multientries)
+
 
 class TestPourbaixPlotter(TestCase):
     def setUp(self):
