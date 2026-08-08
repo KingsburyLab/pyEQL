@@ -269,10 +269,7 @@ class Pourbaix_api:
         # TODO: Implement the Solution class here to process the comp_dict and do equilibrium calculations
         ion_dict = self.comp_dict
         default_units = "mol/L"
-        converted_ion_dict = {
-            standardize_formula(f"{ion}[{Element(ion).common_oxidation_states[0]:+d}]"): f"{val} {default_units}"
-            for ion, val in ion_dict.items()
-        }
+        converted_ion_dict = {standardize_formula(ion): f"{val} {default_units}" for ion, val in ion_dict.items()}
 
         pH_values = [3, 7, 11]  # pH sampling or do we need only one pH?
 
