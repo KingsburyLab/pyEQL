@@ -19,6 +19,7 @@ from monty.json import MontyDecoder, MSONable
 from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
 from pymatgen.analysis.reaction_calculator import Reaction, ReactionError
 from pymatgen.core import Composition, Element
+from pymatgen.core.ion import Ion
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.util.coord import Simplex
 from pymatgen.util.due import Doi, due
@@ -28,17 +29,15 @@ from scipy.spatial import ConvexHull, HalfspaceIntersection
 from scipy.special import comb
 
 from pyEQL.pourbaix.compatibility import MU_H2O
-from pyEQL.pourbaix.ion import Ion
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Any, ClassVar, Literal
+    from typing import Any, ClassVar, Literal, Self
 
     import matplotlib.pyplot as plt
     from numpy.typing import NDArray
     from pymatgen.core import DummySpecies, Species
     from pymatgen.entries.computed_entries import ComputedStructureEntry
-    from typing_extensions import Self
 
 __author__ = "Sai Jayaraman"
 __copyright__ = "Copyright 2012, The Materials Project"
@@ -102,6 +101,7 @@ class PourbaixEntry(MSONable, Stringify):
             concentration (float): Concentration of the entry in M. Defaults to 1e-6.
         """
         self.entry = entry
+        self.correction = 0.0
         if isinstance(entry, IonEntry):
             self.concentration = concentration
             self.phase_type = "Ion"
@@ -144,6 +144,27 @@ class PourbaixEntry(MSONable, Stringify):
     def nPhi(self) -> float:
         """The number of electrons."""
         return self.npH - self.charge
+
+    @npH.setter
+    def npH(self, value):
+        self._npH = value
+
+    @property
+    def n_conc(self):
+        """The conc number used for 3D plots that vary concentration. 1 for ions, 0 for solids."""
+        return int(isinstance(self.entry, IonEntry))
+
+    @property
+    def energy_without_conc_term(self):
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
+        # Note: this implicitly depends on formation energies as input
+        return self.uncorrected_energy - (MU_H2O * self.nH2O)
+
+    @property
+    def energy_without_phi_term(self) -> float:
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
+        # Note: this implicitly depends on formation energies as input
+        return self.uncorrected_energy - (MU_H2O * self.nH2O) + (self.nPhi) * 0.0001  # voltage
 
     @property
     def name(self) -> str:
@@ -297,9 +318,11 @@ class MultiEntry(PourbaixEntry):
             "npH",
             "nH2O",
             "nPhi",
+            "n_conc",
             "conc_term",
             "composition",
             "uncorrected_energy",
+            "energy_without_conc_term",
             "elements",
         }:
             # TODO: Composition could be changed for compat with sum
@@ -642,10 +665,8 @@ class PourbaixDiagram(MSONable):
 
         all_combos: set | list = set(itertools.chain.from_iterable(combos))
 
-        list_combos: list = []
-        for combo in all_combos:
-            list_combos.append(list(combo))
-        all_combos = list_combos
+        # Use list comprehension for all_combos
+        all_combos = [list(combo) for combo in all_combos]
 
         elt_comps = self._elt_comp if isinstance(self._elt_comp, list) else [self._elt_comp]
 

@@ -4,15 +4,19 @@ import multiprocessing
 from importlib.resources import files
 from unittest import TestCase
 
+import matplotlib as mpl
+
+mpl.use("Agg", force=True)
 import matplotlib.pyplot as plt
 import numpy as np
 from monty.serialization import dumpfn, loadfn
 from pymatgen.core.composition import Composition
+from pymatgen.core.ion import Ion
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.util.testing import PymatgenTest
 from pytest import approx
 
-from pyEQL.pourbaix.ion import Ion
+from pyEQL import Solution
 from pyEQL.pourbaix.pourbaix_diagram import (
     IonEntry,
     MultiEntry,
@@ -214,9 +218,9 @@ class TestPourbaixDiagram(TestCase):
     def test_get_decomposition(self):
         # Test a stable entry to ensure that it's zero in the stable region
         entry = self.test_data["Zn"][12]  # Should correspond to mp-2133
-        assert self.pbx.get_decomposition_energy(entry, 10, 1) == approx(
-            0.0, 5
-        ), "Decomposition energy of ZnO is not 0."
+        assert self.pbx.get_decomposition_energy(entry, 10, 1) == approx(0.0, 5), (
+            "Decomposition energy of ZnO is not 0."
+        )
 
         # Test an unstable entry to ensure that it's never zero
         entry = self.test_data["Zn"][11]
@@ -302,6 +306,45 @@ class TestPourbaixDiagram(TestCase):
         )
         new_binary = PourbaixDiagram.from_dict(pd_binary.as_dict())
         assert len(pd_binary.stable_entries) == len(new_binary.stable_entries)
+
+    def test_speciate_comp_dict(self):
+        default_pH = 7
+        default_units = "mol/L"
+        self.comp_dict = {"Ca": 1, "Mg": 1, "Cl": 2, "SO4": 1}
+        ion_dict = {ion: f"{amount} {default_units}" for ion, amount in self.comp_dict.items()}
+        test_sol = Solution(ion_dict, pH=default_pH)
+        assert np.isclose(test_sol.get_amount("Ca", default_units).magnitude, 1)
+        assert np.isclose(test_sol.get_amount("Mg", default_units).magnitude, 1)
+        assert np.isclose(test_sol.get_amount("Cl", default_units).magnitude, 2)
+        assert np.isclose(test_sol.get_amount("SO4", default_units).magnitude, 1)
+
+    def test_generate_multielement_entries(self):
+        entries = self.test_data["Ag-Te"]
+
+        pourbaix_diagram1 = PourbaixDiagram(
+            entries,
+            filter_solids=True,
+            comp_dict={"Ag": 0.5, "Te": 0.5},
+            conc_dict={"Ag": 1e-8, "Te": 1e-8},
+        )
+
+        multientries1 = pourbaix_diagram1._generate_multielement_entries(entries)
+
+        assert multientries1
+        assert all(isinstance(entry, MultiEntry) for entry in multientries1)
+
+        pourbaix_diagram2 = PourbaixDiagram(
+            entries,
+            filter_solids=True,
+            comp_dict={"Ag": 0.5, "Te": 0.5},
+            conc_dict={"Ag": 1e-8, "Te": 1e-8},
+            nproc=2,
+        )
+
+        multientries2 = pourbaix_diagram2._generate_multielement_entries(entries)
+
+        assert multientries2
+        assert all(isinstance(entry, MultiEntry) for entry in multientries2)
 
 
 class TestPourbaixPlotter(TestCase):

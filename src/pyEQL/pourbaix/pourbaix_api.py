@@ -6,19 +6,26 @@ from typing import Literal
 from emmet.core.settings import EmmetSettings
 from monty.serialization import loadfn
 from mp_api.client.core.settings import MAPIClientSettings
+from openpyxl import load_workbook
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.analysis.pourbaix_diagram import Ion, IonEntry
-from pymatgen.core import Element
+from pymatgen.core import Composition, Element
+
+from pyEQL import Solution
+from pyEQL.utils import standardize_formula
 
 _EMMET_SETTINGS = EmmetSettings()
 _MAPI_SETTINGS = MAPIClientSettings()
 
 
 class Pourbaix_api:
-    def __init__(self, mpr):
+    def __init__(self, mpr, comp_dict: dict | None = None):
         ref_db_file = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
+        ref_xlsx_file = files("pyEQL") / "pourbaix" / "NBS_Tables_Library.xlsx"
         self.json_path = str(ref_db_file)
+        self.xlsx_path = str(ref_xlsx_file)
         self.mpr = mpr
+        self.comp_dict = comp_dict
 
     # @classmethod
     def get_ion_reference_data_for_chemsys(self, chemsys: str | list) -> list[dict]:
@@ -94,13 +101,11 @@ class Pourbaix_api:
         # raise ValueError if O and H not in chemsys
         if "O" not in chemsys or "H" not in chemsys:
             raise ValueError(
-                "The phase diagram chemical system must contain O and H! Your" f" diagram chemical system is {chemsys}."
+                f"The phase diagram chemical system must contain O and H! Your diagram chemical system is {chemsys}."
             )
 
-        if not ion_ref_data:
-            ion_data = self.get_ion_reference_data_for_chemsys(chemsys)
-        else:
-            ion_data = ion_ref_data
+        # ion_data = self.get_ion_reference_data_for_chemsys(chemsys) if not ion_ref_data else ion_ref_data
+        ion_data = ion_ref_data if ion_ref_data else self.get_ion_reference_data_for_chemsys(chemsys)
 
         # position the ion energies relative to most stable reference state
         ion_entries = []
@@ -167,14 +172,14 @@ class Pourbaix_api:
                 used in Pourbaix diagram construction, are calculated based on 300 K data.
         """
         # imports are not top-level due to expense
-        from pymatgen.analysis.pourbaix_diagram import PourbaixEntry
-        from pymatgen.entries.compatibility import (
+        from pymatgen.analysis.pourbaix_diagram import PourbaixEntry  # noqa: PLC0415
+        from pymatgen.entries.compatibility import (  # noqa: PLC0415
             Compatibility,
             MaterialsProject2020Compatibility,
             MaterialsProjectAqueousCompatibility,
             MaterialsProjectCompatibility,
         )
-        from pymatgen.entries.computed_entries import ComputedEntry
+        from pymatgen.entries.computed_entries import ComputedEntry  # noqa: PLC0415
 
         if solid_compat == "MaterialsProjectCompatibility":
             solid_compat = MaterialsProjectCompatibility()
@@ -232,7 +237,7 @@ class Pourbaix_api:
         # could be removed
         if use_gibbs:
             # replace the entries with GibbsComputedStructureEntry
-            from pymatgen.entries.computed_entries import GibbsComputedStructureEntry
+            from pymatgen.entries.computed_entries import GibbsComputedStructureEntry  # noqa: PLC0415
 
             ion_ref_entries = GibbsComputedStructureEntry.from_entries(ion_ref_entries, temp=use_gibbs)
         ion_ref_pd = PhaseDiagram(ion_ref_entries)  # type: ignore
@@ -253,3 +258,153 @@ class Pourbaix_api:
                 pbx_entries.append(pbx_entry)
 
         return pbx_entries
+
+    def generate_solution_objects(self):
+        """
+        Args:
+            Parsing comp_dict to generate pyEQL solution objects
+        Returns:
+            List of pyEQL Solution components
+        """
+        # TODO: Implement the Solution class here to process the comp_dict and do equilibrium calculations
+        ion_dict = self.comp_dict
+        default_units = "mol/L"
+        converted_ion_dict = {standardize_formula(ion): f"{val} {default_units}" for ion, val in ion_dict.items()}
+
+        pH_values = [3, 7, 11]  # pH sampling or do we need only one pH?
+
+        speciated_ions = []
+        for pH in pH_values:
+            sol = Solution(converted_ion_dict, pH=pH, balance_charge="auto")
+            sol.equilibrate()
+            ion_names = list(sol.components.keys())
+            speciated_ions.append(ion_names)  # get_amount that is higher than a threshold
+
+        speciated_ions = list(set(itertools.chain.from_iterable(speciated_ions)))
+
+        speciated_ions = [
+            ion for ion in speciated_ions if ion not in ["H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"]
+        ]
+
+        return speciated_ions  # noqa: RET504
+
+    @staticmethod
+    def _rich_text_formula(value):
+        if isinstance(value, str):
+            return value.strip()
+
+        formula = ""
+        charge = ""
+
+        for run in value:
+            text = getattr(run, "text", str(run))
+            font = getattr(run, "font", None)
+
+            if getattr(font, "vertAlign", None) == "superscript":
+                charge += text
+            else:
+                formula += text
+
+        formula = formula.strip()
+        charge = charge.strip().replace("\N{MINUS SIGN}", "-")
+
+        if not charge:
+            return formula
+
+        if formula.count("(") > formula.count(")"):
+            formula += ")"
+
+        return f"{formula}[{charge[-1]}{charge[:-1] or '1'}]"
+
+    def NBS_table_ion_data(self):
+        """
+        Docstring for NBS_table_data
+        Distinguish between a0 and ai!
+
+        :param self: Description
+        """
+        nbs_data = self.xlsx_path
+        workbook = load_workbook(nbs_data, data_only=True, rich_text=True)
+        worksheet = workbook["NBS Tables"]
+
+        nbs_db = {}
+        for row in worksheet.iter_rows(min_row=5, values_only=False):
+            if row[4].value not in {"ao", "ai"}:
+                continue
+
+            formula = self._rich_text_formula(row[0].value)
+            formula = formula.replace("·", "").replace("∙", "")
+            identifier = standardize_formula(formula)
+
+            nbs_db[identifier] = {
+                "exp_form_E": {"value": row[8].value, "units": "kJ/mol"},
+                "exp_entropy": {"value": row[9].value, "units": "J/(mol*K)"},
+            }
+
+        return nbs_db
+
+    def modified_get_ion_reference_data_for_chemsys(self, chemsys: str | list, nbs_db: dict | None = None):
+        """
+        Docstring for modified_get_ion_reference_data_for_chemsys
+
+        :param self: Description
+        :param chemsys: Description
+        :type chemsys: str | list
+        """
+        ion_data = loadfn(self.json_path)
+        ion_in_sol = self.generate_solution_objects()
+
+        if nbs_db is None:
+            nbs_db = self.NBS_table_ion_data()
+
+        if isinstance(chemsys, str):
+            chemsys = chemsys.split("-")
+
+        # for [i, d] in enumerate(ion_data):
+        #     if d['data']['MajElements'] == 'K':
+        #         del ion_data[i]
+
+        for entry in ion_in_sol:
+            identifier = entry
+            if identifier in ion_data:
+                continue
+            if identifier in nbs_db:
+                comp_name = identifier.split("[")[0].split("(")[0]
+                comp_name = Composition(comp_name)
+                maj_elements = [i.symbol for i in comp_name.elements if i.symbol not in ["H", "O"]]
+
+                matched_ref_solids = [entry for entry in ion_data if entry["data"]["MajElements"] == maj_elements[0]]
+
+                if matched_ref_solids:
+                    ref_solid = matched_ref_solids[0]["data"]["RefSolid"]
+                    ref_form_E_str = matched_ref_solids[0]["data"]["\u0394G\u1da0RefSolid"]["display"]
+                    ref_form_E = float(matched_ref_solids[0]["data"]["\u0394G\u1da0RefSolid"]["value"])
+
+                if "[" in identifier and "]" in identifier:
+                    charge_str = identifier[identifier.find("[") + 1 : identifier.find("]")]
+                    charge = int(charge_str)
+                else:
+                    charge_str = "0"
+                    charge = 0
+
+                ion_record = {
+                    "identifier": identifier,
+                    "formula": identifier,
+                    "data": {
+                        "charge": {"display": charge_str, "value": charge, "unit": ""},
+                        "\u0394G\u1da0": {
+                            "display": f"{nbs_db[identifier]['exp_form_E']['value']} {nbs_db[identifier]['exp_form_E']['units']}",
+                            "value": float(nbs_db[identifier]["exp_form_E"]["value"]),
+                            "unit": nbs_db[identifier]["exp_form_E"]["units"],
+                        },
+                        "MajElements": maj_elements[0],
+                        "RefSolid": ref_solid,
+                        "\u0394G\u1da0RefSolid": {"display": ref_form_E_str, "value": ref_form_E, "unit": "kJ/mol"},
+                        "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
+                    },
+                }
+                ion_data.append(ion_record)
+            else:
+                print(f"Warning: {identifier} not found in NBS database.")
+        # pprint.pprint([d for d in ion_data if d["data"]["MajElements"] in chemsys])
+        return [d for d in ion_data if d["data"]["MajElements"] in chemsys]
