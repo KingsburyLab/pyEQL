@@ -321,17 +321,30 @@ class TestPourbaixDiagram(TestCase):
     def test_generate_multielement_entries(self):
         entries = self.test_data["Ag-Te"]
 
-        pourbaix_diagram = PourbaixDiagram(
+        pourbaix_diagram1 = PourbaixDiagram(
             entries,
             filter_solids=True,
             comp_dict={"Ag": 0.5, "Te": 0.5},
             conc_dict={"Ag": 1e-8, "Te": 1e-8},
         )
 
-        multientries = pourbaix_diagram._generate_multielement_entries(entries)
+        multientries1 = pourbaix_diagram1._generate_multielement_entries(entries)
 
-        assert multientries
-        assert all(isinstance(entry, MultiEntry) for entry in multientries)
+        assert multientries1
+        assert all(isinstance(entry, MultiEntry) for entry in multientries1)
+
+        pourbaix_diagram2 = PourbaixDiagram(
+            entries,
+            filter_solids=True,
+            comp_dict={"Ag": 0.5, "Te": 0.5},
+            conc_dict={"Ag": 1e-8, "Te": 1e-8},
+            nproc=2,
+        )
+
+        multientries2 = pourbaix_diagram2._generate_multielement_entries(entries)
+
+        assert multientries2
+        assert all(isinstance(entry, MultiEntry) for entry in multientries2)
 
 
 class TestPourbaixPlotter(TestCase):
