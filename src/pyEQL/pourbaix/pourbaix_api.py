@@ -285,6 +285,7 @@ class Pourbaix_api:
             sol = Solution(converted_ion_dict, pH=pH, balance_charge="auto", engine=custom_eos)
             try:
                 sol.equilibrate()
+                print(f"Equilibration succeeded at pH {pH}, here are the proportions:")
             except Exception as e:
                 print(f"Equilibration failed at pH {pH} with error: {e}")
                 continue
