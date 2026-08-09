@@ -17,10 +17,10 @@
                 "value": -379.86
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-580.1 kJ/mol",
+                "display": "-580.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -580.1
+                "value": -580.3
             }
         },
         "formula": "Be[+2]",
@@ -38,16 +38,16 @@
             },
             "reference": "H. E. Barner and R. V. Scheuerman, Handbook of thermochemical data for compounds and aqueous species, Wiley, New York (1978)",
             "\u0394G\u1da0": {
-                "display": "-640.08 kJ/mol",
+                "display": "-640.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -640.08
+                "value": -640.1
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-580.1 kJ/mol",
+                "display": "-580.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -580.1
+                "value": -580.3
             }
         },
         "formula": "BeO2[-2]",
@@ -65,16 +65,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-2,605.0 kJ/mol",
+                "display": "-2,604.8 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -2605.0
+                "value": -2604.8
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,193.0 kJ/mol",
+                "display": "-1,193.65 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1193.0
+                "value": -1193.65
             }
         },
         "formula": "B4O7[-2]",
@@ -92,16 +92,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-2,720.0 kJ/mol",
+                "display": "-2,719.9 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -2720.0
+                "value": -2719.9
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,193.0 kJ/mol",
+                "display": "-1,193.65 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1193.0
+                "value": -1193.65
             }
         },
         "formula": "B4H2O7(aq)",
@@ -119,16 +119,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-2,161.9 kJ/mol",
+                "display": "-2,161.5 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -2161.9
+                "value": -2161.5
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,193.0 kJ/mol",
+                "display": "-1,193.65 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1193.0
+                "value": -1193.65
             }
         },
         "formula": "B2H9O10[-1]",
@@ -146,16 +146,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-79.497 kJ/mol",
+                "display": "-79.31 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -79.497
+                "value": -79.31
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "113.7 kJ/mol",
+                "display": "113.9 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 113.7
+                "value": 113.9
             }
         },
         "formula": "NH4[+1]",
@@ -173,16 +173,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "82.515 kJ/mol",
+                "display": "82.5 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 82.515
+                "value": 82.5
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "113.7 kJ/mol",
+                "display": "113.9 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 113.7
+                "value": 113.9
             }
         },
         "formula": "H5N2[+1]",
@@ -200,16 +200,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-50.485 kJ/mol",
+                "display": "-50.6 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -50.485
+                "value": -50.6
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "113.7 kJ/mol",
+                "display": "113.9 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 113.7
+                "value": 113.9
             }
         },
         "formula": "HNO2(aq)",
@@ -227,16 +227,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-278.83 kJ/mol",
+                "display": "-278.79 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -278.83
+                "value": -278.79
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-549.6 kJ/mol",
+                "display": "-543.494 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -549.6
+                "value": -543.494
             }
         },
         "formula": "F[-1]",
@@ -254,16 +254,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-577.98 kJ/mol",
+                "display": "-578.08 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -577.98
+                "value": -578.08
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-549.6 kJ/mol",
+                "display": "-543.494 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -549.6
+                "value": -543.494
             }
         },
         "formula": "HF2[-1]",
@@ -281,16 +281,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-626.76 kJ/mol",
+                "display": "-626.7 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -626.76
+                "value": -626.7
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-569.3 kJ/mol",
+                "display": "-569.43 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -569.3
+                "value": -569.43
             }
         },
         "formula": "MgOH[+1]",
@@ -308,16 +308,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-823.54 kJ/mol",
+                "display": "-830.9 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -823.54
+                "value": -830.9
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,582.0 kJ/mol",
+                "display": "-1,582.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1582.0
+                "value": -1582.3
             }
         },
         "formula": "AlO2[-1]",
@@ -335,16 +335,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "25.343 kJ/mol",
+                "display": "25.6 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 25.343
+                "value": 25.6
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "PH3(aq)",
@@ -362,16 +362,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,018.4 kJ/mol",
+                "display": "-1,018.7 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1018.4
+                "value": -1018.7
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "PO4[-3]",
@@ -389,16 +389,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,919.4 kJ/mol",
+                "display": "-1,919.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1919.4
+                "value": -1919.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "P2O7[-4]",
@@ -416,16 +416,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,089.3 kJ/mol",
+                "display": "-1,089.15 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1089.3
+                "value": -1089.15
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "HPO4[-2]",
@@ -443,16 +443,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,142.6 kJ/mol",
+                "display": "-1,142.54 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1142.6
+                "value": -1142.54
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "H3PO4(aq)",
@@ -476,10 +476,10 @@
                 "value": -1972.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "P2HO7[-3]",
@@ -497,16 +497,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-2,023.4 kJ/mol",
+                "display": "-2,023.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -2023.4
+                "value": -2023.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "P2H3O7[-1]",
@@ -524,16 +524,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-2,032.1 kJ/mol",
+                "display": "-2,032.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -2032.1
+                "value": -2032.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,362.0 kJ/mol",
+                "display": "-1,348.85 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1362.0
+                "value": -1348.85
             }
         },
         "formula": "P2H4O7(aq)",
@@ -551,19 +551,19 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-83.68 kJ/mol",
+                "display": "-120.4 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -83.68
+                "value": -120.4
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-391.3 kJ/mol",
+                "display": "-384.138 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -391.3
+                "value": -384.138
             }
         },
-        "formula": "Cl[-0.33333333]",
+        "formula": "Cl3[-1]",
         "identifier": "Cl3[-]"
     },
     {
@@ -578,16 +578,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "17.119 kJ/mol",
+                "display": "17.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": 17.119
+                "value": 17.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-391.3 kJ/mol",
+                "display": "-384.138 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -391.3
+                "value": -384.138
             }
         },
         "formula": "ClO2[-1]",
@@ -605,16 +605,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-8.588 kJ/mol",
+                "display": "-8.52 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -8.588
+                "value": -8.52
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-391.3 kJ/mol",
+                "display": "-384.138 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -391.3
+                "value": -384.138
             }
         },
         "formula": "ClO4[-1]",
@@ -632,10 +632,10 @@
             },
             "reference": "H. E. Barner and R. V. Scheuerman, Handbook of thermochemical data for compounds and aqueous species, Wiley, New York (1978)",
             "\u0394G\u1da0": {
-                "display": "-282.71 kJ/mol",
+                "display": "-283.27 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -282.71
+                "value": -283.27
             },
             "\u0394G\u1da0RefSolid": {
                 "display": "-322.1 kJ/mol",
@@ -659,16 +659,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-800.13 kJ/mol",
+                "display": "-801.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -800.13
+                "value": -801.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,819.0 kJ/mol",
+                "display": "-1,819.36 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1819.0
+                "value": -1819.36
             }
         },
         "formula": "ScOH[+2]",
@@ -692,10 +692,10 @@
                 "value": -572.5
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-888.8 kJ/mol",
+                "display": "-884.5 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -888.8
+                "value": -884.5
             }
         },
         "formula": "TiO[+2]",
@@ -719,10 +719,10 @@
                 "value": -463.27
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-888.8 kJ/mol",
+                "display": "-884.5 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -888.8
+                "value": -884.5
             }
         },
         "formula": "TiO2[+2]",
@@ -740,16 +740,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,719.8 kJ/mol",
+                "display": "-1,719.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1719.8
+                "value": -1719.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-657.5 kJ/mol",
+                "display": "-659.15 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -657.5
+                "value": -659.15
             }
         },
         "formula": "V2O7[-4]",
@@ -767,16 +767,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-523.48 kJ/mol",
+                "display": "-523.4 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -523.48
+                "value": -523.4
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-657.5 kJ/mol",
+                "display": "-659.15 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -657.5
+                "value": -659.15
             }
         },
         "formula": "VH2O3[+3]",
@@ -800,10 +800,10 @@
                 "value": -745.26
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-657.5 kJ/mol",
+                "display": "-659.15 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -657.5
+                "value": -659.15
             }
         },
         "formula": "VHO4(aq)",
@@ -821,16 +821,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-7,724.6 kJ/mol",
+                "display": "-7,723.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -7724.6
+                "value": -7723.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-657.5 kJ/mol",
+                "display": "-659.15 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -657.5
+                "value": -659.15
             }
         },
         "formula": "V5HO14[-2]",
@@ -848,16 +848,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-728.0 kJ/mol",
+                "display": "-727.75 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -728.0
+                "value": -727.75
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,053.0 kJ/mol",
+                "display": "-1,058.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1053.0
+                "value": -1058.1
             }
         },
         "formula": "CrO4[-2]",
@@ -875,16 +875,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-1,301.7 kJ/mol",
+                "display": "-1,301.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1301.7
+                "value": -1301.1
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,053.0 kJ/mol",
+                "display": "-1,058.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1053.0
+                "value": -1058.1
             }
         },
         "formula": "Cr2O7[-2]",
@@ -902,16 +902,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-764.99 kJ/mol",
+                "display": "-764.7 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -764.99
+                "value": -764.7
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-1,053.0 kJ/mol",
+                "display": "-1,058.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -1053.0
+                "value": -1058.1
             }
         },
         "formula": "CrHO4[-1]",
@@ -929,16 +929,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-227.93 kJ/mol",
+                "display": "-228.1 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -227.93
+                "value": -228.1
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-466.1 kJ/mol",
+                "display": "-465.14 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -466.1
+                "value": -465.14
             }
         },
         "formula": "Mn[+2]",
@@ -956,16 +956,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-447.15 kJ/mol",
+                "display": "-447.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -447.15
+                "value": -447.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-466.1 kJ/mol",
+                "display": "-465.14 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -466.1
+                "value": -465.14
             }
         },
         "formula": "MnO4[-1]",
@@ -983,16 +983,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-405.1 kJ/mol",
+                "display": "-405.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -405.1
+                "value": -405.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-466.1 kJ/mol",
+                "display": "-465.14 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -466.1
+                "value": -465.14
             }
         },
         "formula": "MnOH[+1]",
@@ -1010,16 +1010,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-744.33 kJ/mol",
+                "display": "-744.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -744.33
+                "value": -744.2
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-466.1 kJ/mol",
+                "display": "-465.14 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -466.1
+                "value": -465.14
             }
         },
         "formula": "Mn(OH)3[-1]",
@@ -1037,16 +1037,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-659.4 kJ/mol",
+                "display": "-659.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -659.4
+                "value": -659.3
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-741.5 kJ/mol",
+                "display": "-742.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -741.5
+                "value": -742.2
             }
         },
         "formula": "Fe(OH)3(aq)",
@@ -1064,16 +1064,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-467.26 kJ/mol",
+                "display": "-458.82 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -467.26
+                "value": -458.82
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-741.5 kJ/mol",
+                "display": "-742.2 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -741.5
+                "value": -742.2
             }
         },
         "formula": "FeOH[+2]",
@@ -1091,16 +1091,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-54.456 kJ/mol",
+                "display": "-54.4 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -54.456
+                "value": -54.4
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-795.0 kJ/mol",
+                "display": "-774.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -795.0
+                "value": -774.0
             }
         },
         "formula": "Co[+2]",
@@ -1118,16 +1118,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-369.07 kJ/mol",
+                "display": "-421.7 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -369.07
+                "value": -421.7
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-795.0 kJ/mol",
+                "display": "-774.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -795.0
+                "value": -774.0
             }
         },
         "formula": "Co(OH)2(aq)",
@@ -1145,16 +1145,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-87.875 kJ/mol",
+                "display": "-88.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -87.875
+                "value": -88.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-998.4 kJ/mol",
+                "display": "-998.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -998.4
+                "value": -998.3
             }
         },
         "formula": "Ga[+2]",
@@ -1172,16 +1172,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-158.98 kJ/mol",
+                "display": "-159.0 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -158.98
+                "value": -159.0
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-998.4 kJ/mol",
+                "display": "-998.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -998.4
+                "value": -998.3
             }
         },
         "formula": "Ga[+3]",
@@ -1199,16 +1199,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-587.24 kJ/mol",
+                "display": "-587.13 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -587.24
+                "value": -587.13
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-777.4 kJ/mol",
+                "display": "-782.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -777.4
+                "value": -782.3
             }
         },
         "formula": "AsH2O3[-1]",
@@ -1232,10 +1232,10 @@
                 "value": -714.45
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-777.4 kJ/mol",
+                "display": "-782.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -777.4
+                "value": -782.3
             }
         },
         "formula": "AsHO4[-2]",
@@ -1259,10 +1259,10 @@
                 "value": -766.08
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-777.4 kJ/mol",
+                "display": "-782.3 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -777.4
+                "value": -782.3
             }
         },
         "formula": "AsH3O4(aq)",
@@ -1280,16 +1280,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-107.12 kJ/mol",
+                "display": "-107.05 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -107.12
+                "value": -107.05
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-356.2 kJ/mol",
+                "display": "-348.983 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -356.2
+                "value": -348.983
             }
         },
         "formula": "Br[-0.33333333]",
@@ -1307,16 +1307,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-33.475 kJ/mol",
+                "display": "-33.4 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -33.475
+                "value": -33.4
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-356.2 kJ/mol",
+                "display": "-348.983 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -356.2
+                "value": -348.983
             }
         },
         "formula": "BrO[-1]",
@@ -1334,16 +1334,16 @@
             },
             "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
             "\u0394G\u1da0": {
-                "display": "-82.242 kJ/mol",
+                "display": "-82.4 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -82.242
+                "value": -82.4
             },
             "\u0394G\u1da0RefSolid": {
-                "display": "-356.2 kJ/mol",
+                "display": "-348.983 kJ/mol",
                 "error": null,
                 "unit": "kJ/mol",
-                "value": -356.2
+                "value": -348.983
             }
         },
         "formula": "HBrO(aq)",
@@ -3967,6 +3967,33 @@
         },
         "formula": "HClO(aq)",
         "identifier": "HOCl(aq)"
+    },
+    {
+        "data": {
+            "MajElements": "Cl",
+            "RefSolid": "NaCl",
+            "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
+            "\u0394G\u1da0": {
+                "display": "-131.228 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -131.228
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-391.3 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -391.3
+            }
+        },
+        "formula": "HCl(aq)",
+        "identifier": "HCl(aq)"
     },
     {
         "data": {
@@ -7321,6 +7348,33 @@
             "MajElements": "Cl",
             "RefSolid": "NaCl",
             "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
+            "\u0394G\u1da0": {
+                "display": "0.0 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": 0.0
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-391.3 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -391.3
+            }
+        },
+        "formula": "Cl2(g)",
+        "identifier": "Cl2(g)"
+    },
+    {
+        "data": {
+            "MajElements": "Cl",
+            "RefSolid": "NaCl",
+            "charge": {
                 "display": "-1.0",
                 "error": null,
                 "unit": "",
@@ -8854,6 +8908,33 @@
         },
         "formula": "CH4(aq)",
         "identifier": "CH4(aq)"
+    },
+    {
+        "data": {
+            "MajElements": "C",
+            "RefSolid": "Na2CO3",
+            "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "H. E. Barner and R. V. Scheuerman, Handbook of thermochemical data for compounds and aqueous species, Wiley, New York (1978)",
+            "\u0394G\u1da0": {
+                "display": "-50.72 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -50.72
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-1,053.0 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -1053.0
+            }
+        },
+        "formula": "CH4(g)",
+        "identifier": "CH4(g)"
     },
     {
         "data": {
