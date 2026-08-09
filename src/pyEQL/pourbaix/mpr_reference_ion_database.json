@@ -3970,6 +3970,33 @@
     },
     {
         "data": {
+            "MajElements": "Cl",
+            "RefSolid": "NaCl",
+            "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
+            "\u0394G\u1da0": {
+                "display": "-131.228 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -131.228
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-391.3 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -391.3
+            }
+        },
+        "formula": "HCl(aq)",
+        "identifier": "HCl(aq)"
+    },
+    {
+        "data": {
             "MajElements": "Ca",
             "RefSolid": "CaO",
             "charge": {
@@ -7321,6 +7348,33 @@
             "MajElements": "Cl",
             "RefSolid": "NaCl",
             "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
+            "\u0394G\u1da0": {
+                "display": "0.0 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": 0.0
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-391.3 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -391.3
+            }
+        },
+        "formula": "Cl2(g)",
+        "identifier": "Cl2(g)"
+    },
+    {
+        "data": {
+            "MajElements": "Cl",
+            "RefSolid": "NaCl",
+            "charge": {
                 "display": "-1.0",
                 "error": null,
                 "unit": "",
@@ -8854,6 +8908,33 @@
         },
         "formula": "CH4(aq)",
         "identifier": "CH4(aq)"
+    },
+    {
+        "data": {
+            "MajElements": "C",
+            "RefSolid": "Na2CO3",
+            "charge": {
+                "display": "0.0",
+                "error": null,
+                "unit": "",
+                "value": 0.0
+            },
+            "reference": "H. E. Barner and R. V. Scheuerman, Handbook of thermochemical data for compounds and aqueous species, Wiley, New York (1978)",
+            "\u0394G\u1da0": {
+                "display": "-50.72 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -50.72
+            },
+            "\u0394G\u1da0RefSolid": {
+                "display": "-1,053.0 kJ/mol",
+                "error": null,
+                "unit": "kJ/mol",
+                "value": -1053.0
+            }
+        },
+        "formula": "CH4(g)",
+        "identifier": "CH4(g)"
     },
     {
         "data": {

@@ -1,4 +1,5 @@
 import itertools
+import re
 import warnings
 from importlib.resources import files
 from typing import Literal
@@ -112,7 +113,8 @@ class Pourbaix_api:
         # position the ion energies relative to most stable reference state
         ion_entries = []
         for _, i_d in enumerate(ion_data):
-            ion = Ion.from_formula(i_d["formula"])
+            formula_cleaned = re.sub(r"\(aq\)|\(l\)|\(g\)", "", i_d["formula"])
+            ion = Ion.from_formula(formula_cleaned)
             refs = [e for e in pd.all_entries if e.composition.reduced_formula == i_d["data"]["RefSolid"]]
             if not refs:
                 raise ValueError("Reference solid not contained in entry list")
@@ -242,6 +244,7 @@ class Pourbaix_api:
             from pymatgen.entries.computed_entries import GibbsComputedStructureEntry  # noqa: PLC0415
 
             ion_ref_entries = GibbsComputedStructureEntry.from_entries(ion_ref_entries, temp=use_gibbs)
+
         ion_ref_pd = PhaseDiagram(ion_ref_entries)  # type: ignore
 
         ion_entries = self.get_ion_entries(ion_ref_pd, ion_ref_data=ion_data)
@@ -280,17 +283,29 @@ class Pourbaix_api:
         speciated_ions = []
         for pH in pH_values:
             sol = Solution(converted_ion_dict, pH=pH, balance_charge="auto", engine=custom_eos)
-            sol.equilibrate()
-            ion_names = list(sol.components.keys())
-            speciated_ions.append(ion_names)  # get_amount that is higher than a threshold
+            try:
+                sol.equilibrate()
+            except Exception as e:
+                print(f"Equilibration failed at pH {pH} with error: {e}")
+                continue
+            tds = sol.total_dissolved_solids.magnitude
 
-        speciated_ions = list(set(itertools.chain.from_iterable(speciated_ions)))
+            for key in sol.components:
+                con_val = sol.get_amount(key, "mg/L").magnitude
+                print(f"{key}: {con_val} / {tds}: {con_val / tds:.2%}")
+                if con_val / tds < 0.025 or "unk" in key:
+                    continue
+                speciated_ions.append(key)
+
+        speciated_ions = list(set(speciated_ions))
 
         speciated_ions = [
             ion for ion in speciated_ions if ion not in ["H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"]
         ]
 
-        return speciated_ions  # noqa: RET504
+        print(f"PHREEQC speciated ions: {speciated_ions}")
+
+        return speciated_ions
 
     @staticmethod
     def _rich_text_formula(value):
@@ -377,6 +392,7 @@ class Pourbaix_api:
         }
 
         ion_data = loadfn(self.json_path)
+        ion_in_sol = self.generate_solution_objects()
 
         if nbs_db is None:
             nbs_db = self.NBS_table_ion_data()
@@ -390,16 +406,6 @@ class Pourbaix_api:
         existing_identifiers = {
             _normalize_charge(d["identifier"]) for d in ion_data if isinstance(d, dict) and "identifier" in d
         }
-
-        try:
-            ion_in_sol = self.generate_solution_objects()
-        except ValueError:
-            warnings.warn(
-                f"PHREEQC speciation failed for {chemsys}. "
-                "Falling back to bundled ion entries from the reference database.",
-                stacklevel=2,
-            )
-            ion_in_sol = []
 
         for identifier in ion_in_sol:
             # Skip if already present
