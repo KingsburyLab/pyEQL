@@ -377,7 +377,6 @@ class Pourbaix_api:
         }
 
         ion_data = loadfn(self.json_path)
-        ion_in_sol = self.generate_solution_objects()
 
         if nbs_db is None:
             nbs_db = self.NBS_table_ion_data()
@@ -391,6 +390,16 @@ class Pourbaix_api:
         existing_identifiers = {
             _normalize_charge(d["identifier"]) for d in ion_data if isinstance(d, dict) and "identifier" in d
         }
+
+        try:
+            ion_in_sol = self.generate_solution_objects()
+        except ValueError:
+            warnings.warn(
+                f"PHREEQC speciation failed for {chemsys}. "
+                "Falling back to bundled ion entries from the reference database.",
+                stacklevel=2,
+            )
+            ion_in_sol = []
 
         for identifier in ion_in_sol:
             # Skip if already present
