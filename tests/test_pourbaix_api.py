@@ -8,13 +8,13 @@ import pytest
 pytest.importorskip("mp_api", reason="mp_api not installed or incompatible with this Python version")
 from mp_api.client import MPRester
 from pymatgen.analysis.phase_diagram import PhaseDiagram
-from pymatgen.analysis.pourbaix_diagram import IonEntry, PourbaixDiagram, PourbaixEntry
+from pymatgen.analysis.pourbaix_diagram import PourbaixDiagram, PourbaixEntry
 from pymatgen.core.composition import Composition
 from pymatgen.core.ion import Ion
 from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
 
-from pyEQL.pourbaix.pourbaix_api import Pourbaix_api
+from pyEQL.pourbaix.pourbaix_api import IonEntry, Pourbaix_api
 
 
 @pytest.fixture
@@ -178,10 +178,10 @@ def test_generate_solution_objects():
     entries1 = pourbaix_api.modified_get_ion_reference_data_for_chemsys("Na-Cl")
 
     identifiers = {entry["identifier"] for entry in entries1}
-    for species in ["Na[+1]", "Cl[-1]"]:
+    for species in ["Na[+]", "Cl[-]"]:
         assert species in identifiers
 
-    na_entry = next(entry for entry in entries1 if entry["identifier"] == "Cl[-1]")
+    na_entry = next(entry for entry in entries1 if entry["identifier"] == "Cl[-]")
     assert na_entry["data"]["charge"]["value"] == -1
     assert na_entry["data"]["MajElements"] == "Cl"
 
