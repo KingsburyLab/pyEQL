@@ -29,6 +29,8 @@ from pyEQL.utils import FormulaDict, standardize_formula
 # PHREEQC will ignore others (e.g., 'Na(1)')
 SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
 
+EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -140,6 +142,10 @@ class EOS(MSONable, ABC):
         Raises:
             ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters or lack of convergence.
         """
+
+    def get_alkalinity(self, solution: "solution.Solution") -> ureg.Quantity | None:
+        """Return alkalinity in mg/L as CaCO3, or None if this engine does not support it."""
+        return None
 
 
 class IdealEOS(EOS):
@@ -548,6 +554,17 @@ class Phreeqc2026EOS(EOS):
         # TODO - see if we can access molar volume or solute volume via the pyEQL-phreeqc wrapper
         return ureg.Quantity(0, "L")
 
+    def get_alkalinity(self, solution: "solution.Solution") -> ureg.Quantity:
+        """Return alkalinity in mg/L as CaCO3 from PHREEQC's TOT('Alk') (eq/kgw)."""
+        if (self.ppsol is None) or (solution.components != self._stored_comp):
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+        alk_eq_per_kgw = self.ppsol.get_alkalinity()
+        kgw = self.ppsol.get_kgw()
+        vol_L = solution.volume.to("L").magnitude
+        alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
+        return (ureg.Quantity(alk_eq_per_L, "eq/L") * EQUIV_WT_CACO3).to("mg/L")
+
     def __deepcopy__(self, memo) -> Self:
         # custom deepcopy required because the Phreeqc instance used by the Native and Phreeqc engines
         # is not pickle-able.
@@ -644,6 +661,14 @@ class PhreeqcEOS(Phreeqc2026EOS):
         """
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
+
+    def get_alkalinity(self, solution: "solution.Solution") -> ureg.Quantity:
+        """Return alkalinity in mg/L as CaCO3 from phreeqpython's get_total_ion('Alk')."""
+        if (self.ppsol is None) or (solution.components != self._stored_comp):
+            self._destroy_ppsol()
+            self._setup_ppsol(solution)
+        alk_eq_per_L = self.ppsol.pp.ip.get_total_ion(self.ppsol.number, "Alk")
+        return (ureg.Quantity(alk_eq_per_L, "eq/L") * EQUIV_WT_CACO3).to("mg/L")
 
     def __deepcopy__(self, memo) -> Self:
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
