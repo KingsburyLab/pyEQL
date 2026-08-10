@@ -898,6 +898,10 @@ class Solution(MSONable):
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
+        engine_alk = self.engine.get_alkalinity(self)
+        if engine_alk is not None:
+            return engine_alk
+
         alkalinity = 0 * ureg.mol / ureg.L
 
         # Conservative cations (Group I and II), keyed by element with their characteristic charge.
