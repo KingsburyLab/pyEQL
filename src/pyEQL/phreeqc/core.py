@@ -11,7 +11,7 @@ SOLUTION_PROPS = (
     "CELL_NO",
     "TOT['water']",
     "OSMOTIC",
-    "TOT['Alk']",
+    "ALK",
 )
 SPECIES_PROPS = ("MOL", "ACT", "DIFF_C")
 EQ_SPECIES_PROPS = ("SI",)
