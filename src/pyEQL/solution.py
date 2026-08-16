@@ -75,6 +75,7 @@ class Solution(MSONable):
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
         engine: EOS | Literal["native", "ideal", "phreeqc", "phreeqc2026"] = "native",
+        alkalinity_calc: Literal["pyEQL", "engine"] = "pyEQL", # TODO: add docstring if keep
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -238,6 +239,8 @@ class Solution(MSONable):
         # PHREEQC ppsol build, which reads _cb_species, before that determination runs).
         self._cb_species = None
 
+        self.alkalinity_calc = alkalinity_calc
+        
         # instantiate a water substance for property retrieval
         self.water_substance = create_water_substance(self.temperature, self.pressure)
         """IAPWS instance describing water properties."""
@@ -898,9 +901,16 @@ class Solution(MSONable):
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-        engine_alk = self.engine.get_alkalinity(self)
-        if engine_alk is not None:
-            return engine_alk
+
+        if self.alkalinity_calc == "engine":
+            engine_alk = self.engine.get_alkalinity(self)
+            if engine_alk is not None:
+                return engine_alk
+            else:
+                print("here")
+                warnings.warn("The selected engine does not provide alkalinity "
+                              "directly. Switching to pyEQL's calculation.")
+                self.alkalinity_calc = "pyEQL"
 
         alkalinity = 0 * ureg.mol / ureg.L
 
