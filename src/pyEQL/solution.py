@@ -14,7 +14,7 @@ import warnings
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 import numpy as np
 from maggma.stores import JSONStore, Store
@@ -2925,18 +2925,43 @@ class Solution(MSONable):
     def __sub__(self, other: Solution) -> None:
         raise NotImplementedError("Subtraction of solutions is not implemented.")
 
-    def __mul__(self, factor: float) -> None:
+    def __mul__(self, factor: float) -> Solution:
         """
-        Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
-        every component (including solvent). No other properties will change.
+        Solution multiplication: return a new Solution with all components scaled by a factor. For example,
+        Solution * 2 returns a new Solution with double the moles of every component (including solvent). No other
+        properties change, and the original Solution is left unmodified. Use ``*=`` to scale in place.
+        """
+        new_sol = self.from_dict(self.as_dict())
+        new_sol.volume *= factor
+        return new_sol
+
+    def __rmul__(self, factor: float) -> Solution:
+        """Scalar multiplication is commutative: ``factor * Solution`` is equivalent to ``Solution * factor``."""
+        return self.__mul__(factor)
+
+    def __truediv__(self, factor: float) -> Solution:
+        """
+        Solution division: return a new Solution with all components scaled by a factor. For example,
+        Solution / 2 returns a new Solution with half the moles of every component (including solvent). No other
+        properties change, and the original Solution is left unmodified. Use ``/=`` to scale in place.
+        """
+        new_sol = self.from_dict(self.as_dict())
+        new_sol.volume /= factor
+        return new_sol
+
+    def __imul__(self, factor: float) -> Self:
+        """
+        In-place solution multiplication: scale all components of this Solution by a factor. For example,
+        Solution *= 2 doubles the moles of every component (including solvent) in place. No other properties change.
         """
         self.volume *= factor
         return self
 
-    def __truediv__(self, factor: float) -> None:
+    def __itruediv__(self, factor: float) -> Self:
         """
-        Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
-        of every compoonents (including solvent). No other properties will change.
+        In-place solution division: scale all components of this Solution by a factor. For example,
+        Solution /= 2 removes half of the moles of every component (including solvent) in place. No other properties
+        change.
         """
         self.volume /= factor
         return self
