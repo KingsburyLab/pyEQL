@@ -14,7 +14,7 @@ import warnings
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 import numpy as np
 from maggma.stores import JSONStore, Store
@@ -2858,7 +2858,7 @@ class Solution(MSONable):
 
             .. [lactate] https://en.wikipedia.org/wiki/Ringer%27s_lactate_solution
 
-            .. [kwptr2026] Ryan S. Kingsbury, Monong Wang, Jaebeom Park et al. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies, 05 February 2026, PREPRINT (Version 2) available at Research Square [https://www.researchsquare.com/article/rs-8743330/v2]
+            .. [kwptr2026] Monong Wang, Jaebeom Park, Sui Xiong Tay, Vineet Bansal, Emily Rabe, Ryan S. Kingsbury. Composition and Critical Mineral Content of Major Industrial Wastewaters: Implications for Treatment and Resource Recovery Technologies. *Environmental Science & Technology*, in press. https://doi.org/10.1021/acs.est.6c04293
         """
         # preset_dir = files("pyEQL") / "presets"
         # Path to the YAML and JSON files corresponding to the preset
@@ -3028,18 +3028,43 @@ class Solution(MSONable):
     def __sub__(self, other: Solution) -> None:
         raise NotImplementedError("Subtraction of solutions is not implemented.")
 
-    def __mul__(self, factor: float) -> None:
+    def __mul__(self, factor: float) -> Solution:
         """
-        Solution multiplication: scale all components by a factor. For example, Solution * 2 will double the moles of
-        every component (including solvent). No other properties will change.
+        Solution multiplication: return a new Solution with all components scaled by a factor. For example,
+        Solution * 2 returns a new Solution with double the moles of every component (including solvent). No other
+        properties change, and the original Solution is left unmodified. Use ``*=`` to scale in place.
+        """
+        new_sol = self.from_dict(self.as_dict())
+        new_sol.volume *= factor
+        return new_sol
+
+    def __rmul__(self, factor: float) -> Solution:
+        """Scalar multiplication is commutative: ``factor * Solution`` is equivalent to ``Solution * factor``."""
+        return self.__mul__(factor)
+
+    def __truediv__(self, factor: float) -> Solution:
+        """
+        Solution division: return a new Solution with all components scaled by a factor. For example,
+        Solution / 2 returns a new Solution with half the moles of every component (including solvent). No other
+        properties change, and the original Solution is left unmodified. Use ``/=`` to scale in place.
+        """
+        new_sol = self.from_dict(self.as_dict())
+        new_sol.volume /= factor
+        return new_sol
+
+    def __imul__(self, factor: float) -> Self:
+        """
+        In-place solution multiplication: scale all components of this Solution by a factor. For example,
+        Solution *= 2 doubles the moles of every component (including solvent) in place. No other properties change.
         """
         self.volume *= factor
         return self
 
-    def __truediv__(self, factor: float) -> None:
+    def __itruediv__(self, factor: float) -> Self:
         """
-        Solution division: scale all components by a factor. For example, Solution / 2 will remove half of the moles
-        of every compoonents (including solvent). No other properties will change.
+        In-place solution division: scale all components of this Solution by a factor. For example,
+        Solution /= 2 removes half of the moles of every component (including solvent) in place. No other properties
+        change.
         """
         self.volume /= factor
         return self
