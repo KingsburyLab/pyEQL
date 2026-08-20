@@ -842,6 +842,58 @@ def test_arithmetic_and_copy(s2, s6):
         s2 + s_bad
 
 
+def test_multiplication_returns_new_solution(s6):
+    """Standalone `*` / `/` return a new scaled Solution and leave the original unchanged (issue #457).
+
+    In-place `*=` / `/=` keep mutating the original, consistent with the documented scaling behavior.
+    """
+    # access .volume first so any pending volume update is applied and the flag cleared, making the
+    # "original is unchanged" comparisons below exact
+    orig_volume = s6.volume.to("L").magnitude
+    orig_components = copy.deepcopy(dict(s6.components))
+
+    # standalone multiplication returns a NEW object and does not mutate the original
+    doubled = s6 * 2
+    assert doubled is not s6
+    assert isinstance(doubled, Solution)
+    assert np.isclose(s6.volume.to("L").magnitude, orig_volume)
+    for solute, amt in orig_components.items():
+        assert np.isclose(s6.components[solute], amt)
+
+    # the returned Solution is scaled by the factor: 2x volume and 2x moles of every component
+    assert np.isclose(doubled.volume.to("L").magnitude, 2 * orig_volume)
+    for solute, amt in orig_components.items():
+        assert np.isclose(doubled.components[solute], 2 * amt)
+
+    # scalar multiplication is commutative (rmul)
+    r_doubled = 2 * s6
+    assert r_doubled is not s6
+    assert np.isclose(r_doubled.volume.to("L").magnitude, 2 * orig_volume)
+    assert np.isclose(s6.volume.to("L").magnitude, orig_volume)
+
+    # standalone division returns a NEW object and does not mutate the original
+    halved = s6 / 2
+    assert halved is not s6
+    assert np.isclose(s6.volume.to("L").magnitude, orig_volume)
+    assert np.isclose(halved.volume.to("L").magnitude, orig_volume / 2)
+    for solute, amt in orig_components.items():
+        assert np.isclose(halved.components[solute], amt / 2)
+
+    # in-place operators STILL mutate self and return self
+    s6_ref = s6
+    s6 *= 3
+    assert s6 is s6_ref
+    assert np.isclose(s6.volume.to("L").magnitude, 3 * orig_volume)
+    for solute, amt in orig_components.items():
+        assert np.isclose(s6.components[solute], 3 * amt)
+
+    s6 /= 3
+    assert s6 is s6_ref
+    assert np.isclose(s6.volume.to("L").magnitude, orig_volume)
+    for solute, amt in orig_components.items():
+        assert np.isclose(s6.components[solute], amt)
+
+
 def test_from_dict_complex():
     """
     Test the behavior of as/from dict with a solution containing multiple solutes, that is
