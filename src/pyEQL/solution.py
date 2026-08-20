@@ -389,7 +389,7 @@ class Solution(MSONable):
         Returns: The mass of the solution, in kg
 
         """
-        mass = np.sum([self.get_amount(item, "kg").magnitude for item in self.components])
+        mass = np.sum([self._get_amount_mag(item, "kg") for item in self.components])
         return mass * ureg.kg
 
     @property
@@ -575,19 +575,20 @@ class Solution(MSONable):
         """
         di_water = self.water_substance.epsilon
 
+        # mole-fraction denominator (total moles), hoisted out of the loop. get_amount(..., "fraction")
+        # recomputes this sum on every call, which made this method O(N**2); computing it once here
+        # makes it O(N) while producing identical mole fractions.
+        total_moles = self.get_moles_solvent().magnitude + self.get_total_moles_solute().magnitude
+
         denominator = 1
         for item in self.components:
             # ignore water
             if item != "H2O(aq)":
                 # skip over solutes that don't have parameters
-                # try:
-                fraction = self.get_amount(item, "fraction")
                 coefficient = self.get_property(item, "model_parameters.dielectric_zuber")
                 if coefficient is not None:
+                    fraction = self.components[item] / total_moles
                     denominator += coefficient * fraction
-                # except TypeError:
-                #     self.logger.warning("No dielectric parameters found for species %s." % item)
-                # continue
 
         return ureg.Quantity(di_water / denominator)
 
@@ -783,7 +784,7 @@ class Solution(MSONable):
         EC = (
             np.asarray(
                 [
-                    self.get_molar_conductivity(i).to("S*L/mol/m").magnitude * self.get_amount(i, "mol/L").magnitude
+                    self.get_molar_conductivity(i).to("S*L/mol/m").magnitude * self._get_amount_mag(i, "mol/L")
                     for i in self.components
                 ]
             )
@@ -853,7 +854,7 @@ class Solution(MSONable):
         """
         charge_balance = 0
         for solute in self.components:
-            charge_balance += self.get_amount(solute, "eq/L").magnitude
+            charge_balance += self._get_amount_mag(solute, "eq/L")
 
         return charge_balance
 
@@ -981,14 +982,14 @@ class Solution(MSONable):
         The TDS is defined as the sum of the concentrations of all aqueous solutes (not including the solvent),
         except for H[+1] and OH[-1]].
         """
-        tds = 0 * ureg.mg / ureg.L
+        tds = 0.0
         for s in self.components:
             # ignore pure water and dissolved gases, but not CO2
             if s in ["H2O(aq)", "H[+1]", "OH[-1]"]:
                 continue
-            tds += self.get_amount(s, "mg/L")
+            tds += self._get_amount_mag(s, "mg/L")
 
-        return tds
+        return tds * ureg.mg / ureg.L
 
     @property
     def TDS(self) -> Quantity:
@@ -1120,6 +1121,99 @@ class Solution(MSONable):
 
     # Concentration  Methods
 
+    # Units for which get_amount() has a float fast path. Each is computed with plain
+    # arithmetic that is numerically identical (verified bit-for-bit against pint) to the
+    # reference pint conversion below, so results are unchanged. Notably absent: "M" (its
+    # pint conversion differs from mol/L by 1 ULP), "count", "%", and all SI-prefixed
+    # variants (mmol/L, meq/L, ug/L, ...), which stay on the reference path.
+    _FAST_AMOUNT_UNITS = frozenset(
+        {"mol", "moles", "mol/L", "mol/kg", "m", "g", "kg", "g/L", "mg/L", "fraction", "eq", "eq/L"}
+    )
+
+    def _volume_L(self) -> float:
+        """Solution volume magnitude in liters (used by the get_amount fast path)."""
+        return self.volume.to("L").magnitude
+
+    def _solvent_mass_kg(self) -> float:
+        """Solvent mass magnitude in kg (used by the get_amount fast path)."""
+        return self.solvent_mass.to("kg").magnitude
+
+    def _amount_fast(self, solute: str, units: str) -> tuple[float, str | None] | None:
+        """Fast path for :meth:`get_amount`.
+
+        Returns ``(magnitude, unit_token)`` for the common units in ``_FAST_AMOUNT_UNITS``,
+        where ``unit_token`` is the pint unit string used to build the returned Quantity
+        (``None`` denotes a dimensionless result). Returns ``None`` for any unit not handled
+        here, signaling the caller to fall back to the reference pint implementation.
+
+        The arithmetic mirrors pint's ``chem``-context conversions exactly (see the probe in
+        the accompanying benchmark), so values are identical to the reference path.
+        """
+        if units not in self._FAST_AMOUNT_UNITS:
+            return None
+
+        # equivalents (charge-weighted). The reference path returns a mol- / mol-per-L-unit
+        # Quantity (not eq), so mirror that here.
+        if units in ("eq", "eq/L"):
+            z = self.get_property(solute, "charge")
+            token = "mol" if units == "eq" else "mol/L"
+            if z == 0:  # uncharged solutes have zero equivalent concentration
+                return (0.0, token)
+            try:
+                n = self.components[solute]
+            except KeyError:
+                return (0.0, token)
+            if units == "eq":
+                return (z * n, token)
+            return (z * (n / self._volume_L()), token)
+
+        try:
+            n = self.components[solute]
+        except KeyError:
+            # absent solute -> zero in the requested (translated) units, matching the reference
+            if units in ("mol", "moles"):
+                return (0.0, "mol")
+            if units in ("m", "mol/kg"):
+                return (0.0, "mol/kg")
+            if units == "fraction":
+                return (0.0, None)
+            return (0.0, units)
+
+        if units in ("mol", "moles"):
+            return (n, "mol")
+        if units == "mol/L":
+            return (n / self._volume_L(), "mol/L")
+        if units in ("m", "mol/kg"):
+            return (n / self._solvent_mass_kg(), "mol/kg")
+        if units == "fraction":
+            denom = self.get_moles_solvent().magnitude + self.get_total_moles_solute().magnitude
+            return (n / denom, None)
+
+        # mass-based units require the molecular weight. The operation order below matches
+        # pint's chem-context conversion bit-for-bit across solutes (verified): for the
+        # volume-normalized units pint divides by volume first, then multiplies by MW.
+        mw = self.get_property(solute, "molecular_weight").to("g/mol").magnitude
+        if units == "g":
+            return (n * mw, "g")
+        if units == "kg":
+            return ((n * mw) * 1e-3, "kg")
+        if units == "g/L":
+            return ((n / self._volume_L()) * mw, "g/L")
+        # units == "mg/L"
+        return ((n / self._volume_L()) * mw * 1000, "mg/L")
+
+    def _get_amount_mag(self, solute: str, units: str) -> float:
+        """Return the magnitude of :meth:`get_amount` as a bare float.
+
+        Uses the fast path when possible and falls back to ``get_amount().magnitude``
+        otherwise. Intended for hot loops that sum over all components, where constructing
+        a pint Quantity per solute dominates the cost.
+        """
+        fast = self._amount_fast(solute, units)
+        if fast is not None:
+            return fast[0]
+        return self.get_amount(solute, units).magnitude
+
     def get_amount(self, solute: str, units: str = "mol/L") -> Quantity:
         """
         Return the amount of 'solute' in the parent solution.
@@ -1157,6 +1251,15 @@ class Solution(MSONable):
             :meth:`get_total_moles_solute`
             :func:`pyEQL.utils.translate_units`
         """
+        # Fast path: compute common units directly in float space and construct a single
+        # Quantity, skipping pint's context-based .to() conversions and dimensionality
+        # checks. These branches are numerically identical to the reference path below
+        # (verified against pint); any unit not handled falls through unchanged.
+        fast = self._amount_fast(solute, units)
+        if fast is not None:
+            mag, token = fast
+            return ureg.Quantity(mag) if token is None else ureg.Quantity(mag, token)
+
         z = 1
         # sanitized unit to be passed to pint
         if "eq" in units:
