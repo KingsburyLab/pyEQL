@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `Solution.alkalinity` is now invariant to how the equilibrium engine speciates the solution. The
+  conservative-ion contributions are computed from the *total analytical* concentration of each
+  constituent (via `get_total_amount`) rather than from free-ion concentrations. Previously, engines
+  such as PHREEQC that form ion pairs (e.g. `NaSO4[-1]`, `MgSO4(aq)`, `CaSO4(aq)`) would reduce the
+  free `SO4[-2]` concentration during `equilibrate()`, spuriously inflating the alkalinity of
+  seawater from ~117 to ~753 mg/L as CaCO3. (#458, @rkingsbury)
+
 ## [1.6.1] - 2026-08-04
 
 ### Fixed

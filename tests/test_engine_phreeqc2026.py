@@ -436,6 +436,31 @@ def test_alkalinity():
     assert solution.alkalinity.magnitude == pytest.approx(calculated_alk_mg_L, abs=1e-8)
 
 
+def test_alkalinity_conservative_after_equilibrate():
+    """Regression test for issue #458.
+
+    Alkalinity computed from the conservative-ion definition must be invariant to how the engine
+    speciates the solution. Previously it was calculated from *free* ion concentrations, so when
+    PHREEQC formed ion pairs during equilibration (e.g. NaSO4[-1], MgSO4(aq), CaSO4(aq)), the free
+    SO4[-2] concentration dropped and the (subtracted) sulfate term shrank, spuriously inflating the
+    seawater alkalinity from ~117 to ~753 mg/L as CaCO3. Computing the conservative terms from total
+    (analytical) concentrations keeps alkalinity essentially unchanged across equilibration.
+    """
+    sol = Solution.from_preset("seawater", engine="phreeqc2026", balance_charge="pH")
+    alk_before = sol.alkalinity.to("mg/L").magnitude
+
+    # Seawater alkalinity from conservative ions is on the order of 100-120 mg/L as CaCO3
+    assert 100 < alk_before < 130
+
+    sol.equilibrate(atmosphere=True)
+    alk_after = sol.alkalinity.to("mg/L").magnitude
+
+    # Alkalinity is conservative: equilibrating with the atmosphere (adding a small amount of CO2)
+    # should barely change it, and must not jump by several hundred mg/L as it did before the fix.
+    assert alk_after == pytest.approx(alk_before, rel=0.05)
+    assert alk_after < 130
+
+
 def test_equilibrate_2L():
     solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=True)
