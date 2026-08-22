@@ -1275,10 +1275,10 @@ class Solution(MSONable):
         for s in self.components:
             # determine the element and oxidation state
             elements = self.get_property(s, "elements")
+            oxi_states = self.get_property(s, "oxi_state_guesses")
 
             for el in elements:
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
@@ -1329,7 +1329,6 @@ class Solution(MSONable):
                 # stoichiometric coefficient, mol element per mol solute
                 stoich = pmg_ion_dict.get(el)
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
