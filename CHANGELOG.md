@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.6.5] - 2026-08-21
 
 ### Changed
 
@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   once per species instead of redundantly re-fetching it on every element of that species. Output is
   unchanged; the two methods run roughly 8% and 11% faster, respectively, on a 47-species seawater
   solution. (@rkingsbury)
+- **CHANGED BEHAVIOR** `Solution.__mul__` / `Solution.__truediv__`: scalar `sol * factor` and `sol / factor` no longer
+  mutate the original `Solution` and return an alias of it. They now return a new, independently
+  scaled `Solution`, leaving the original unchanged (consistent with Python numeric-type semantics).
+  In-place `*=` / `/=` retain their documented mutate-in-place behavior (now via explicit `__imul__` /
+  `__itruediv__`), and `factor * sol` is now supported via `__rmul__`. (#461, @youdie006)
 
 ### Fixed
 
@@ -21,7 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   constituent (via `get_total_amount`) rather than from free-ion concentrations. Previously, engines
   such as PHREEQC that form ion pairs (e.g. `NaSO4[-1]`, `MgSO4(aq)`, `CaSO4(aq)`) would reduce the
   free `SO4[-2]` concentration during `equilibrate()`, spuriously inflating the alkalinity of
-  seawater from ~117 to ~753 mg/L as CaCO3. (#458, @rkingsbury)
+  seawater from ~117 to ~753 mg/L as CaCO3. Credit to @jjstickel for reporting. (#458, @rkingsbury)
+  - `.gitignore` now correctly excludes `ipynb_checkpoint` files. (@rkingsbury; @jjstickel)
 
 ## [1.6.1] - 2026-08-04
 

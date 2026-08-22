@@ -15,8 +15,10 @@ Other contributors, listed alphabetically, are:
 - Ugo Nwosu (@ugognw)
 - Yitong Pan (@YitongPan1)
 - Jaebeom Park (@Jaebeom-P)
+- Jonathan Stickel (@jjstickel)
 - Kirill Pushkarev (@kirill-push)
 - Andrew Rosen (@arosen93)
 - Sui Xiong Tay (@SuixiongTay)
+- @youdie006
 
 (If you think that your name belongs here, please let the maintainer know)
