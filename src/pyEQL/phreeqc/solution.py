@@ -36,6 +36,10 @@ class PHRQSol:
     def get_diffusion_coefficient(self, species) -> float:
         return self._get_calculated_prop("DIFF_C", species=species)
 
+    def get_alkalinity(self) -> float:
+        """Return total alkalinity in eq/kgw as computed by PHREEQC."""
+        return self._get_calculated_prop("ALK")
+
     def get_osmotic_coefficient(self) -> float:
         return self._get_calculated_prop("OSMOTIC")
 
