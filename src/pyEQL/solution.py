@@ -75,7 +75,6 @@ class Solution(MSONable):
         balance_charge: str | None = None,
         solvent: str | list = "H2O",
         engine: EOS | Literal["native", "ideal", "phreeqc", "phreeqc2026"] = "native",
-        alkalinity_calc: Literal["pyEQL", "engine"] = "pyEQL", # TODO: add docstring if keep
         database: str | Path | Store | None = None,
         default_diffusion_coeff: float = 1.6106e-9,
         log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = "ERROR",
@@ -239,8 +238,6 @@ class Solution(MSONable):
         # PHREEQC ppsol build, which reads _cb_species, before that determination runs).
         self._cb_species = None
 
-        self.alkalinity_calc = alkalinity_calc
-        
         # instantiate a water substance for property retrieval
         self.water_substance = create_water_substance(self.temperature, self.pressure)
         """IAPWS instance describing water properties."""
@@ -902,16 +899,6 @@ class Solution(MSONable):
 
         """
 
-        if self.alkalinity_calc == "engine":
-            engine_alk = self.engine.get_alkalinity(self)
-            if engine_alk is not None:
-                return engine_alk
-            else:
-                print("here")
-                warnings.warn("The selected engine does not provide alkalinity "
-                              "directly. Switching to pyEQL's calculation.")
-                self.alkalinity_calc = "pyEQL"
-
         alkalinity = 0 * ureg.mol / ureg.L
 
         # Conservative cations (Group I and II), keyed by element with their characteristic charge.
@@ -991,7 +978,28 @@ class Solution(MSONable):
                 if item in weak_species:
                     alkalinity += self.get_amount(item, "eq/L") * (-1)
 
-        return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+        alk_mgL = (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+
+        # check against alkalinity provided by the engine
+        try:
+            if (self.engine.ppsol is None) or (self.components != self.engine._stored_comp):
+                self.engine._destroy_ppsol()
+                self.engine._setup_ppsol(self)
+            alk_eq_per_kgw = self.engine.ppsol.get_alkalinity()
+            kgw = self.engine.ppsol.get_kgw()
+            vol_L = self.volume.to("L").magnitude
+            alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
+            engine_alk = (ureg.Quantity(alk_eq_per_L, "mol/L") * EQUIV_WT_CACO3).to("mg/L")
+        except (ValueError, AttributeError):
+            engine_alk = None
+        if engine_alk is not None:
+            frac_alk_dif = np.abs(1 - engine_alk/alk_mgL)
+            #print(frac_alk_dif)
+            if frac_alk_dif > 0.01:
+                warnings.warn(f"Alkalinity calculated by the {self._engine} engine ({engine_alk}) is more than 1% different than alkalinity calculated by pyEQL")
+             
+        #return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+        return alk_mgL
 
     @property
     def hardness(self) -> Quantity:

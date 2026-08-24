@@ -29,8 +29,6 @@ from pyEQL.utils import FormulaDict, standardize_formula
 # PHREEQC will ignore others (e.g., 'Na(1)')
 SPECIAL_ELEMENTS = ["S", "C", "N", "Cu", "Fe", "Mn"]
 
-EQUIV_WT_CACO3 = ureg.Quantity(100.09 / 2, "g/mol")
-
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -143,13 +141,6 @@ class EOS(MSONable, ABC):
             ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters or lack of convergence.
         """
 
-    @abstractmethod
-    def get_alkalinity(self, solution: "solution.Solution") -> ureg.Quantity | None:
-        """
-        Return alkalinity in mg/L as CaCO3, or None if this engine does not support it.
-        """
-
-
 class IdealEOS(EOS):
     """Ideal solution equation of state engine."""
 
@@ -170,9 +161,6 @@ class IdealEOS(EOS):
     def get_solute_volume(self, solution: "solution.Solution") -> ureg.Quantity:
         """Return the volume of the solutes."""
         return ureg.Quantity(0, "L")
-
-    def get_alkalinity(self, solution: "solution.Solution") -> None:
-        return None
 
     def equilibrate(
         self,
@@ -504,6 +492,7 @@ class Phreeqc2026EOS(EOS):
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
 
+        ### is it helpful to keep this? JJS 8/24/26
         # Sync _stored_comp to the final post-equilibration components so that subsequent property
         # calls (e.g., get_activity_coefficient) reuse this ppsol instead of triggering an
         # unnecessary rebuild.
@@ -563,23 +552,6 @@ class Phreeqc2026EOS(EOS):
         """Return the volume of the solutes."""
         # TODO - see if we can access molar volume or solute volume via the pyEQL-phreeqc wrapper
         return ureg.Quantity(0, "L")
-
-    def get_alkalinity(self, solution: "solution.Solution") -> ureg.Quantity | None:
-        """
-        Return alkalinity in mg/L as CaCO3 from PHREEQC's ALK variable
-        (eq/kgw), or None on failure.
-        """
-        try:
-            if (self.ppsol is None) or (solution.components != self._stored_comp):
-                self._destroy_ppsol()
-                self._setup_ppsol(solution)
-        except ValueError:
-            return None
-        alk_eq_per_kgw = self.ppsol.get_alkalinity()
-        kgw = self.ppsol.get_kgw()
-        vol_L = solution.volume.to("L").magnitude
-        alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
-        return (ureg.Quantity(alk_eq_per_L, "mol/L") * EQUIV_WT_CACO3).to("mg/L")
 
     def __deepcopy__(self, memo) -> Self:
         # custom deepcopy required because the Phreeqc instance used by the Native and Phreeqc engines
@@ -677,13 +649,6 @@ class PhreeqcEOS(Phreeqc2026EOS):
         """
         # TODO - find a way to access or calculate osmotic coefficient
         return ureg.Quantity(1, "dimensionless")
-
-    def get_alkalinity(self, solution: "solution.Solution") -> None:
-        # phreeqpython does not appear to expose PHREEQC's internal ALK
-        # variable; for now, fall back to the manual formula in
-        # pyEQL.Solution. Perhaps work with upstream phreeqpython code base. See
-        # https://github.com/Vitens/phreeqpython/issues/38 .
-        return None
 
     def __deepcopy__(self, memo) -> Self:
         # custom deepcopy required because the PhreeqPython instance used by the Native and Phreeqc engines
