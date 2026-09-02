@@ -493,6 +493,11 @@ class Phreeqc2026EOS(EOS):
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
 
+        # Sync _stored_comp to the final post-equilibration components so that subsequent property
+        # calls (e.g., get_activity_coefficient) reuse this ppsol instead of triggering an
+        # unnecessary rebuild.
+        self._stored_comp = solution.components.copy()
+
         # set the volume update flag so that the volume will be consistent with the new composition.
         solution.volume_update_required = True
 
