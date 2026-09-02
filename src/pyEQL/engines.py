@@ -492,7 +492,6 @@ class Phreeqc2026EOS(EOS):
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
 
-        ### is it helpful to keep this? JJS 8/24/26
         # Sync _stored_comp to the final post-equilibration components so that subsequent property
         # calls (e.g., get_activity_coefficient) reuse this ppsol instead of triggering an
         # unnecessary rebuild.
