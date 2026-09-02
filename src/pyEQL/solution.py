@@ -888,34 +888,48 @@ class Solution(MSONable):
 
             The summation should extend over all weak inorganic species that can participate in acid-base reactions. In this method, we consider HCO3[-1], CO3[-2], H2PO4[-1], HPO4[-2], PO4[-3], HS[-1], S[-2], H3SiO4[-1], H2SiO4[-2], B(OH)4[-1], NH3(aq), OH[-1], and H[+1] as the relevant weak acid/base species, while organics are excluded.
 
+            The conservative contributions are computed from the *total analytical* concentration of
+            each constituent (via :meth:`get_el_amt_dict`) rather than from the free-ion concentration.
+            This is important for engines that speciate the solution into ion pairs and complexes
+            (e.g. PHREEQC, which forms NaSO4[-1], MgSO4(aq), CaSO4(aq), etc. in seawater). Alkalinity is
+            a conservative quantity that must be unaffected by such re-speciation; using free-ion
+            concentrations would spuriously change it after equilibration (see issue #458).
+
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
         alkalinity = 0 * ureg.mol / ureg.L
 
+        # Conservative cations (Group I and II), keyed by element with their characteristic charge.
+        # These elements exist in a single oxidation state, so their total (over all oxidation states)
+        # is used.
         base_cations = {
-            "Li[+1]",
-            "Na[+1]",
-            "K[+1]",
-            "Rb[+1]",
-            "Cs[+1]",
-            "Fr[+1]",
-            "Be[+2]",
-            "Mg[+2]",
-            "Ca[+2]",
-            "Sr[+2]",
-            "Ba[+2]",
-            "Ra[+2]",
+            "Li": 1,
+            "Na": 1,
+            "K": 1,
+            "Rb": 1,
+            "Cs": 1,
+            "Fr": 1,
+            "Be": 2,
+            "Mg": 2,
+            "Ca": 2,
+            "Sr": 2,
+            "Ba": 2,
+            "Ra": 2,
         }
+        # Strong-acid anions, keyed by (element, oxidation state) with their characteristic charge.
+        # The oxidation state distinguishes the conservative species from weak/reduced forms of the
+        # same element (e.g. sulfate S(6) vs. sulfide, nitrate N(5) vs. ammonia, chloride Cl(-1) vs.
+        # chlorate/perchlorate).
         acid_anions = {
-            "Cl[-1]",
-            "Br[-1]",
-            "I[-1]",
-            "SO4[-2]",
-            "NO3[-1]",
-            "ClO4[-1]",
-            "ClO3[-1]",
+            ("Cl", -1.0): -1,
+            ("Br", -1.0): -1,
+            ("I", -1.0): -1,
+            ("S", 6.0): -2,
+            ("N", 5.0): -1,
+            ("Cl", 7.0): -1,
+            ("Cl", 5.0): -1,
         }
 
         weak_species = {
@@ -934,17 +948,35 @@ class Solution(MSONable):
             "H[+1]",
         }  # Note that organics are excluded
 
-        conservative_species = base_cations.union(acid_anions)
-        # check presence of conservative cations or strong base anions
-        conservative_def = any(item in conservative_species for item in self.components)
+        # Total (analytical) moles of every element, broken down by oxidation state, computed in a
+        # single pass. Using totals rather than free-ion concentrations keeps alkalinity invariant to
+        # how the engine speciates the solution (e.g. ion pairing).
+        el_amt = self.get_el_amt_dict(nested=True)  # {element: {oxi_state: moles}}
 
-        for item in self.components:
-            if item in conservative_species:
-                # Conservative cations and strong base anions
-                alkalinity += self.get_amount(item, "eq/L")
-            elif item in weak_species and not conservative_def:
-                # Weak acid/base species, exclude organics
-                alkalinity += self.get_amount(item, "eq/L") * (-1)
+        # Sum the charge-weighted total concentration of each conservative constituent present.
+        conservative_eq = 0.0  # equivalents (mol of charge), signed
+        conservative_def = False
+        for element, charge in base_cations.items():
+            by_oxi_state = el_amt.get(element)
+            if by_oxi_state:
+                conservative_def = True
+                conservative_eq += charge * sum(by_oxi_state.values())
+        for (element, oxi_state), charge in acid_anions.items():
+            moles = (el_amt.get(element) or {}).get(oxi_state)
+            if moles:
+                conservative_def = True
+                conservative_eq += charge * moles
+
+        if conservative_def:
+            # Conservative cations and strong-acid anions are present
+            alkalinity = conservative_eq * ureg.mol / self.volume
+        else:
+            # No conservative species present, so use the weak acid/base definition. These species
+            # participate directly in acid-base equilibria, so their (speciated) concentrations are
+            # the correct basis.
+            for item in self.components:
+                if item in weak_species:
+                    alkalinity += self.get_amount(item, "eq/L") * (-1)
 
         return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
@@ -1346,10 +1378,10 @@ class Solution(MSONable):
         for s in self.components:
             # determine the element and oxidation state
             elements = self.get_property(s, "elements")
+            oxi_states = self.get_property(s, "oxi_state_guesses")
 
             for el in elements:
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
@@ -1400,7 +1432,6 @@ class Solution(MSONable):
                 # stoichiometric coefficient, mol element per mol solute
                 stoich = pmg_ion_dict.get(el)
                 try:
-                    oxi_states = self.get_property(s, "oxi_state_guesses")
                     oxi_state = oxi_states.get(el, UNKNOWN_OXI_STATE)
                 except (TypeError, IndexError):
                     self.logger.error(f"No oxidation state found for element {el}. Assigning '{UNKNOWN_OXI_STATE}'")
