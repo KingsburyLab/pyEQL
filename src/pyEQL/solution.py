@@ -981,24 +981,23 @@ class Solution(MSONable):
         alk_mgL = (alkalinity * EQUIV_WT_CACO3).to("mg/L")
 
         # check against alkalinity provided by the engine
-        try:
-            if (self.engine.ppsol is None) or (self.components != self.engine._stored_comp):
-                self.engine._destroy_ppsol()
-                self.engine._setup_ppsol(self)
-            alk_eq_per_kgw = self.engine.ppsol.get_alkalinity()
-            kgw = self.engine.ppsol.get_kgw()
-            vol_L = self.volume.to("L").magnitude
-            alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
-            engine_alk = (ureg.Quantity(alk_eq_per_L, "mol/L") * EQUIV_WT_CACO3).to("mg/L")
-        except (ValueError, AttributeError):
-            engine_alk = None
-        if engine_alk is not None:
-            frac_alk_dif = np.abs(1 - engine_alk/alk_mgL)
-            #print(frac_alk_dif)
-            if frac_alk_dif > 0.01:
-                warnings.warn(f"Alkalinity calculated by the {self._engine} engine ({engine_alk}) is more than 1% different than alkalinity calculated by pyEQL")
+        if hasattr(self.engine, 'ppsol'):
+            try:
+                if (self.engine.ppsol is None) or (self.components\
+                                                   != self.engine._stored_comp):
+                    self.engine._destroy_ppsol()
+                    self.engine._setup_ppsol(self)
+                alk_eq_per_kgw = self.engine.ppsol.get_alkalinity()
+                kgw = self.engine.ppsol.get_kgw()
+                vol_L = self.volume.to("L").magnitude
+                alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
+                engine_alk = alk_eq_per_L * EQUIV_WT_CACO3.magnitude * 1000
+            except ValueError:
+                engine_alk = None
+            if engine_alk is not None:
+                if not np.isclose(engine_alk, alk_mgL.magnitude, rtol=0.01):
+                    self.logger.warning(f"Alkalinity calculated by the {self._engine} engine ({engine_alk}) is more than 1% different than alkalinity calculated by pyEQL")
              
-        #return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
         return alk_mgL
 
     @property

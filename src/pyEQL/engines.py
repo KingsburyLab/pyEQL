@@ -141,6 +141,7 @@ class EOS(MSONable, ABC):
             ValueError if the calculation cannot be completed, e.g. due to insufficient number of parameters or lack of convergence.
         """
 
+
 class IdealEOS(EOS):
     """Ideal solution equation of state engine."""
 
