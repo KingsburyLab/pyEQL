@@ -530,7 +530,8 @@ def test_species_all_props():
             "CELL_NO": 0,
             "TOT['water']": 0.9970480319717386,
             "OSMOTIC": 0.0,
-            "ALK": 1.2165147297222761e-09,
+            # pure water: alkalinity is zero to within numerical noise
+            "ALK": 0.0,
             "species": {
                 "H+": {"ACT": 1.0001522689856982e-07, "MOL": 1.0005246407839175e-07},
                 "H2": {"ACT": 7.079457681907915e-35, "MOL": 7.079457517820301e-35},
@@ -568,7 +569,7 @@ def test_species_all_props():
         assert set(props.keys()) == set(expected[solution_index].keys())
         for k in expected[solution_index]:
             if k not in ("species", "eq_species"):
-                # abs tolerance keeps the near-zero ALK (solution 0) robust across platforms
+                # abs tolerance lets solution 0's ALK be checked as approx(0.0) across platforms
                 assert props[k] == approx(expected[solution_index][k], abs=1e-8)
 
         for k in solution_props["species"]:
