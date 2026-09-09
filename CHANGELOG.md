@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `Solution.alkalinity` now counts fluoride (`F-`) as a conservative strong-acid anion, alongside
+  chloride, bromide, and iodide. Previously it was omitted, leaving the conservative alkalinity of
+  fluoride-bearing waters (e.g. seawater) ~3.4 mg/L as CaCO3 too high relative to the value reported
+  by the PHREEQC engine. Note that the conservative (Stumm) alkalinity equals the engine's titration
+  alkalinity only for a charge-balanced solution; non-electroneutral inputs additionally differ by
+  the residual charge imbalance. (#458)
+
 ## [1.6.5] - 2026-08-21
 
 ### Changed
