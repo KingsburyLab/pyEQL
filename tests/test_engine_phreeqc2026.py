@@ -461,6 +461,25 @@ def test_alkalinity_conservative_after_equilibrate():
     assert alk_after < 130
 
 
+def test_alkalinity_fluoride_is_conservative():
+    """Regression test for issue #458.
+
+    Fluoride (F-) is a strong-acid anion and must count against the conservative alkalinity, just
+    like chloride. Previously F- was omitted, which left seawater alkalinity ~3.4 mg/L as CaCO3 too
+    high relative to PHREEQC. In a charge-balanced NaF solution the Na+ and F- terms cancel exactly,
+    so the conservative alkalinity is zero; before the fix it was ~50 mg/L as CaCO3 per mM.
+    """
+    naf = Solution({"Na+": "1 mmol/L", "F-": "1 mmol/L"}, engine="phreeqc2026")
+    assert naf.alkalinity.to("mg/L").magnitude == pytest.approx(0.0, abs=1e-6)
+
+    # adding fluoride lowers alkalinity by its equivalent contribution
+    base = Solution({"Na+": "2 mmol/L", "Cl-": "1 mmol/L"}, engine="phreeqc2026")
+    with_f = Solution({"Na+": "2 mmol/L", "Cl-": "1 mmol/L", "F-": "1 mmol/L"}, engine="phreeqc2026")
+    drop = base.alkalinity.to("mg/L").magnitude - with_f.alkalinity.to("mg/L").magnitude
+    # 1 mmol/L of F- ~ 1 meq/L ~ 50.04 mg/L as CaCO3
+    assert drop == pytest.approx(50.04, rel=1e-3)
+
+
 def test_equilibrate_2L():
     solution = Solution({"Cu+2": "1 umol/L", "O-2": "1 umol/L"}, volume="2 L", engine="phreeqc2026")
     solution.equilibrate(atmosphere=True)
