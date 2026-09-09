@@ -433,6 +433,13 @@ def test_alkalinity_hardness(s3, s5, s6, s9, s10):
     assert np.isclose(s10.hardness.magnitude, 100.09, rtol=0.005)
 
 
+def test_alkalinity_engine_warning(caplog):
+    s = Solution.from_preset("seawater")
+    with caplog.at_level(logging.WARNING, logger=s.logger.name):
+        s.alkalinity
+    assert any("is more than 1% different than alkalinity calculated by pyEQL" in m for m in caplog.messages)
+
+
 def test_pressure_temperature(s5):
     orig_V = s5.volume
     s5.temperature = "50 degC"
