@@ -1,4 +1,4 @@
-"# CRC Handbook of Chemistry and Physics, Equivalent conductivity of electrolytes in aqueous solution, Electrical conductivity of aqueous solutions ",,,,,,
+"# Source: *CRC Handbook of Chemistry and Physics*, 97th ed. (2016_2017), ¡°Equivalent conductivity of electrolytes in aqueous solution¡± (Petr Van_sek); ¡°Electrical conductivity of aqueous solutions¡± (references: Weast, R. C.; Wolf, A. V.). Values were calculated from the reported data. Concentrations are in mol/L; conductivities are in mS/cm.",,,,,,
 Na[+1],K[+1],Ca[+2],Mg[+2],Cl[-1],SO4[-2],conductivity
 0.0005,0,0,0,0.0005,0,0.06222
 0.001,0,0,0,0.001,0,0.12368

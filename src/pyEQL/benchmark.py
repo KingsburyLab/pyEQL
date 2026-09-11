@@ -23,10 +23,10 @@ cond = _load_benchmark_csv("CRC_conductivity.csv")
 def _ionic_strength(df):
     """calculate ionic strength of the selected data"""
     z = {"Na[+1]": 1, "K[+1]": 1, "Ca[+2]": 2, "Mg[+2]": 2, "Cl[-1]": -1, "SO4[-2]": -2}
-    I = np.zeros(len(df))
+    Is = np.zeros(len(df))
     for k, v in z.items():
-        I += df[k].values * v * v
-    return 0.5 * I
+        Is += df[k].values * v**2
+    return 0.5 * Is
 
 
 def _salt_label(ions):
@@ -42,16 +42,19 @@ def _salt_label(ions):
 
 def _pyEQL_sim(ions, conc, prop):
     """pyEQL model result calculation"""
-    s = pyEQL.Solution([[i, f"{c} mol/kg"] for i, c in zip(ions, conc, strict=False)])
     if prop == "activity_coefficient":
+        s = pyEQL.Solution([[i, f"{c} mol/kg"] for i, c in zip(ions, conc, strict=False)])
         nu = [abs(int(i.split("[")[1].split("]")[0])) for i in ions]
         gammas = [s.get_activity_coefficient(i).magnitude for i in ions]
         prod = 1.0
         for g, n in zip(gammas, nu, strict=False):
             prod *= g**n
         return prod ** (1 / sum(nu))
+
     if prop == "conductivity":
+        s = pyEQL.Solution([[i, f"{c} mol/L"] for i, c in zip(ions, conc, strict=False)])
         return s.conductivity.to("mS/cm").magnitude
+
     raise ValueError(f"Unknown property: {prop}")
 
 
@@ -95,12 +98,12 @@ def benchmark(df, ions, prop, n=200):
 
     """
 
-    df = _filter_df(df, ions)
-    Is = _ionic_strength(df)
-    y = df["mean_activity_coefficient"] if prop == "activity_coefficient" else df["conductivity"]
+    filtered_df = _filter_df(df, ions)
+    Is = _ionic_strength(filtered_df)
+    y = filtered_df["mean_activity_coefficient"] if prop == "activity_coefficient" else filtered_df["conductivity"]
 
     I_sim = np.linspace(Is.min(), Is.max() + 0.1, n)
-    base_conc = df[ions].mean().values
+    base_conc = filtered_df[ions].mean().values
     y_sim = []
     for I_s in I_sim:
         scale = I_s / np.mean(Is) if np.mean(Is) != 0 else 1.0
