@@ -895,10 +895,16 @@ class Solution(MSONable):
             a conservative quantity that must be unaffected by such re-speciation; using free-ion
             concentrations would spuriously change it after equilibration (see issue #458).
 
+            Note that this conservative (Stumm) definition equals the titration alkalinity reported by
+            the PHREEQC engine only for a charge-balanced solution. For a non-electroneutral input the
+            two differ by the residual charge imbalance, so balance the charge (e.g. ``balance_charge``)
+            before comparing against an engine-reported alkalinity.
+
         References:
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
+
         alkalinity = 0 * ureg.mol / ureg.L
 
         # Conservative cations (Group I and II), keyed by element with their characteristic charge.
@@ -926,6 +932,7 @@ class Solution(MSONable):
             ("Cl", -1.0): -1,
             ("Br", -1.0): -1,
             ("I", -1.0): -1,
+            ("F", -1.0): -1,
             ("S", 6.0): -2,
             ("N", 5.0): -1,
             ("Cl", 7.0): -1,
@@ -978,7 +985,26 @@ class Solution(MSONable):
                 if item in weak_species:
                     alkalinity += self.get_amount(item, "eq/L") * (-1)
 
-        return (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+        alk_mgL = (alkalinity * EQUIV_WT_CACO3).to("mg/L")
+
+        # check against alkalinity provided by the engine
+        try:
+            if (self.engine.ppsol is None) or (self.components != self.engine._stored_comp):
+                self.engine._destroy_ppsol()
+                self.engine._setup_ppsol(self)
+            alk_eq_per_kgw = self.engine.ppsol.get_alkalinity()
+            kgw = self.engine.ppsol.get_kgw()
+            vol_L = self.volume.to("L").magnitude
+            alk_eq_per_L = alk_eq_per_kgw * kgw / vol_L
+            engine_alk = alk_eq_per_L * EQUIV_WT_CACO3.magnitude * 1000
+        except (AttributeError, ValueError):
+            engine_alk = None
+        if engine_alk is not None and not np.isclose(engine_alk, alk_mgL.magnitude, rtol=0.01):
+            self.logger.warning(
+                f"Alkalinity calculated by the {self._engine} engine ({engine_alk}) is more than 1% different than alkalinity calculated by pyEQL"
+            )
+
+        return alk_mgL
 
     @property
     def hardness(self) -> Quantity:

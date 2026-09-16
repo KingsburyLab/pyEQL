@@ -404,7 +404,7 @@ def test_add_solution_input():
             -reset false
 
         USER_PUNCH
-        5 PUNCH CELL_NO, TOT['water'], OSMOTIC, EOL_NOTAB$
+        5 PUNCH CELL_NO, TOT['water'], OSMOTIC, ALK, EOL_NOTAB$
         10 t = SYS("aq", count, name$, type$, moles)
         20 FOR i = 1 to count
         30 PUNCH name$(i), MOL(name$(i)), ACT(name$(i)), DIFF_C(name$(i))
@@ -454,10 +454,10 @@ def test_add_solution_output():
 
     # heading + soln 0 data + soln 1 data (regardless of whether we have -headings in USER_PUNCH or not)
     assert phreeqc.get_selected_output_row_count() == 3
-    # <cell_no>, <tot_water>, <osmotic>, "\n",
+    # <cell_no>, <tot_water>, <osmotic>, <alk>, "\n",
     # +[<name>, <molality>, <activity>, <diff_c>] repeated for each (4) species
     # +"\n" + [<equilibrium_species>, <si>] repeated for each (3) equilibrium species
-    assert phreeqc.get_selected_output_column_count() == 27
+    assert phreeqc.get_selected_output_column_count() == 28
 
 
 def test_kgw():
@@ -530,6 +530,8 @@ def test_species_all_props():
             "CELL_NO": 0,
             "TOT['water']": 0.9970480319717386,
             "OSMOTIC": 0.0,
+            # pure water: alkalinity is zero to within numerical noise
+            "ALK": 0.0,
             "species": {
                 "H+": {"ACT": 1.0001522689856982e-07, "MOL": 1.0005246407839175e-07},
                 "H2": {"ACT": 7.079457681907915e-35, "MOL": 7.079457517820301e-35},
@@ -546,6 +548,7 @@ def test_species_all_props():
             "CELL_NO": 1,
             "TOT['water']": 0.9970480319717386,
             "OSMOTIC": 0.0,
+            "ALK": 0.0005585110513623097,
             "species": {
                 "H+": {"ACT": 1e-10, "MOL": 1.0197827284798617e-10},
                 "H2": {"ACT": 5.626700758118202e-41, "MOL": 0.0},
@@ -566,7 +569,8 @@ def test_species_all_props():
         assert set(props.keys()) == set(expected[solution_index].keys())
         for k in expected[solution_index]:
             if k not in ("species", "eq_species"):
-                assert props[k] == approx(expected[solution_index][k])
+                # abs tolerance lets solution 0's ALK be checked as approx(0.0) across platforms
+                assert props[k] == approx(expected[solution_index][k], abs=1e-8)
 
         for k in solution_props["species"]:
             for prop in ("ACT", "MOL"):
