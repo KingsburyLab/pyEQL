@@ -2,6 +2,7 @@ import itertools
 import re
 import warnings
 from importlib.resources import files
+from pathlib import Path
 from typing import Literal
 
 from emmet.core.settings import EmmetSettings
@@ -37,11 +38,25 @@ DEFAULT_REFERENCE_SOLIDS = {
 
 
 class Pourbaix_api:
-    def __init__(self, mpr, ref_solids: dict | None = None):
-        ref_db_file = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
-        ref_xlsx_file = files("pyEQL") / "pourbaix" / "NBS_Tables_Library.xlsx"
-        self.json_path = str(ref_db_file)
-        self.xlsx_path = str(ref_xlsx_file)
+    def __init__(
+        self,
+        mpr,
+        ref_solids: dict | None = None,
+        ref_db_file: str | Path | None = None,
+        ref_xlsx_file: str | Path | None = None,
+    ):
+        """
+        Construct Pourbaix entries from Materials Project database.
+
+        Args:
+            mpr: Materials Project API client used to retreieve DFT entries.
+            ref_solids: Reference solids used for DFT ion-reference construction. Defaults to DEFAULT_REFERENCE_SOLIDS.
+            ref_db_file: Path to the Materials Project ion-reference database. Defaults to the mpr_reference_ion_database.json packaged within pyEQL.
+            ref_xlsx_file: Path to the NBS thermodynamic tables. Defaults to the NBS_Tables_Library.xlsx table packaged within pyEQL.
+        """
+        pbx_dir = files("pyEQL") / "pourbaix"
+        self.json_path = str(ref_db_file or pbx_dir / "mpr_reference_ion_database.json")
+        self.xlsx_path = str(ref_xlsx_file or pbx_dir / "NBS_Tables_Library.xlsx")
         self.mpr = mpr
         self.ref_solids = {**DEFAULT_REFERENCE_SOLIDS, **(ref_solids or {})}
 
