@@ -9,28 +9,43 @@ from monty.serialization import loadfn
 from mp_api.client.core.settings import MAPIClientSettings
 from openpyxl import load_workbook
 from pymatgen.analysis.phase_diagram import PhaseDiagram
-from pymatgen.analysis.pourbaix_diagram import Ion
 from pymatgen.core import Composition, Element
+from pymatgen.core.ion import Ion
 
 from pyEQL import Solution
-from pyEQL.engines import PhreeqcEOS
+from pyEQL.engines import Phreeqc2026EOS
 from pyEQL.pourbaix.pourbaix_diagram import IonEntry
 from pyEQL.utils import standardize_formula
 
 _EMMET_SETTINGS = EmmetSettings()
 _MAPI_SETTINGS = MAPIClientSettings()
 
+DEFAULT_REFERENCE_SOLIDS = {
+    "Li": {"ref_solid": "Li2CO3", "G_ref_solid": -1044.44},
+    "Na": {"ref_solid": "Na2CO3", "G_ref_solid": -1044.4},
+    "K": {"ref_solid": "KCl", "G_ref_solid": -409.14},
+    "Mg": {"ref_solid": "MgCO3", "G_ref_solid": -1012.1},
+    "Ca": {"ref_solid": "CaO", "G_ref_solid": -604.03},
+    "Cl": {"ref_solid": "KCl", "G_ref_solid": -409.14},
+    "S": {"ref_solid": "CaS", "G_ref_solid": -477.4},
+    "N": {"ref_solid": "Ca(NO3)2", "G_ref_solid": -743.07},
+    "C": {"ref_solid": "Na2CO3", "G_ref_solid": -1044.4},
+    "Fe": {"ref_solid": "Fe3O4", "G_ref_solid": -1015.4},
+    "Al": {"ref_solid": "AlHO2", "G_ref_solid": -915.85},
+    "P": {"ref_solid": "PH3O4", "G_ref_solid": -1119.1},
+}
+
 
 class Pourbaix_api:
-    def __init__(self, mpr, comp_dict: dict | None = None):
+    def __init__(self, mpr, ref_solids: dict | None = None):
         ref_db_file = files("pyEQL") / "pourbaix" / "mpr_reference_ion_database.json"
         ref_xlsx_file = files("pyEQL") / "pourbaix" / "NBS_Tables_Library.xlsx"
         self.json_path = str(ref_db_file)
         self.xlsx_path = str(ref_xlsx_file)
         self.mpr = mpr
-        self.comp_dict = comp_dict
+        self.ref_solids = {**DEFAULT_REFERENCE_SOLIDS, **(ref_solids or {})}
 
-    # @classmethod
+    @classmethod
     def get_ion_reference_data_for_chemsys(self, chemsys: str | list) -> list[dict]:
         """Download aqueous ion reference data used in the construction of Pourbaix diagrams.
 
@@ -70,7 +85,7 @@ class Pourbaix_api:
             chemsys = chemsys.split("-")
         return [d for d in ion_data if d["data"]["MajElements"] in chemsys]
 
-    # @classmethod
+    @classmethod
     def get_ion_entries(self, pd: PhaseDiagram, ion_ref_data: list[dict] | None = None) -> list[IonEntry]:
         """Retrieve IonEntry objects that can be used in the construction of
         Pourbaix Diagrams. The energies of the IonEntry are calculaterd from
@@ -149,7 +164,7 @@ class Pourbaix_api:
 
         return ion_entries
 
-    # @classmethod
+    @classmethod
     def get_pourbaix_entries(
         self,
         chemsys: str | list,
@@ -176,14 +191,15 @@ class Pourbaix_api:
                 used in Pourbaix diagram construction, are calculated based on 300 K data.
         """
         # imports are not top-level due to expense
-        from pymatgen.analysis.pourbaix_diagram import PourbaixEntry  # noqa: PLC0415
         from pymatgen.entries.compatibility import (  # noqa: PLC0415
             Compatibility,
             MaterialsProject2020Compatibility,
-            MaterialsProjectAqueousCompatibility,
             MaterialsProjectCompatibility,
         )
         from pymatgen.entries.computed_entries import ComputedEntry  # noqa: PLC0415
+
+        from pyEQL.pourbaix.compatibility import MaterialsProjectAqueousCompatibility  # noqa: PLC0415
+        from pyEQL.pourbaix.pourbaix_diagram import PourbaixEntry  # noqa: PLC0415
 
         if solid_compat == "MaterialsProjectCompatibility":
             solid_compat = MaterialsProjectCompatibility()
@@ -264,7 +280,43 @@ class Pourbaix_api:
 
         return pbx_entries
 
-    def generate_solution_objects(self):
+    def ion_pourbaix_entries(self, pbx_entries):
+        """
+        Newly added PHREEQC speciated ions are defined with their PHREEQC concentrations.
+        """
+
+        # imports are not top-level due to expense
+        def _normalize_charge(identifier):
+            return identifier.replace("[-]", "[-1]").replace("[+]", "[+1]")
+
+        added_ion_conc_map = getattr(self, "added_ion_conc_map", {})
+
+        for entry in pbx_entries:
+            phase_type = getattr(entry, "phase_type", None)
+
+            is_ion = (
+                ("Ion" in phase_type)
+                if isinstance(
+                    phase_type,
+                    list | tuple | set,
+                )
+                else phase_type == "Ion"
+            )
+
+            if not is_ion:
+                continue
+
+            entry_name = _normalize_charge(entry.name)
+
+            if entry_name in added_ion_conc_map:
+                old_conc = entry.concentration
+                entry.concentration = float(added_ion_conc_map[entry_name])
+
+                print(f"Updated PHREEQC ion concentration: {entry.name}: {old_conc:g} -> {entry.concentration:g} M")
+
+        return pbx_entries
+
+    def generate_solution_objects(self, comp_dict: dict | None = None):
         """
         Args:
             Parsing comp_dict to generate pyEQL solution objects
@@ -272,15 +324,17 @@ class Pourbaix_api:
             List of pyEQL Solution components
         """
         # TODO: Implement the Solution class here to process the comp_dict and do equilibrium calculations
-        ion_dict = self.comp_dict
+        ion_dict = comp_dict
         default_units = "mol/L"
-        custom_eos = PhreeqcEOS(phreeqc_db="phreeqc.dat")
+        custom_eos = Phreeqc2026EOS(phreeqc_db="phreeqc.dat")
 
         converted_ion_dict = {standardize_formula(ion): f"{val} {default_units}" for ion, val in ion_dict.items()}
 
         pH_values = [3, 7, 11]  # pH sampling or do we need only one pH?
 
-        speciated_ions = []
+        excluded_species = {"H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"}
+
+        speciated_ions = {}
         for pH in pH_values:
             sol = Solution(converted_ion_dict, pH=pH, balance_charge="auto", engine=custom_eos)
             try:
@@ -292,17 +346,37 @@ class Pourbaix_api:
             tds = sol.total_dissolved_solids.magnitude
 
             for key in sol.components:
-                con_val = sol.get_amount(key, "mg/L").magnitude
-                print(f"{key}: {con_val} / {tds}: {con_val / tds:.2%}")
-                if con_val / tds < 0.025 or "unk" in key:
+                conc_val = sol.get_amount(key, "mg/L").magnitude
+                print(f"{key}: {conc_val} / {tds}: {conc_val / tds:.2%}")
+
+                if conc_val / tds < 0.025 or "unk" in key or key in excluded_species:
                     continue
-                speciated_ions.append(key)
 
-        speciated_ions = list(set(speciated_ions))
+                # try:
+                # conc_val_mol_L = sol.get_amount(key, "mol/L").magnitude
+                if "[" in key:
+                    conc_activity = sol.get_activity(key).magnitude
+                else:
+                    aq_key = key.removesuffix("(aq)").strip()
+                    conc_activity = sol.engine._get_activity(aq_key)
+                #     print(f"NaCl: {key}, activity: {conc_activity}")
+                # except:
+                #     print(f"Key {key}")
+                #     print(f"Engine {sol.engine}")
 
-        speciated_ions = [
-            ion for ion in speciated_ions if ion not in ["H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"]
-        ]
+                if key not in speciated_ions:
+                    # speciated_ions[key] = conc_val_mol_L
+                    speciated_ions[key] = conc_activity
+                else:
+                    # speciated_ions[key] = max(speciated_ions[key], conc_val_mol_L
+                    # )
+                    speciated_ions[key] = max(speciated_ions[key], conc_activity)
+
+        speciated_ions = {
+            ion: conc
+            for ion, conc in speciated_ions.items()
+            if ion not in ["H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"]
+        }
 
         print(f"PHREEQC speciated ions: {speciated_ions}")
 
@@ -310,6 +384,15 @@ class Pourbaix_api:
 
     @staticmethod
     def _rich_text_formula(value):
+        """
+        Convert a rich-text chemical formula from Word or Excel documents into pyEQL standardize_formula notation.
+
+        Examples:
+        SO4²⁻ -> SO4[-2]
+        Mg²⁺ -> Mg[+2]
+        """
+        # TODO: Move the richtext chemical formula parsing to pyEQL.utils that is attached to the Ion class or standardize_formula function.
+
         if isinstance(value, str):
             return value.strip()
 
@@ -338,10 +421,10 @@ class Pourbaix_api:
 
     def NBS_table_ion_data(self):
         """
-        Docstring for NBS_table_data
-        Distinguish between a0 and ai!
+        Load aqueous ion and ion complexes free energy of formation data from the NBS Table. The data are used to construct the aqueous ion reference database.
 
-        :param self: Description
+        Returns:
+            dict: Thermodynamic dictionary with aqueous ion and ion complexes free energy of formation data and entropy data.
         """
         nbs_data = self.xlsx_path
         workbook = load_workbook(nbs_data, data_only=True, rich_text=True)
@@ -373,27 +456,43 @@ class Pourbaix_api:
 
     def modified_get_ion_reference_data_for_chemsys(self, chemsys: str | list, nbs_db: dict | None = None):
         """
-        Docstring for modified_get_ion_reference_data_for_chemsys
+        Modified the Pymatgen's get_ion_reference_data_for_chemsys method to include additional ions from the PHREEQC database, which are not present in mpr_reference_ion_database.json.
 
-        :param self: Description
-        :param chemsys: Description
-        :type chemsys: str | list
+        Args:
+            chemsys (str or [str]): Chemical system string comprising element
+                symbols separated by dashes, e.g., "Li-Fe-O" or List of element
+                symbols, e.g., ["Li", "Fe", "O"].
+
+        Returns:
+            [dict]: Among other data, each record contains 1) the experimental ion  free energy, 2) the
+                formula of the reference solid for the ion, and 3) the experimental free energy of the
+                reference solid. All energies are given in kJ/mol. An example of ion complex is given below.
+
+                {'identifier': 'CaSO4(aq)',
+                'formula': 'CaSO4(aq)',
+                'data': {'charge': {'display': '0.0', 'value': 0.0, 'unit': ''},
+                'ΔGᶠ': {'display': '-1298.10 kJ/mol', 'value': -1298.10, 'unit': 'kJ/mol'},
+                'MajElements': 'Ca',
+                'RefSolid': 'CaO',
+                'ΔGᶠRefSolid': {'display': '-604.03 kJ/mol',
+                    'value': -604.03,
+                    'unit': 'kJ/mol'},
+                'reference': 'D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971'}}
         """
-        ref_solid_mapping = {
-            "Li": {"ref_solid": "Li2SO4", "G_ref_solid": -1321.70},
-            "Na": {"ref_solid": "Na2CO3", "G_ref_solid": -1044.4},
-            "K": {"ref_solid": "KCl", "G_ref_solid": -409.14},
-            "Mg": {"ref_solid": "MgCO3", "G_ref_solid": -1012.1},
-            "Ca": {"ref_solid": "CaO", "G_ref_solid": -604.03},
-            "Cl": {"ref_solid": "KCl", "G_ref_solid": -409.14},
-            "S": {"ref_solid": "CaS", "G_ref_solid": -477.4},
-            "N": {"ref_solid": "KNO3", "G_ref_solid": -394.86},
-            "C": {"ref_solid": "Na2CO3", "G_ref_solid": -1044.4},
-            "Fe": {"ref_solid": "Fe3O4", "G_ref_solid": -1015.4},
-        }
 
         ion_data = loadfn(self.json_path)
-        ion_in_sol = self.generate_solution_objects()
+
+        def _normalize_charge(identifier):
+            return identifier.replace("[-]", "[-1]").replace("[+]", "[+1]")
+
+        ion_in_sol_init = self.generate_solution_objects()
+
+        if isinstance(ion_in_sol_init, dict):
+            ion_conc_map = {_normalize_charge(identifier): float(conc) for identifier, conc in ion_in_sol_init.items()}
+            ion_in_sol = list(ion_conc_map.keys())
+        else:
+            ion_conc_map = {}
+            ion_in_sol = [_normalize_charge(identifier) for identifier in ion_in_sol_init]
 
         if nbs_db is None:
             nbs_db = self.NBS_table_ion_data()
@@ -401,12 +500,11 @@ class Pourbaix_api:
         if isinstance(chemsys, str):
             chemsys = chemsys.split("-")
 
-        def _normalize_charge(identifier):
-            return identifier.replace("[-]", "[-1]").replace("[+]", "[+1]")
-
         existing_identifiers = {
-            _normalize_charge(d["identifier"]) for d in ion_data if isinstance(d, dict) and "identifier" in d
+            _normalize_charge(d["formula"]) for d in ion_data if isinstance(d, dict) and "formula" in d
         }
+
+        self.added_ion_conc_map = {}
 
         for identifier in ion_in_sol:
             # Skip if already present
@@ -418,20 +516,21 @@ class Pourbaix_api:
                 print(f"Warning: {identifier} not found in NBS database.")
                 continue
 
+            # TODO - instead of manually parsing elements, query the pyEQL db or rely on the Solute class
             comp_name = identifier.split("[")[0].split("(")[0]
             comp_name = Composition(comp_name)
             maj_elements = [i.symbol for i in comp_name.elements if i.symbol not in ["H", "O"]]
 
             maj_element = maj_elements[0]
 
-            if maj_element not in ref_solid_mapping:
+            if maj_element not in self.ref_solids:
                 print(f"Warning: no reference solid mapping for element {maj_element}")
                 continue
 
-            ref_solid = ref_solid_mapping[maj_element]["ref_solid"]
-            G_ref_solid = ref_solid_mapping[maj_element]["G_ref_solid"]
+            ref_solid = self.ref_solids[maj_element]["ref_solid"]
+            G_ref_solid = self.ref_solids[maj_element]["G_ref_solid"]
 
-            # Parse charge
+            # TODO - instead of manually parsing elements, query the pyEQL db or rely on the Solute class
             if "[" in identifier and "]" in identifier:
                 charge_str = identifier[identifier.find("[") + 1 : identifier.find("]")]
                 charge = float(charge_str)
@@ -465,6 +564,23 @@ class Pourbaix_api:
                     "reference": "D. D. Wagman et al., Selected values of chemical thermodynamic properties, NBS Technical note 270, Washington; 1968-1971",
                 },
             }
+
+            if identifier in ion_conc_map:
+                self.added_ion_conc_map[identifier] = ion_conc_map[identifier]
+
             ion_data.append(ion_record)
+
+        for d in ion_data:
+            maj_element = d["data"]["MajElements"]
+
+            if maj_element in self.ref_solids:
+                ref_solid = self.ref_solids[maj_element]
+
+                d["data"]["RefSolid"] = ref_solid["ref_solid"]
+                d["data"]["ΔGᶠRefSolid"] = {
+                    "display": f"{ref_solid['G_ref_solid']} kJ/mol",
+                    "value": ref_solid["G_ref_solid"],
+                    "unit": "kJ/mol",
+                }
 
         return [d for d in ion_data if d["data"]["MajElements"] in chemsys]

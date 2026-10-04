@@ -15,6 +15,7 @@ from multiprocessing import Pool
 from typing import TYPE_CHECKING
 
 import numpy as np
+from matplotlib import pyplot as plt
 from monty.json import MontyDecoder, MSONable
 from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
 from pymatgen.analysis.reaction_calculator import Reaction, ReactionError
@@ -28,7 +29,7 @@ from pymatgen.util.string import Stringify
 from scipy.spatial import ConvexHull, HalfspaceIntersection
 from scipy.special import comb
 
-from pyEQL.pourbaix.compatibility import MU_H2O
+from pyEQL.pourbaix.compatibility import MU_C, MU_H2O
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -150,6 +151,26 @@ class PourbaixEntry(MSONable, Stringify):
         self._npH = value
 
     @property
+    def nCO2(self) -> float:
+        """The number of CO2."""
+        return self.entry.composition.get("C", 0)
+
+    @property
+    def nH2O_CO2(self) -> float:
+        """The number of H2O."""
+        return self.nH2O - 2 * self.nCO2
+
+    @property
+    def npH_CO2(self) -> float:
+        """The number of H."""
+        return self.npH + 4 * self.nCO2
+
+    @property
+    def nPhi_CO2(self) -> float:
+        """The number of electrons."""
+        return self.npH_CO2 - self.charge
+
+    @property
     def n_conc(self):
         """The conc number used for 3D plots that vary concentration. 1 for ions, 0 for solids."""
         return int(isinstance(self.entry, IonEntry))
@@ -164,7 +185,13 @@ class PourbaixEntry(MSONable, Stringify):
     def energy_without_phi_term(self) -> float:
         """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
         # Note: this implicitly depends on formation energies as input
-        return self.uncorrected_energy - (MU_H2O * self.nH2O) + (self.nPhi) * 0.0001  # voltage
+        return self.uncorrected_energy - (MU_H2O * self.nH2O) + (self.nPhi) * 0.0001
+
+    @property
+    def energy_without_phi_term_CO2(self) -> float:
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
+        # Note: this implicitly depends on formation energies as input
+        return self.uncorrected_energy - (MU_H2O * self.nH2O) - (MU_C * self.nCO2) + (self.nPhi * 0.0001)
 
     @property
     def name(self) -> str:
@@ -179,6 +206,12 @@ class PourbaixEntry(MSONable, Stringify):
         """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
         # Note: this implicitly depends on formation energies as input
         return self.uncorrected_energy + self.conc_term - (MU_H2O * self.nH2O)
+
+    @property
+    def energy_CO2(self) -> float:
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
+        # Note: this implicitly depends on formation energies as input
+        return self.uncorrected_energy + self.conc_term - (MU_H2O * self.nH2O_CO2)
 
     @property
     def energy_per_atom(self) -> float:
@@ -277,6 +310,18 @@ class PourbaixEntry(MSONable, Stringify):
         return 1.0 / (self.num_atoms - self.composition.get("H", 0) - self.composition.get("O", 0))
 
     @property
+    def normalization_factor_CO2(self) -> float:
+        """Sum of number of atoms minus the number of H and O in composition."""
+        return 1.0 / (
+            self.num_atoms - self.composition.get("H", 0) - self.composition.get("O", 0) - self.composition.get("C", 0)
+        )
+
+    @property
+    def reduced_formula_normalization(self) -> float:
+        """Number of atoms in the reduced formula."""
+        return self.composition.get_reduced_composition_and_factor()[1]
+
+    @property
     def composition(self) -> Composition:
         """Composition."""
         return self.entry.composition
@@ -315,9 +360,15 @@ class MultiEntry(PourbaixEntry):
         # Attributes that are weighted averages of entry attributes
         if attr in {
             "energy",
+            "energy_CO2",
+            "energy_mu_CO2",
             "npH",
             "nH2O",
+            "nCO2",
             "nPhi",
+            "nH2O_CO2",
+            "npH_CO2",
+            "nPhi_CO2",
             "n_conc",
             "conc_term",
             "composition",

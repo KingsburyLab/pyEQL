@@ -8,13 +8,13 @@ import pytest
 pytest.importorskip("mp_api", reason="mp_api not installed or incompatible with this Python version")
 from mp_api.client import MPRester
 from pymatgen.analysis.phase_diagram import PhaseDiagram
-from pymatgen.analysis.pourbaix_diagram import PourbaixDiagram, PourbaixEntry
 from pymatgen.core.composition import Composition
 from pymatgen.core.ion import Ion
-from pymatgen.entries.compatibility import MaterialsProjectAqueousCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
 
+from pyEQL.pourbaix.compatibility import MaterialsProjectAqueousCompatibility
 from pyEQL.pourbaix.pourbaix_api import IonEntry, Pourbaix_api
+from pyEQL.pourbaix.pourbaix_diagram import PourbaixDiagram, PourbaixEntry
 
 
 @pytest.fixture
@@ -254,7 +254,7 @@ def test_get_ion_entries_from_phase_diagram():
 
 
 def test_get_pourbaix_entries(monkeypatch):
-    from pymatgen.analysis.compatibility import MaterialsProjectAqueousCompatibility  # noqa: PLC0415
+    from pyEQL.pourbaix.compatibility import MaterialsProjectAqueousCompatibility  # noqa: PLC0415
 
     class DummyMPR:
         def get_entries_in_chemsys(self, *args, **kwargs):

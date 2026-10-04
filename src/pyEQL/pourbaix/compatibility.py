@@ -9,6 +9,7 @@ import copy
 import os
 import warnings
 from collections import defaultdict
+from importlib.resources import files
 from typing import TYPE_CHECKING, TypeAlias, cast
 
 import numpy as np
@@ -48,8 +49,11 @@ __date__ = "April 2020"
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 MU_H2O = -2.4583  # Free energy of formation of water, eV/H2O, used by MaterialsProjectAqueousCompatibility
+MU_CO2 = -4.0004  # Free energy of formation of CO2, eV/CO2,
+MU_C = MU_CO2 - 2 * MU_H2O
 MP2020_COMPAT_CONFIG = loadfn(f"{MODULE_DIR}/MP2020Compatibility.yaml")
 MP_COMPAT_CONFIG = loadfn(f"{MODULE_DIR}/MPCompatibility.yaml")
+ENTROPY_DATABASE = loadfn(files("pyEQL") / "pourbaix" / "phonon_database.json")
 
 # This was compiled by cross-referencing structures in Materials Project from exp_compounds.json.gz
 # used in the fitting of the MP2020 correction scheme, and applying the BVAnalyzer algorithm to
@@ -1301,8 +1305,7 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         o2_energy: float | None = None,
         h2o_energy: float | None = None,
         h2o_adjustments: float | None = None,
-        universal_solid_shift_eV_per_atom: float = 0.0,
-        apply_universal_shift_to: str = "compounds",
+        universal_solid_shift_eV_per_atom: float = 0.055,
     ) -> None:
         """Initialize the MaterialsProjectAqueousCompatibility class.
 
@@ -1325,6 +1328,8 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
             h2o_adjustments: Total energy adjustments applied to one water molecule, in eV/atom.
                 If not set, this value will be determined from any H2O entries passed to process_entries.
                 Default: None
+            universal_solid_shift_eV_per_atom: Uniform energy correction applied to all solid compounds, in units of eV/atom. This universal shift is applied to all solid compounds to account for systematic errors in DFT-calculated formation energies relative to the Wagman-NBS tabulated free energies of formation. Default: 0.055 eV/atom.
+                If not set, this value will be set as 0.055 eV/atom, which is the value used in the modified Pourbaix scheme.
         """
         self.solid_compat = None
         # check whether solid_compat has been instantiated
@@ -1351,8 +1356,8 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
                 stacklevel=2,
             )
 
-        # Standard state entropy of molecular-like compounds at 298K (-T delta S)
-        # from Kubaschewski Tables (eV/atom)
+        # Standard state entropy of pure elements, molecular, gases, and reference solids at 298K (-T delta S)
+        # from Wagman-NBS tables and UMA phonon calculations (eV/atom)
         self.cpd_entropies = {
             # exp anion entropy
             "O2": 0.316731,
@@ -1362,159 +1367,47 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
             "Br": 0.235039,
             "Hg": 0.234421,
             "H2O": 0.071963,  # 0.215891 eV/H2O
-            # exp cation entropy
-            "C": 0.017737,
-            "S": 0.098265,
-            "Na": 0.158245,
-            "K": 0.181694,
-            "Ca": 0.127993,
-            "Mg": 0.100985,
-            "Li": 0.089984,
-            "P": 0.126972,
-            "Al": 0.087543,
-            # exp solid entropy
-            # oxides
-            "Na2O": 0.0773147,
-            "MgO": 0.04312,  # microcrystal #0.0416239 (macrocrystal)
-            "CaO": 0.0614161,
-            "KO2": 0.1202056,
-            "K2O2": 0.0788753,
-            "Na2O2": 0.0733903,
-            "Li2O": 0.038699,
-            "Fe3O4": 0.06463,
-            "Fe2O3": 0.05402,
-            "Ca2Fe2O5": 0.06482,
-            "Mg(FeO2)2": 0.05465,
-            "Al2O3": 0.031470,
-            "CaAl2O4": 0.050422,
-            "CaAl4O7": 0.0457904,
-            "LiAlO2": 0.041211,
-            "LiAl5O8": 0.033062,
-            "SiO2": 0.043097,
-            "Al2FeO4": 0.04693,
-            "MgFe2O4": 0.05465,
-            # chlorides
-            "NaCl": 0.111445,
-            "KCl": 0.127606,
-            "H4NCl": 0.048721,
-            "MgCl2": 0.092312,
-            "CaCl2": 0.107742,
-            "LiCl": 0.0916683,
-            "FeCl2": 0.0789525,
-            "FeCl3": 0.074665,
-            "MgH2Cl2O": 0.0706607,  # hydrate
-            "MgH4(ClO)2": 0.061768,  # hydrate
-            "MgH8(ClO2)2": 0.0543861,  # hydrate
-            "MgH12(ClO3)2": 0.0538711,  # hydrate
-            "LiAl2H6ClO6": 0.039220162,  # hydrate, #0.071213, #quacc 406.14803248222813 J/mol.K
-            # carbonates
-            "Li2CO3": 0.046542,
-            "NaHCO3": 0.052377,
-            "Na2CO3": 0.069517,
-            "K2CO3": 0.080096,
-            "CaCO3": 0.057414,
-            "MgCO3": 0.040604,
-            "CaMg(CO3)2": 0.047952,
-            "KHCO3": 0.059485,
-            "FeCO3": 0.057414,
-            "Na3H5(CO4)2": 0.051708,
-            "Na2H20CO13": 0.0483,
-            "Na2H2CO4": 0.05772,
-            "Na2H10SO5": 0.04944,
-            # sulfides
-            "MgS": 0.0777628,
-            "CaS": 0.087296,
-            "Na2S": 0.086214,
-            "K2S": 0.108154,
-            "FeS2": 0.0545,
-            "FeS": 0.09315,
-            "Na2S2O7": 0.056774,  # hydrate
-            "K2S2O7": 0.071691,  # hydrate
-            # "Na2S5": None,
-            # sulfates
-            "CaSO4": 0.054953,
-            "MgSO4": 0.047176,
-            "K2SO4": 0.077500,
-            "Na2SO4": 0.06603,
-            "KHSO4": 0.060964,
-            "NaHSO4": 0.049883,
-            "Li2SO4": 0.0508103,
-            "FeSO4": 0.05536,
-            "Al2(SO4)3": 0.043498,
-            "CaH4SO6": 0.049983,  # hydrate
-            "Ca2H2S2O9": 0.053768,  # hydrate
-            "MgH12SO10": 0.0448196,  # hydrate
-            "MgH12SO9": 0.04328852,  # hydrate
-            "MgH14SO11": 0.042575,  # hydrate
-            "MgH2SO5": 0.0433990,  # hydrate
-            "FeH14SO11": 0.0468325,  # hydrate
-            # nitrates
-            "Ca(NO3)2": 0.066369,
-            "NaNO3": 0.072012,
-            "NaNO2": 0.080189,
-            "Mg(NO3)2": 0.056309,
-            "KNO3": 0.082228,
-            "KNO2": 0.117494,
-            "MgPH16NO10": 0.03462,  # hydrate #0.04192 #struvite
-            "MgH12(NO6)2": 0.0517309,  # hydrate
-            # phosphates
-            "P2O5": 0.050515,
-            "FePH2O5": 0.044098,  # hydrate
-            "Ca2P2O7": 0.05316,
-            "FeP(H2O3)2": 0.044098,  # hydrate
-            "Mg2P2O7": 0.04351,
-            "Mg3(PO4)2": 0.044973,
-            "Ca3(PO4)2": 0.056098,
-            "CaPHO4": 0.0491682,
-            "CaPH5O6": 0.0450325,  # hydrate
-            "CaP2(H2O3)3": 0.044601,  # hydrate
-            "Ca5P3HO13": 0.0574393,  # hydrate
-            # nitrogen compounds
-            "NaN3": 0.074827,
-            # carbon compounds
-            "CaC2": 0.072062,
-            "Fe3C": 0.07177,
-            # hydroxides
-            "KHO": 0.081270,
-            "NaHO": 0.066391,
-            "Ca(HO)2": 0.051537,
-            "Mg(HO)2": 0.039047,
-            "LiHO": 0.044086,
-            "Li2O2": 0.037785,
-            "FeHO2": 0.04664,
-            "LiH3O2": 0.0366745,  # hydrate
-            "Al(HO)3": 0.0302169,
-            "AlHO2": 0.0374136,  # 0.0272973 polymorph
-            # hydrides
-            "NaH": 0.0618271,
-            "NaH2N": 0.0594075,
-            "LiH": 0.0309135,
-            "CaH2": 0.043262,
-            "LiAlH4": 0.0405526,
-            "Li3AlH6": 0.0317015,
-            # cyanates
-            "NaCNO": 0.0747035,
-            "KCSN": 0.0959945,
-            # others
-            "CaMg2": 0.1074022,
-            "H4CN2O": 0.0461752,
-            # silicate
-            "Mg3Si2H4O9": 0.038,
-            "MgSiO3": 0.041865,
-            "CaMg(SiO3)2": 0.044167,
-            "Ca2Mg5Si8(HO12)2": 0.04137,
-            "Mg3Si4(HO6)2": 0.038362,
-            "NaAlSi3O8": 0.0493,
-            # "CaAl2(SiO4)2",
-            # "NaAlSi2H2O7",
-            # "KAl3Si3(HO6)2",
-            # "Al2Si2H4O9",
         }
+
+        mp_entropies = {
+            "O2",
+            "N2",
+            "F2",
+            "Cl2",
+            "Br",
+            "Hg",
+            "H2O",
+        }
+
+        entropy_lib = [
+            ("uMLIP", "uma-s-1p1"),
+            ("Experiment", "NIST-NBS"),
+        ]
+
+        for etr in ENTROPY_DATABASE:
+            formula = etr["formula"]
+
+            if formula in mp_entropies:
+                continue
+
+            entropy_data = etr.get("entropy_per_atom", {})
+
+            entropy = next(
+                (
+                    entropy_data.get(source, {}).get(method, {}).get("entropy_eV_per_atom")
+                    for source, method in entropy_lib
+                    if (entropy_data.get(source, {}).get(method, {}).get("entropy_eV_per_atom")) is not None
+                ),
+                None,
+            )
+
+            if entropy is not None:
+                self.cpd_entropies[formula] = entropy
+
         self.name = "MP Aqueous free energy adjustment"
         super().__init__()
 
         self.universal_solid_shift_eV_per_atom = universal_solid_shift_eV_per_atom
-        self.apply_universal_shift_to = apply_universal_shift_to
 
     def get_adjustments(self, entry: ComputedEntry) -> list[EnergyAdjustment]:
         """Get the corrections applied to a particular entry.
@@ -1581,8 +1474,8 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         if rform in self.cpd_entropies:
             adjustments.append(
                 TemperatureEnergyAdjustment(
-                    -self.cpd_entropies[rform] / 298,
-                    298,
+                    -self.cpd_entropies[rform] / 300,
+                    300,
                     comp.num_atoms,
                     uncertainty_per_deg=np.nan,
                     name="Compound entropy at room temperature",
@@ -1619,12 +1512,8 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
             is_molecular_standard_state = rform in molecular_like_rforms
             is_special_ref = rform in {"H2", "H2O", "O2"}
 
-            if self.apply_universal_shift_to == "compounds":
-                apply_shift = (not is_element) and (not is_molecular_standard_state) and (not is_special_ref)
-            elif self.apply_universal_shift_to == "all_solids":
-                apply_shift = (not is_element) and (not is_special_ref)
-            else:
-                raise ValueError("apply_universal_shift_to must be one of: 'compounds', 'all_solids'")
+            # universal solid shift is applied to compounds, except for reference elements and molecular standard states
+            apply_shift = (not is_element) and (not is_molecular_standard_state) and (not is_special_ref)
 
             if apply_shift:
                 total_shift = self.universal_solid_shift_eV_per_atom * comp.num_atoms
@@ -1641,49 +1530,6 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
                         ),
                     )
                 )
-
-        # # TODO - detection of embedded water molecules is not very sophisticated
-        # # Should be replaced with some kind of actual structure detection
-
-        # # For any compound except water, check if it is a hydrate (contains
-        # # H2O in its structure). If so, adjust the energy to remove MU_H2O eV per
-        # # embedded water molecule.
-        # # in other words, we assume that the DFT energy of such a compound is really
-        # # a superposition of the "real" solid DFT energy (FeO in this case) and the free
-        # # energy of some water molecules
-        # # e.g. that E_FeO.nH2O = E_FeO + n * g_H2O
-        # # so, to get the most accurate Gibbs free energy, we want to replace
-        # # g_FeO.nH2O = E_FeO.nH2O + dE_Fe + (n+1) * dE_O + 2n dE_H
-        # # with
-        # # g_FeO = E_FeO.nH2O + dE_Fe + dE_O + n g_H2O
-        # # where E is DFT energy, dE is an energy correction, and g is Gibbs free energy
-        # # of formation
-        # # This means we have to 1) reverse any energy corrections that have already been
-        # # applied to H and O in water and then 2) remove the free energy of the water
-        # # molecules from the hydrated solid energy.
-        # if rform != "H2O":
-        #     # count the number of whole water molecules in the composition
-        #     rcomp, factor = comp.get_reduced_composition_and_factor()
-        #     nH2O = int(min(rcomp["H"] / 2.0, rcomp["O"])) * factor
-        #     if nH2O > 0:
-        #         # first, remove any H or O corrections already applied to H2O in the
-        #         # formation energy so that we don't double count them
-        #         # next, remove MU_H2O for each water molecule present
-        #         hydrate_adjustment = -1 * (self.h2o_adjustments * 3 + MU_H2O)
-
-        #         adjustments.append(
-        #             CompositionEnergyAdjustment(
-        #                 hydrate_adjustment,
-        #                 nH2O,
-        #                 uncertainty_per_atom=np.nan,
-        #                 name="MP Aqueous hydrate",
-        #                 cls=self.as_dict(),
-        #                 description="Adjust the energy of solid hydrate compounds (compounds "
-        #                 "containing H2O molecules in their structure) so that the "
-        #                 "free energies of embedded H2O molecules match the experimental"
-        #                 " value enforced by the MP Aqueous energy referencing scheme.",
-        #             )
-        #         )
 
         return adjustments
 
