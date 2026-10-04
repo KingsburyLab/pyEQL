@@ -177,21 +177,18 @@ class PourbaixEntry(MSONable, Stringify):
 
     @property
     def energy_without_conc_term(self):
-        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
-        # Note: this implicitly depends on formation energies as input
+        """Total energy of the Pourbaix entry (at pH = 0), without concentration and voltage term for 3D Pourbaix Diagram construction."""
         return self.uncorrected_energy - (MU_H2O * self.nH2O)
 
     @property
-    def energy_without_phi_term(self) -> float:
-        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
-        # Note: this implicitly depends on formation energies as input
-        return self.uncorrected_energy - (MU_H2O * self.nH2O) + (self.nPhi) * 0.0001
+    def energy_without_phi_term(self, V: float = 0.0) -> float:
+        """Total energy of the Pourbaix entry (at pH = 0), without concentration term."""
+        return self.uncorrected_energy - (MU_H2O * self.nH2O) + (self.nPhi * V)
 
     @property
-    def energy_without_phi_term_CO2(self) -> float:
-        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
-        # Note: this implicitly depends on formation energies as input
-        return self.uncorrected_energy - (MU_H2O * self.nH2O) - (MU_C * self.nCO2) + (self.nPhi * 0.0001)
+    def energy_without_phi_term_CO2(self, V: float = 0.0) -> float:
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE) of an open CO2 system, without voltage term."""
+        return self.uncorrected_energy - (MU_H2O * self.nH2O) - (MU_C * self.nCO2) + (self.nPhi * V)
 
     @property
     def name(self) -> str:
@@ -204,13 +201,11 @@ class PourbaixEntry(MSONable, Stringify):
     @property
     def energy(self) -> float:
         """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
-        # Note: this implicitly depends on formation energies as input
         return self.uncorrected_energy + self.conc_term - (MU_H2O * self.nH2O)
 
     @property
     def energy_CO2(self) -> float:
-        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE)."""
-        # Note: this implicitly depends on formation energies as input
+        """Total energy of the Pourbaix entry (at pH, V = 0 vs. SHE) of an open CO2 system."""
         return self.uncorrected_energy + self.conc_term - (MU_H2O * self.nH2O_CO2)
 
     @property
