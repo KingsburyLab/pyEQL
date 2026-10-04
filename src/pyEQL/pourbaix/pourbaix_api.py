@@ -41,6 +41,7 @@ class Pourbaix_api:
     def __init__(
         self,
         mpr,
+        comp_dict: dict | None = None,
         ref_solids: dict | None = None,
         ref_db_file: str | Path | None = None,
         ref_xlsx_file: str | Path | None = None,
@@ -50,6 +51,7 @@ class Pourbaix_api:
 
         Args:
             mpr: Materials Project API client used to retreieve DFT entries.
+            comp_dict: Element concentrations of the aqueous solution, in mol/L (e.g., {"Na": 0.1, "Cl": 0.1}). Defaults to None.
             ref_solids: Reference solids used for DFT ion-reference construction. Defaults to DEFAULT_REFERENCE_SOLIDS.
             ref_db_file: Path to the Materials Project ion-reference database. Defaults to the mpr_reference_ion_database.json packaged within pyEQL.
             ref_xlsx_file: Path to the NBS thermodynamic tables. Defaults to the NBS_Tables_Library.xlsx table packaged within pyEQL.
@@ -58,9 +60,9 @@ class Pourbaix_api:
         self.json_path = str(ref_db_file or pbx_dir / "mpr_reference_ion_database.json")
         self.xlsx_path = str(ref_xlsx_file or pbx_dir / "NBS_Tables_Library.xlsx")
         self.mpr = mpr
+        self.comp_dict = comp_dict or {}
         self.ref_solids = {**DEFAULT_REFERENCE_SOLIDS, **(ref_solids or {})}
 
-    @classmethod
     def get_ion_reference_data_for_chemsys(self, chemsys: str | list) -> list[dict]:
         """Download aqueous ion reference data used in the construction of Pourbaix diagrams.
 
@@ -100,7 +102,6 @@ class Pourbaix_api:
             chemsys = chemsys.split("-")
         return [d for d in ion_data if d["data"]["MajElements"] in chemsys]
 
-    @classmethod
     def get_ion_entries(self, pd: PhaseDiagram, ion_ref_data: list[dict] | None = None) -> list[IonEntry]:
         """Retrieve IonEntry objects that can be used in the construction of
         Pourbaix Diagrams. The energies of the IonEntry are calculaterd from
@@ -179,7 +180,6 @@ class Pourbaix_api:
 
         return ion_entries
 
-    @classmethod
     def get_pourbaix_entries(
         self,
         chemsys: str | list,
@@ -331,21 +331,31 @@ class Pourbaix_api:
 
         return pbx_entries
 
-    def generate_solution_objects(self, comp_dict: dict | None = None):
+    def generate_solution_objects(self):
         """
         Args:
-            Parsing comp_dict to generate pyEQL solution objects
+            Generate pyEQL Solution objects from comp_dict and compute their equilibrium speciation.
+
+            If comp_dict is empty, a warning is raised and no solute ions are included in the speciation.
+
         Returns:
-            List of pyEQL Solution components
+            list[Solution]: pyEQL Solution objects after equilibration.
         """
-        # TODO: Implement the Solution class here to process the comp_dict and do equilibrium calculations
-        ion_dict = comp_dict
+
+        if not self.comp_dict:
+            warnings.warn(
+                "comp_dict is empty, so no aqueous ions complex will be included in the speciation. "
+                "Pass comp_dict to Pourbaix_api (e.g., {'Na': 0.1, 'Cl': 0.1}) to include them.",
+                stacklevel=2,
+            )
+
+        ion_dict = self.comp_dict
         default_units = "mol/L"
         custom_eos = Phreeqc2026EOS(phreeqc_db="phreeqc.dat")
 
         converted_ion_dict = {standardize_formula(ion): f"{val} {default_units}" for ion, val in ion_dict.items()}
 
-        pH_values = [3, 7, 11]  # pH sampling or do we need only one pH?
+        pH_values = [3, 7, 11]
 
         excluded_species = {"H[+1]", "OH[-1]", "H2(aq)", "H2O(aq)", "O2(aq)"}
 
@@ -367,24 +377,15 @@ class Pourbaix_api:
                 if conc_val / tds < 0.025 or "unk" in key or key in excluded_species:
                     continue
 
-                # try:
-                # conc_val_mol_L = sol.get_amount(key, "mol/L").magnitude
                 if "[" in key:
                     conc_activity = sol.get_activity(key).magnitude
                 else:
                     aq_key = key.removesuffix("(aq)").strip()
                     conc_activity = sol.engine._get_activity(aq_key)
-                #     print(f"NaCl: {key}, activity: {conc_activity}")
-                # except:
-                #     print(f"Key {key}")
-                #     print(f"Engine {sol.engine}")
 
                 if key not in speciated_ions:
-                    # speciated_ions[key] = conc_val_mol_L
                     speciated_ions[key] = conc_activity
                 else:
-                    # speciated_ions[key] = max(speciated_ions[key], conc_val_mol_L
-                    # )
                     speciated_ions[key] = max(speciated_ions[key], conc_activity)
 
         speciated_ions = {

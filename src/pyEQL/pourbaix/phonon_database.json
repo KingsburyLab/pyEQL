@@ -1288,31 +1288,6 @@
             "uMLIP": {
                 "uma-s-1p1": {
                     "doi": "10.52202/085713-4310",
-                    "entropy_J_per_mol_K": 57.365807983473424,
-                    "entropy_eV_per_atom": 0.022295878109346048,
-                    "reference": "Wood, B. et al. (2026), UMA: A Family of Universal Models for Atoms",
-                    "temperature": 300.0
-                }
-            }
-        },
-        "formula": "H2",
-        "name": "H2",
-        "num_atoms": 8
-    },
-    {
-        "entropy_per_atom": {
-            "Experiment": {
-                "NIST-NBS": {
-                    "doi": "10.6028/jres.125.007",
-                    "entropy_J_per_mol_K": null,
-                    "entropy_eV_per_atom": null,
-                    "reference": "Reed, J. (2020), The NBS Tables of Chemical Thermodynamic Properties",
-                    "temperature": 298.15
-                }
-            },
-            "uMLIP": {
-                "uma-s-1p1": {
-                    "doi": "10.52202/085713-4310",
                     "entropy_J_per_mol_K": 685.228002515075,
                     "entropy_eV_per_atom": 0.06658042725375787,
                     "reference": "Wood, B. et al. (2026), UMA: A Family of Universal Models for Atoms",
@@ -4223,31 +4198,6 @@
         "formula": "Na2S5",
         "name": "Na2S5",
         "num_atoms": 28
-    },
-    {
-        "entropy_per_atom": {
-            "Experiment": {
-                "NIST-NBS": {
-                    "doi": "10.6028/jres.125.007",
-                    "entropy_J_per_mol_K": null,
-                    "entropy_eV_per_atom": null,
-                    "reference": "Reed, J. (2020), The NBS Tables of Chemical Thermodynamic Properties",
-                    "temperature": 298.15
-                }
-            },
-            "uMLIP": {
-                "uma-s-1p1": {
-                    "doi": "10.52202/085713-4310",
-                    "entropy_J_per_mol_K": 331.71864337699117,
-                    "entropy_eV_per_atom": 0.12892624891576068,
-                    "reference": "Wood, B. et al. (2026), UMA: A Family of Universal Models for Atoms",
-                    "temperature": 300.0
-                }
-            }
-        },
-        "formula": "O2",
-        "name": "O2",
-        "num_atoms": 8
     },
     {
         "entropy_per_atom": {
