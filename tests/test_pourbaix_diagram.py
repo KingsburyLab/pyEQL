@@ -5,6 +5,7 @@ from importlib.resources import files
 from unittest import TestCase
 
 import matplotlib as mpl
+import pytest
 
 mpl.use("Agg", force=True)
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ from pymatgen.util.testing import PymatgenTest
 from pytest import approx
 
 from pyEQL import Solution
+from pyEQL.pourbaix.compatibility import MU_CO2
 from pyEQL.pourbaix.pourbaix_diagram import (
     IonEntry,
     MultiEntry,
@@ -391,3 +393,104 @@ class TestIonOrSolidCompObject:
 
         # Test end without "(s)"
         assert type(ion_or_solid_comp_object("Na2O")) is Composition
+
+
+# Free energy of formation at 298.15 K (NBS tables), kJ/mol
+NBS_free_energies = {
+    "Ca": ("Solid", 0.0),
+    "C": ("Solid", 0.0),
+    "Ca(OH)2": ("Solid", -868.07),
+    "CaCO3": ("Solid", -1128.79),
+    "Ca[2+]": ("Ion", -553.58),
+    "CaCO3(aq)": ("Ion", -1081.39),
+    "CO3[2-]": ("Ion", -527.81),
+}
+
+# Dissolved CO2 in equilibrium with air
+# (K_H = 0.034 M/atm, pCO2 = 4.2e-4 atm)
+MU_CO2_AIR = MU_CO2 + 0.05916 * np.log10(0.034 * 4.2e-4)
+
+
+class TestOpenCO2Construct(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.ca_entries = [
+            PourbaixEntry(
+                ComputedEntry(f, g / 96.485) if phase == "Solid" else IonEntry(Ion.from_formula(f), g / 96.485),
+                entry_id=f,
+            )
+            for f, (phase, g) in NBS_free_energies.items()
+        ]
+        cls.test_data = loadfn(str(files("pyEQL") / "pourbaix" / "pourbaix_test_data.json"))
+
+    def ca_diagram(self, mu_CO2):
+        return PourbaixDiagram(
+            self.ca_entries, comp_dict=[{"Ca": 1}], conc_dict={"Ca": 1e-3}, open_CO2=True, mu_CO2=mu_CO2
+        )
+
+    @staticmethod
+    def domain_pH_range(pbx, entry_id):
+        for entry, vertices in pbx._stable_domains.items():
+            if entry.entry_id == entry_id:
+                pH = np.asarray(vertices)[:, 0]
+                return pH.min(), pH.max()
+        return None
+
+    # def test_calcite(self):
+    #     pbx = self.ca_diagram(MU_CO2_AIR)
+
+    #     # Aqueous complex take the Ca concentration
+    #     assert {e.entry_id for e in pbx._filtered_entries} == {"Ca(OH)2", "CaCO3", "Ca[2+]", "CaCO3(aq)", "Ca"}
+    #     assert all(np.isclose(e.concentration, 1e-3) for e in pbx._filtered_entries if e.phase_type == "Ion")
+
+    #     # CaCO3 + 2H+ -> Ca2+ + CO2(aq) + H2O rxn
+    #     pH_min, pH_max = self.domain_pH_range(pbx, "CaCO3")
+    #     assert 7 < pH_min < 9
+    #     assert pH_max > 11
+    #     assert self.domain_pH_range(pbx, "Ca[2+]")[0] < 4
+
+    #     no_co2 = self.ca_diagram(MU_CO2_AIR - 1.0)
+    #     assert self.domain_pH_range(no_co2, "CaCO3") is None
+
+    # def test_multi_element(self):
+    #     pbx = PourbaixDiagram(
+    #         self.test_data["C-Na-Sn"], comp_dict={"Na": 1, "Sn": 12, "C": 24}, open_CO2=True, mu_CO2=MU_CO2_AIR
+    #     )
+    #     assert {el.symbol for el in pbx.pbx_elts} == {"Na", "Sn"}
+    #     assert all(isinstance(e, MultiEntry) for e in pbx._processed_entries)
+
+    def test_invalid_input(self):
+        with pytest.raises(
+            ValueError,
+            match="mu_CO2 must be provided when open_CO2 is True",
+        ):
+            PourbaixDiagram(
+                self.ca_entries,
+                open_CO2=True,
+            )
+
+        with pytest.raises(NotImplementedError):
+            PourbaixDiagram(
+                self.ca_entries,
+                comp_dict=[{"Ca": 1}, {"Ca": 2}],
+                open_CO2=True,
+                mu_CO2=MU_CO2_AIR,
+            )
+
+        with pytest.raises(NotImplementedError):
+            PourbaixDiagram(
+                [MultiEntry(self.ca_entries[:1])],
+                open_CO2=True,
+                mu_CO2=MU_CO2_AIR,
+            )
+
+        with pytest.raises(
+            ValueError,
+            match="closed elements",
+        ):
+            PourbaixDiagram(
+                self.ca_entries,
+                comp_dict={"C": 1},
+                open_CO2=True,
+                mu_CO2=MU_CO2_AIR,
+            )

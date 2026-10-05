@@ -356,7 +356,6 @@ class MultiEntry(PourbaixEntry):
         if attr in {
             "energy",
             "energy_CO2",
-            "energy_mu_CO2",
             "npH",
             "nH2O",
             "nCO2",
@@ -873,6 +872,46 @@ class PourbaixDiagram(MSONable):
                 this value, the entry is not returned
         """
         dummy_oh = [Composition("H"), Composition("O")]
+        try:
+            # Get balanced reaction coeffs, ensuring all < 0 or conc thresh
+            # Note that we get reduced compositions for solids and non-reduced
+            # compositions for ions because ions aren't normalized due to
+            # their charge state.
+            entry_comps = [entry.composition for entry in entry_list]
+            rxn = Reaction(entry_comps + dummy_oh, [prod_comp])
+            react_coeffs = [-coeff for coeff in rxn.coeffs[: len(entry_list)]]
+            all_coeffs = [*react_coeffs, rxn.get_coeff(prod_comp)]
+
+            # Check if reaction coeff threshold met for Pourbaix compounds
+            # All reactant/product coefficients must be positive nonzero
+            if all(coeff > coeff_threshold for coeff in all_coeffs):
+                return MultiEntry(entry_list, weights=react_coeffs)
+
+            return None
+        except ReactionError:
+            return None
+
+    @staticmethod
+    def process_multientry_CO2(
+        entry_list: Sequence, prod_comp: Composition, coeff_threshold: float = 1e-4
+    ) -> MultiEntry | None:
+        """Static method for finding a multientry based on
+        a list of entries and a product composition.
+        Essentially checks to see if a valid aqueous
+        reaction exists between the entries and the
+        product composition and returns a MultiEntry
+        with weights according to the coefficients if so.
+
+        Args:
+            entry_list (Sequence[Entry]): Entries from which to
+                create a MultiEntry
+            prod_comp (Composition): composition constraint for setting
+                weights of MultiEntry
+            coeff_threshold (float): threshold of stoichiometric
+                coefficients to filter, if weights are lower than
+                this value, the entry is not returned
+        """
+        dummy_oh = [Composition("H"), Composition("O"), Composition("C")]
         try:
             # Get balanced reaction coeffs, ensuring all < 0 or conc thresh
             # Note that we get reduced compositions for solids and non-reduced
