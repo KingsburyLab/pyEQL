@@ -37,7 +37,7 @@ __date__ = "April 2020"
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 MU_H2O = -2.4583  # Free energy of formation of water, eV/H2O, used by MaterialsProjectAqueousCompatibility
-MU_CO2 = -4.0004  # Free energy of formation of CO2, eV/CO2,
+MU_CO2 = -4.0004  # Free energy of formation of CO2, eV/CO2
 MU_C = MU_CO2 - 2 * MU_H2O
 ENTROPY_DATABASE = loadfn(files("pyEQL") / "pourbaix" / "phonon_database.json")
 
@@ -83,7 +83,7 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         o2_energy: float | None = None,
         h2o_energy: float | None = None,
         h2o_adjustments: float | None = None,
-        universal_solid_shift_eV_per_atom: float = 0.055,
+        universal_solid_shift_eV_per_atom: float = -0.055,
     ) -> None:
         """Initialize the MaterialsProjectAqueousCompatibility class.
 
@@ -136,14 +136,14 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         # Standard state entropy of pure elements, molecular, gases, and reference solids at 298K (-T delta S)
         # from Wagman-NBS tables and UMA phonon calculations (eV/atom)
         self.cpd_entropies = {
-            # exp anion entropy
-            "O2": 0.316731,
-            "N2": 0.295729,
-            "F2": 0.313025,
-            "Cl2": 0.344373,
+            # exp anion entropy at 300 K
+            "O2": 0.311731,
+            "N2": 0.300729,
+            "F2": 0.315562,
+            "Cl2": 0.339373,
             "Br": 0.235039,
             "Hg": 0.234421,
-            "H2O": 0.071963,  # 0.215891 eV/H2O
+            "H2O": 0.076963,  # 0.23079 eV/H2O
         }
 
         # pymatgen's reference entropies that must not be overritten by either the UMA phonon calculations or the NIST-NBS experimental data:
@@ -189,7 +189,7 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         self.universal_solid_shift_eV_per_atom = universal_solid_shift_eV_per_atom
 
     def get_adjustments(self, entry: ComputedEntry) -> list[EnergyAdjustment]:
-        """Get the corrections applied to a particular entry.
+        """Get the Aqueous corrections applied to DFT entries.
 
         Args:
             entry: A ComputedEntry object.
@@ -268,7 +268,7 @@ class MaterialsProjectAqueousCompatibility(Compatibility):
         # For nitrogen compounds, we apply a correction to the DFT energy
         if rform != "N2" and "N" in comp:
             n_N = comp["N"]
-            n_correction = MU_N_CORRECTION  # * n_N
+            n_correction = MU_N_CORRECTION
 
             adjustments.append(
                 CompositionEnergyAdjustment(

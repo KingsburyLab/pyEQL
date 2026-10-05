@@ -508,6 +508,8 @@ class PourbaixDiagram(MSONable):
         comp_dict: list[dict[str, float]] | dict[str, float] | None = None,
         conc_dict: dict[str, float] | None = None,
         filter_solids: bool = True,
+        open_CO2: bool | None = None,
+        mu_CO2: float | None = None,
         nproc: int | None = None,
     ) -> None:
         """
@@ -527,11 +529,21 @@ class PourbaixDiagram(MSONable):
                 not actually "stable" (and are frequently overstabilized from DFT errors).
                 Hence, including only the stable solid phases generally leads to the
                 most accurate Pourbaix diagrams.
+            open_CO2 (bool): Carbon entries are treated as open to a CO2 reservoir
+                with chemical potential mu_CO2, and only the remaining (closed)
+                elements are balanced. Defaults to False (original pymatgen construct).
+            mu_CO2 (float): Chemical potential of the CO2 reservoir (eV/CO2).
+                Required when open_CO2 is True.
             nproc (int): number of processes to generate multi-entries with
                 in parallel. Defaults to None (serial processing).
         """
         entries = deepcopy(entries)
         self.filter_solids = filter_solids
+        self.open_CO2 = open_CO2
+        self.mu_CO2 = mu_CO2
+
+        if open_CO2 and mu_CO2 is None:
+            raise ValueError("mu_CO2 must be provided when open_CO2 is True.")
 
         # Get non-OH elements
         self.pbx_elts = list(
@@ -541,6 +553,8 @@ class PourbaixDiagram(MSONable):
 
         # Process multi-entry inputs
         if isinstance(entries[0], MultiEntry):
+            if open_CO2:
+                raise NotImplementedError("Open_CO2 requires single-entry input")
             self._processed_entries = entries
             # Extract individual entries
             single_entries = list(set(itertools.chain.from_iterable([entry.entry_list for entry in entries])))
@@ -565,42 +579,96 @@ class PourbaixDiagram(MSONable):
             solid_entries = [entry for entry in entries if entry.phase_type == "Solid"]
             ion_entries = [entry for entry in entries if entry.phase_type == "Ion"]
 
-            # If a conc_dict is specified, override individual entry concentrations
-            for entry in ion_entries:
-                ion_elts = list(set(entry.elements) - self.elements_ho)
-                # TODO: the logic here for ion concentration setting is in two
-                # places, in PourbaixEntry and here, should be consolidated
-                if len(ion_elts) == 1:
-                    entry.concentration = conc_dict[ion_elts[0].symbol] * entry.normalization_factor
-                elif len(ion_elts) > 1 and not entry.concentration:
-                    raise ValueError("Elemental concentration not compatible with multi-element ions")
-
-            self._unprocessed_entries = solid_entries + ion_entries
-
             if len(solid_entries + ion_entries) != len(entries):
                 raise ValueError('All supplied entries must have a phase type of either "Solid" or "Ion"')
 
-            if self.filter_solids:
-                # O is 2.46 b/c pbx entry finds energies referenced to H2O
-                entries_HO = [ComputedEntry("H", 0), ComputedEntry("O", 2.46)]
-                solid_pd = PhaseDiagram(solid_entries + entries_HO)
-                solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
+            if open_CO2:
+                self._init_open_CO2(solid_entries, ion_entries, comp_dict, conc_dict, nproc)
 
-            self._filtered_entries = solid_entries + ion_entries
-            if not isinstance(comp_dict, list):
-                comp_dict = [comp_dict]
+            else:
+                # Retain pymatgen's Pourbaix construct
+                # If a conc_dict is specified, override individual entry concentrations
+                for entry in ion_entries:
+                    ion_elts = list(set(entry.elements) - self.elements_ho)
+                    # TODO: the logic here for ion concentration setting is in two
+                    # places, in PourbaixEntry and here, should be consolidated
+                    if len(ion_elts) == 1:
+                        entry.concentration = conc_dict[ion_elts[0].symbol] * entry.normalization_factor
+                    elif len(ion_elts) > 1 and not entry.concentration:
+                        raise ValueError("Elemental concentration not compatible with multi-element ions")
 
-            self._processed_entries = []
-            for sub_comp_dict in comp_dict:
-                if len(sub_comp_dict) > 1:
-                    self._multi_element = True
-                    entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
-                else:
-                    self._multi_element = False
-                    entries = self._filtered_entries
-                self._processed_entries.extend(entries)
+                self._unprocessed_entries = solid_entries + ion_entries
 
-        self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
+                if self.filter_solids:
+                    # O is 2.46 b/c pbx entry finds energies referenced to H2O
+                    entries_HO = [ComputedEntry("H", 0), ComputedEntry("O", 2.46)]
+                    solid_pd = PhaseDiagram(solid_entries + entries_HO)
+                    solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
+
+                self._filtered_entries = solid_entries + ion_entries
+                if not isinstance(comp_dict, list):
+                    comp_dict = [comp_dict]
+
+                self._processed_entries = []
+                for sub_comp_dict in comp_dict:
+                    if len(sub_comp_dict) > 1:
+                        self._multi_element = True
+                        entries = self._preprocess_pourbaix_entries(self._filtered_entries, nproc=nproc)
+                    else:
+                        self._multi_element = False
+                        entries = self._filtered_entries
+                    self._processed_entries.extend(entries)
+
+        if open_CO2:
+            self._stable_domains, self._stable_domain_vertices = self.get_CO2_pourbaix_domains(
+                self._processed_entries, mu_CO2=mu_CO2
+            )
+        else:
+            self._stable_domains, self._stable_domain_vertices = self.get_pourbaix_domains(self._processed_entries)
+
+    def _init_open_CO2(self, solid_entries, ion_entries, comp_dict, conc_dict, nproc):
+        """Set up entries with carbon open to mu_CO2 reservoir. Here, only the closed elements that are non-carbon, hydrogen, and oxygen elements are balanced."""
+
+        if isinstance(comp_dict, list):
+            if len(comp_dict) > 1:
+                raise NotImplementedError("open_CO2 supports a single comp_dict")
+            comp_dict = comp_dict[0]
+
+        self._unprocessed_entries = solid_entries + ion_entries
+
+        if self.filter_solids:
+            entries_HO = [ComputedEntry("H", 0), ComputedEntry("O", 2.46)]
+            solid_pd = PhaseDiagram(solid_entries + entries_HO)
+            solid_entries = list(set(solid_pd.stable_entries) - set(entries_HO))
+
+        open_elts = {Element("H"), Element("O"), Element("C")}
+        closed_comp = {k: v for k, v in comp_dict.items() if Element(k) not in open_elts}
+        closed = {Element(k) for k in closed_comp}
+
+        single = [
+            e for e in solid_entries + ion_entries if (s := set(e.composition.elements) - open_elts) and s <= closed
+        ]
+        if not single:
+            raise ValueError(f"No entries contain closed elements {closed}")
+
+        for e in single:
+            if e.phase_type == "Ion":
+                # Ion concentration for aqueous complexes with one or more non-C-O-H elements are set by their most limiting closed element. For example, for a CaSO4(aq) ion, the concentration is set by the min of either Ca or S concentration.
+                e.concentration = min(
+                    conc_dict[el.symbol] / e.composition[el] for el in set(e.composition.elements) - open_elts
+                )
+
+        # what _preprocess_pourbaix_entries reads: closed elements only
+        self.pbx_elts = self.pourbaix_elements = list(closed)
+        self.dim = len(self.pbx_elts) - 1
+        self._elt_comp = closed_comp
+        self._filtered_entries = single
+        self._multi_element = len(closed_comp) > 1
+        self.process_multientry = self.process_multientry_CO2
+
+        self._processed_entries = (
+            self._preprocess_pourbaix_entries(single, nproc=nproc) if self._multi_element else single
+        )
 
     def _convert_entries_to_points(self, pourbaix_entries: list[PourbaixEntry]) -> NDArray:
         """
@@ -860,6 +928,98 @@ class PourbaixDiagram(MSONable):
         hyperplanes = np.array(
             [
                 np.array([-PREFAC * entry.npH, -entry.nPhi, 0, -entry.energy]) * entry.normalization_factor
+                for entry in pourbaix_entries
+            ]
+        )
+        hyperplanes[:, 2] = 1
+
+        max_contribs = np.max(np.abs(hyperplanes), axis=0)
+        g_max = np.dot(-max_contribs, [limits[0][1], limits[1][1], 0, 1])
+
+        # Add border hyperplanes and generate HalfspaceIntersection
+        border_hyperplanes = [
+            [-1, 0, 0, limits[0][0]],
+            [1, 0, 0, -limits[0][1]],
+            [0, -1, 0, limits[1][0]],
+            [0, 1, 0, -limits[1][1]],
+            [0, 0, -1, 2 * g_max],
+        ]
+        hs_hyperplanes = np.vstack([hyperplanes, border_hyperplanes])
+        interior_point = [*np.mean(limits, axis=1).tolist(), g_max]
+        hs_int = HalfspaceIntersection(hs_hyperplanes, np.array(interior_point))
+
+        # organize the boundary points by entry
+        pourbaix_domains: dict[PourbaixEntry, list] = {entry: [] for entry in pourbaix_entries}
+        for intersection, facet in zip(hs_int.intersections, hs_int.dual_facets, strict=True):
+            for v in facet:
+                if v < len(pourbaix_entries):
+                    this_entry = pourbaix_entries[v]
+                    pourbaix_domains[this_entry].append(intersection)
+
+        # Remove entries with no Pourbaix region
+        pourbaix_domains = {k: v for k, v in pourbaix_domains.items() if v}
+        pourbaix_domain_vertices: dict[PourbaixEntry, NDArray[float]] = {}
+
+        for entry, points in pourbaix_domains.items():
+            points = np.array(points)[:, :2]
+            # Initial sort to ensure consistency
+            points = points[np.lexsort(np.transpose(points))]
+            center: NDArray[float] = np.mean(points, axis=0)
+            points_centered: NDArray[float] = points - center
+
+            # Sort points by cross product of centered points,
+            # isn't strictly necessary but useful for plotting tools
+            points_centered = sorted(
+                points_centered,
+                key=cmp_to_key(lambda x, y: x[0] * y[1] - x[1] * y[0]),  # type: ignore[index]
+            )
+            points = points_centered + center
+
+            # Create simplices corresponding to Pourbaix boundary
+            simplices = [Simplex(points[indices]) for indices in ConvexHull(points).simplices]
+            pourbaix_domains[entry] = simplices
+            pourbaix_domain_vertices[entry] = points
+
+        return pourbaix_domains, pourbaix_domain_vertices
+
+    @staticmethod
+    def get_CO2_pourbaix_domains(
+        pourbaix_entries: list[PourbaixEntry],
+        mu_CO2: float,
+        limits: list[list[float]] | None = None,
+    ) -> tuple[dict, dict]:
+        """Get a set of Pourbaix stable domains (i.e. polygons) in
+        pH-V space from a list of pourbaix_entries.
+
+        This function works by using scipy's HalfspaceIntersection
+        function to construct all of the 2-D polygons that form the
+        boundaries of the planes corresponding to individual entry
+        gibbs free energies as a function of pH and V. Hyperplanes
+        of the form a*pH + b*V + 1 - g(0, 0) are constructed and
+        supplied to HalfspaceIntersection, which then finds the
+        boundaries of each Pourbaix region using the intersection
+        points.
+
+        Args:
+            pourbaix_entries (list[PourbaixEntry]): Pourbaix entries
+                with which to construct stable Pourbaix domains
+            limits (list[list[float]]): limits in which to do the pourbaix
+                analysis
+
+        Returns:
+            tuple[dict[PourbaixEntry, list], dict[PourbaixEntry, NDArray]:
+                The first dict is of form: {entry: [boundary_points]}.
+                The list of boundary points are the sides of the N-1
+                dim polytope bounding the allowable ph-V range of each entry.
+        """
+        if limits is None:
+            limits = [[-2, 16], [-4, 2]]
+
+        # Get hyperplanes
+        hyperplanes = np.array(
+            [
+                np.array([-PREFAC * entry.npH_CO2, -entry.nPhi_CO2, 0, -(entry.energy_CO2 - (entry.nCO2 * mu_CO2))])
+                * entry.normalization_factor_CO2
                 for entry in pourbaix_entries
             ]
         )
