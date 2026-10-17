@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.6.7] - 2026-10-17
 
 ### Fixed
 
@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by the PHREEQC engine. Note that the conservative (Stumm) alkalinity equals the engine's titration
   alkalinity only for a charge-balanced solution; non-electroneutral inputs additionally differ by
   the residual charge imbalance. (#458)
+- `phreeqpython` is now a conditional dependency, so `pyEQL` installation can proceed
+  even on platforms where it is not supported (e.g., aarch64 linux). (#470)
 
 ## [1.6.5] - 2026-08-21
 
