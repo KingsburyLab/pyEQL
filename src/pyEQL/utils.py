@@ -168,6 +168,9 @@ def _resolve_ambiguous_charge(formula: str) -> str:
     1) monatomic metal ions for which that charge is a known oxidation state (e.g. "Ca2+", "Fe3+"), 2) monatomic
     chalcogenide ions (e.g. "S2-"), and 3) polyatomic ions in which the subscript reading would give the last element
     a subscript of 10 or more and the charge reading can be charge balanced (e.g. "SO42-", "Cr2O72-").
+
+    A warning is logged whenever the charge reading is used, and also when the subscript reading is kept for a metal
+    oxo-cation whose charge reading is also plausible, e.g. "VO2+" could mean VO2[+1] or vanadyl, VO[+2].
     """
     match = _AMBIGUOUS_CHARGE_RE.match(formula)
     if match is None:
@@ -184,15 +187,40 @@ def _resolve_ambiguous_charge(formula: str) -> str:
     else:
         reinterpret = int(digits) >= 10 and _is_charge_balanced(f"{head}{digits[:-1]}", charge)
 
+    as_subscript = f"{head}{digits}[{sign}1]"
+    as_charge = f"{head}{digits[:-1]}[{sign}{digits[-1]}]"
     if not reinterpret:
+        if len(digits) == 1 and _is_metal_oxo_cation(head, charge):
+            logger.warning(
+                f"Interpreting ambiguous formula {formula} as {as_subscript}, not {as_charge}. Write the charge "
+                f"after the sign (e.g. 'VO+2') or in brackets (e.g. 'VO[+2]') to avoid ambiguity."
+            )
         return formula
 
-    new_formula = f"{head}{digits[:-1]}[{sign}{digits[-1]}]"
     logger.warning(
-        f"Interpreting ambiguous formula {formula} as {new_formula}. Write the charge after the sign "
-        f"(e.g. 'Ca+2') or in brackets (e.g. 'Ca[+2]') to avoid ambiguity."
+        f"Interpreting ambiguous formula {formula} as {as_charge}, not {as_subscript}. Write the charge after the "
+        f"sign (e.g. 'Ca+2') or in brackets (e.g. 'Ca[+2]') to avoid ambiguity."
     )
-    return new_formula
+    return as_charge
+
+
+def _is_metal_oxo_cation(formula: str, charge: int) -> bool:
+    """
+    Whether `formula` with `charge` is a plausible oxo-cation of a metal, e.g. VO[+2] (vanadyl) or TiO[+2].
+
+    Actinides are excluded because their mono-oxo cations (e.g. UO[+2]) are not aqueous species, whereas their
+    dioxo cations (e.g. UO2[+1], PuO2[+1]) are.
+    """
+    if charge <= 0:
+        return False
+    try:
+        symbols = {el.symbol for el in Composition(formula).elements}
+    except Exception:
+        return False
+    if len(symbols) != 2 or "O" not in symbols:
+        return False
+    metal = Element((symbols - {"O"}).pop())
+    return metal.is_metal and not metal.is_actinoid and _is_charge_balanced(formula, charge)
 
 
 def _is_organic(el_amt: dict[str, float]) -> bool:

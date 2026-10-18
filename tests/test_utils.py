@@ -3,6 +3,8 @@ Tests of pyEQL.utils module
 
 """
 
+import logging
+
 import numpy as np
 import pytest
 from iapws import IAPWS95, IAPWS97
@@ -167,6 +169,35 @@ def test_standardize_formula_molecular(formula, expected):
     assert standardize_formula(formula) == expected
     # standardization is idempotent
     assert standardize_formula(expected) == expected
+
+
+@pytest.mark.parametrize(
+    ("formula", "expected", "warns"),
+    [
+        # the final digit is read as the charge
+        ("Ca2+", "Ca[+2]", True),
+        ("SO42-", "SO4[-2]", True),
+        # the subscript reading is kept, but the charge reading is also plausible (vanadyl, titanyl)
+        ("VO2+", "VO2[+1]", True),
+        ("TiO2+", "TiO2[+1]", True),
+        # the subscript reading is kept and is the only sensible one
+        ("NH4+", "NH4[+1]", False),
+        ("NO3-", "NO3[-1]", False),
+        ("ClO3-", "ClO3[-1]", False),
+        ("I3-", "I3[-1]", False),
+        ("UO2+", "UO2[+1]", False),
+        ("Fe(OH)2+", "Fe(OH)2[+1]", False),
+        # unambiguous notation
+        ("VO+2", "VO[+2]", False),
+        ("VO2[+1]", "VO2[+1]", False),
+    ],
+)
+def test_standardize_formula_ambiguity_warning(formula, expected, warns, caplog):
+    # standardize_formula is cached, so clear the cache to make sure the warning is emitted
+    standardize_formula.cache_clear()
+    with caplog.at_level(logging.WARNING, logger="pyEQL.utils"):
+        assert standardize_formula(formula) == expected
+    assert any("ambiguous" in m for m in caplog.messages) == warns
 
 
 def test_formula_dict():

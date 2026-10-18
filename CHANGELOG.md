@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CHANGED BEHAVIOR** `standardize_formula` resolves ambiguous charge notation and logs a warning: `Ca2+` is
   `Ca[+2]` (was `Ca[+0.5]`), `Fe3+` is `Fe[+3]` (was `Fe[+0.33333333]`), `S2-` is `S[-2]` (was `S4[-2]`), and
   `SO42-` is `SO4[-2]` (was `SO42[-1]`, i.e. 42 oxygen atoms). Formulas such as `NH4+`, `NO3-`, and `I3-` are
-  unchanged. (#471)
+  unchanged. `VO2+` is still `VO2[+1]`, but now logs a warning because it could also mean vanadyl, `VO[+2]`. (#471)
 
 ### Changed
 

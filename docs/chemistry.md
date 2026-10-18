@@ -54,7 +54,9 @@ sign** (e.g., type "Mg+2" NOT "Mg2+"). The latter formula is ambiguous - it coul
   becomes `Mg[+2]` and "Fe3+" becomes `Fe[+3]`. "S2-", "Se2-", and "Te2-" become `S[-2]`, `Se[-2]`, and `Te[-2]`.
 - Polyatomic ions such as "SO42-" or "Cr2O72-" are read with the final digit as the charge (giving `SO4[-2]` and
   `Cr2O7[-2]`) when the other reading would give a subscript of 10 or more.
-- Otherwise, the number is read as a subscript, e.g. "NH4+" is `NH4[+1]` and "I3-" is triiodide, `I3[-1]`.
+- Otherwise, the number is read as a subscript, e.g. "NH4+" is `NH4[+1]` and "I3-" is triiodide, `I3[-1]`. For
+  metal oxo-cations such as "VO2+", which could mean `VO2[+1]` or vanadyl (`VO[+2]`), the subscript reading is kept
+  and a warning is logged.
 
 You can also use unicode superscript characters (e.g., "Co²⁺"), and `pyEQL` will understand
 these regardless of the order of the `+` and the `2`. So you can write "Co²⁺" and it will be
