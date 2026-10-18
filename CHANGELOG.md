@@ -42,12 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Property database: corrected the molecular weights of `Br3[-1]` and `N3[-1]`, re-keyed trimetaphosphate
   (`PO3[-1]` -> `P3O9[-3]`) and dithionite (`SO2[-1]` -> `S2O4[-2]`), and regenerated pretty/HTML/LaTeX formula
   strings that were reduced or did not match their keys. (#471)
+
+## [1.6.7] - 2026-10-17
+
+### Fixed
+
 - `Solution.alkalinity` now counts fluoride (`F-`) as a conservative strong-acid anion, alongside
   chloride, bromide, and iodide. Previously it was omitted, leaving the conservative alkalinity of
   fluoride-bearing waters (e.g. seawater) ~3.4 mg/L as CaCO3 too high relative to the value reported
   by the PHREEQC engine. Note that the conservative (Stumm) alkalinity equals the engine's titration
   alkalinity only for a charge-balanced solution; non-electroneutral inputs additionally differ by
   the residual charge imbalance. (#458)
+- `phreeqpython` is now a conditional dependency, so `pyEQL` installation can proceed
+  even on platforms where it is not supported (e.g., aarch64 linux). (#470)
 
 ## [1.6.5] - 2026-08-21
 
