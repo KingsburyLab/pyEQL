@@ -102,7 +102,8 @@ _PREFERRED_FORMULAS = [
     "C2H5OH(aq)",
     "C3H7OH(aq)",
     "C4H9OH(aq)",
-    "HCO2[-1]",
+    "HCOOH(aq)",
+    "HCOO[-1]",
     "CF3SO3[-1]",
     "CF3COO[-1]",
     "CCl3COO[-1]",
@@ -120,6 +121,8 @@ _PREFERRED_FORMULAS = [
 # conventional order, including inside complexes (e.g. "CaPHO4" -> "CaHPO4"). The lookahead prevents a match from
 # running into a following subscript or lowercase letter (e.g. "H4N2" is not rewritten).
 _FRAGMENT_REWRITES = [
+    # hydroxide groups, e.g. "Al(HO)4" -> "Al(OH)4" (but not "U2(HO3)2")
+    (re.compile(r"HO(?![0-9a-z])"), "OH"),
     (re.compile(r"P\(HO2\)2(?![0-9a-z])"), "H2PO4"),
     (re.compile(r"PHO4(?![0-9a-z])"), "HPO4"),
     (re.compile(r"CSN(?![0-9a-z])"), "SCN"),
@@ -219,15 +222,38 @@ def _electronegativity(symbol: str) -> float:
     return float("inf") if math.isnan(x) else x
 
 
+def _format_formate_salt(el_amt: dict[str, float]) -> str | None:
+    """
+    Write formate salts and complexes with the metal first, e.g. "NaHCOO" or "Ca(HCOO)2".
+
+    Returns None unless the species consists of one metal and n formate (HCOO) groups.
+    """
+    n = el_amt.get("C", 0)
+    metals = set(el_amt) - {"C", "H", "O"}
+    if len(metals) != 1 or el_amt.get("H") != n or el_amt.get("O") != 2 * n:
+        return None
+    (metal,) = metals
+    try:
+        if not Element(metal).is_metal:
+            return None
+    except ValueError:  # pymatgen DummySpecies
+        return None
+    groups = "HCOO" if n == 1 else f"(HCOO){formula_double_format(n)}"
+    return f"{metal}{formula_double_format(el_amt[metal])}{groups}"
+
+
 def _format_formula(el_amt: dict[str, float]) -> str:
     """
     Write a formula (without charge) from an element: amount dict, without reducing it.
 
-    Organic species are written in Hill order (C, then H, then other elements alphabetically). Other species are
-    written in order of increasing electronegativity, with the two most electronegative elements grouped in
-    parentheses when they share a common factor (e.g. "Al(OH)4"), consistent with `pymatgen`.
+    Organic species are written in Hill order (C, then H, then other elements alphabetically), except for formate
+    salts, which are written with the metal first (e.g. "NaHCOO"). Other species are written in order of increasing
+    electronegativity, with the two most electronegative elements grouped in parentheses when they share a common
+    factor (e.g. "Al(OH)4"), consistent with `pymatgen`.
     """
     if _is_organic(el_amt):
+        if (formate := _format_formate_salt(el_amt)) is not None:
+            return formate
         syms = ["C"] + (["H"] if "H" in el_amt else []) + sorted(set(el_amt) - {"C", "H"})
         return "".join(f"{s}{formula_double_format(el_amt[s])}" for s in syms)
 
@@ -242,10 +268,6 @@ def _format_formula(el_amt: dict[str, float]) -> str:
                 group = f"({a}{n_a}{b}{n_b}){factor}"
                 syms = syms[:-2]
     formula = "".join(f"{s}{formula_double_format(el_amt[s])}" for s in syms) + group
-
-    # write hydroxide groups as OH rather than HO
-    if "H" in el_amt and el_amt["H"] == el_amt.get("O"):
-        formula = formula.replace("HO", "OH")
     for pattern, rep in _FRAGMENT_REWRITES:
         formula = pattern.sub(rep, formula)
     return formula
@@ -302,8 +324,8 @@ def standardize_formula(formula: str):
         'Hg2[+2]'
         >>> standardize_formula("Fe(OH)2+")
         'Fe(OH)2[+1]'
-        >>> standardize_formula("C2H6")
-        'C2H6(aq)'
+        >>> standardize_formula("SO42-")
+        'SO4[-2]'
     """
     formula = _normalize_formula_text(formula)
 

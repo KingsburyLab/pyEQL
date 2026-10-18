@@ -12321,11 +12321,11 @@
             "C",
             "O"
         ],
-        "formula": "HCO2[-1]",
+        "formula": "HCOO[-1]",
         "formula_hill": "C H O2",
-        "formula_html": "HCO<sub>2</sub><sup>-1</sup>",
-        "formula_latex": "HCO$_{2}$$^{-1}$",
-        "formula_pretty": "HCO2^-1",
+        "formula_html": "HCOO<sup>-1</sup>",
+        "formula_latex": "HCOO$^{-1}$",
+        "formula_pretty": "HCOO^-1",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -22655,11 +22655,11 @@
             "C",
             "O"
         ],
-        "formula": "CHNaO2(aq)",
+        "formula": "NaHCOO(aq)",
         "formula_hill": "C H Na O2",
-        "formula_html": "CHNaO<sub>2</sub>",
-        "formula_latex": "CHNaO$_{2}$",
-        "formula_pretty": "CHNaO2",
+        "formula_html": "NaHCOO",
+        "formula_latex": "NaHCOO",
+        "formula_pretty": "NaHCOO",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {

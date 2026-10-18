@@ -44,7 +44,7 @@ def test_standardize_formula():
     assert standardize_formula("N3-") == "N3[-1]"
     assert standardize_formula("P3-") == "P3[-1]"
     assert standardize_formula("Br3-") == "Br3[-1]"
-    assert standardize_formula("HCOO-") == "HCO2[-1]"
+    assert standardize_formula("HCOO-") == "HCOO[-1]"
     assert standardize_formula("CO2-1") == "CO2[-1]"
     assert standardize_formula("C2O4--") == "C2O4[-2]"
     assert standardize_formula("H3PO4") == "H3PO4(aq)"
@@ -116,6 +116,9 @@ def test_standardize_formula():
         ("NO3-", "NO3[-1]"),
         ("ClO3-", "ClO3[-1]"),
         ("PuO2+", "PuO2[+1]"),
+        # VO2+ could mean VO2[+1] (dioxovanadium(V)) or VO[+2] (vanadyl); the subscript reading is kept
+        ("VO2+", "VO2[+1]"),
+        ("VO+2", "VO[+2]"),
         # PHREEQC valence-state labels
         ("[N-3]H4+", "NH4[+1]"),
         ("H2[S-2]", "H2S(aq)"),
@@ -135,7 +138,15 @@ def test_standardize_formula():
         ("C2H3O2-", "CH3COO[-1]"),
         ("C2H4O2", "CH3COOH(aq)"),
         ("CH4O", "CH3OH(aq)"),
-        ("HCOO-", "HCO2[-1]"),
+        ("HCOO-", "HCOO[-1]"),
+        ("HCO2-", "HCOO[-1]"),
+        ("CH2O2", "HCOOH(aq)"),
+        # formate salts and complexes are written with the metal first
+        ("HCOONa", "NaHCOO(aq)"),
+        ("KHCOO", "KHCOO(aq)"),
+        ("RbHCOO", "RbHCOO(aq)"),
+        ("Ca(HCOO)2", "Ca(HCOO)2(aq)"),
+        ("Ca(HCOO)+", "CaHCOO[+1]"),
         # inorganic carbon species are not written in Hill order
         ("HCO3-", "HCO3[-1]"),
         ("H2CO3", "H2CO3(aq)"),

@@ -155,7 +155,6 @@ The database currently contains one or more physichochemical properties for each
  - C6H5O7[-3]
  - C6H9O6Tl(aq)
  - CH3COO[-1]
- - CHNaO2(aq)
  - CNO[-1]
  - CN[-1]
  - CO3[-2]
@@ -235,8 +234,8 @@ The database currently contains one or more physichochemical properties for each
  - H4SNO4(aq)
  - H5N2[+1]
  - HBr(aq)
- - HCO2[-1]
  - HCO3[-1]
+ - HCOO[-1]
  - HCl(aq)
  - HClO4(aq)
  - HF2[-1]
@@ -331,6 +330,7 @@ The database currently contains one or more physichochemical properties for each
  - NaF(aq)
  - NaH2PO4(aq)
  - NaHCO3(aq)
+ - NaHCOO(aq)
  - NaI(aq)
  - NaNO2(aq)
  - NaNO3(aq)

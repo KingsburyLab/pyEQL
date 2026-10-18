@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **CHANGED BEHAVIOR** `standardize_formula` resolves ambiguous charge notation and logs a warning: `Ca2+` is
+  `Ca[+2]` (was `Ca[+0.5]`), `Fe3+` is `Fe[+3]` (was `Fe[+0.33333333]`), `S2-` is `S[-2]` (was `S4[-2]`), and
+  `SO42-` is `SO4[-2]` (was `SO42[-1]`, i.e. 42 oxygen atoms). Formulas such as `NH4+`, `NO3-`, and `I3-` are
+  unchanged. (#471)
+
 ### Changed
 
 - **CHANGED BEHAVIOR** `standardize_formula` no longer reduces formulas to their simplest ratio of elements (the
@@ -19,12 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CHANGED BEHAVIOR** `standardize_formula` writes organic species in Hill order, e.g. `C2H6(aq)` (was `H3C(aq)`)
   and `C2H3NaO2(aq)` for sodium acetate (was `NaH3(CO)2(aq)`). Inorganic carbon species (carbonates, bicarbonates,
   cyanides, cyanates, thiocyanates, CO, CO2) and species with preferred names (`CH3COO[-1]`, `CH3OH(aq)`,
-  `HCO2[-1]`, `CF3SO3[-1]`, haloacetates, etc.) are unchanged. The 13 affected keys in the property database have
-  been migrated. (#471)
-- **CHANGED BEHAVIOR** `standardize_formula` resolves ambiguous charge notation and logs a warning: `Ca2+` is
-  `Ca[+2]` (was `Ca[+0.5]`), `Fe3+` is `Fe[+3]` (was `Fe[+0.33333333]`), `S2-` is `S[-2]` (was `S4[-2]`), and
-  `SO42-` is `SO4[-2]` (was `SO42[-1]`, i.e. 42 oxygen atoms). Formulas such as `NH4+`, `NO3-`, and `I3-` are
-  unchanged. (#471)
+  `CF3SO3[-1]`, haloacetates, etc.) are unchanged. Formate is now `HCOO[-1]` (was `HCO2[-1]`), formic acid is
+  `HCOOH(aq)`, and formate salts are written with the metal first, e.g. `NaHCOO(aq)` and `Ca(HCOO)2(aq)`. The 14
+  affected keys in the property database have been migrated. (#471)
 - **CHANGED BEHAVIOR** `CO2-1` now standardizes to the CO2 radical anion, `CO2[-1]`, rather than to oxalate
   (`C2O4[-2]`). (#471)
 - `Solute.from_formula` builds every field (molecular weight, pretty/HTML/LaTeX strings, etc.) from the standardized
