@@ -6,30 +6,39 @@ databases supported by pyEQL and against every entry in the pyEQL property datab
 import json
 import re
 from collections import defaultdict
+from importlib import resources
 from pathlib import Path
 
-import phreeqpython
 import pytest
 from pymatgen.core.ion import Ion
 
 import pyEQL
 from pyEQL.utils import _VALENCE_LABEL_RE, standardize_formula
 
+try:
+    import phreeqpython
+except ImportError:  # phreeqpython is not available on all platforms
+    phreeqpython = None
+
+_PHREEQC_DIR = resources.files("pyEQL.phreeqc.database")
+_PYEQL_DIR = Path(pyEQL.__file__).parent / "database"
+_PHREEQPYTHON_DIR = Path(phreeqpython.__file__).parent / "database" if phreeqpython else None
 PHREEQC_DATABASES = {
-    "phreeqc.dat": Path(phreeqpython.__file__).parent / "database" / "phreeqc.dat",
-    "pitzer.dat": Path(phreeqpython.__file__).parent / "database" / "pitzer.dat",
-    "vitens.dat": Path(phreeqpython.__file__).parent / "database" / "vitens.dat",
-    "wateq4f_PWN.dat": Path(phreeqpython.__file__).parent / "database" / "wateq4f_PWN.dat",
-    "llnl.dat": Path(pyEQL.__file__).parent / "database" / "llnl.dat",
-    "geothermal.dat": Path(pyEQL.__file__).parent / "database" / "geothermal.dat",
+    "phreeqc.dat": _PHREEQC_DIR / "phreeqc.dat",
+    "pitzer.dat": _PHREEQC_DIR / "pitzer.dat",
+    "llnl.dat": _PYEQL_DIR / "llnl.dat",
+    "geothermal.dat": _PYEQL_DIR / "geothermal.dat",
+    # these databases are distributed only with phreeqpython
+    "vitens.dat": _PHREEQPYTHON_DIR / "vitens.dat" if _PHREEQPYTHON_DIR else None,
+    "wateq4f_PWN.dat": _PHREEQPYTHON_DIR / "wateq4f_PWN.dat" if _PHREEQPYTHON_DIR else None,
 }
 
 
-def _solution_species(path: Path) -> set[str]:
+def _solution_species(path) -> set[str]:
     """Return the names of all species that appear in the SOLUTION_SPECIES reactions of a PHREEQC database."""
     species = set()
     in_block = False
-    for raw in path.read_text(errors="ignore").splitlines():
+    for raw in path.read_bytes().decode(errors="ignore").splitlines():
         line = raw.split("#")[0].rstrip()
         if not line.strip():
             continue
@@ -61,6 +70,8 @@ def _parse(name: str):
 @pytest.mark.parametrize("db", PHREEQC_DATABASES)
 def test_phreeqc_species(db):
     """Standardized formulas preserve composition and charge, are idempotent, and never collide."""
+    if PHREEQC_DATABASES[db] is None:
+        pytest.skip(f"{db} is distributed with phreeqpython, which is not installed")
     by_key = defaultdict(set)
     errors = []
     for name in sorted(_solution_species(PHREEQC_DATABASES[db])):
