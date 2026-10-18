@@ -4,6 +4,7 @@ Tests of pyEQL.utils module
 """
 
 import numpy as np
+import pytest
 from iapws import IAPWS95, IAPWS97
 from pytest import raises
 
@@ -44,7 +45,7 @@ def test_standardize_formula():
     assert standardize_formula("P3-") == "P3[-1]"
     assert standardize_formula("Br3-") == "Br3[-1]"
     assert standardize_formula("HCOO-") == "HCO2[-1]"
-    assert standardize_formula("CO2-1") == "C2O4[-2]"
+    assert standardize_formula("CO2-1") == "CO2[-1]"
     assert standardize_formula("C2O4--") == "C2O4[-2]"
     assert standardize_formula("H3PO4") == "H3PO4(aq)"
     assert standardize_formula("H2SO4") == "H2SO4(aq)"
@@ -78,6 +79,83 @@ def test_standardize_formula():
     # Polymers should be left intact
     assert standardize_formula("(CO2)2") == "(CO2)2"
     assert standardize_formula("(H2O)3") == "(H2O)3"
+
+
+@pytest.mark.parametrize(
+    ("formula", "expected"),
+    [
+        # multimers keep their molecular formula (not reduced to an empirical formula)
+        ("Hg2+2", "Hg2[+2]"),
+        ("Hg2[+2]", "Hg2[+2]"),
+        ("Hg2Cl2", "Hg2Cl2(aq)"),
+        ("Fe2(OH)2+4", "Fe2(OH)2[+4]"),
+        ("Cu2(OH)2+2", "Cu2(OH)2[+2]"),
+        ("S2O4-2", "S2O4[-2]"),
+        ("S4O6-2", "S4O6[-2]"),
+        ("S2O8-2", "S2O8[-2]"),
+        ("S2O6-2", "S2O6[-2]"),
+        ("V10O28-6", "V10O28[-6]"),
+        ("N2O4", "N2O4(aq)"),
+        ("H2F2", "H2F2(aq)"),
+        ("Br2", "Br2(aq)"),
+        ("I2", "I2(aq)"),
+        # legacy keys with fractional charges are restored to the smallest integer multiple
+        ("I[-0.33333333]", "I3[-1]"),
+        ("Br[-0.33333333]", "Br3[-1]"),
+        ("S[-0.33333333]", "S3[-1]"),
+        # ambiguous charge notation
+        ("Ca2+", "Ca[+2]"),
+        ("Fe3+", "Fe[+3]"),
+        ("Hg2+", "Hg[+2]"),
+        ("S2-", "S[-2]"),
+        ("SO42-", "SO4[-2]"),
+        ("CO32-", "CO3[-2]"),
+        ("Cr2O72-", "Cr2O7[-2]"),
+        ("UO22+", "UO2[+2]"),
+        ("NH4+", "NH4[+1]"),
+        ("NO3-", "NO3[-1]"),
+        ("ClO3-", "ClO3[-1]"),
+        ("PuO2+", "PuO2[+1]"),
+        # PHREEQC valence-state labels
+        ("[N-3]H4+", "NH4[+1]"),
+        ("H2[S-2]", "H2S(aq)"),
+        ("H3[As+3]O3", "As(OH)3(aq)"),
+        ("[Fe+2]+2", "Fe[+2]"),
+        # organic species are written in Hill order
+        ("C2H6", "C2H6(aq)"),
+        ("C2H4", "C2H4(aq)"),
+        ("C6H12O6", "C6H12O6(aq)"),
+        ("NaCH3COO", "C2H3NaO2(aq)"),
+        ("Ba(CH3COO)2", "C4H6BaO4(aq)"),
+        ("B(C6H5)4-", "C24H20B[-1]"),
+        ("C6H5O7-3", "C6H5O7[-3]"),
+        ("C8F15O2-", "C8F15O2[-1]"),
+        ("CO(NH2)2", "CH4N2O(aq)"),
+        # ... except for species with preferred names
+        ("C2H3O2-", "CH3COO[-1]"),
+        ("C2H4O2", "CH3COOH(aq)"),
+        ("CH4O", "CH3OH(aq)"),
+        ("HCOO-", "HCO2[-1]"),
+        # inorganic carbon species are not written in Hill order
+        ("HCO3-", "HCO3[-1]"),
+        ("H2CO3", "H2CO3(aq)"),
+        ("CaHCO3+", "CaHCO3[+1]"),
+        ("Na2CO3", "Na2CO3(aq)"),
+        ("CO2", "CO2(aq)"),
+        ("Fe(CN)6-3", "Fe(CN)6[-3]"),
+        ("HCN", "HCN(aq)"),
+        ("KSCN", "KSCN(aq)"),
+        ("OCN-", "CNO[-1]"),
+        # fragments are written in conventional order inside complexes
+        ("CaHPO4", "CaHPO4(aq)"),
+        ("MgH2PO4+", "MgH2PO4[+1]"),
+        ("NH4ClO4", "NH4ClO4(aq)"),
+    ],
+)
+def test_standardize_formula_molecular(formula, expected):
+    assert standardize_formula(formula) == expected
+    # standardization is idempotent
+    assert standardize_formula(expected) == expected
 
 
 def test_formula_dict():

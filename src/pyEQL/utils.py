@@ -7,13 +7,17 @@ pyEQL utilities
 """
 
 import logging
+import math
 import re
 from collections import UserDict
+from fractions import Fraction
 from functools import lru_cache
 from typing import Any
 
 from iapws import IAPWS95, IAPWS97
+from pymatgen.core import Composition, Element
 from pymatgen.core.ion import Ion
+from pymatgen.util.string import charge_string, formula_double_format
 
 from pyEQL import ureg
 
@@ -65,6 +69,203 @@ def _translate_pint_quantity(amount: str):
     return (float(_value), unit)
 
 
+# Formulas of polymers such as "(CO2)2", which PHREEQC reports for some solutions, are left intact.
+_POLYMER_RE = re.compile(r"^\([A-Za-z0-9+-]+\)\d+$")
+
+# Element labels that PHREEQC databases (e.g. vitens.dat) use to decouple redox states, e.g. "[N-3]H4+" or "H3[As+3]O3".
+# Charges in brackets (e.g. "Na[+1]") never start with a capital letter, so they are not matched.
+_VALENCE_LABEL_RE = re.compile(r"\[([A-Z][a-z]?)[+-]\d*\]")
+
+# A formula ending in a number followed by a sign, e.g. "NH4+", "Ca2+", or "SO42-". The final digit can be either a
+# subscript (NH4+) or a charge number (Ca2+).
+_AMBIGUOUS_CHARGE_RE = re.compile(r"^(.*[A-Za-z)])(\d+)([+-])$")
+_ELEMENT_RE = re.compile(r"[A-Z][a-z]?")
+
+# Keys produced by older versions of pyEQL whose integer multiple cannot be inferred from the charge alone.
+_LEGACY_FORMULAS = {
+    "S[-0.4]": "S5[-2]",
+    "S[-0.5]": "S4[-2]",
+    "S[-0.66666667]": "S3[-2]",
+}
+
+# Preferred (condensed or conventional) names for specific species. Entries are matched by composition and charge,
+# so they apply regardless of how the formula was written (e.g. "C2H3O2-" -> "CH3COO[-1]").
+_PREFERRED_FORMULAS = [
+    "NH3(aq)",
+    "NH4NO3(aq)",
+    "(NH4)2SO4(aq)",
+    "NH4SO4[-1]",
+    "H3PO4(aq)",
+    "CH3COOH(aq)",
+    "CH3COO[-1]",
+    "CH3OH(aq)",
+    "C2H5OH(aq)",
+    "C3H7OH(aq)",
+    "C4H9OH(aq)",
+    "HCO2[-1]",
+    "CF3SO3[-1]",
+    "CF3COO[-1]",
+    "CCl3COO[-1]",
+    "CBr3COO[-1]",
+    "CI3COO[-1]",
+    "CFCl2COO[-1]",
+    "CF2ClCOO[-1]",
+    "CBrCl2COO[-1]",
+    "CBr2ClCOO[-1]",
+    "CICl2COO[-1]",
+    "CI2ClCOO[-1]",
+]
+
+# Rewrites applied to electronegativity-ordered (inorganic) formulas so that common groups appear in their
+# conventional order, including inside complexes (e.g. "CaPHO4" -> "CaHPO4"). The lookahead prevents a match from
+# running into a following subscript or lowercase letter (e.g. "H4N2" is not rewritten).
+_FRAGMENT_REWRITES = [
+    (re.compile(r"P\(HO2\)2(?![0-9a-z])"), "H2PO4"),
+    (re.compile(r"PHO4(?![0-9a-z])"), "HPO4"),
+    (re.compile(r"CSN(?![0-9a-z])"), "SCN"),
+    (re.compile(r"H4N(?![0-9a-z])"), "NH4"),
+]
+
+
+def _normalize_formula_text(formula: str) -> str:
+    """Replace unicode superscripts, subscripts, and dashes with their ASCII equivalents."""
+    # fix permuted sign and charge number (e.g. Co²⁺)
+    for s, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"], strict=False):
+        formula = formula.replace(s, rep)
+
+    # replace superscripts with non superscripts
+    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789", strict=False):
+        formula = formula.replace(char, rep)
+
+    # replace subscripts with non subscripts
+    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789", strict=False):
+        formula = formula.replace(char, rep)
+
+    # replace different types of dashes with a minus sign
+    for char in [r"‑", r"‐", r"‒", r"–", r"—", r"−"]:  # noqa: RUF001
+        formula = formula.replace(char, "-")
+
+    return formula
+
+
+def _is_charge_balanced(formula: str, charge: int) -> bool:
+    """Whether pymatgen can find a set of oxidation states that sums to `charge` for `formula`."""
+    try:
+        return bool(Composition(formula).oxi_state_guesses(target_charge=charge))
+    except Exception:
+        return False
+
+
+def _resolve_ambiguous_charge(formula: str) -> str:
+    """
+    Disambiguate a formula that ends in a number followed by a sign, e.g. "Ca2+" or "SO42-".
+
+    `pymatgen` reads the number as a subscript, so "Ca2+" would mean Ca2 with a charge of +1. That reading is kept
+    in most cases (e.g. "NH4+", "NO3-", "ClO3-", "I3-"). The final digit is instead read as the charge number for
+    1) monatomic metal ions for which that charge is a known oxidation state (e.g. "Ca2+", "Fe3+"), 2) monatomic
+    chalcogenide ions (e.g. "S2-"), and 3) polyatomic ions in which the subscript reading would give the last element
+    a subscript of 10 or more and the charge reading can be charge balanced (e.g. "SO42-", "Cr2O72-").
+    """
+    match = _AMBIGUOUS_CHARGE_RE.match(formula)
+    if match is None:
+        return formula
+
+    head, digits, sign = match.groups()
+    charge = int(f"{sign}{digits[-1]}")
+    if digits[:-1] == "" and _ELEMENT_RE.fullmatch(head):
+        try:
+            el = Element(head)
+        except ValueError:
+            return formula
+        reinterpret = (el.is_metal and charge in el.oxidation_states) or (head in {"S", "Se", "Te"} and charge == -2)
+    else:
+        reinterpret = int(digits) >= 10 and _is_charge_balanced(f"{head}{digits[:-1]}", charge)
+
+    if not reinterpret:
+        return formula
+
+    new_formula = f"{head}{digits[:-1]}[{sign}{digits[-1]}]"
+    logger.warning(
+        f"Interpreting ambiguous formula {formula} as {new_formula}. Write the charge after the sign "
+        f"(e.g. 'Ca+2') or in brackets (e.g. 'Ca[+2]') to avoid ambiguity."
+    )
+    return new_formula
+
+
+def _is_organic(el_amt: dict[str, float]) -> bool:
+    """
+    Whether a species should be written in Hill order, based only on its composition.
+
+    Carbon-containing species are treated as organic, except for inorganic carbon: carbonates, bicarbonates, and
+    carbonic acid (at least 3 O per C, not counting 3 O per S), cyanides, cyanates, and thiocyanates (at least 1 N
+    and at most 1 H per C), and CO, CO2, CS2, and COS. Complexes of these species with metals are also inorganic.
+    """
+    n_c = el_amt.get("C", 0)
+    if n_c == 0:
+        return False
+    n_h = el_amt.get("H", 0)
+    if el_amt.get("O", 0) - 3 * el_amt.get("S", 0) >= 3 * n_c:
+        return False
+    if el_amt.get("N", 0) >= n_c and n_h <= n_c:
+        return False
+    return not (n_c == 1 and n_h == 0 and set(el_amt) <= {"C", "O", "S"})
+
+
+def _electronegativity(symbol: str) -> float:
+    try:
+        x = Element(symbol).X
+    except ValueError:  # pymatgen DummySpecies, e.g. "Ethylene" in llnl.dat
+        return float("inf")
+    return float("inf") if math.isnan(x) else x
+
+
+def _format_formula(el_amt: dict[str, float]) -> str:
+    """
+    Write a formula (without charge) from an element: amount dict, without reducing it.
+
+    Organic species are written in Hill order (C, then H, then other elements alphabetically). Other species are
+    written in order of increasing electronegativity, with the two most electronegative elements grouped in
+    parentheses when they share a common factor (e.g. "Al(OH)4"), consistent with `pymatgen`.
+    """
+    if _is_organic(el_amt):
+        syms = ["C"] + (["H"] if "H" in el_amt else []) + sorted(set(el_amt) - {"C", "H"})
+        return "".join(f"{s}{formula_double_format(el_amt[s])}" for s in syms)
+
+    syms = sorted(el_amt, key=lambda s: (_electronegativity(s), s))
+    group = ""
+    if len(syms) >= 3 and _electronegativity(syms[-1]) - _electronegativity(syms[-2]) < 1.65:
+        a, b = syms[-2:]
+        if el_amt[a] == int(el_amt[a]) and el_amt[b] == int(el_amt[b]):
+            factor = math.gcd(int(el_amt[a]), int(el_amt[b]))
+            if factor > 1:
+                n_a, n_b = formula_double_format(el_amt[a] / factor), formula_double_format(el_amt[b] / factor)
+                group = f"({a}{n_a}{b}{n_b}){factor}"
+                syms = syms[:-2]
+    formula = "".join(f"{s}{formula_double_format(el_amt[s])}" for s in syms) + group
+
+    # write hydroxide groups as OH rather than HO
+    if "H" in el_amt and el_amt["H"] == el_amt.get("O"):
+        formula = formula.replace("HO", "OH")
+    for pattern, rep in _FRAGMENT_REWRITES:
+        formula = pattern.sub(rep, formula)
+    return formula
+
+
+def _composition_key(el_amt: dict[str, float], charge: float) -> tuple[frozenset, float]:
+    return frozenset(el_amt.items()), charge
+
+
+@lru_cache(maxsize=1)
+def _preferred_formulas() -> dict[tuple[frozenset, float], str]:
+    """Map (composition, charge) to the preferred formula (without charge) for each entry in _PREFERRED_FORMULAS."""
+    preferred = {}
+    for f in _PREFERRED_FORMULAS:
+        ion = Ion.from_formula(f)
+        base = f[: f.index("[")] if "[" in f else f.removesuffix("(aq)")
+        preferred[_composition_key(ion.get_el_amt_dict(), ion.charge)] = base
+    return preferred
+
+
 @lru_cache
 def standardize_formula(formula: str):
     """
@@ -80,126 +281,58 @@ def standardize_formula(formula: str):
         ValueError if `formula` cannot be processed or is invalid.
 
     Notes:
-        Currently this method standardizes formulae by passing them through `pymatgen.core.ion.Ion.reduced_formula()`.
-        For ions, this means that 1) the charge number will always be listed explicitly and 2) the charge number will
-        be enclosed in square brackets to remove any ambiguity in the meaning of the formula. For example, 'Na+',
-        'Na+1', and 'Na[+]' will all standardize to "Na[+1]"
+        The formula is parsed by `pymatgen.core.ion.Ion` into element amounts and a charge, and the standardized
+        formula is written from those amounts *without reducing them*, so that multimers such as `Hg2[+2]`,
+        `S2O8[-2]`, or `Fe2(OH)2[+4]` keep their identity. In the standardized formula:
+
+        1. Charged species always list the charge number explicitly, enclosed in square brackets, e.g. 'Na+',
+           'Na+1', and 'Na[+]' all standardize to "Na[+1]". Uncharged species end in "(aq)".
+        2. Organic species are written in Hill order (e.g. "C2H6(aq)"); other species are written in order of
+           increasing electronegativity (e.g. "NaCl(aq)", "Al(OH)4[-1]").
+        3. A small number of species use a preferred conventional name (e.g. "NH4[+1]", "CH3COO[-1]").
+
+        Formulas that end in a number followed by a sign without brackets (e.g. "Ca2+" or "SO42-") are ambiguous.
+        They are interpreted as described in `_resolve_ambiguous_charge` and a warning is logged.
+
+    Examples:
+        >>> from pyEQL.utils import standardize_formula
+        >>> standardize_formula("Na+")
+        'Na[+1]'
+        >>> standardize_formula("Hg2+2")
+        'Hg2[+2]'
+        >>> standardize_formula("Fe(OH)2+")
+        'Fe(OH)2[+1]'
+        >>> standardize_formula("C2H6")
+        'C2H6(aq)'
     """
-    # fix permuted sign and charge number (e.g. Co2+)
-    for str, rep in zip(["²⁺", "³⁺", "⁴⁺", "²⁻", "³⁻", "⁴⁻"], ["+2", "+3", "+4", "-2", "-3", "-4"], strict=False):
-        formula = formula.replace(str, rep)
-
-    # replace superscripts with non superscripts
-    for char, rep in zip("⁻⁺⁰¹²³⁴⁵⁶⁷⁸⁹", "-+0123456789", strict=False):
-        formula = formula.replace(char, rep)
-
-    # replace subscripts with non subscripts
-    for char, rep in zip("₀₁₂₃₄₅₆₇₈₉", "0123456789", strict=False):
-        formula = formula.replace(char, rep)
-
-    # replace different types of dashes with a minus sign
-    for char in [r"‑", r"‐", r"‒", r"–", r"—", r"−"]:  # noqa: RUF001
-        formula = formula.replace(char, "-")
+    formula = _normalize_formula_text(formula)
 
     # Do not modify any dimers etc (Phreeqc reports a small amount of
     # "(CO2)2" in a water solution with C(4), for example.
-    _POLYMER_RE = re.compile(r"^\([A-Za-z0-9+-]+\)\d+$")
     if _POLYMER_RE.match(formula):
         return formula
 
-    sform = Ion.from_formula(formula).reduced_formula
+    if formula in _LEGACY_FORMULAS:
+        return _LEGACY_FORMULAS[formula]
 
-    # TODO - manual formula adjustments. May be implemented upstream in pymatgen in the future
-    # thanks to @xiaoxiaozhu123 for pointing out these issues in
-    # https://github.com/KingsburyLab/pyEQL/issues/136
+    formula = _VALENCE_LABEL_RE.sub(r"\1", formula)
+    formula = _resolve_ambiguous_charge(formula)
 
-    # ammonia
-    if sform == "H4N[+1]":
-        sform = "NH4[+1]"
-    elif "H4NCl" in sform:
-        sform = sform.replace("H4NCl", "NH4Cl")
-    elif sform == "SO3[-1]":
-        sform = "S2O6[-2]"
-    elif sform == "SO4[-1]":
-        sform = "S2O8[-2]"
-    elif sform == "H3N(aq)":
-        sform = "NH3(aq)"
-    # phosphoric acid system
-    elif sform == "PH3O4(aq)":
-        sform = "H3PO4(aq)"
-    elif "PHO4" in sform:
-        sform = sform.replace("PHO4", "HPO4")
-    elif "P(HO2)2" in sform:
-        sform = sform.replace("P(HO2)2", "H2PO4")
-    # thiocyanate
-    elif "CSN" in sform:
-        sform = sform.replace("CSN", "SCN")
-    # triiodide, trinitride, tribromide and phosphide
-    elif sform == "I[-0.33333333]":
-        sform = "I3[-1]"
-    elif sform == "N[-0.33333333]":
-        sform = "N3[-1]"
-    elif sform == "Br[-0.33333333]":
-        sform = "Br3[-1]"
-    elif sform == "P[-0.33333333]":
-        sform = "P3[-1]"
-    # sulfur species
-    elif sform == "S[-0.4]":
-        sform = "S5[-2]"
-    elif sform == "S[-0.5]":
-        sform = "S4[-2]"
-    elif sform == "S[-0.66666667]":
-        sform = "S3[-2]"
-    elif sform == "S[-1]":
-        sform = "S2[-2]"  # note: S2[-2] has lower ΔGf than S[-2], so we want to standardize to S2[-2] rather than S[-2]
-    # formate
-    elif sform == "HCOO[-1]":
-        sform = "HCO2[-1]"
-    # oxalate
-    elif sform == "CO2[-1]":
-        sform = "C2O4[-2]"
-    # triflate
-    elif sform == "CS(OF)3[-1]":
-        sform = "CF3SO3[-1]"
-    # haloacetic acids of F, Cl, Br, I
-    elif sform == "C2Cl3O2[-1]":
-        sform = "CCl3COO[-1]"
-    elif sform == "C2O2F3[-1]":
-        sform = "CF3COO[-1]"
-    elif sform == "C2I3O2[-1]":
-        sform = "CI3COO[-1]"
-    elif sform == "C2Br3O2[-1]":
-        sform = "CBr3COO[-1]"
+    ion = Ion.from_formula(formula)
+    el_amt = ion.get_el_amt_dict()
+    charge = ion.charge
 
-    # Cl+F
-    elif sform == "C2Cl2O2F[-1]":
-        sform = "CFCl2COO[-1]"
-    elif sform == "C2Cl(OF)2[-1]":
-        sform = "CF2ClCOO[-1]"
+    # Fractional charges (e.g. "I[-0.33333333]") are produced only by reducing the formula of a multimer, as was done
+    # by older versions of pyEQL. Restore the smallest multiple that has an integer charge (e.g. "I3[-1]").
+    if not math.isclose(charge, round(charge), abs_tol=1e-6):
+        factor = Fraction(charge).limit_denominator(12).denominator
+        el_amt = {el: amt * factor for el, amt in el_amt.items()}
+        charge = round(charge * factor)
 
-    # Cl+Br
-    elif sform == "C2Br(ClO)2[-1]":
-        sform = "CBrCl2COO[-1]"
-    elif sform == "C2Br2ClO2[-1]":
-        sform = "CBr2ClCOO[-1]"
-
-    # Cl+I
-    elif sform == "C2I(ClO)2[-1]":
-        sform = "CICl2COO[-1]"
-    elif sform == "C2I2ClO2[-1]":
-        sform = "CI2ClCOO[-1]"
-
-    # ammonium nitrate salts
-    elif sform == "H4N2O3(aq)":
-        sform = "NH4NO3(aq)"
-    # ammonium sulfate salts
-    elif sform == "H8S(NO2)2(aq)":
-        sform = "(NH4)2SO4(aq)"
-    elif sform == "H4SNO4[-1]":
-        sform = "NH4SO4[-1]"
-
-    # TODO - consider adding recognition of special formulas like MeOH for methanol or Cit for citrate
-    return sform
+    base = _preferred_formulas().get(_composition_key(el_amt, charge))
+    if base is None:
+        base = _format_formula(el_amt)
+    return base + charge_string(charge)
 
 
 def format_solutes_dict(solute_dict: dict, units: str):
@@ -249,7 +382,7 @@ def create_water_substance(temperature: float, pressure: float):
 
 class FormulaDict(UserDict):
     """
-    Automatically converts keys on get/set using pymatgen.core.Ion.from_formula(key).reduced_formula.
+    Automatically converts keys on get/set using pyEQL.utils.standardize_formula(key).
 
     This allows getting/setting/updating of Solution.components using flexible
     formula notation (e.g., "Na+", "Na+1", "Na[+]" all have the same effect)

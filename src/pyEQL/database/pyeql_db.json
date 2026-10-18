@@ -1224,7 +1224,7 @@
             "C",
             "H"
         ],
-        "formula": "B(H5C6)4[-1]",
+        "formula": "C24H20B[-1]",
         "formula_hill": "C24 H20 B",
         "formula_html": "B(H<sub>5</sub>C<sub>6</sub>)<sub>4</sub><sup>-1</sup>",
         "formula_latex": "B(H$_{5}$C$_{6}$)$_{4}$$^{-1}$",
@@ -2064,7 +2064,7 @@
             "H",
             "O"
         ],
-        "formula": "BaH6(CO)4(aq)",
+        "formula": "C4H6BaO4(aq)",
         "formula_hill": "C4 H6 Ba O4",
         "formula_html": "BaH<sub>6</sub>(CO)<sub>4</sub>",
         "formula_latex": "BaH$_{6}$(CO)$_{4}$",
@@ -7433,7 +7433,7 @@
             "H",
             "O"
         ],
-        "formula": "CsH3(CO)2(aq)",
+        "formula": "C2H3CsO2(aq)",
         "formula_hill": "C2 H3 Cs O2",
         "formula_html": "CsH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "CsH$_{3}$(CO)$_{2}$",
@@ -7533,7 +7533,7 @@
             "H",
             "O"
         ],
-        "formula": "CsH3(CO)2(aq)",
+        "formula": "C2H3CsO2(aq)",
         "formula_hill": "C2 H3 Cs O2",
         "formula_html": "CsH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "CsH$_{3}$(CO)$_{2}$",
@@ -11920,7 +11920,7 @@
             "H",
             "O"
         ],
-        "formula": "H5C6O7[-3]",
+        "formula": "C6H5O7[-3]",
         "formula_hill": "C6 H5 O7",
         "formula_html": "H<sub>5</sub>C<sub>6</sub>O<sub>7</sub><sup>-3</sup>",
         "formula_latex": "H$_{5}$C$_{6}$O$_{7}$$^{-3}$",
@@ -16162,7 +16162,7 @@
             "H",
             "O"
         ],
-        "formula": "KH3(CO)2(aq)",
+        "formula": "C2H3KO2(aq)",
         "formula_hill": "C2 H3 K O2",
         "formula_html": "KH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "KH$_{3}$(CO)$_{2}$",
@@ -18002,7 +18002,7 @@
             "H",
             "O"
         ],
-        "formula": "LiH3(CO)2(aq)",
+        "formula": "C2H3LiO2(aq)",
         "formula_hill": "C2 H3 Li O2",
         "formula_html": "LiH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "LiH$_{3}$(CO)$_{2}$",
@@ -19246,7 +19246,7 @@
             "H",
             "O"
         ],
-        "formula": "MgH6(CO)4(aq)",
+        "formula": "C4H6MgO4(aq)",
         "formula_hill": "C4 H6 Mg O4",
         "formula_html": "MgH<sub>6</sub>(CO)<sub>4</sub>",
         "formula_latex": "MgH$_{6}$(CO)$_{4}$",
@@ -22431,7 +22431,7 @@
             "H",
             "O"
         ],
-        "formula": "NaH3(CO)2(aq)",
+        "formula": "C2H3NaO2(aq)",
         "formula_hill": "C2 H3 Na O2",
         "formula_html": "NaH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "NaH$_{3}$(CO)$_{2}$",
@@ -22555,7 +22555,7 @@
             "H",
             "O"
         ],
-        "formula": "NaH5C3O2(aq)",
+        "formula": "C3H5NaO2(aq)",
         "formula_hill": "C3 H5 Na O2",
         "formula_html": "NaH<sub>5</sub>C<sub>3</sub>O<sub>2</sub>",
         "formula_latex": "NaH$_{5}$C$_{3}$O$_{2}$",
@@ -22655,7 +22655,7 @@
             "C",
             "O"
         ],
-        "formula": "NaHCO2(aq)",
+        "formula": "CHNaO2(aq)",
         "formula_hill": "C H Na O2",
         "formula_html": "NaHCO<sub>2</sub>",
         "formula_latex": "NaHCO$_{2}$",
@@ -27557,7 +27557,7 @@
             "H",
             "O"
         ],
-        "formula": "RbH3(CO)2(aq)",
+        "formula": "C2H3O2Rb(aq)",
         "formula_hill": "C2 H3 O2 Rb",
         "formula_html": "RbH<sub>3</sub>(CO)<sub>2</sub>",
         "formula_latex": "RbH$_{3}$(CO)$_{2}$",
@@ -32614,7 +32614,7 @@
             "H",
             "O"
         ],
-        "formula": "TlH9(CO)6(aq)",
+        "formula": "C6H9O6Tl(aq)",
         "formula_hill": "C6 H9 O6 Tl",
         "formula_html": "TlH<sub>9</sub>(CO)<sub>6</sub>",
         "formula_latex": "TlH$_{9}$(CO)$_{6}$",

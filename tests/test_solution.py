@@ -25,6 +25,7 @@ from pyEQL import solution as solution_module
 from pyEQL.engines import PHREEQPYTHON_AVAILABLE, IdealEOS, NativeEOS
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import UNKNOWN_OXI_STATE
+from pyEQL.utils import standardize_formula
 
 
 @pytest.fixture
@@ -188,7 +189,12 @@ def test_oxi_state_handling():
     # and https://github.com/materialsproject/pymatgen/issues/3687
     s = Solution({"Na+": "0.5 mol/kg", "Br-": "0.5 mol/kg"}, pH=7, balance_charge="Br-")
     s.equilibrate()
-    assert f"Br({UNKNOWN_OXI_STATE})" in s.get_components_by_element()
+    # aqueous bromine is Br2(aq), with an oxidation state of zero (it was previously reduced to "Br(aq)")
+    assert "Br2(aq)" in s.get_components_by_element()["Br(0.0)"]
+    # species whose oxidation states cannot be guessed are grouped under UNKNOWN_OXI_STATE
+    s = Solution({"Na+": "0.5 mol/kg", "Br-": "0.5 mol/kg", "Br": "1e-6 mol/kg"}, pH=7)
+    assert s.get_components_by_element()[f"Br({UNKNOWN_OXI_STATE})"] == ["Br(aq)"]
+    assert s.get_total_amount("Br", "mol/kg").magnitude == pytest.approx(0.5 + 1e-6)
 
 
 def test_diffusion_transport(s1, s2):
@@ -1191,7 +1197,14 @@ for doc in pyEQL.IonDB.query(criteria={"size.molar_volume": {"$ne": None}}):
 _fill_value = _CATIONS[0] if len(_CATIONS) < len(_ANIONS) else _ANIONS[0]
 # These cation-anion pairs include all ions for which molar volumes are available
 _SOLUTES = list(zip_longest(_CATIONS, _ANIONS, fillvalue=_fill_value))
-_FORMULAS_TO_SALTS = {f"{Salt(anion, cation).formula}(aq)": Salt(anion, cation) for anion, cation in _SOLUTES}
+# map standardized salt formulas to Salt objects, preferring salts whose formula is already standardized
+# (e.g. Na2CO3 from Na[+1] and CO3[-2] rather than from Na[+1] and NaCO3[-1])
+_FORMULAS_TO_SALTS = {}
+for anion, cation in _SOLUTES:
+    _salt = Salt(anion, cation)
+    _key = standardize_formula(_salt.formula)
+    if _key not in _FORMULAS_TO_SALTS or f"{_salt.formula}(aq)" == _key:
+        _FORMULAS_TO_SALTS[_key] = _salt
 _criteria = {
     "model_parameters.molar_volume_pitzer.Beta0": {"$ne": None},
     "charge": 0.0,
