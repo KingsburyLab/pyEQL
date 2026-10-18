@@ -15,33 +15,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Hg2[+2]` (was `Hg[+1]`), `Fe2(OH)2+4` is `Fe2(OH)2[+4]` (was `FeOH[+2]`), `S4O6-2` is `S4O6[-2]` (was
   `S2O3[-1]`), `Br2` is `Br2(aq)` (was `Br(aq)`), and `C6H12O6` is `C6H12O6(aq)` (was `CH3COOH(aq)`). Across the
   six PHREEQC databases supported by pyEQL, 24 species were previously given a key for a different molecule and 7
-  pairs of distinct species shared a key.
+  pairs of distinct species shared a key. (#471)
 - **CHANGED BEHAVIOR** `standardize_formula` writes organic species in Hill order, e.g. `C2H6(aq)` (was `H3C(aq)`)
   and `C2H3NaO2(aq)` for sodium acetate (was `NaH3(CO)2(aq)`). Inorganic carbon species (carbonates, bicarbonates,
   cyanides, cyanates, thiocyanates, CO, CO2) and species with preferred names (`CH3COO[-1]`, `CH3OH(aq)`,
   `HCO2[-1]`, `CF3SO3[-1]`, haloacetates, etc.) are unchanged. The 13 affected keys in the property database have
-  been migrated.
+  been migrated. (#471)
 - **CHANGED BEHAVIOR** `standardize_formula` resolves ambiguous charge notation and logs a warning: `Ca2+` is
   `Ca[+2]` (was `Ca[+0.5]`), `Fe3+` is `Fe[+3]` (was `Fe[+0.33333333]`), `S2-` is `S[-2]` (was `S4[-2]`), and
   `SO42-` is `SO4[-2]` (was `SO42[-1]`, i.e. 42 oxygen atoms). Formulas such as `NH4+`, `NO3-`, and `I3-` are
-  unchanged.
+  unchanged. (#471)
 - **CHANGED BEHAVIOR** `CO2-1` now standardizes to the CO2 radical anion, `CO2[-1]`, rather than to oxalate
-  (`C2O4[-2]`).
+  (`C2O4[-2]`). (#471)
 - `Solute.from_formula` builds every field (molecular weight, pretty/HTML/LaTeX strings, etc.) from the standardized
-  formula.
+  formula. (#471)
 
 ### Fixed
 
 - PHREEQC equilibration no longer loses mass when two species shared a standardized key. For example, in an acidic
   Fe(III) solution `Fe2(OH)2+4` overwrote `FeOH+2`, so ~2% of the iron disappeared without the missing-element
-  warning being triggered.
+  warning being triggered. (#471)
 - `standardize_formula` now understands the valence-state labels used in `vitens.dat` and `wateq4f_PWN.dat`, e.g.
-  `[N-3]H4+` is `NH4[+1]` (was `H2[+0.5]`) and `H2[S-2]` is `H2S(aq)` (was `H2(aq)`, colliding with dihydrogen).
+  `[N-3]H4+` is `NH4[+1]` (was `H2[+0.5]`) and `H2[S-2]` is `H2S(aq)` (was `H2(aq)`, colliding with dihydrogen). (#471)
 - `Solute.from_formula` reported the molecular weight of the reduced formula for multimers, e.g. 96.06 g/mol for
-  `S2O8[-2]` and 126.9 g/mol for `I3[-1]`.
+  `S2O8[-2]` and 126.9 g/mol for `I3[-1]`. (#471)
 - Property database: corrected the molecular weights of `Br3[-1]` and `N3[-1]`, re-keyed trimetaphosphate
   (`PO3[-1]` -> `P3O9[-3]`) and dithionite (`SO2[-1]` -> `S2O4[-2]`), and regenerated pretty/HTML/LaTeX formula
-  strings that were reduced or did not match their keys.
+  strings that were reduced or did not match their keys. (#471)
 - `Solution.alkalinity` now counts fluoride (`F-`) as a conservative strong-acid anion, alongside
   chloride, bromide, and iodide. Previously it was omitted, leaving the conservative alkalinity of
   fluoride-bearing waters (e.g. seawater) ~3.4 mg/L as CaCO3 too high relative to the value reported
