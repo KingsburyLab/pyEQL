@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Property database: corrected the molecular weights of `Br3[-1]` and `N3[-1]`, re-keyed trimetaphosphate
   (`PO3[-1]` -> `P3O9[-3]`) and dithionite (`SO2[-1]` -> `S2O4[-2]`), and regenerated pretty/HTML/LaTeX formula
   strings that were reduced or did not match their keys. (#471, @rkingsbury)
+- Restored compatibility with `pint` >= 0.25. The `chemistry` context was previously enabled globally, but starting
+  with `pint` 0.25 `Quantity.check()` and `is_compatible_with()` honor enabled contexts, which made `[substance]`
+  and `[mass]` appear mutually compatible and broke unit classification in `Solution.get_amount()` (e.g. requesting
+  `"kg"` raised `DimensionalityError: Cannot convert from 'mole' to 'kilogram'`). The context is no longer enabled
+  globally; conversions that need it already pass it explicitly. This also unblocks the wheel build, whose test step
+  resolves the latest `pint`. (@rkingsbury)
 
 ## [1.6.7] - 2026-10-17
 
