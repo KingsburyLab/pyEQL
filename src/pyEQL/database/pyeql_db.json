@@ -1224,11 +1224,11 @@
             "C",
             "H"
         ],
-        "formula": "B(H5C6)4[-1]",
+        "formula": "C24H20B[-1]",
         "formula_hill": "C24 H20 B",
-        "formula_html": "B(H<sub>5</sub>C<sub>6</sub>)<sub>4</sub><sup>-1</sup>",
-        "formula_latex": "B(H$_{5}$C$_{6}$)$_{4}$$^{-1}$",
-        "formula_pretty": "B(H5C6)4^-1",
+        "formula_html": "C<sub>24</sub>H<sub>20</sub>B<sup>-1</sup>",
+        "formula_latex": "C$_{24}$H$_{20}$B$^{-1}$",
+        "formula_pretty": "C24H20B^-1",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -2064,11 +2064,11 @@
             "H",
             "O"
         ],
-        "formula": "BaH6(CO)4(aq)",
+        "formula": "C4H6BaO4(aq)",
         "formula_hill": "C4 H6 Ba O4",
-        "formula_html": "BaH<sub>6</sub>(CO)<sub>4</sub>",
-        "formula_latex": "BaH$_{6}$(CO)$_{4}$",
-        "formula_pretty": "BaH6(CO)4",
+        "formula_html": "C<sub>4</sub>H<sub>6</sub>BaO<sub>4</sub>",
+        "formula_latex": "C$_{4}$H$_{6}$BaO$_{4}$",
+        "formula_pretty": "C4H6BaO4",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -2706,8 +2706,8 @@
         "formula": "Br3[-1]",
         "formula_hill": "Br3",
         "formula_html": "Br<sub>3</sub><sup>-1</sup>",
-        "formula_latex": "Br3$^{-1}$",
-        "formula_pretty": "Br^-1",
+        "formula_latex": "Br$_{3}$$^{-1}$",
+        "formula_pretty": "Br3^-1",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -2733,7 +2733,7 @@
                 "B": null
             }
         },
-        "molecular_weight": "79.904 g/mol",
+        "molecular_weight": "239.712 g/mol",
         "n_atoms": 3,
         "n_elements": 1,
         "oxi_state_guesses": {
@@ -7433,11 +7433,11 @@
             "H",
             "O"
         ],
-        "formula": "CsH3(CO)2(aq)",
+        "formula": "C2H3CsO2(aq)",
         "formula_hill": "C2 H3 Cs O2",
-        "formula_html": "CsH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "CsH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "CsH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>CsO<sub>2</sub>",
+        "formula_latex": "C$_{2}$H$_{3}$CsO$_{2}$",
+        "formula_pretty": "C2H3CsO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -7533,11 +7533,11 @@
             "H",
             "O"
         ],
-        "formula": "CsH3(CO)2(aq)",
+        "formula": "C2H3CsO2(aq)",
         "formula_hill": "C2 H3 Cs O2",
-        "formula_html": "CsH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "CsH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "CsH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>CsO<sub>2</sub>",
+        "formula_latex": "C$_{2}$H$_{3}$CsO$_{2}$",
+        "formula_pretty": "C2H3CsO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -11341,7 +11341,7 @@
         ],
         "formula": "NH4NO3(aq)",
         "formula_hill": "H4 N2 O3",
-        "formula_html": "H<sub>4</sub>N<sub>2</sub>O<sub>3</sub>",
+        "formula_html": "NH<sub>4</sub>NO<sub>3</sub>",
         "formula_latex": "NH$_{4}$NO$_{3}$",
         "formula_pretty": "NH4NO3",
         "model_parameters": {
@@ -11706,8 +11706,8 @@
         ],
         "formula": "NH4[+1]",
         "formula_hill": "H4 N",
-        "formula_html": "H<sub>4</sub>N<sup>+1</sup>",
-        "formula_latex": "H$_{4}$N$^{+1}$",
+        "formula_html": "NH<sub>4</sub><sup>+1</sup>",
+        "formula_latex": "NH$_{4}$$^{+1}$",
         "formula_pretty": "NH4^+1",
         "model_parameters": {
             "activity_pitzer": {
@@ -11920,11 +11920,11 @@
             "H",
             "O"
         ],
-        "formula": "H5C6O7[-3]",
+        "formula": "C6H5O7[-3]",
         "formula_hill": "C6 H5 O7",
-        "formula_html": "H<sub>5</sub>C<sub>6</sub>O<sub>7</sub><sup>-3</sup>",
-        "formula_latex": "H$_{5}$C$_{6}$O$_{7}$$^{-3}$",
-        "formula_pretty": "H5C6O7^-3",
+        "formula_html": "C<sub>6</sub>H<sub>5</sub>O<sub>7</sub><sup>-3</sup>",
+        "formula_latex": "C$_{6}$H$_{5}$O$_{7}$$^{-3}$",
+        "formula_pretty": "C6H5O7^-3",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -12082,8 +12082,8 @@
         ],
         "formula": "(NH4)2SO4(aq)",
         "formula_hill": "H8 N2 O4 S",
-        "formula_html": "H<sub>8</sub>S(NO<sub>2</sub>)<sub>2</sub>",
-        "formula_latex": "H$_{8}$S(NO$_{2}$)$_{2}$",
+        "formula_html": "(NH<sub>4</sub>)<sub>2</sub>SO<sub>4</sub>",
+        "formula_latex": "(NH$_{4}$)$_{2}$SO$_{4}$",
         "formula_pretty": "(NH4)2SO4",
         "model_parameters": {
             "activity_pitzer": {
@@ -12321,11 +12321,11 @@
             "C",
             "O"
         ],
-        "formula": "HCO2[-1]",
+        "formula": "HCOO[-1]",
         "formula_hill": "C H O2",
-        "formula_html": "HCO<sub>2</sub><sup>-1</sup>",
-        "formula_latex": "HCO$_{2}$$^{-1}$",
-        "formula_pretty": "HCO2^-1",
+        "formula_html": "HCOO<sup>-1</sup>",
+        "formula_latex": "HCOO$^{-1}$",
+        "formula_pretty": "HCOO^-1",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -16162,11 +16162,11 @@
             "H",
             "O"
         ],
-        "formula": "KH3(CO)2(aq)",
+        "formula": "C2H3KO2(aq)",
         "formula_hill": "C2 H3 K O2",
-        "formula_html": "KH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "KH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "KH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>KO<sub>2</sub>",
+        "formula_latex": "C$_{2}$H$_{3}$KO$_{2}$",
+        "formula_pretty": "C2H3KO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -16893,8 +16893,8 @@
         ],
         "formula": "KH2PO4(aq)",
         "formula_hill": "H2 K O4 P",
-        "formula_html": "KP(HO<sub>2</sub>)<sub>2</sub>",
-        "formula_latex": "KP(HO$_{2}$)$_{2}$",
+        "formula_html": "KH<sub>2</sub>PO<sub>4</sub>",
+        "formula_latex": "KH$_{2}$PO$_{4}$",
         "formula_pretty": "KH2PO4",
         "model_parameters": {
             "activity_pitzer": {
@@ -18002,11 +18002,11 @@
             "H",
             "O"
         ],
-        "formula": "LiH3(CO)2(aq)",
+        "formula": "C2H3LiO2(aq)",
         "formula_hill": "C2 H3 Li O2",
-        "formula_html": "LiH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "LiH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "LiH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>LiO<sub>2</sub>",
+        "formula_latex": "C$_{2}$H$_{3}$LiO$_{2}$",
+        "formula_pretty": "C2H3LiO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -19246,11 +19246,11 @@
             "H",
             "O"
         ],
-        "formula": "MgH6(CO)4(aq)",
+        "formula": "C4H6MgO4(aq)",
         "formula_hill": "C4 H6 Mg O4",
-        "formula_html": "MgH<sub>6</sub>(CO)<sub>4</sub>",
-        "formula_latex": "MgH$_{6}$(CO)$_{4}$",
-        "formula_pretty": "MgH6(CO)4",
+        "formula_html": "C<sub>4</sub>H<sub>6</sub>MgO<sub>4</sub>",
+        "formula_latex": "C$_{4}$H$_{6}$MgO$_{4}$",
+        "formula_pretty": "C4H6MgO4",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -20691,9 +20691,9 @@
         ],
         "formula": "N3[-1]",
         "formula_hill": "N3",
-        "formula_html": "N<sup>-1</sup>",
-        "formula_latex": "N$_3^{-1}$",
-        "formula_pretty": "N_3^-1",
+        "formula_html": "N<sub>3</sub><sup>-1</sup>",
+        "formula_latex": "N$_{3}$$^{-1}$",
+        "formula_pretty": "N3^-1",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -20723,7 +20723,7 @@
                 }
             }
         },
-        "molecular_weight": "14.0067 g/mol",
+        "molecular_weight": "42.0201 g/mol",
         "n_atoms": 3,
         "n_elements": 1,
         "oxi_state_guesses": {
@@ -22431,11 +22431,11 @@
             "H",
             "O"
         ],
-        "formula": "NaH3(CO)2(aq)",
+        "formula": "C2H3NaO2(aq)",
         "formula_hill": "C2 H3 Na O2",
-        "formula_html": "NaH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "NaH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "NaH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>NaO<sub>2</sub>",
+        "formula_latex": "C$_{2}$H$_{3}$NaO$_{2}$",
+        "formula_pretty": "C2H3NaO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -22555,11 +22555,11 @@
             "H",
             "O"
         ],
-        "formula": "NaH5C3O2(aq)",
+        "formula": "C3H5NaO2(aq)",
         "formula_hill": "C3 H5 Na O2",
-        "formula_html": "NaH<sub>5</sub>C<sub>3</sub>O<sub>2</sub>",
-        "formula_latex": "NaH$_{5}$C$_{3}$O$_{2}$",
-        "formula_pretty": "NaH5C3O2",
+        "formula_html": "C<sub>3</sub>H<sub>5</sub>NaO<sub>2</sub>",
+        "formula_latex": "C$_{3}$H$_{5}$NaO$_{2}$",
+        "formula_pretty": "C3H5NaO2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -22655,11 +22655,11 @@
             "C",
             "O"
         ],
-        "formula": "NaHCO2(aq)",
+        "formula": "NaHCOO(aq)",
         "formula_hill": "C H Na O2",
-        "formula_html": "NaHCO<sub>2</sub>",
-        "formula_latex": "NaHCO$_{2}$",
-        "formula_pretty": "NaHCO2",
+        "formula_html": "NaHCOO",
+        "formula_latex": "NaHCOO",
+        "formula_pretty": "NaHCOO",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -23362,8 +23362,8 @@
         ],
         "formula": "NaH2PO4(aq)",
         "formula_hill": "H2 Na O4 P",
-        "formula_html": "NaP(HO<sub>2</sub>)<sub>2</sub>",
-        "formula_latex": "NaP(HO$_{2}$)$_{2}$",
+        "formula_html": "NaH<sub>2</sub>PO<sub>4</sub>",
+        "formula_latex": "NaH$_{2}$PO$_{4}$",
         "formula_pretty": "NaH2PO4",
         "model_parameters": {
             "activity_pitzer": {
@@ -25013,8 +25013,8 @@
         ],
         "formula": "H2PO4[-1]",
         "formula_hill": "H2 O4 P",
-        "formula_html": "P(HO<sub>2</sub>)<sub>2</sub><sup>-1</sup>",
-        "formula_latex": "P(HO$_{2}$)$_{2}$$^{-1}$",
+        "formula_html": "H<sub>2</sub>PO<sub>4</sub><sup>-1</sup>",
+        "formula_latex": "H$_{2}$PO$_{4}$$^{-1}$",
         "formula_pretty": "H2PO4^-1",
         "model_parameters": {
             "activity_pitzer": {
@@ -25098,8 +25098,8 @@
         ],
         "formula": "H2PO4[-1]",
         "formula_hill": "H2 O4 P",
-        "formula_html": "P(HO<sub>2</sub>)<sub>2</sub><sup>-1</sup>",
-        "formula_latex": "P(HO$_{2}$)$_{2}$$^{-1}$",
+        "formula_html": "H<sub>2</sub>PO<sub>4</sub><sup>-1</sup>",
+        "formula_latex": "H$_{2}$PO$_{4}$$^{-1}$",
         "formula_pretty": "H2PO4^-1",
         "model_parameters": {
             "activity_pitzer": {
@@ -25771,11 +25771,11 @@
             "P",
             "O"
         ],
-        "formula": "PO3[-1]",
+        "formula": "P3O9[-3]",
         "formula_hill": "O9 P3",
-        "formula_html": "PO<sub>3</sub><sup>-3</sup>",
-        "formula_latex": "PO$_{3}$$^{-3}$",
-        "formula_pretty": "PO3^-3",
+        "formula_html": "P<sub>3</sub>O<sub>9</sub><sup>-3</sup>",
+        "formula_latex": "P$_{3}$O$_{9}$$^{-3}$",
+        "formula_pretty": "P3O9^-3",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -25801,7 +25801,7 @@
                 "B": null
             }
         },
-        "molecular_weight": "78.971962 g/mol",
+        "molecular_weight": "236.915886 g/mol",
         "n_atoms": 12,
         "n_elements": 2,
         "oxi_state_guesses": {
@@ -27557,11 +27557,11 @@
             "H",
             "O"
         ],
-        "formula": "RbH3(CO)2(aq)",
+        "formula": "C2H3O2Rb(aq)",
         "formula_hill": "C2 H3 O2 Rb",
-        "formula_html": "RbH<sub>3</sub>(CO)<sub>2</sub>",
-        "formula_latex": "RbH$_{3}$(CO)$_{2}$",
-        "formula_pretty": "RbH3(CO)2",
+        "formula_html": "C<sub>2</sub>H<sub>3</sub>O<sub>2</sub>Rb",
+        "formula_latex": "C$_{2}$H$_{3}$O$_{2}$Rb",
+        "formula_pretty": "C2H3O2Rb",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
@@ -29031,11 +29031,11 @@
             "S",
             "O"
         ],
-        "formula": "SO2[-1]",
+        "formula": "S2O4[-2]",
         "formula_hill": "O4 S2",
-        "formula_html": "SO<sub>2</sub><sup>-2</sup>",
-        "formula_latex": "SO$_{2}$$^{-2}$",
-        "formula_pretty": "SO2^-2",
+        "formula_html": "S<sub>2</sub>O<sub>4</sub><sup>-2</sup>",
+        "formula_latex": "S$_{2}$O$_{4}$$^{-2}$",
+        "formula_pretty": "S2O4^-2",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": null,
@@ -29061,7 +29061,7 @@
                 "B": null
             }
         },
-        "molecular_weight": "64.0638 g/mol",
+        "molecular_weight": "128.1276 g/mol",
         "n_atoms": 6,
         "n_elements": 2,
         "oxi_state_guesses": {
@@ -32614,11 +32614,11 @@
             "H",
             "O"
         ],
-        "formula": "TlH9(CO)6(aq)",
+        "formula": "C6H9O6Tl(aq)",
         "formula_hill": "C6 H9 O6 Tl",
-        "formula_html": "TlH<sub>9</sub>(CO)<sub>6</sub>",
-        "formula_latex": "TlH$_{9}$(CO)$_{6}$",
-        "formula_pretty": "TlH9(CO)6",
+        "formula_html": "C<sub>6</sub>H<sub>9</sub>O<sub>6</sub>Tl",
+        "formula_latex": "C$_{6}$H$_{9}$O$_{6}$Tl",
+        "formula_pretty": "C6H9O6Tl",
         "model_parameters": {
             "activity_pitzer": {
                 "Beta0": {
