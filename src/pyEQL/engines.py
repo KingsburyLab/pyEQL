@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Self
 
 from monty.json import MSONable
-from phreeqpython import PhreeqPython
 from pymatgen.core import Composition
 
 import pyEQL.activity_correction as ac
@@ -24,6 +23,11 @@ from pyEQL import ureg
 from pyEQL.phreeqc import PHRQSol
 from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
+
+try:
+    from phreeqpython import PhreeqPython
+except ImportError:
+    PhreeqPython = None
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
@@ -493,6 +497,11 @@ class Phreeqc2026EOS(EOS):
         # the only reason to re-adjust charge balance here is to account for any missing species.
         solution._adjust_charge_balance()
 
+        # Sync _stored_comp to the final post-equilibration components so that subsequent property
+        # calls (e.g., get_activity_coefficient) reuse this ppsol instead of triggering an
+        # unnecessary rebuild.
+        self._stored_comp = solution.components.copy()
+
         # set the volume update flag so that the volume will be consistent with the new composition.
         solution.volume_update_required = True
 
@@ -602,8 +611,10 @@ class PhreeqcEOS(Phreeqc2026EOS):
         )
         # create the PhreeqPython instance
         # try/except added to catch platforms with no compatible phreeqpython binary, such as
-        # Apple Silicon or aarch64 Linux (phreeqpython ships no arm64 Linux shared library)
+        # aarch64 Linux, where phreeqpython is either not installed or fails to load its shared library
         try:
+            if PhreeqPython is None:
+                raise OSError("phreeqpython is not installed")
             self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
         except OSError:
             # super().__init__() already set self.pp to an in-tree Phreeqc wrapper, which is the
@@ -613,8 +624,8 @@ class PhreeqcEOS(Phreeqc2026EOS):
             self.pp = None
             logger.error(
                 "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on a platform with no compatible phreeqpython binary, such as Apple M1/M2"
-                " chips or aarch64 Linux. pyEQL will work, but equilibrate() will have no effect."
+                " are running on a platform with no compatible phreeqpython binary, such as aarch64 Linux."
+                " pyEQL will work, but equilibrate() using this engine will have no effect."
             )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
