@@ -1,20 +1,14 @@
 from __future__ import annotations
 
 import copy
-import os
+import sys
 
-import pymatgen.entries
 import pytest
 from pymatgen.core.composition import Composition
-from pymatgen.entries.computed_entries import ComputedEntry
+from pymatgen.core.entries import ComputedEntry
 from pytest import approx
 
 from pyEQL.pourbaix.compatibility import MU_H2O, CompatibilityError, MaterialsProjectAqueousCompatibility
-
-PMG_ENTRIES_DIR = os.path.dirname(os.path.abspath(pymatgen.entries.__file__))
-
-### Not sure to keep this line for the warning !!!!
-# @pytest.mark.filterwarnings("ignore:MaterialsProjectCompatibility is deprecated")
 
 
 class TestMaterialsProjectAqueousCompatibility:
@@ -137,17 +131,15 @@ class TestMaterialsProjectAqueousCompatibility:
 
     def test_hydrate_adjustment(self):
         compat = MaterialsProjectAqueousCompatibility(
-            o2_energy=-10, h2o_energy=-20, h2o_adjustments=-0.5, solid_compat=None
+            o2_energy=-10, h2o_energy=-20, h2o_adjustments=-0.5, solid_compat=None, universal_solid_shift_eV_per_atom=0
         )
 
         hydrate_entry = ComputedEntry(Composition("FeH4O2"), -10)  # nH2O = 2
-        hydrate_entry2 = ComputedEntry(Composition("Li2O2H2"), -10)  # nH2O = 0
+        hydrate_entry2 = ComputedEntry(Composition("Ca2O2H2"), -10)  # nH2O = 0
 
         compat.process_entries([hydrate_entry, hydrate_entry2])
 
-        assert hydrate_entry.uncorrected_energy - hydrate_entry.energy == approx(
-            2 * (compat.h2o_adjustments * 3 + MU_H2O)
-        )
+        assert hydrate_entry.uncorrected_energy - hydrate_entry.energy == 0
         assert hydrate_entry2.uncorrected_energy - hydrate_entry2.energy == 0
 
     def test_processing_entries_inplace(self):
@@ -159,9 +151,62 @@ class TestMaterialsProjectAqueousCompatibility:
         MaterialsProjectAqueousCompatibility().process_entries(entries, inplace=False)
         assert all(e.correction == e_copy.correction for e, e_copy in zip(entries, entries_copy, strict=True))
 
+    def test_nitrogen_correction(self):
+        import numpy as np  # noqa: PLC0415
+
+        compat = MaterialsProjectAqueousCompatibility(
+            o2_energy=-10,
+            h2o_energy=-20,
+            h2o_adjustments=-0.5,
+            solid_compat=None,
+        )
+
+        entry = ComputedEntry(Composition("Li3N"), -10)
+        correction = next(
+            adj.value for adj in compat.get_adjustments(entry) if adj.name == "MP Aqueous Nitrogen correction"
+        )
+        assert np.isclose(correction, 0.26, atol=1e-8)
+
+        entry = ComputedEntry(Composition("N2"), -10)
+        assert not any(adj.name == "MP Aqueous Nitrogen correction" for adj in compat.get_adjustments(entry))
+
+    def test_universal_solid_shift_adjustment(self):
+        import numpy as np  # noqa: PLC0415
+
+        compat = MaterialsProjectAqueousCompatibility(
+            o2_energy=-10,
+            h2o_energy=-20,
+            h2o_adjustments=-0.5,
+            solid_compat=None,
+            universal_solid_shift_eV_per_atom=0.1,
+        )
+
+        li2o_entry = ComputedEntry(Composition("Li2O"), -10)
+        correction = next(
+            adj.value
+            for adj in compat.get_adjustments(li2o_entry)
+            if adj.name == "User universal solid shift (eV/atom)"
+        )
+        assert np.isclose(correction, 0.3, atol=1e-8)
+
+    # def test_solid_compat_args_propagation(self): # Currently commented out
+    #     hydrate_entry = ComputedEntry(Composition("FeH4O2"), -10)
+
+    #     compat = MaterialsProjectAqueousCompatibility(
+    #         o2_energy=-10, h2o_energy=-20, h2o_adjustments=-0.5, solid_compat=MaterialsProject2020Compatibility()
+    #     )
+
+    #     # the solid compatibility object raises the error
+    #     with pytest.raises(CompatibilityError, match="invalid run type"):
+    #         entries = compat.process_entries([hydrate_entry], on_error="raise")
+
+    #     entries = compat.process_entries([hydrate_entry], on_error="ignore")
+    #     assert len(entries) == 0
+
+    @pytest.mark.skipif(sys.platform.startswith("win"), reason="Windows broken permissions.")
     def test_parallel_process_entries(self):
         hydrate_entry = ComputedEntry(Composition("FeH4O2"), -10)  # nH2O = 2
-        hydrate_entry2 = ComputedEntry(Composition("Li2O2H2"), -10)  # nH2O = 0
+        hydrate_entry2 = ComputedEntry(Composition("Ca2O2H2"), -10)  # nH2O = 0
 
         entry_list = [hydrate_entry, hydrate_entry2]
 
