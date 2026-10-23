@@ -319,6 +319,30 @@ def test_equilibrate_CO2_with_calcite():
     )  # slight tolerance adjustment
 
 
+def test_equilibrate_multiple_oxi_states_conserved(caplog):
+    """Elements whose oxi states PHREEQC does not distinguish (i.e., not in SPECIAL_ELEMENTS) must be passed
+    to PHREEQC as the sum over all their oxi states. Previously the amounts were concatenated as strings
+    (e.g. '0.01' + '0.005' -> '0.010.005'), so the Cr(VI) was silently dropped."""
+    # llnl.dat, because phreeqc.dat has no Cr
+    s = Solution(
+        {"Cr[+3]": "0.01 mol/L", "CrO4[-2]": "0.005 mol/L", "Na[+1]": "0.01 mol/L", "Cl[-1]": "0.02 mol/L"},
+        pH=3,
+        engine=PhreeqcEOS(phreeqc_db="llnl.dat"),
+    )
+    total_Cr = s.get_total_amount("Cr", "mol").magnitude
+    total_Cl = s.get_total_amount("Cl", "mol").magnitude
+    assert total_Cr == pytest.approx(0.015)
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s.equilibrate()
+        assert s.get_total_amount("Cr", "mol").magnitude == pytest.approx(total_Cr, rel=1e-6)
+        # the first equilibrate() returns trace Cr and Cl species in other oxi states, which must also be
+        # summed when the next call builds its PHREEQC input
+        s.equilibrate()
+        assert s.get_total_amount("Cr", "mol").magnitude == pytest.approx(total_Cr, rel=1e-6)
+        assert s.get_total_amount("Cl", "mol").magnitude == pytest.approx(total_Cl, rel=1e-6)
+    assert "differs from the original" not in caplog.text
+
+
 def test_equilibrate_FeO3H3_ppt():
     """Test an oversaturated solution"""
     solution = Solution({"Fe+3": "0.01 mol/L", "OH-": "10e-7 mol/L"}, volume="1 L", engine="phreeqc")

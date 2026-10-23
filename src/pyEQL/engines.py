@@ -271,17 +271,16 @@ class Phreeqc2026EOS(EOS):
 
         # add the composition to the dict
         # also, skip H and O
+        # CAUTION - get_el_amt_dict() returns the amount of each distinct oxi state of each element present.
+        # Elements in SPECIAL_ELEMENTS are passed to PHREEQC per oxi state (e.g. 'Fe(2)', 'Fe(3)'), but PHREEQC
+        # does not recognize oxi states of any other element, so the amounts of all oxi states of those elements
+        # must be summed under the bare element (e.g. 'Cr' for Cr(3) + Cr(6)). Multiple oxi states are common
+        # even for elements added in a single oxi state, because equilibrate() can return trace species in other
+        # oxi states (e.g. Cl(1) in an equilibrated NaCl solution). Amounts are therefore accumulated as floats
+        # and formatted (with the " charge" suffix, if any) only once, after the loop.
+        molalities: dict[str, float] = {}
+        cb_keys = set()
         for el, mol in solution.get_el_amt_dict().items():
-            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
-            # all distinct oxi states of each element present. If there are elements present whose oxi states
-            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
-            # entered into the composition dict. This can especially cause problems after equilibrate() has already
-            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
-            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
-            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
-            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
-            # oxi state happens to be iterated through last.
-
             # strip off the oxi state
             bare_el = el.split("(")[0]
             if bare_el in SPECIAL_ELEMENTS:
@@ -293,16 +292,14 @@ class Phreeqc2026EOS(EOS):
             else:
                 key = bare_el
 
-            if key in d:
-                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
-                # add all their amounts together
-                d[key] += str(mol / solv_mass)
-            else:
-                d[key] = str(mol / solv_mass)
+            molalities[key] = molalities.get(key, 0) + mol / solv_mass
 
             # tell PHREEQC which species to use for charge balance
             if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
-                d[key] += " charge"
+                cb_keys.add(key)
+
+        for key, molality in molalities.items():
+            d[key] = str(molality) + (" charge" if key in cb_keys else "")
 
         try:
             ppsol = self.pp.add_solution(self._ppsol_dict_input(d))

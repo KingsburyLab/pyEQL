@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from pyEQL import Solution
-from pyEQL.engines import Phreeqc2026EOS
+from pyEQL.engines import NativeEOS, Phreeqc2026EOS
 from pyEQL.phreeqc import IS_AVAILABLE
 
 if not IS_AVAILABLE:
@@ -343,6 +343,84 @@ def test_equilibrate_no_false_mass_balance_error(caplog):
     with caplog.at_level(logging.ERROR, "pyEQL.engines"):
         s_cb.equilibrate()
     assert err not in caplog.text
+
+
+@pytest.mark.parametrize("engine_cls", [Phreeqc2026EOS, NativeEOS])
+def test_equilibrate_multiple_oxi_states_conserved(engine_cls, caplog):
+    """Elements whose oxi states PHREEQC does not distinguish (i.e., not in SPECIAL_ELEMENTS) must be passed
+    to PHREEQC as the sum over all their oxi states. Previously the amounts were concatenated as strings
+    (e.g. '0.01' + '0.005' -> '0.010.005'), so the Cr(VI) was silently dropped."""
+    # llnl.dat, because phreeqc.dat has no Cr
+    s = Solution(
+        {"Cr[+3]": "0.01 mol/L", "CrO4[-2]": "0.005 mol/L", "Na[+1]": "0.01 mol/L", "Cl[-1]": "0.02 mol/L"},
+        pH=3,
+        engine=engine_cls(phreeqc_db="llnl.dat"),
+    )
+    total_Cr = s.get_total_amount("Cr", "mol").magnitude
+    total_Cl = s.get_total_amount("Cl", "mol").magnitude
+    assert total_Cr == pytest.approx(0.015)
+    with caplog.at_level(logging.ERROR, "pyEQL.engines"):
+        s.equilibrate()
+        assert s.get_total_amount("Cr", "mol").magnitude == pytest.approx(total_Cr, rel=1e-6)
+        # the first equilibrate() returns trace Cr and Cl species in other oxi states, which must also be
+        # summed when the next call builds its PHREEQC input
+        s.equilibrate()
+        assert s.get_total_amount("Cr", "mol").magnitude == pytest.approx(total_Cr, rel=1e-6)
+        assert s.get_total_amount("Cl", "mol").magnitude == pytest.approx(total_Cl, rel=1e-6)
+    assert "differs from the original" not in caplog.text
+
+
+def test_setup_ppsol_input_amounts(monkeypatch):
+    """_setup_ppsol passes one amount for all oxi states of a non-SPECIAL element, one amount per oxi state
+    of a SPECIAL element, and appends the ' charge' keyword only once."""
+    engine = Phreeqc2026EOS(phreeqc_db="llnl.dat")
+    s = Solution(
+        {
+            "Cr[+3]": "0.01 mol/L",
+            "CrO4[-2]": "0.005 mol/L",
+            "Fe[+2]": "0.001 mol/L",
+            "Fe[+3]": "0.001 mol/L",
+            "Na[+1]": "0.01 mol/L",
+            "Cl[-1]": "0.035 mol/L",
+        },
+        pH=3,
+        balance_charge="Cr[+3]",
+        engine=engine,
+    )
+    # capture the input dict passed to PHREEQC
+    inputs = []
+    orig_ppsol_dict_input = engine._ppsol_dict_input
+
+    def capture(d):
+        inputs.append(d)
+        return orig_ppsol_dict_input(d)
+
+    monkeypatch.setattr(engine, "_ppsol_dict_input", capture)
+    engine._setup_ppsol(s)
+
+    d = inputs[-1]
+    solv_mass = s.solvent_mass.to("kg").magnitude
+    el_amt = s.get_el_amt_dict()
+    assert d["Cr"].endswith(" charge")
+    assert d["Cr"].count("charge") == 1
+    assert float(d["Cr"].removesuffix(" charge")) == pytest.approx((el_amt["Cr(3.0)"] + el_amt["Cr(6.0)"]) / solv_mass)
+    assert float(d["Fe(2)"]) == pytest.approx(el_amt["Fe(2.0)"] / solv_mass)
+    assert float(d["Fe(3)"]) == pytest.approx(el_amt["Fe(3.0)"] / solv_mass)
+    assert "Fe" not in d
+
+
+def test_equilibrate_batt_mfg_preset_Hg():
+    """batt_mfg contains Hg(1) and Hg(2). Previously their amounts were concatenated as strings
+    ('5.3e-08' + '2.1e-10' -> '5.3e-082.1e-10', i.e. ~5e-82 mol/kgw), so Hg never effectively reached PHREEQC."""
+    s = Solution.from_preset("batt_mfg")
+    hg_before = {k: v for k, v in s.components.items() if "Hg" in k}
+    total_Hg = s.get_total_amount("Hg", "mol").magnitude
+    s.equilibrate()
+    hg_after = {k: v for k, v in s.components.items() if "Hg" in k}
+    # PHREEQC re-speciated the Hg...
+    assert hg_after != hg_before
+    # ...and conserved its total
+    assert s.get_total_amount("Hg", "mol").magnitude == pytest.approx(total_Hg, rel=1e-3)
 
 
 def test_equilibrate_FeO3H3_ppt():
