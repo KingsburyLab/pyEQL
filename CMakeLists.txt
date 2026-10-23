@@ -16,7 +16,7 @@ if(PYEQL_ENABLE_EXT)
     # -------------------------------------------------------
     # Setup for IPhreeqc
     # -------------------------------------------------------
-    set(IPHREEQC_BASE ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/ext/iphreeqc-3.8.6-17100)
+    set(IPHREEQC_BASE ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/ext/iphreeqc-3.9.0-17591)
     set(IPHREEQC_DIR         ${IPHREEQC_BASE})
     set(IPHREEQC_INCLUDE_DIRS
         ${IPHREEQC_BASE}/src

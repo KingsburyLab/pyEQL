@@ -8,6 +8,7 @@ used by pyEQL's Solution class
 
 import copy
 import logging
+import pathlib
 from importlib.resources import files
 from itertools import zip_longest
 
@@ -442,7 +443,7 @@ def test_alkalinity_hardness(s3, s5, s6, s9, s10):
 def test_alkalinity_engine_warning(caplog):
     s = Solution.from_preset("seawater")
     with caplog.at_level(logging.WARNING, logger=s.logger.name):
-        s.alkalinity
+        _ = s.alkalinity
     assert any("is more than 1% different than alkalinity calculated by pyEQL" in m for m in caplog.messages)
 
 
@@ -1462,7 +1463,10 @@ class TestSaturationIndex:
 
         monkeypatch.setattr(go.Figure, "show", lambda self: None)
         phreeqc_eos = PhreeqcEOS(phreeqc_db="phreeqc.dat")
-        phreeqc2026_eos = Phreeqc2026EOS(phreeqc_db="phreeqc.dat")
+        # Use the phreeqc.dat packaged with the tests, so the test remains stable
+        phreeqc_dat_path = str(pathlib.Path(__file__).resolve().parent / "phreeqc" / "phreeqc.dat")
+
+        phreeqc2026_eos = Phreeqc2026EOS(phreeqc_db=phreeqc_dat_path)
         composition = {"Ca2+": "2 mmol/L", "CO3-2": "2 mmol/L", "H+": "10**(-10.3) mol/L"}
 
         phreeqc_si = Solution(composition, engine=phreeqc_eos).get_saturation_index()
