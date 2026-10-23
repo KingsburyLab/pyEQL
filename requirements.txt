@@ -372,7 +372,7 @@ urllib3==2.8.0
     # via
     #   botocore
     #   requests
-virtualenv==21.13.0
+virtualenv==21.14.9
     # via
     #   pre-commit
     #   tox
