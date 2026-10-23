@@ -185,9 +185,7 @@ class Phreeqc2026EOS(EOS):
 
     def __init__(
         self,
-        phreeqc_db: Literal[
-            "phreeqc.dat", "vitens.dat", "wateq4f_PWN.dat", "pitzer.dat", "llnl.dat", "geothermal.dat"
-        ] = "phreeqc.dat",
+        phreeqc_db: str = "phreeqc.dat",
     ) -> None:
         """
         Args:
@@ -200,6 +198,10 @@ class Phreeqc2026EOS(EOS):
                 it has fewer species than the other databases. `llnl.dat` and `geothermal.dat`
                 may offer improved prediction of LSI but currently these databases are not
                 usable because they do not allow for conductivity calculations.
+
+                If an absolute path is given, it will be used as the database file.
+                This can be used to bypass the default database files distributed with
+                pyEQL.
         """
         from pyEQL.phreeqc import IS_AVAILABLE, Phreeqc  # noqa: PLC0415
 
@@ -207,10 +209,15 @@ class Phreeqc2026EOS(EOS):
             raise RuntimeError("pyEQL phreeqc support is not available in this installation")
 
         self.phreeqc_db = phreeqc_db
-        # database files in this list are not distributed with phreeqpython
-        self.db_path = (
-            Path(os.path.dirname(__file__)) / "database" if self.phreeqc_db in ["llnl.dat", "geothermal.dat"] else None
-        )
+        if Path(self.phreeqc_db).is_absolute():
+            self.db_path = Path(self.phreeqc_db).parent
+        else:
+            # database files in this list are not distributed with phreeqpython
+            self.db_path = (
+                Path(os.path.dirname(__file__)) / "database"
+                if self.phreeqc_db in ["llnl.dat", "geothermal.dat"]
+                else None
+            )
         # create the PhreeqcPython instance
         self.pp = Phreeqc(database=self.phreeqc_db, database_directory=self.db_path)
         # attributes to hold the Phreeqc solution.

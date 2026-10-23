@@ -251,49 +251,48 @@ def test_run_logstring():
     # Due to platform specific differences, we only compare the first token
     # from each of the lines below, to the output.
     expected = cleandoc("""
-               -------------------------------------------
-               Beginning of initial solution calculations.
-               -------------------------------------------
+            -------------------------------------------
+            Beginning of initial solution calculations.
+            -------------------------------------------
 
-               Initial solution 0.
+            Initial solution 0.
 
-               Iterations in revise_guesses: 1
+            Iterations in revise_guesses: 1
 
-               Number of infeasible solutions: 0
-               Number of basis changes: 0
+            Number of infeasible solutions: 0
+            Number of basis changes: 0
 
-               Number of iterations: 0
+            Number of iterations: 0
 
-               -----------------------------------------
-               Beginning of batch-reaction calculations.
-               -----------------------------------------
+            -----------------------------------------
+            Beginning of batch-reaction calculations.
+            -----------------------------------------
 
-               Reaction step 1.
+            Reaction step 1.
 
-               Overflow: (CO2)2\t1.000000e+03\t3.625196e+00\t-1
-               Overflow: CO2\t4.794226e+02\t2.680719e+00\t-1
-               Overflow: CaCO3\t1.000000e+03\t3.225283e+00\t-1
-               Overflow: CaHCO3+\t1.000000e+03\t3.915297e+00\t-1
-               Overflow: HCO3-\t1.000000e+03\t3.329016e+00\t-1
-               Overflow: NaHCO3\t1.000000e+03\t3.268854e+00\t-1
-               Iterations in revise_guesses: 2
+            Overflow: (CO2)2	1.000000e+03	3.572484e+00	-1
+            Overflow: CO2	4.794226e+02	2.680719e+00	-1
+            Overflow: CaCO3	1.000000e+03	3.225283e+00	-1
+            Overflow: HCO3-	1.000000e+03	3.329016e+00	-1
+            Overflow: NaHCO3	1.000000e+03	3.022812e+00	-1
+            Iterations in revise_guesses: 2
 
-               Number of infeasible solutions: 0
-               Number of basis changes: 0
+            Number of infeasible solutions: 0
+            Number of basis changes: 0
 
-               Number of iterations: 15
+            Number of iterations: 13
 
-               ------------------
-               End of simulation.
-               ------------------
+            ------------------
+            End of simulation.
+            ------------------
 
-               ------------------------------------
-               Reading input data for simulation 2.
-               ------------------------------------
+            ------------------------------------
+            Reading input data for simulation 2.
+            ------------------------------------
 
-               ---------------------------------
-               End of Run after X Seconds.
-               ---------------------------------
+            ---------------------------------
+            End of Run after X Seconds.
+            ---------------------------------
            """)
 
     log_lines = log_string.strip("\n").splitlines()
@@ -539,9 +538,9 @@ def test_species_all_props():
                 "OH-": {"ACT": 1.0123126727760366e-07, "MOL": 1.0126897880811404e-07},
             },
             "eq_species": {
-                "H2(g)": {"SI": -31.048923033678367},
+                "H2(g)": {"SI": -31.050611419616803},
                 "H2O(g)": {"SI": -1.5028233204748613},
-                "O2(g)": {"SI": -21.18764110890733},
+                "O2(g)": {"SI": -21.17020113989257},
             },
         },
         1: {
@@ -552,13 +551,13 @@ def test_species_all_props():
             "species": {
                 "H+": {"ACT": 1e-10, "MOL": 1.0197827284798617e-10},
                 "H2": {"ACT": 5.626700758118202e-41, "MOL": 0.0},
-                "O2": {"ACT": 3.659468532125681e-05, "MOL": 3.6592332322612637e-05},
+                "O2": {"ACT": 5.031160323140112e-05, "MOL": 5.030836825054884e-05},
                 "OH-": {"ACT": 0.0005473549298676792, "MOL": 0.0005585111533405827},
             },
             "eq_species": {
-                "H2(g)": {"SI": -37.113374354647966},
+                "H2(g)": {"SI": -37.122008964652146},
                 "H2O(g)": {"SI": -0.9158658033784839},
-                "O2(g)": {"SI": -1.4065718231105961},
+                "O2(g)": {"SI": -1.26832168332011},
             },
         },
     }
