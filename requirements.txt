@@ -68,7 +68,7 @@ docutils==0.22.4
     #   sphinx-rtd-theme
 execnet==2.1.2
     # via pytest-xdist
-filelock==4.0.5
+filelock==4.2.1
     # via
     #   python-discovery
     #   tox
