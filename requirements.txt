@@ -29,7 +29,7 @@ botocore==1.43.103
     #   s3transfer
 cachetools==7.2.0
     # via tox
-certifi==2026.10.19
+certifi==2026.10.23
     # via requests
 cffi==2.1.1
     # via
