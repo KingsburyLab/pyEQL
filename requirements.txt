@@ -19,7 +19,7 @@ bcrypt==5.0.0
     # via paramiko
 bibtexparser==1.4.4
     # via pymatgen-core
-black==26.5.1
+black==26.10.1
     # via pyeql (pyproject.toml)
 boto3==1.43.103
     # via maggma
