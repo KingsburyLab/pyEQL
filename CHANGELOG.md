@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.7.5] - 2026-10-27
+
+### Changed
+
+- `phreeqc2026` engine was refactored to take advantage of `std::variant` introduced in C++17, greatly simplifying
+  the code. A README was also added describing the extension code's structure and how to update it for future
+  IPHREEQC releases. (#481, @vineetbansal)
 
 ### Fixed
 
@@ -14,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and Mn). The amounts were concatenated as strings (e.g. `"0.01" + "0.005"` -> `"0.010.005"`), so PHREEQC read
   only part of the input. For example, equilibrating a Cr(III) + Cr(VI) solution dropped the Cr(VI), re-equilibrating
   the `batt_recycling` preset lost 14% of its Cr, and the Hg(I) + Hg(II) in the `batt_mfg` preset reached PHREEQC
-  as ~1e-82 mol/kgw. The amounts are now summed, and the `charge` keyword is appended only once. (@rkingsbury)
+  as ~1e-82 mol/kgw. The amounts are now summed, and the `charge` keyword is appended only once. (#474, @rkingsbury)
 
 ## [1.7.0] - 2026-10-19
 
