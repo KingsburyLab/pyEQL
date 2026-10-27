@@ -6,8 +6,26 @@ on:
 
 jobs:
 
+  validate_tag:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check tag matches vMAJOR.MINOR.PATCH
+      env:
+        TAG: ${{ github.event.release.tag_name }}
+      run: |
+        if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([a-z0-9]+)?$ ]]; then
+          echo "::error::Release tag '$TAG' is not a valid version tag."
+          echo "Expected a tag like 'v1.7.5' (optionally with a pre-release suffix, e.g. 'v1.7.5rc0')."
+          echo "setuptools_scm cannot derive a version from this tag, so the build would fail."
+          echo "Delete this release and its tag, then re-create the release with a correctly named tag."
+          exit 1
+        fi
+        echo "Release tag '$TAG' is valid."
+
   build_sdist:
     name: Build source
+    needs: [validate_tag]
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +49,7 @@ jobs:
 
   build_wheels:
     name: Build wheel on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
-    needs: [build_sdist]
+    needs: [validate_tag, build_sdist]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
