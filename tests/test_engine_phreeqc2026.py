@@ -18,7 +18,7 @@ from pyEQL.phreeqc import IS_AVAILABLE
 
 if not IS_AVAILABLE:
     pytest.skip(
-        "pyEQL._phreeqc extension not available",
+        "pyEQL.phreeqc._iphreeqc extension not available",
         allow_module_level=True,
     )
 

@@ -20,7 +20,7 @@ from pymatgen.core import Composition
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.phreeqc import PHRQSol
+from pyEQL.phreeqc import PhreeqcSolution
 from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
 
@@ -223,7 +223,7 @@ class Phreeqc2026EOS(EOS):
         self._building_ppsol = False
 
     def _ppsol_dict_input(self, d):
-        return PHRQSol(d)
+        return PhreeqcSolution(d)
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a Phreeqc solution for subsequent analysis."""
