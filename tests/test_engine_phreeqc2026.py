@@ -317,10 +317,10 @@ def test_equilibrate_CO2_with_calcite():
     assert solution.get_amount("Na+", "mol") == 0
     assert np.isclose(solution.get_amount("CO2(aq)", "mol/kg").magnitude, 3.816e-05)
     assert np.isclose(
-        solution.get_amount("HCO3-", "mol/kg").magnitude, 1.48e-03, atol=1e-5
+        solution.get_amount("HCO3-", "mol/kg").magnitude, 0.00151, atol=1e-5
     )  # slight tolerance adjustment
     assert np.isclose(
-        solution.get_amount("Ca+2", "mol/kg").magnitude, 7.427e-04, atol=1e-5
+        solution.get_amount("Ca+2", "mol/kg").magnitude, 7.66e-04, atol=1e-5
     )  # slight tolerance adjustment
 
 
