@@ -1,7 +1,12 @@
+#pragma once
+
 #include <IPhreeqc.h>
 #include <string>
-#include <vector>
 #include <stdexcept>
+#include <variant>
+
+// Value of one selected-output cell; pybind11 converts this to None/int/float/str.
+using CellValue = std::variant<std::monostate, long, double, std::string>;
 
 class IPhreeqcWrapper {
 public:
@@ -39,11 +44,24 @@ public:
         return GetSelectedOutputColumnCount(id);
     }
 
-    int get_value(int row, int col, VAR& var) {
+    CellValue get_value(int row, int col) {
+        // VAR is a C tagged union whose sVal is heap-allocated, so it must be
+        // paired with VarClear. Decode it here so it never reaches Python.
+        VAR var;
+        VarInit(&var);
         if (GetSelectedOutputValue(id, row, col, &var) != VR_OK) {
+            VarClear(&var);
             throw std::runtime_error(get_error_string());
         }
-        return var.vresult;
+        CellValue value;
+        switch (var.type) {
+            case TT_LONG:   value = var.lVal; break;
+            case TT_DOUBLE: value = var.dVal; break;
+            case TT_STRING: value = std::string(var.sVal ? var.sVal : ""); break;
+            default:        break;  // TT_EMPTY
+        }
+        VarClear(&var);
+        return value;
     }
 
     int get_component_count() {
@@ -51,23 +69,30 @@ public:
     }
 
     std::string get_component(int i) {
-        return GetComponent(id, i);
+        const char* s = GetComponent(id, i);
+        return std::string(s ? s : "");
     }
 
     std::string get_dump_string() {
-        return GetDumpString(id);
+        const char* s = GetDumpString(id);
+        return std::string(s ? s : "");
     }
 
-    int set_dump_string_on(int i) {
-        return SetDumpStringOn(id, i);
+    void set_dump_string_on(int i) {
+        if (SetDumpStringOn(id, i) != 0) {
+            throw std::runtime_error(get_error_string());
+        }
     }
 
     std::string get_log_string() {
-        return GetLogString(id);
+        const char* s = GetLogString(id);
+        return std::string(s ? s : "");
     }
 
-    int set_log_string_on(int i) {
-        return SetLogStringOn(id, i);
+    void set_log_string_on(int i) {
+        if (SetLogStringOn(id, i) != 0) {
+            throw std::runtime_error(get_error_string());
+        }
     }
 
 private:
