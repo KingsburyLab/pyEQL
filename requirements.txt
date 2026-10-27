@@ -57,7 +57,7 @@ cycler==0.12.1
     # via matplotlib
 distlib==0.4.3
     # via virtualenv
-dnspython==2.8.0
+dnspython==2.9.0
     # via
     #   maggma
     #   pymongo
