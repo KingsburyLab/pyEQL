@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `Solution.get_amount()` gained a float fast path for common units (`mol`, `mol/L`, `mol/kg`, `m`, `g`, `kg`,
+  `g/L`, `mg/L`, `fraction`, `eq`, `eq/L`), replacing per-solute `pint` conversions with plain float arithmetic and a
+  single `Quantity` construction; other units fall through to the unchanged reference path. The O(N) property sweeps
+  that call `get_amount` per component speed up accordingly — e.g. on a 33-component solution `charge_balance` is
+  ~28x faster, `mass` ~21x, `total_dissolved_solids` ~15x, and `conductivity` ~6x; `alkalinity`, `hardness`, and
+  `ionic_strength` speed up with no code change. `dielectric_constant` additionally hoists its mole-fraction
+  denominator out of its loop (O(N²) -> O(N)). Output is bit-identical to the previous `pint`-based path. (#454, @rkingsbury)
+
+### Fixed
+
+- `get_amount(<absent solute>, "fraction")` now returns `0` (the mole fraction of an absent solute) instead of
+  raising `UndefinedUnitError`. (#454, @rkingsbury)
+
 ## [1.7.5] - 2026-10-27
 
 ### Changed
