@@ -26,9 +26,9 @@ if(PYEQL_ENABLE_EXT)
     set(IPHREEQC_BUILD_DIR   ${IPHREEQC_BASE}/build)
     add_subdirectory(${IPHREEQC_DIR} ${IPHREEQC_BUILD_DIR})
 
-    # Hide IPhreeqc's symbols when it is statically linked into _phreeqc.so.
+    # Hide IPhreeqc's symbols when it is statically linked into _iphreeqc.so.
     # Upstream IPhreeqc does not build with -fvisibility=hidden, so without
-    # this every Phreeqc/IPhreeqcLib symbol gets re-exported from _phreeqc.so.
+    # this every Phreeqc/IPhreeqcLib symbol gets re-exported from _iphreeqc.so.
     # That collides with phreeqpython's own copy of IPhreeqc (a different
     # build), causing segfault once both modules are loaded in the same Python
     # process.
@@ -41,13 +41,15 @@ if(PYEQL_ENABLE_EXT)
     # -------------------------------------------------------
 
     # -------------------------------------------------------
-    # Setup for pyEQL._phreeqc
+    # Setup for pyEQL.phreeqc._iphreeqc
     # -------------------------------------------------------
-    pybind11_add_module(_phreeqc ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/bindings.cpp)
-    target_compile_definitions(_phreeqc
+    pybind11_add_module(_iphreeqc ${CMAKE_CURRENT_SOURCE_DIR}/src/pyEQL/phreeqc/bindings.cpp)
+    target_compile_definitions(_iphreeqc
                                PRIVATE VERSION_INFO=${PROJECT_VERSION})
-    target_link_libraries(_phreeqc PRIVATE IPhreeqc)
-    install(TARGETS _phreeqc LIBRARY DESTINATION pyEQL COMPONENT python)
+    target_link_libraries(_iphreeqc PRIVATE IPhreeqc)
+    # std::variant in iphreeqc_wrapper.hpp (MSVC defaults to C++14)
+    target_compile_features(_iphreeqc PRIVATE cxx_std_17)
+    install(TARGETS _iphreeqc LIBRARY DESTINATION pyEQL/phreeqc COMPONENT python)
 
     # -------------------------------------------------------
     # IPhreeqc databases

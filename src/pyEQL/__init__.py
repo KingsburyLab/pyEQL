@@ -34,8 +34,13 @@ ureg = UnitRegistry(cache_folder=":auto:")
 # convert "offset units" so that, e.g. Quantity('25 degC') works without error
 # see https://pint.readthedocs.io/en/0.22/user/nonmult.html?highlight=offset#temperature-conversion
 ureg.autoconvert_offset_to_baseunit = True
-# activate the "chemistry" context globally
-ureg.enable_contexts("chemistry")
+# NOTE: the "chemistry" context (which enables mole <-> mass conversions using a
+# molecular weight) is NOT enabled globally. Starting with pint 0.25, Quantity.check()
+# and is_compatible_with() honor the enabled contexts, so a globally active "chemistry"
+# context makes [substance] and [mass] appear mutually compatible. That breaks the unit
+# classification in Solution.get_amount(), where e.g. Quantity("kg").check("[substance]")
+# would return True and send a mass request down the substance branch. Every conversion
+# that actually needs the context passes it explicitly, e.g. qty.to("kg", "chem", mw=mw).
 # set the default string formatting for pint quantities
 ureg.formatter.default_format = "P~"
 

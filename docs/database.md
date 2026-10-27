@@ -111,6 +111,7 @@ Although the database contains additional context about each and every property 
 The database currently contains one or more physichochemical properties for each of the solutes listed below. More detailed information about which properties are available for which solutes may be added in the future.
 
 ```
+ - (NH4)2SO4(aq)
  - Ac[+3]
  - Ag(CN)2[-1]
  - AgNO3(aq)
@@ -125,7 +126,6 @@ The database currently contains one or more physichochemical properties for each
  - Au[+1]
  - Au[+2]
  - Au[+3]
- - B(H5C6)4[-1]
  - B(OH)3(aq)
  - B(OH)4[-1]
  - BF4[-1]
@@ -133,22 +133,31 @@ The database currently contains one or more physichochemical properties for each
  - Ba(ClO4)2(aq)
  - Ba(NO3)2(aq)
  - BaBr2(aq)
- - BaC4O.3H2O(aq)
  - BaCl2(aq)
  - BaI2(aq)
  - Ba[+2]
  - BeSO4(aq)
  - Be[+2]
  - Bi[+3]
- - BrO3[-1]
  - Br3[-1]
+ - BrO3[-1]
  - Br[-1]
+ - C24H20B[-1]
+ - C2H3CsO2(aq)
+ - C2H3KO2(aq)
+ - C2H3LiO2(aq)
+ - C2H3NaO2(aq)
+ - C2H3O2Rb(aq)
  - C2N3[-1]
+ - C3H5NaO2(aq)
+ - C4H6BaO4(aq)
+ - C4H6MgO4(aq)
+ - C6H5O7[-3]
+ - C6H9O6Tl(aq)
  - CH3COO[-1]
  - CNO[-1]
  - CN[-1]
  - CO3[-2]
- - CSN[-1]
  - CSeN[-1]
  - Ca(ClO4)2(aq)
  - Ca(NO3)2(aq)
@@ -185,7 +194,6 @@ The database currently contains one or more physichochemical properties for each
  - CsBr(aq)
  - CsCl(aq)
  - CsF(aq)
- - CsHC2O.1H2O(aq)
  - CsI(aq)
  - CsNO2(aq)
  - CsNO3(aq)
@@ -199,7 +207,6 @@ The database currently contains one or more physichochemical properties for each
  - Cu[+3]
  - Dy[+2]
  - Dy[+3]
- - Er[+2]
  - Er[+3]
  - Eu(NO3)3(aq)
  - EuCl3(aq)
@@ -218,22 +225,17 @@ The database currently contains one or more physichochemical properties for each
  - Ge[+2]
  - H2CO3(aq)
  - H2O(aq)
+ - H2PO4[-1]
  - H2SNO3[-1]
  - H2SO4(aq)
  - H3O[+1]
  - H4BrN(aq)
  - H4IN(aq)
- - H4N2O3(aq)
- - H4NCl(aq)
- - H4NClO4(aq)
- - H4N[+1]
  - H4SNO4(aq)
- - H5C6O7[-3]
  - H5N2[+1]
- - H8S(NO2)2(aq)
  - HBr(aq)
- - HCO2[-1]
  - HCO3[-1]
+ - HCOO[-1]
  - HCl(aq)
  - HClO4(aq)
  - HF2[-1]
@@ -241,6 +243,7 @@ The database currently contains one or more physichochemical properties for each
  - HNO3(aq)
  - HO2[-1]
  - HOsO5[-1]
+ - HPO4[-2]
  - HSO3[-1]
  - HSO4[-1]
  - HS[-1]
@@ -248,7 +251,6 @@ The database currently contains one or more physichochemical properties for each
  - H[+1]
  - Hf[+4]
  - Hg[+2]
- - Ho[+2]
  - Ho[+3]
  - IO3[-1]
  - IO4[-1]
@@ -259,26 +261,26 @@ The database currently contains one or more physichochemical properties for each
  - IrO4[-1]
  - Ir[+3]
  - K2CO3(aq)
- - K2PHO4(aq)
+ - K2HPO4(aq)
  - K2SO4(aq)
  - K3Fe(CN)6(aq)
  - K3PO4(aq)
  - K4Fe(CN)6(aq)
  - KBr(aq)
  - KBrO3(aq)
- - KCSN(aq)
  - KCl(aq)
  - KClO3(aq)
  - KClO4(aq)
  - KCrO4(aq)
  - KF(aq)
- - KHC2O.1H2O(aq)
+ - KH2PO4(aq)
  - KHCO3(aq)
  - KI(aq)
  - KNO2(aq)
  - KNO3(aq)
  - KOH(aq)
- - KPO3.1H2O(aq)
+ - KSCN(aq)
+ - KSO4[-1]
  - K[+1]
  - La(NO3)3(aq)
  - LaCl3(aq)
@@ -287,7 +289,6 @@ The database currently contains one or more physichochemical properties for each
  - LiBr(aq)
  - LiCl(aq)
  - LiClO4(aq)
- - LiHC2O.1H2O(aq)
  - LiI(aq)
  - LiNO2(aq)
  - LiNO3(aq)
@@ -297,7 +298,6 @@ The database currently contains one or more physichochemical properties for each
  - Mg(ClO4)2(aq)
  - Mg(NO3)2(aq)
  - MgBr2(aq)
- - MgC4O.3H2O(aq)
  - MgCl2(aq)
  - MgI2(aq)
  - MgSO4(aq)
@@ -309,30 +309,34 @@ The database currently contains one or more physichochemical properties for each
  - Mn[+3]
  - MoO4[-2]
  - Mo[+3]
+ - N3[-1]
+ - NH4Cl(aq)
+ - NH4ClO4(aq)
+ - NH4NO3(aq)
+ - NH4[+1]
  - NO2[-1]
  - NO3[-1]
- - N[-0.33333333]
  - Na2CO3(aq)
- - Na2PHO4(aq)
+ - Na2HPO4(aq)
  - Na2S2O3(aq)
  - Na2SO4(aq)
  - Na3PO4(aq)
  - NaBr(aq)
  - NaBrO3(aq)
- - NaCSN(aq)
+ - NaCO3[-1]
  - NaCl(aq)
  - NaClO4(aq)
  - NaCrO4(aq)
  - NaF(aq)
- - NaHC2O.1H2O(aq)
- - NaHC3.2H2O(aq)
- - NaHCO2(aq)
+ - NaH2PO4(aq)
  - NaHCO3(aq)
+ - NaHCOO(aq)
  - NaI(aq)
  - NaNO2(aq)
  - NaNO3(aq)
  - NaOH(aq)
- - NaPO3.1H2O(aq)
+ - NaSCN(aq)
+ - NaSO4[-1]
  - Na[+1]
  - Nb[+3]
  - Nd(NO3)3(aq)
@@ -348,36 +352,31 @@ The database currently contains one or more physichochemical properties for each
  - Np[+4]
  - OH[-1]
  - Os[+3]
- - P(HO2)2[-1]
  - P(OH)2[-1]
  - P2O7[-4]
  - P3O10[-5]
+ - P3O9[-3]
  - PF6[-1]
  - PH9(NO2)2(aq)
- - PHO4[-2]
  - PO3F[-2]
- - PO3[-1]
  - PO4[-3]
  - Pa[+3]
  - Pb(ClO4)2(aq)
  - Pb(NO3)2(aq)
  - Pb[+2]
  - Pd[+2]
- - Pm[+2]
  - Pm[+3]
  - Po[+2]
  - PrCl3(aq)
  - Pr[+2]
  - Pr[+3]
  - Pt[+2]
- - Pu[+2]
  - Pu[+4]
  - Ra[+2]
  - Rb2SO4(aq)
  - RbBr(aq)
  - RbCl(aq)
  - RbF(aq)
- - RbHC2O.1H2O(aq)
  - RbI(aq)
  - RbNO2(aq)
  - RbNO3(aq)
@@ -391,10 +390,11 @@ The database currently contains one or more physichochemical properties for each
  - Ru[+2]
  - Ru[+3]
  - S2O3[-2]
- - SO2[-1]
- - SO3[-1]
+ - S2O4[-2]
+ - S2O6[-2]
+ - S2O8[-2]
+ - SCN[-1]
  - SO3[-2]
- - SO4[-1]
  - SO4[-2]
  - S[-2]
  - Sb(HO2)2[-1]
@@ -429,7 +429,6 @@ The database currently contains one or more physichochemical properties for each
  - Tl(ClO4)3(aq)
  - Tl(NO2)3(aq)
  - Tl(NO3)3(aq)
- - TlH(C3O)2.4H2O(aq)
  - Tl[+1]
  - Tl[+3]
  - Tm[+2]
@@ -445,7 +444,6 @@ The database currently contains one or more physichochemical properties for each
  - VO2[+1]
  - V[+2]
  - V[+3]
- - WO4[-1]
  - WO4[-2]
  - W[+3]
  - YCl3(aq)

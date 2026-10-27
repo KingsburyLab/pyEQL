@@ -26,7 +26,8 @@ dependencies = [
   "iapws>=1.5.3",
   "monty>=2024.12.10",
   "maggma>=0.71.4",
-  "phreeqpython>=1.5.2",
+  "phreeqpython>=1.5.2; (sys_platform == 'linux' and platform_machine == 'x86_64') or (sys_platform == 'win32' and platform_machine == 'AMD64')",
+  "phreeqpython>=1.5.2,<1.6; sys_platform == 'darwin'",
 ]
 
 [project.urls]
@@ -45,7 +46,7 @@ testing = [
   "black",
   "mypy>1",
   "ruff>0.0.100",
-  "tox<4",
+  "tox<5",
 ]
 docs = ["sphinx>=3.2.1", "sphinx-rtd-theme", "myst-parser[linkify]"]
 full = ["rich"]

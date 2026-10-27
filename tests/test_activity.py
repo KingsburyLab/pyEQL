@@ -25,6 +25,7 @@ from pyEQL.activity_correction import _debye_parameter_activity, _debye_paramete
 from pyEQL.engines import PHREEQPYTHON_AVAILABLE
 from pyEQL.salt_ion_match import Salt
 from pyEQL.solution import Solution
+from pyEQL.utils import standardize_formula
 
 ## Tests of the pitzer model
 
@@ -620,7 +621,14 @@ for doc in pyEQL.IonDB.query(criteria={"charge": {"$ne": 0}}):
         _ANIONS.append(doc["formula"])
 
 _SOLUTES = list(product(_CATIONS, _ANIONS))
-_FORMULAS_TO_SALTS = {f"{Salt(anion, cation).formula}(aq)": Salt(anion, cation) for anion, cation in _SOLUTES}
+# map standardized salt formulas to Salt objects, preferring salts whose formula is already standardized
+# (e.g. Na2CO3 from Na[+1] and CO3[-2] rather than from Na[+1] and NaCO3[-1])
+_FORMULAS_TO_SALTS = {}
+for anion, cation in _SOLUTES:
+    _salt = Salt(anion, cation)
+    _key = standardize_formula(_salt.formula)
+    if _key not in _FORMULAS_TO_SALTS or f"{_salt.formula}(aq)" == _key:
+        _FORMULAS_TO_SALTS[_key] = _salt
 _criteria = {
     "model_parameters.activity_pitzer.Beta0": {"$ne": None},
     "charge": 0.0,

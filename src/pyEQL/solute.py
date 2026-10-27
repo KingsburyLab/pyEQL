@@ -21,10 +21,22 @@ from typing import Literal
 
 import numpy as np
 from pymatgen.core.ion import Ion
+from pymatgen.util.string import Stringify
 
 from pyEQL.utils import standardize_formula
 
 logger = logging.getLogger(__name__)
+
+
+class _PrettyFormula(Stringify):
+    """Pretty, LaTeX, and HTML strings for a standardized formula, e.g. "Hg2[+2]" -> "Hg2^+2"."""
+
+    def __init__(self, formula: str, charge: int) -> None:
+        base = formula.split("[", maxsplit=1)[0].removesuffix("(aq)")
+        self._pretty = f"{base}^{charge:+d}" if charge else base
+
+    def to_pretty_string(self) -> str:
+        return self._pretty
 
 
 @dataclass
@@ -108,17 +120,17 @@ class Solute:
     @classmethod
     def from_formula(cls, formula: str):
         """
-        Create an Ion document from a chemical formula. The formula is passed to
-        pymatgen.core.Ion.from_formula() and used to populate the basic chemical
-        informatics fields (e.g., formula, charge, molecular weight, elements, etc.)
-        of the IonDoc.
+        Create an Ion document from a chemical formula. The formula is standardized with
+        pyEQL.utils.standardize_formula() and then passed to pymatgen.core.Ion.from_formula()
+        to populate the basic chemical informatics fields (e.g., formula, charge, molecular
+        weight, elements, etc.) of the IonDoc. All fields describe the standardized formula
+        as written, e.g. the molecular weight of "Hg2[+2]" is that of two Hg atoms.
         """
-        pmg_ion = Ion.from_formula(formula)
-        f, factor = pmg_ion.get_reduced_formula_and_factor()
         rform = standardize_formula(formula)
+        pmg_ion = Ion.from_formula(rform)
         charge = int(pmg_ion.charge)
         els = [str(el) for el in pmg_ion.elements]
-        mw = f"{float(pmg_ion.weight / factor)} g/mol"  # weight is a FloatWithUnit
+        mw = f"{float(pmg_ion.weight)} g/mol"  # weight is a FloatWithUnit
         chemsys = pmg_ion.chemical_system
         # store only the most likely oxi_state guesses
         try:
@@ -126,6 +138,7 @@ class Solute:
         except (IndexError, ValueError):
             warnings.warn(f"Guessing oxi states failed for {formula}")
             oxi_states = {}
+        pretty = _PrettyFormula(rform, charge)
 
         return cls(
             rform,
@@ -134,10 +147,10 @@ class Solute:
             elements=els,
             chemsys=chemsys,
             pmg_ion=pmg_ion,
-            formula_html=pmg_ion.to_html_string(),
-            formula_latex=pmg_ion.to_latex_string(),
+            formula_html=pretty.to_html_string(),
+            formula_latex=pretty.to_latex_string(),
             formula_hill=pmg_ion.hill_formula,
-            formula_pretty=pmg_ion.to_pretty_string(),
+            formula_pretty=pretty.to_pretty_string(),
             oxi_state_guesses=oxi_states,
             n_atoms=int(pmg_ion.num_atoms),
             n_elements=len(els),

@@ -16,14 +16,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Self
 
 from monty.json import MSONable
-from phreeqpython import PhreeqPython
 from pymatgen.core import Composition
 
 import pyEQL.activity_correction as ac
 from pyEQL import ureg
-from pyEQL.phreeqc import PHRQSol
+from pyEQL.phreeqc import PhreeqcSolution
 from pyEQL.presets import ATMOSPHERE, EQUILIBRIUM_PHASE_AMOUNT
 from pyEQL.utils import FormulaDict, standardize_formula
+
+try:
+    from phreeqpython import PhreeqPython
+except ImportError:
+    PhreeqPython = None
 
 # These are the only elements that are allowed to have parenthetical oxidation states
 # PHREEQC will ignore others (e.g., 'Na(1)')
@@ -219,7 +223,7 @@ class Phreeqc2026EOS(EOS):
         self._building_ppsol = False
 
     def _ppsol_dict_input(self, d):
-        return PHRQSol(d)
+        return PhreeqcSolution(d)
 
     def _setup_ppsol(self, solution: "solution.Solution") -> None:
         """Helper method to set up a Phreeqc solution for subsequent analysis."""
@@ -267,17 +271,16 @@ class Phreeqc2026EOS(EOS):
 
         # add the composition to the dict
         # also, skip H and O
+        # CAUTION - get_el_amt_dict() returns the amount of each distinct oxi state of each element present.
+        # Elements in SPECIAL_ELEMENTS are passed to PHREEQC per oxi state (e.g. 'Fe(2)', 'Fe(3)'), but PHREEQC
+        # does not recognize oxi states of any other element, so the amounts of all oxi states of those elements
+        # must be summed under the bare element (e.g. 'Cr' for Cr(3) + Cr(6)). Multiple oxi states are common
+        # even for elements added in a single oxi state, because equilibrate() can return trace species in other
+        # oxi states (e.g. Cl(1) in an equilibrated NaCl solution). Amounts are therefore accumulated as floats
+        # and formatted (with the " charge" suffix, if any) only once, after the loop.
+        molalities: dict[str, float] = {}
+        cb_keys = set()
         for el, mol in solution.get_el_amt_dict().items():
-            # CAUTION - care must be taken to avoid unintended behavior here. get_el_amt_dict() will return
-            # all distinct oxi states of each element present. If there are elements present whose oxi states
-            # are NOT recognized by PHREEQC (via SPECIAL_ELEMENTS) then the amount of only 1 oxi state will be
-            # entered into the composition dict. This can especially cause problems after equilibrate() has already
-            # been called once. For example, equilibrating a simple NaCl solution generates Cl species that are assigned
-            # various oxidations states, -1 mostly, but also 1, 2, and 3. Since the concentrations of everything
-            # except the -1 oxi state are tiny, this can result in Cl "disappearing" from the solution if
-            # equlibrate is called again. It also causes non-determinism, because the amount is taken from whatever
-            # oxi state happens to be iterated through last.
-
             # strip off the oxi state
             bare_el = el.split("(")[0]
             if bare_el in SPECIAL_ELEMENTS:
@@ -289,16 +292,14 @@ class Phreeqc2026EOS(EOS):
             else:
                 key = bare_el
 
-            if key in d:
-                # when multiple oxi states for the same (non-SPECIAL) element are present, make sure to
-                # add all their amounts together
-                d[key] += str(mol / solv_mass)
-            else:
-                d[key] = str(mol / solv_mass)
+            molalities[key] = molalities.get(key, 0) + mol / solv_mass
 
             # tell PHREEQC which species to use for charge balance
             if solution.balance_charge is not None and solution._cb_species in solution.get_components_by_element()[el]:
-                d[key] += " charge"
+                cb_keys.add(key)
+
+        for key, molality in molalities.items():
+            d[key] = str(molality) + (" charge" if key in cb_keys else "")
 
         try:
             ppsol = self.pp.add_solution(self._ppsol_dict_input(d))
@@ -607,8 +608,10 @@ class PhreeqcEOS(Phreeqc2026EOS):
         )
         # create the PhreeqPython instance
         # try/except added to catch platforms with no compatible phreeqpython binary, such as
-        # Apple Silicon or aarch64 Linux (phreeqpython ships no arm64 Linux shared library)
+        # aarch64 Linux, where phreeqpython is either not installed or fails to load its shared library
         try:
+            if PhreeqPython is None:
+                raise OSError("phreeqpython is not installed")
             self.pp = PhreeqPython(database=self.phreeqc_db, database_directory=self.db_path)
         except OSError:
             # super().__init__() already set self.pp to an in-tree Phreeqc wrapper, which is the
@@ -618,8 +621,8 @@ class PhreeqcEOS(Phreeqc2026EOS):
             self.pp = None
             logger.error(
                 "OSError encountered when trying to instantiate phreeqpython. Most likely this means you"
-                " are running on a platform with no compatible phreeqpython binary, such as Apple M1/M2"
-                " chips or aarch64 Linux. pyEQL will work, but equilibrate() will have no effect."
+                " are running on a platform with no compatible phreeqpython binary, such as aarch64 Linux."
+                " pyEQL will work, but equilibrate() using this engine will have no effect."
             )
         # attributes to hold the PhreeqPython solution.
         self.ppsol = None
