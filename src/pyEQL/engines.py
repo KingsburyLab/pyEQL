@@ -181,7 +181,8 @@ class IdealEOS(EOS):
 
 class Phreeqc2026EOS(EOS):
     """Engine based on the PhreeqC model, as implemented in the pyphreeqc
-    module of pyEQL."""
+    module of pyEQL.
+    """
 
     def __init__(
         self,

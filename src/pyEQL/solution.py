@@ -904,7 +904,6 @@ class Solution(MSONable):
             .. [stm] Stumm, Werner and Morgan, James J. Aquatic Chemistry, 3rd ed, pp 165. Wiley Interscience, 1996.
 
         """
-
         alkalinity = 0 * ureg.mol / ureg.L
 
         # Conservative cations (Group I and II), keyed by element with their characteristic charge.
@@ -1497,7 +1496,7 @@ class Solution(MSONable):
         TOT: Quantity = ureg.Quantity(0, _units)
 
         # standardize the element formula and units
-        el = str(Element(element.split("(")[0]))
+        el = str(Element(element.split("(", maxsplit=1)[0]))
         units = translate_units(units)
 
         # enumerate the species whose concentrations we need
@@ -1505,7 +1504,7 @@ class Solution(MSONable):
 
         # compile list of species in different ways depending whether there is an oxidation state
         if "(" in element and UNKNOWN_OXI_STATE not in element:
-            ox = float(element.split("(")[-1].split(")")[0])
+            ox = float(element.rsplit("(", maxsplit=1)[-1].split(")", maxsplit=1)[0])
             key = f"{el}({ox})"
             species = comp_by_element.get(key, [])
         else:
@@ -3190,6 +3189,7 @@ class Solution(MSONable):
     def get_saturation_index(self, get_plot=None) -> dict:
         r"""
         Calculate the saturation index of a solute in the solution.
+
         Notes:
             The saturation index (:math:`\mathrm{SI}`) is defined as log10(IAP/Ksp), where IAP is the ion activity product and Ksp is the solubility product constant.
             This method calculates the saturation index based on the active engine and database from `__init__`. The interpretation of the saturation index values is as follows:
@@ -3203,11 +3203,11 @@ class Solution(MSONable):
         Args:
             get_plot (bool, optional):
                 If True, displays an interactive bar plot of saturation indices sorted from most oversaturated to least. Defaults to None (no plot).
+
         Returns:
             dict:
                 A dictionary with mineral phase names as keys and their saturation index values as values, sorted in descending order (most oversaturated to least oversaturated).
         """
-
         engine = self.engine
 
         if not hasattr(engine, "ppsol"):
@@ -3229,7 +3229,7 @@ class Solution(MSONable):
             import pandas as pd  # noqa: PLC0415
             import plotly.express as px  # noqa: PLC0415
 
-            df = pd.DataFrame(  # noqa: PD901
+            df = pd.DataFrame(
                 {"species": list(sorted_eq_species_dict.keys()), "si": list(sorted_eq_species_dict.values())}
             )
 
