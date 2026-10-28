@@ -820,11 +820,11 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(0.200000..., 'mole / kilogram')>
+            Quantity(np.float64(0.200000...), "mole / kilogram")
 
             >>> s1 = pyEQL.Solution([['Mg+2','0.3 mol/kg'],['Na+','0.1 mol/kg'],['Cl-','0.7 mol/kg']],temperature='30 degC')
             >>> s1.ionic_strength  # doctest: +ELLIPSIS
-            <Quantity(1.000000..., 'mole / kilogram')>
+            Quantity(np.float64(1.000000...), "mole / kilogram")
         """
         # compute using magnitudes only, for performance reasons
         ionic_strength = np.sum(
@@ -1120,7 +1120,7 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution()
             >>> s1.bjerrum_length  # doctest: +ELLIPSIS
-            <Quantity(0.714..., 'nanometer')>
+            Quantity(np.float64(0.714...), "nanometer")
 
         See Also:
             :attr:`dielectric_constant`
@@ -1160,11 +1160,11 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution()
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
-            <Quantity(0.494327..., 'pascal')>
+            Quantity(np.float64(0.494327...), "pascal")
 
             >>> s1 = pyEQL.Solution([['Na+','0.2 mol/kg'],['Cl-','0.2 mol/kg']])
             >>> s1.osmotic_pressure  # doctest: +ELLIPSIS
-            <Quantity(9132..., 'pascal')>
+            Quantity(np.float64(9132...), "pascal")
         """
         partial_molar_volume_water = self.get_property(self.solvent, "size.molar_volume")
 
@@ -2143,7 +2143,7 @@ class Solution(MSONable):
         Examples:
             >>> s1 = pyEQL.Solution([['Na+','0.3 mol/kg'],['Cl-','0.3 mol/kg']])
             >>> s1.get_water_activity()  # doctest: +ELLIPSIS
-            <Quantity(0.99009..., 'dimensionless')>
+            Quantity(np.float64(0.99009...), "dimensionless")
         """
         osmotic_coefficient = self.get_osmotic_coefficient()
 
@@ -2612,7 +2612,7 @@ class Solution(MSONable):
         Examples:
             >>> soln = Solution([['Na+','0.5 mol/kg'],['Cl-','0.5 mol/kg']])
             >>> soln.get_lattice_distance('Na+')  # doctest: +ELLIPSIS
-            <Quantity(1.497..., 'nanometer')>
+            Quantity(np.float64(1.497...), "nanometer")
 
         Notes:
             The lattice distance is related to the molar concentration as follows:
