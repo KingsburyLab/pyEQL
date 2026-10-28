@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         # We only test on min. and max. supported Python versions here.
-        python-version: ["3.11", "3.14"]
+        python-version: ["3.13", "3.14"]
         os:
           - ubuntu-latest
           - macos-latest

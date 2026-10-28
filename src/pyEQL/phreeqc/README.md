@@ -148,7 +148,7 @@ To reproduce a single release build locally (on Linux this needs Docker):
 
 ```bash
 uvx cibuildwheel --config-file cibuildwheel.toml --print-build-identifiers   # list targets
-uvx cibuildwheel --config-file cibuildwheel.toml --only cp312-manylinux_x86_64
+uvx cibuildwheel --config-file cibuildwheel.toml --only cp313-manylinux_x86_64
 ```
 
 Wheels are written to `wheelhouse/`. This is the place to debug failures that occur
