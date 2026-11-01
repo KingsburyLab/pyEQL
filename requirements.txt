@@ -17,7 +17,7 @@ babel==2.18.0
     # via sphinx
 bcrypt==5.0.0
     # via paramiko
-bibtexparser==2.1.0
+bibtexparser==1.4.4
     # via pymatgen-core
 black==26.10.1
     # via pyeql (pyproject.toml)
@@ -61,7 +61,7 @@ dnspython==2.9.0
     # via
     #   maggma
     #   pymongo
-docutils==0.23
+docutils==0.22.4
     # via
     #   myst-parser
     #   sphinx
@@ -136,7 +136,7 @@ monty==2026.10.21
     #   pyeql (pyproject.toml)
     #   maggma
     #   pymatgen-core
-mpmath==1.4.1
+mpmath==1.3.0
     # via sympy
 msgpack==1.2.4
     # via maggma
