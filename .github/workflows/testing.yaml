@@ -55,4 +55,5 @@ jobs:
         if: matrix.python-version == '3.13'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+          files: ./coverage.xml
+          disable_search: true
