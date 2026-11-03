@@ -1,0 +1,42 @@
+name: coverage
+
+# Upload a coverage report for every commit on the base branches, so that Codecov
+# compares PRs against their actual base commit instead of an older ancestor.
+# Must use the same Python version and pytest flags as the coverage job in testing.yaml.
+on:
+  push:
+    branches:
+      - main
+      - pourbaix
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install test requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[testing]"
+
+      - name: Run tests with coverage
+        run: |
+          pytest -n auto --cov=src/pyEQL --cov-report=xml --dist=loadscope
+
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          disable_search: true
+          fail_ci_if_error: true
