@@ -1,9 +1,9 @@
 # Requirements file for ReadTheDocs, check .readthedocs.yml.
 # To build the module reference correctly, make sure every external package
 # under `install_requires` in `setup.cfg` is also listed here!
-pint>=0.24.4
-numpy>1.26
-scipy>=1.12
+pint>=0.26  # doctest outputs use the pint>=0.26 Quantity repr
+numpy>=2.3
+scipy>=1.15
 pymatgen-core>=2026.5.18
 iapws>=1.5.3
 monty>=2024.12.10

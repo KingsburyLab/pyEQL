@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Dropped support for Python 3.11 and 3.12, and for NumPy < 2.3 and SciPy < 1.15, per [SPEC 0](https://scientific-python.org/specs/spec-0000/). The minimum supported Python is now 3.13.
+
 ### Changed
 
 - `Solution.get_amount()` gained a float fast path for common units (`mol`, `mol/L`, `mol/kg`, `m`, `g`, `kg`,

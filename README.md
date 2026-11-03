@@ -1,7 +1,7 @@
 [![Read the Docs](https://img.shields.io/readthedocs/pyeql)](https://pyeql.readthedocs.io/en/latest/)
 [![testing](https://github.com/KingsburyLab/pyeql/workflows/testing/badge.svg)](https://github.com/KingsburyLab/pyeql/actions?query=workflow%3Atesting)
 [![codecov](https://codecov.io/gh/KingsburyLab/pyeql/branch/main/graph/badge.svg?token=I7RP0QML6S)](https://codecov.io/gh/KingsburyLab/pyeql)
-![Supported python versions](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
+![Supported python versions](https://img.shields.io/badge/python-3.13%20%7C%203.14%20%7C%203.15-blue)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8332915.svg)](https://doi.org/10.5281/zenodo.8332915)
 [![PyPI version](https://badge.fury.io/py/pyEQL.svg)](https://badge.fury.io/py/pyEQL)
 [![status](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6/status.svg)](https://joss.theoj.org/papers/bdd9e247ea9736a0fdbbd5fe12bef7a6)
@@ -65,9 +65,9 @@ Detailed documentation is available at [https://pyeql.readthedocs.io/](https://p
 
 ### Dependencies
 
-- Python 3.11+. This project will attempt to adhere to NumPy's
-  [NEP 29](https://numpy.org/neps/nep-0029-deprecation_policy.html) deprecation policy
-  for older version of Python.
+- Python 3.13+. This project follows the
+  [SPEC 0](https://scientific-python.org/specs/spec-0000/) policy for dropping support
+  for older versions of Python and core scientific packages.
 - [pint](https://github.com/hgrecco/pint) - for units-aware calculations
 - [pymatgen-core](https://github.com/materialsproject/pymatgen-core) - periodic table and chemical formula information
 - [phreeqpython](https://github.com/Vitens/phreeqpython) - for PHREEQC-based speciation calculations

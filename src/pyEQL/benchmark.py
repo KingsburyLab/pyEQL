@@ -21,7 +21,7 @@ cond = _load_benchmark_csv("CRC_conductivity.csv")
 
 
 def _ionic_strength(df):
-    """calculate ionic strength of the selected data"""
+    """Calculate ionic strength of the selected data"""
     z = {"Na[+1]": 1, "K[+1]": 1, "Ca[+2]": 2, "Mg[+2]": 2, "Cl[-1]": -1, "SO4[-2]": -2}
     Is = np.zeros(len(df))
     for k, v in z.items():
@@ -30,7 +30,7 @@ def _ionic_strength(df):
 
 
 def _salt_label(ions):
-    """generate salt label as plot title"""
+    """Generate salt label as plot title"""
     a = ions[0].split("[")[0]
     b = ions[1].split("[")[0]
     if a in ["Ca", "Mg"] and b == "Cl":
@@ -41,7 +41,7 @@ def _salt_label(ions):
 
 
 def _pyEQL_sim(ions, conc, prop):
-    """pyEQL model result calculation"""
+    """PyEQL model result calculation"""
     if prop == "activity_coefficient":
         s = pyEQL.Solution([[i, f"{c} mol/kg"] for i, c in zip(ions, conc, strict=False)])
         nu = [abs(int(i.split("[")[1].split("]")[0])) for i in ions]
@@ -59,7 +59,7 @@ def _pyEQL_sim(ions, conc, prop):
 
 
 def _filter_df(df, ions):
-    """filter selected experimental data"""
+    """Filter selected experimental data"""
     m = (df[ions[0]] > 0) & (df[ions[1]] > 0)
     return df[m]
 
@@ -97,7 +97,6 @@ def benchmark(df, ions, prop, n=200):
         mS/cm.
 
     """
-
     filtered_df = _filter_df(df, ions)
     Is = _ionic_strength(filtered_df)
     y = filtered_df["mean_activity_coefficient"] if prop == "activity_coefficient" else filtered_df["conductivity"]

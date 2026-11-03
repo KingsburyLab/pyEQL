@@ -85,12 +85,12 @@ def adjust_temp_vanthoff(equilibrium_constant, enthalpy, temperature, reference_
 
     Examples:
         >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'),ureg.Quantity(' 25degC'))  # doctest: +ELLIPSIS
-        <Quantity(0.002035664..., 'dimensionless')>
+        Quantity(np.float64(0.002035664...), "dimensionless")
 
         If the 'ref_temperature' parameter is omitted, a default of 25 C is used.
 
         >>> adjust_temp_vanthoff(0.15,ureg.Quantity('-197.6 kJ/mol'),ureg.Quantity('42 degC'))  # doctest: +ELLIPSIS
-        <Quantity(0.002035664..., 'dimensionless')>
+        Quantity(np.float64(0.002035664...), "dimensionless")
     """
     output = equilibrium_constant * np.exp(
         enthalpy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
@@ -136,7 +136,7 @@ def adjust_temp_arrhenius(
 
     Examples:
         >>> adjust_temp_arrhenius(7,900*ureg.Quantity('kJ/mol'),37*ureg.Quantity('degC'),97*ureg.Quantity('degC'))  # doctest: +ELLIPSIS
-        <Quantity(1.8867..., 'dimensionless')>
+        Quantity(np.float64(1.8867...), "dimensionless")
     """
     output = rate_constant * np.exp(
         activation_energy / ureg.R * (1 / reference_temperature.to("K") - 1 / temperature.to("K"))
