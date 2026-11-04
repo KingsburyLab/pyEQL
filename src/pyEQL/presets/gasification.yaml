@@ -1,6 +1,6 @@
 '@module': pyEQL.solution
 '@class': Solution
-'@version': 1.5.1.dev50+geb84b2d8f
+'@version': 1.7.5
 solutes:
   H2O(aq): 55.34457593619076 mol
   Na[+1]: 0.11445194188293113 mol
@@ -21,7 +21,7 @@ solutes:
   OH[-1]: 7.068570894364236e-06 mol
   NaOH(aq): 7.822095422126727e-08 mol
   HSO4[-1]: 2.17439328843727e-09 mol
-  H[+1]: 1.8239421779549678e-09 mol
+  H[+1]: 1.8239480438084171e-09 mol
   HCl(aq): 1.2082763338158833e-11 mol
   HNO3(aq): 3.0286766271441983e-13 mol
   NO2[-1]: 1.5477536303493863e-16 mol
@@ -39,7 +39,7 @@ solutes:
 volume: 1.0022224535106647 l
 temperature: 298.15 K
 pressure: 1 atm
-pH: 8.73770501425367
+pH: 8.73770361755167
 pE: 8.5
 balance_charge: auto
 solvent: H2O(aq)
