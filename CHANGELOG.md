@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `get_amount(<absent solute>, "fraction")` now returns `0` (the mole fraction of an absent solute) instead of
   raising `UndefinedUnitError`. (#454, @rkingsbury)
+- Regenerated the 22 industrial wastewater presets with the fixes in #471 and #474, using the same workflow,
+  settings, and source data that produced the previous presets (verified by reproducing all 22 exactly with the
+  July 2026 code). The previous presets had lost mass where a polynuclear species shared a key with its monomer
+  (e.g. `Fe2(OH)2[+4]` overwriting `FeOH[+2]`, `H2F2` overwriting `HF`). Element totals restored:
+  `mine_drainage` Fe +56%, `plating` F +69%, `tanning` Pb +52%, `batt_mfg` Pb +27%, `smelting` Pb +26%,
+  `flotation` Si +22%, `coal_washing` Fe +13% and Al +5%, `leachate` Fe +8%, `FGD` Fe +0.7%. Polynuclear species
+  (e.g. `Fe2(OH)2[+4]`, `Hg2[+2]`, `Si4(H7O8)2[-2]`) now appear under their own keys. `batt_recycling` also changes
+  (C -18%, pH 6.73 -> 6.71) because of alkalinity and equilibration changes made since the presets were generated.
+  pH changes by less than 0.002 in all other presets; B and Si are unchanged by design. Added a regression test
+  that re-equilibrating each preset conserves every element except the charge-balancing one. (#TBD, @rkingsbury)
 
 ## [1.7.5] - 2026-10-27
 
